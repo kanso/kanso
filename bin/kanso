@@ -1,0 +1,15 @@
+#!/usr/bin/env node
+
+var kanso = require('../lib/kanso');
+
+var args = process.argv.slice(2);
+
+if (!args.length || args.length > 1) {
+    console.log('USAGE: kanso project_dir');
+}
+else {
+    kanso.load(args[0], function (err, doc) {
+        if (err) return console.error(err);
+        console.log(JSON.stringify(doc));
+    });
+}

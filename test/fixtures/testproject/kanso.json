@@ -1,0 +1,5 @@
+{
+    "modules": ["deps","lib"],
+    "templates": "templates",
+    "attachments": "static"
+}
