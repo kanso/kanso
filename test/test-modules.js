@@ -93,3 +93,96 @@ exports['find'] = function (test) {
         test.done();
     });
 };
+
+exports['require'] = function (test) {
+    var module_cache = {};
+    var doc = {
+        lib: {
+            testlib: "exports.hello = function (name) {\n" +
+            "    return 'hello ' + name;\n" +
+            "};"
+         },
+         other: {
+            lib2: "exports.hi = function (name) {\n" +
+            "    return 'hi ' + name;\n" +
+            "};"
+         },
+         testlib: "exports.hello = function () { return 'root'; };"
+    };
+    test.equals(
+        modules.require(
+            module_cache, doc, '/', 'lib/testlib'
+        ).hello('world'),
+        'hello world'
+    );
+    test.equals(
+        modules.require(
+            module_cache, doc, '/lib', './testlib'
+        ).hello('world'),
+        'hello world'
+    );
+    test.equals(
+        modules.require(
+            module_cache, doc, '/lib', 'testlib'
+        ).hello('world'),
+        'root'
+    );
+    test.equals(
+        modules.require(
+            module_cache, doc, '/lib', '../other/lib2'
+        ).hi('world'),
+        'hi world'
+    );
+    test.throws(function () {
+        modules.require(
+            module_cache, doc, '/lib', '../../app2/lib/asdf'
+        );
+    });
+    test.equals(module_cache['/other/lib2'].hi('test'), 'hi test');
+    test.done();
+};
+
+exports['require within a module'] = function (test) {
+    var module_cache = {};
+    var doc = {
+        lib: {
+            name: "exports.name = 'world';\n",
+            hello: "var name = require('./name').name;\n" +
+            "exports.hello = function () {\n" +
+            "    return 'hello ' + name;\n" +
+            "};"
+         }
+    };
+    test.equals(
+        modules.require(module_cache, doc, '/lib','./name').name,
+        'world'
+    );
+    test.equals(module_cache['/lib/name'].name, 'world');
+    test.throws(function () {
+        modules.require(module_cache, doc, '/lib','hello').hello();
+    });
+    test.equals(
+        modules.require(module_cache, doc, '/lib','./hello').hello(),
+        'hello world'
+    );
+    test.done();
+};
+
+exports['require missing module'] = function (test) {
+    test.expect(1);
+    var doc = {
+        lib: {
+            hello: "var name = require('../name').name;\n" +
+            "exports.hello = function () {\n" +
+            "    return 'hello ' + name;\n" +
+            "};"
+         }
+    };
+    try {
+        modules.require({}, doc, '/lib','./hello').hello();
+    }
+    catch (e) {
+        test.equals(e.message, 'Could not require module: ../name');
+    }
+    test.done();
+};

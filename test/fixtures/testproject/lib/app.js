@@ -1,0 +1,1 @@
+exports.testproperty = "test property";

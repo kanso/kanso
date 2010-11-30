@@ -8,12 +8,15 @@ exports['load'] = function (test) {
         test.ifError(err);
         test.same(doc, {
             'settings': {
+                'load': 'lib/app',
                 'modules': ['deps','lib'],
                 'templates': 'templates',
                 'attachments': 'static'
             },
+            'testproperty': 'test property',
             'lib': {
-                'module1': 'exports.name = "module one";\n'
+                'module1': 'exports.name = "module one";\n',
+                'app': 'exports.testproperty = "test property";\n'
             },
             'deps': {
                 'module2': 'exports.name = "module two";\n'
