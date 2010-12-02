@@ -16,7 +16,19 @@ exports['load'] = function (test) {
             'testproperty': 'test property',
             'lib': {
                 'module1': 'exports.name = "module one";\n',
-                'app': 'exports.testproperty = "test property";\n'
+                'app': 'exports.testproperty = "test property";\n' +
+                '\n' +
+                'exports.shows = {\n' +
+                '    testshow: function (doc, req) {\n' +
+                '        return "test";\n' +
+                '    }\n' +
+                '};\n'
+            },
+            'shows': {
+                'testshow': 'function(){' +
+                    'return require("lib/app")["shows"]["testshow"]' +
+                        '.apply(this, arguments);' +
+                '}'
             },
             'deps': {
                 'module2': 'exports.name = "module two";\n'
