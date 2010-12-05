@@ -27,3 +27,10 @@ exports.filters = {
 exports.validate_doc_update = function (doc, req) {
     return;
 };
+
+exports.no_proxy_function = function (){return "test";};
+
+exports.no_proxy_obj = {
+    fn1: function (){return "one";},
+    fn2: function (){return "two";}
+};

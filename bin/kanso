@@ -10,6 +10,6 @@ if (!args.length || args.length > 1) {
 else {
     kanso.load(args[0], function (err, doc) {
         if (err) return console.error(err);
-        console.log(JSON.stringify(doc));
+        console.log(kanso.stringify(doc));
     });
 }

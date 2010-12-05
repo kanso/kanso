@@ -61,6 +61,14 @@ exports['load'] = function (test) {
         test.same(doc.templates, {
             'test.html': dust.compile('<h1>Test</h1>\n')
         });
+        /*test.equal(
+            doc.no_proxy_function,
+            'function (){return "test";}'
+        );
+        test.same(doc.no_proxy_obj, {
+            fn1: 'function (){return "one";}',
+            fn2: 'function (){return "two";}'
+        });*/
         test.same(doc._attachments, {
             'static/test.txt': {
                 'content-type': 'text/plain',
@@ -69,4 +77,42 @@ exports['load'] = function (test) {
         });
         test.done();
     });
+};
+
+
+exports['stringify'] = function (test) {
+    var Script = process.binding('evals').Script;
+    var obj = {
+        a: {
+            // this is not an instanceof Function but is
+            // typeof 'function'...
+            b: Script.runInNewContext("(function (){return 'fn1';})"),
+            // this is an instanceof Function, and also typeof
+            // Function
+            c: function (){return 'fn2';},
+            d: 123,
+        },
+        e: true,
+        f: null,
+        g: undefined,
+        h: ['one', 'two', 3]
+    }
+    test.same(
+        kanso.stringify(obj),
+        '{\n' +
+        '    "a": {\n' +
+        '        "b": "function (){return \'fn1\';}",\n' +
+        '        "c": "function (){return \'fn2\';}",\n' +
+        '        "d": 123\n' +
+        '    },\n' +
+        '    "e": true,\n' +
+        '    "f": null,\n' +
+        '    "h": [\n' +
+        '        "one",\n' +
+        '        "two",\n' +
+        '        3\n' +
+        '    ]\n' +
+        '}'
+    );
+    test.done();
 };
