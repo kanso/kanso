@@ -1,4 +1,5 @@
 {
+    "name": "testproject",
     "load": "lib/app",
     "modules": ["deps","lib"],
     "templates": "templates",

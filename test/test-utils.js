@@ -95,6 +95,10 @@ exports['relpath'] = function (test) {
         utils.relpath('/some/dir/../test/path/file.ext', dir),
         'file.ext'
     );
+    test.equals(
+        utils.relpath('/trailing/slash/subdir', '/trailing/slash/'),
+        'subdir'
+    );
     test.equals(utils.relpath('file.ext', dir), 'file.ext');
     test.done();
 };
@@ -176,5 +180,48 @@ exports['abspath'] = function (test) {
     test.equals(utils.abspath('some/path'), process.cwd() + '/some/path');
     test.equals(utils.abspath('some/path', '/cwd'), '/cwd/some/path');
     test.equals(utils.abspath('/some/path', '/cwd'), '/some/path');
+    test.done();
+};
+
+exports['stringifyFunctions'] = function (test) {
+    var Script = process.binding('evals').Script;
+    var obj = {
+        a: {
+            // this is not an instanceof Function but is
+            // typeof 'function'...
+            b: Script.runInNewContext("(function (){return 'fn1';})"),
+            // this is an instanceof Function, and also typeof
+            // Function
+            c: function (){return 'fn2';},
+            d: 123,
+        },
+        e: true,
+        f: null,
+        g: undefined,
+        h: ['one', 'two', 3]
+    }
+    var stringified = utils.stringifyFunctions(obj);
+    test.same(
+        stringified,
+        {
+            a: {
+                b: "function (){return 'fn1';}",
+                c: "function (){return 'fn2';}",
+                d: 123,
+            },
+            e: true,
+            f: null,
+            g: undefined,
+            h: ['one', 'two', 3]
+        }
+    );
+    // deepEquals seems to test the string representations of functions
+    // so we also need to test the type is correct
+    test.equals(typeof stringified.a.b, 'string');
+    test.equals(typeof stringified.a.c, 'string');
+    // ensure that the array keeps its type, and doesn't change to an object
+    // with the index numbers as properties: {"0": ..., "1": ...} etc
+    test.ok(stringified.h instanceof Array);
+    test.equals(stringified.h.length, 3);
     test.done();
 };
