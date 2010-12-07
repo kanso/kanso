@@ -22,7 +22,7 @@ else {
         case 'show':
             var dir = args[2] || '.';
             settings.load(dir, function (err, settings) {
-                if (err) return callback(err);
+                if (err) return console.error(err.message || err);
                 kanso.load(dir, settings, function (err, doc) {
                     if (err) return console.error(err.message || err);
                     console.log(JSON.stringify(doc, null, 4));
@@ -35,7 +35,7 @@ else {
             }
             var dir = args[2] || '.';
             settings.load(dir, function (err, settings) {
-                if (err) return callback(err);
+                if (err) return console.error(err.message || err);
                 kanso.load(dir, settings, function (err, doc) {
                     var db = couchdb(args[1]);
                     db.ensureDB(function (err) {

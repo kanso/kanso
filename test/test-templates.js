@@ -47,7 +47,7 @@ exports['load multiple dirs'] = function (test) {
 };
 
 exports['addFiles'] = function (test) {
-    var doc = {};
+    var doc = {settings: {templates: 'templates'}};
     var files = [
         'dir/lib/file1.html',
         'dir/lib/file2.html',
@@ -55,6 +55,9 @@ exports['addFiles'] = function (test) {
     ];
     var _readFile = fs.readFile;
     fs.readFile = function (p, cb) {
+        if (/dust\.js$/.test(p)) {
+            return cb(null, 'dustsrc');
+        }
         cb(null, p.substr(-6,1));
     };
     var _compile = dust.compile;
@@ -64,13 +67,10 @@ exports['addFiles'] = function (test) {
     templates.addFiles('dir', files, doc, function (err) {
         test.ifError(err);
         test.same(doc, {
-            'lib': {
-                'file1.html': 'tmpl1',
-                'file2.html': 'tmpl2'
+            'settings': {
+                'templates': 'templates'
             },
-            'deps': {
-                'file3.html': 'tmpl3'
-            }
+            'templates': 'dustsrctmpl1tmpl2tmpl3'
         });
         fs.readFile = _readFile;
         dust.compile = _compile;

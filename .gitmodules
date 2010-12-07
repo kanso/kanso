@@ -1,6 +1,3 @@
-[submodule "deps/dustjs"]
-	path = deps/dustjs
-	url = https://github.com/akdubya/dustjs.git
 [submodule "deps/async"]
 	path = deps/async
 	url = https://github.com/caolan/async.git
@@ -13,3 +10,6 @@
 [submodule "deps/node-mime"]
 	path = deps/node-mime
 	url = https://github.com/bentomas/node-mime.git
+[submodule "deps/dustjs"]
+	path = deps/dustjs
+	url = https://github.com/caolan/dustjs.git

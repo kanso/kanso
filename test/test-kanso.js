@@ -62,9 +62,12 @@ exports['load'] = function (test) {
             test.same(doc.deps, {
                 'module2': 'exports.name = "module two";\n'
             });
-            test.same(doc.templates, {
-                'test.html': dust.compile('<h1>Test</h1>\n')
-            });
+            test.equal(
+                doc.templates,
+                fs.readFileSync(
+                    __dirname + '/../deps/dustjs/lib/dust.js'
+                ).toString() + dust.compile('<h1>Test</h1>\n', 'test.html')
+            );
             test.equal(
                 doc.no_proxy_function,
                 'function (){return "test";}'
