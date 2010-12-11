@@ -1,0 +1,139 @@
+<script type="text/javascript">
+
+var kanso = {};
+
+kanso.getBaseURL = function () {
+    var match = /(.*\/_rewrite).*$/.exec(window.location);
+    if (match) {
+        return match[1];
+    }
+    return '';
+};
+
+kanso.getURL = function () {
+    var match = /\/_rewrite(.*)$/.exec(window.location);
+    if (match) {
+        return match[1] || '/';
+    }
+    return window.location.path || '/';
+};
+
+console.log('base url');
+console.log(kanso.getBaseURL());
+
+console.log('url');
+console.log(kanso.getURL());
+
+kanso.rewriteGroups = function (pattern, url) {
+    /* TODO: add 'splats' as well as named params */
+    var re = new RegExp('^' + pattern.replace(/:\w+/, '([^/]+)') + '$');
+    var m = re.exec(url);
+    if (!m) {
+        return [];
+    }
+    var values = m.slice(1);
+    var keys = [];
+    var matches = pattern.match(/:\w+/) || [];
+    for (var i=0; i<matches.length; i++) {
+        keys.push(matches[i].substr(1));
+    };
+    var groups = {};
+    for (var i=0; i<keys.length; i++) {
+        groups[keys[i]] = values[i];
+    };
+    return groups;
+};
+
+kanso.matchURL = function (design_doc, url) {
+    var rewrites = design_doc.rewrites;
+    for (var i=0; i<rewrites.length; i++) {
+        var r = rewrites[i];
+        var re = new RegExp('^' + r.from.replace(/:\w+/, '([^/]+)') + '$');
+        if (re.test(url)) return r;
+    }
+};
+
+kanso.handle = function (design_doc, url) {
+    console.log('handle ' + url);
+    console.log('design_doc');
+    console.log(design_doc);
+    var match = kanso.matchURL(design_doc, url);
+    if (match) {
+        console.log('rewrite to');
+        console.log(match.to);
+        var groups = kanso.rewriteGroups(match.from, url);
+        console.log('groups');
+        console.log(groups);
+        var req = {query: groups};
+        if ('_show/' === match.to.slice(0, 6)) {
+            var src = design_doc.shows[match.to.slice(6)];
+            var fn = eval('(' + src + ')');
+            var doc = {};
+            var client = true;
+            console.log(fn(doc, req, client));
+        }
+        if ('_list/' === match.to.slice(0, 6)) {
+            var src = design_doc.lists[match.to.slice(6)];
+            var fn = eval('(' + src + ')');
+            var head = {};
+            var client = true;
+            console.log(fn(head, req, client));
+        }
+    }
+    else {
+        console.log('404');
+    }
+};
+
+kanso.moduleCache = {};
+
+kanso.getPropertyPath = function (obj, p) {
+    /* normalize to remove unessecary . and .. from paths */
+    /* TODO: port this to browser */
+    /* var parts = path.normalize(p).split('/'); */
+    var parts = p.split('/');
+
+    /* if path is empty, return the root object */
+    if (!p) return obj;
+
+    /* loop through all parts of the path, throwing an exception */
+    /* if a property doesn't exist */
+    var a = obj;
+    for (var i=0; i<parts.length; i++) {
+        var x = parts[i];
+        if(a[x] === undefined) throw new Error('Invalid path: ' + p);
+        a = a[x];
+    }
+    return a;
+};
+
+kanso.require = function (path) {
+    console.log('require ' + path);
+    if (!kanso.design_doc) {
+        throw new Error('no design doc loaded');
+    }
+    /* TODO: normalize path after resolving relative to current module */
+    if (!kanso.moduleCache[path]) {
+        var module = {exports: {}};
+        var fn = eval('(function (module, exports, require) {' +
+            kanso.getPropertyPath(kanso.design_doc, path) +
+        '});');
+        /* TODO: create require with current path defined in closure, instead
+         * of passing kanso.require
+         */
+        fn(module, module.exports, kanso.require);
+        kanso.moduleCache[path] = module.exports;
+    }
+    return kanso.moduleCache[path];
+};
+/* make require available globally */
+this['require'] = kanso.require;
+
+
+$.getJSON(kanso.getBaseURL() + '/_designdoc', function (data) {
+    console.log(data); 
+    kanso.design_doc = data;
+    kanso.handle(kanso.design_doc, kanso.getURL());
+});
+
+</script>

@@ -1,0 +1,7 @@
+{
+    "name": "example",
+    "load": "lib/app",
+    "modules": ["lib","kanso.js"],
+    "templates": "templates",
+    "attachments": "static"
+}
