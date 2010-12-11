@@ -88,7 +88,8 @@ exports['find'] = function (test) {
             'dir/.hiddendir/file.html',
             '/home/user/project/file.html',
             '/home/user/project/.file.html',
-            '.example.html.swp'
+            '.example.html.swp',
+            'static/jquery-1.4.2.min.js'
         ]);
     };
     attachments.find('p', function (err, files) {
@@ -97,7 +98,8 @@ exports['find'] = function (test) {
             'two.html',
             'three',
             'dir/subdir/file.html',
-            '/home/user/project/file.html'
+            '/home/user/project/file.html',
+            'static/jquery-1.4.2.min.js'
         ]);
         utils.descendants = _descendants;
         test.done();
