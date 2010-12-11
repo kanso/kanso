@@ -134,6 +134,11 @@ $.getJSON(kanso.getBaseURL() + '/_designdoc', function (data) {
     console.log(data); 
     kanso.design_doc = data;
     kanso.handle(kanso.design_doc, kanso.getURL());
+    $('a').click(function (ev) {
+        ev.preventDefault();
+        var url = $(this).attr('href');
+        kanso.handle(kanso.design_doc, url);
+    });
 });
 
 </script>
