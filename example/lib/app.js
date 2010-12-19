@@ -14,7 +14,10 @@ exports.shows = {
         //log(req);
         var name = (req.query && req.query.name) || 'world';
         if (client) {
-            console.log('_shows/hello: hello ' + name);
+            $('#result').html('hello ' + name);
+            if (name !== 'world') {
+                $('#result').append(' <br/><a href="/">back<a>');
+            }
         }
         else {
             return kanso.template('base.html', {name: name});

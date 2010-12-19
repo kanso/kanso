@@ -129,16 +129,25 @@ kanso.require = function (path) {
 /* make require available globally */
 this['require'] = kanso.require;
 
+kanso.setURL = function (url) {
+    window.history.pushState({}, window.title, kanso.getBaseURL() + url);
+    /* TODO: add hash state support */
+};
 
 $.getJSON(kanso.getBaseURL() + '/_designdoc', function (data) {
     console.log(data); 
     kanso.design_doc = data;
     kanso.handle(kanso.design_doc, kanso.getURL());
-    $('a').click(function (ev) {
-        ev.preventDefault();
+    $('a').live('click', function (ev) {
         var url = $(this).attr('href');
+        /* TODO: test for external / internal urls */
+        ev.preventDefault();
         kanso.handle(kanso.design_doc, url);
+        kanso.setURL(url)
     });
+    window.onpopstate = function (ev) {
+        kanso.handle(kanso.design_doc, kanso.getURL());
+    };
 });
 
 </script>
