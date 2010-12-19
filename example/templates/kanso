@@ -3,7 +3,7 @@
 var kanso = {};
 
 kanso.getBaseURL = function () {
-    var match = /(.*\/_rewrite).*$/.exec(window.location);
+    var match = /(.*\/_rewrite).*$/.exec(window.location.pathname);
     if (match) {
         return match[1];
     }
@@ -11,11 +11,14 @@ kanso.getBaseURL = function () {
 };
 
 kanso.getURL = function () {
-    var match = /\/_rewrite(.*)$/.exec(window.location);
+    if (window.location.hash) {
+        return window.location.hash.substr(1);
+    }
+    var match = /\/_rewrite(.*)$/.exec(window.location.pathname);
     if (match) {
         return match[1] || '/';
     }
-    return window.location.path || '/';
+    return window.location.pathname || '/';
 };
 
 console.log('base url');
@@ -130,8 +133,13 @@ kanso.require = function (path) {
 this['require'] = kanso.require;
 
 kanso.setURL = function (url) {
-    window.history.pushState({}, window.title, kanso.getBaseURL() + url);
-    /* TODO: add hash state support */
+    if (window.history.pushState) {
+        var fullurl  = kanso.getBaseURL() + url;
+        window.history.pushState({}, window.title, fullurl);
+    }
+    else if('hash' in window.location) {
+        window.location.hash = url;
+    }
 };
 
 $.getJSON(kanso.getBaseURL() + '/_designdoc', function (data) {
@@ -146,6 +154,9 @@ $.getJSON(kanso.getBaseURL() + '/_designdoc', function (data) {
         kanso.setURL(url)
     });
     window.onpopstate = function (ev) {
+        kanso.handle(kanso.design_doc, kanso.getURL());
+    };
+    window.onhashchange = function (ev) {
         kanso.handle(kanso.design_doc, kanso.getURL());
     };
 });
