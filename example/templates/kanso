@@ -21,12 +21,6 @@ kanso.getURL = function () {
     return window.location.pathname || '/';
 };
 
-console.log('base url');
-console.log(kanso.getBaseURL());
-
-console.log('url');
-console.log(kanso.getURL());
-
 kanso.rewriteGroups = function (pattern, url) {
     /* TODO: add 'splats' as well as named params */
     var re = new RegExp('^' + pattern.replace(/:\w+/, '([^/]+)') + '$');
@@ -57,34 +51,32 @@ kanso.matchURL = function (design_doc, url) {
 };
 
 kanso.handle = function (design_doc, url) {
-    console.log('handle ' + url);
-    console.log('design_doc');
-    console.log(design_doc);
     var match = kanso.matchURL(design_doc, url);
     if (match) {
-        console.log('rewrite to');
-        console.log(match.to);
         var groups = kanso.rewriteGroups(match.from, url);
-        console.log('groups');
-        console.log(groups);
+        console.log(
+            url + ' -> ' + JSON.stringify(match.to) + ' ' + JSON.stringify(groups)
+        );
         var req = {query: groups};
         if ('_show/' === match.to.slice(0, 6)) {
             var src = design_doc.shows[match.to.slice(6)];
             var fn = eval('(' + src + ')');
             var doc = {};
             var client = true;
-            console.log(fn(doc, req, client));
+            fn(doc, req, client);
         }
         if ('_list/' === match.to.slice(0, 6)) {
             var src = design_doc.lists[match.to.slice(6)];
             var fn = eval('(' + src + ')');
             var head = {};
             var client = true;
-            console.log(fn(head, req, client));
+            fn(head, req, client);
         }
     }
     else {
-        console.log('404');
+        console.log(url);
+        alert('404');
+        /* TODO: render a standard 404 template? */
     }
 };
 
@@ -111,7 +103,6 @@ kanso.getPropertyPath = function (obj, p) {
 };
 
 kanso.require = function (path) {
-    console.log('require ' + path);
     if (!kanso.design_doc) {
         throw new Error('no design doc loaded');
     }
@@ -129,6 +120,7 @@ kanso.require = function (path) {
     }
     return kanso.moduleCache[path];
 };
+
 /* make require available globally */
 this['require'] = kanso.require;
 
@@ -143,7 +135,6 @@ kanso.setURL = function (url) {
 };
 
 $.getJSON(kanso.getBaseURL() + '/_designdoc', function (data) {
-    console.log(data); 
     kanso.design_doc = data;
     kanso.handle(kanso.design_doc, kanso.getURL());
     $('a').live('click', function (ev) {
