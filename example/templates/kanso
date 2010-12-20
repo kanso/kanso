@@ -22,7 +22,7 @@ kanso.getURL = function () {
 };
 
 kanso.rewriteGroups = function (pattern, url) {
-    /* TODO: add 'splats' as well as named params */
+    // TODO: add 'splats' as well as named params
     var re = new RegExp('^' + pattern.replace(/:\w+/, '([^/]+)') + '$');
     var m = re.exec(url);
     if (!m) {
@@ -60,6 +60,7 @@ kanso.handle = function (design_doc, url) {
         var req = {query: groups};
         if ('_show/' === match.to.slice(0, 6)) {
             var src = design_doc.shows[match.to.slice(6)];
+            // TODO: cache the eval'd fn
             var fn = eval('(' + src + ')');
             var doc = {};
             var client = true;
@@ -67,6 +68,7 @@ kanso.handle = function (design_doc, url) {
         }
         if ('_list/' === match.to.slice(0, 6)) {
             var src = design_doc.lists[match.to.slice(6)];
+            // TODO: cache the eval'd fn
             var fn = eval('(' + src + ')');
             var head = {};
             var client = true;
@@ -76,23 +78,23 @@ kanso.handle = function (design_doc, url) {
     else {
         console.log(url);
         alert('404');
-        /* TODO: render a standard 404 template? */
+        // TODO: render a standard 404 template?
     }
 };
 
 kanso.moduleCache = {};
 
 kanso.getPropertyPath = function (obj, p) {
-    /* normalize to remove unessecary . and .. from paths */
-    /* TODO: port this to browser */
-    /* var parts = path.normalize(p).split('/'); */
+    // normalize to remove unessecary . and .. from paths
+    // TODO: port this to browser
+    // var parts = path.normalize(p).split('/');
     var parts = p.split('/');
 
-    /* if path is empty, return the root object */
+    // if path is empty, return the root object
     if (!p) return obj;
 
-    /* loop through all parts of the path, throwing an exception */
-    /* if a property doesn't exist */
+    // loop through all parts of the path, throwing an exception
+    // if a property doesn't exist
     var a = obj;
     for (var i=0; i<parts.length; i++) {
         var x = parts[i];
@@ -106,22 +108,21 @@ kanso.require = function (path) {
     if (!kanso.design_doc) {
         throw new Error('no design doc loaded');
     }
-    /* TODO: normalize path after resolving relative to current module */
+    // TODO: normalize path after resolving relative to current module
     if (!kanso.moduleCache[path]) {
         var module = {exports: {}};
         var fn = eval('(function (module, exports, require) {' +
             kanso.getPropertyPath(kanso.design_doc, path) +
         '});');
-        /* TODO: create require with current path defined in closure, instead
-         * of passing kanso.require
-         */
+        // TODO: create require with current path defined in closure, instead
+        // of passing kanso.require
         fn(module, module.exports, kanso.require);
         kanso.moduleCache[path] = module.exports;
     }
     return kanso.moduleCache[path];
 };
 
-/* make require available globally */
+// make require available globally
 this['require'] = kanso.require;
 
 kanso.setURL = function (url) {
@@ -139,7 +140,7 @@ $.getJSON(kanso.getBaseURL() + '/_designdoc', function (data) {
     kanso.handle(kanso.design_doc, kanso.getURL());
     $('a').live('click', function (ev) {
         var url = $(this).attr('href');
-        /* TODO: test for external / internal urls */
+        // TODO: test for external / internal urls
         ev.preventDefault();
         kanso.handle(kanso.design_doc, url);
         kanso.setURL(url)
