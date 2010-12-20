@@ -1,16 +1,16 @@
 <script type="text/javascript">
 
-var kanso = {};
+var design_doc;
 
-kanso.getBaseURL = function () {
+function getBaseURL() {
     var match = /(.*\/_rewrite).*$/.exec(window.location.pathname);
     if (match) {
         return match[1];
     }
     return '';
-};
+}
 
-kanso.getURL = function () {
+function getURL() {
     if (window.location.hash) {
         return window.location.hash.substr(1);
     }
@@ -19,72 +19,11 @@ kanso.getURL = function () {
         return match[1] || '/';
     }
     return window.location.pathname || '/';
-};
+}
 
-kanso.rewriteGroups = function (pattern, url) {
-    // TODO: add 'splats' as well as named params
-    var re = new RegExp('^' + pattern.replace(/:\w+/, '([^/]+)') + '$');
-    var m = re.exec(url);
-    if (!m) {
-        return [];
-    }
-    var values = m.slice(1);
-    var keys = [];
-    var matches = pattern.match(/:\w+/) || [];
-    for (var i=0; i<matches.length; i++) {
-        keys.push(matches[i].substr(1));
-    };
-    var groups = {};
-    for (var i=0; i<keys.length; i++) {
-        groups[keys[i]] = values[i];
-    };
-    return groups;
-};
+var moduleCache = {};
 
-kanso.matchURL = function (design_doc, url) {
-    var rewrites = design_doc.rewrites;
-    for (var i=0; i<rewrites.length; i++) {
-        var r = rewrites[i];
-        var re = new RegExp('^' + r.from.replace(/:\w+/, '([^/]+)') + '$');
-        if (re.test(url)) return r;
-    }
-};
-
-kanso.handle = function (design_doc, url) {
-    var match = kanso.matchURL(design_doc, url);
-    if (match) {
-        var groups = kanso.rewriteGroups(match.from, url);
-        console.log(
-            url + ' -> ' + JSON.stringify(match.to) + ' ' + JSON.stringify(groups)
-        );
-        var req = {query: groups};
-        if ('_show/' === match.to.slice(0, 6)) {
-            var src = design_doc.shows[match.to.slice(6)];
-            // TODO: cache the eval'd fn
-            var fn = eval('(' + src + ')');
-            var doc = {};
-            var client = true;
-            fn(doc, req, client);
-        }
-        if ('_list/' === match.to.slice(0, 6)) {
-            var src = design_doc.lists[match.to.slice(6)];
-            // TODO: cache the eval'd fn
-            var fn = eval('(' + src + ')');
-            var head = {};
-            var client = true;
-            fn(head, req, client);
-        }
-    }
-    else {
-        console.log(url);
-        alert('404');
-        // TODO: render a standard 404 template?
-    }
-};
-
-kanso.moduleCache = {};
-
-kanso.getPropertyPath = function (obj, p) {
+function getPropertyPath(obj, p) {
     // normalize to remove unessecary . and .. from paths
     // TODO: port this to browser
     // var parts = path.normalize(p).split('/');
@@ -102,54 +41,39 @@ kanso.getPropertyPath = function (obj, p) {
         a = a[x];
     }
     return a;
-};
+}
 
-kanso.require = function (path) {
-    if (!kanso.design_doc) {
+function require(path) {
+    if (!design_doc) {
         throw new Error('no design doc loaded');
     }
     // TODO: normalize path after resolving relative to current module
-    if (!kanso.moduleCache[path]) {
+    if (!moduleCache[path]) {
         var module = {exports: {}};
         var fn = eval('(function (module, exports, require) {' +
-            kanso.getPropertyPath(kanso.design_doc, path) +
+            getPropertyPath(design_doc, path) +
         '});');
         // TODO: create require with current path defined in closure, instead
         // of passing kanso.require
-        fn(module, module.exports, kanso.require);
-        kanso.moduleCache[path] = module.exports;
+        fn(module, module.exports, require);
+        moduleCache[path] = module.exports;
     }
-    return kanso.moduleCache[path];
-};
+    return moduleCache[path];
+}
 
-// make require available globally
-this['require'] = kanso.require;
-
-kanso.setURL = function (url) {
-    if (window.history.pushState) {
-        var fullurl  = kanso.getBaseURL() + url;
-        window.history.pushState({}, window.title, fullurl);
-    }
-    else if('hash' in window.location) {
-        window.location.hash = url;
-    }
-};
-
-$.getJSON(kanso.getBaseURL() + '/_designdoc', function (data) {
-    kanso.design_doc = data;
-    kanso.handle(kanso.design_doc, kanso.getURL());
+$.getJSON(getBaseURL() + '/_designdoc', function (data) {
+    design_doc = data;
+    var kanso = require('kanso');
+    kanso.handle(design_doc, getURL());
     $('a').live('click', function (ev) {
         var url = $(this).attr('href');
         // TODO: test for external / internal urls
         ev.preventDefault();
-        kanso.handle(kanso.design_doc, url);
+        kanso.handle(design_doc, url);
         kanso.setURL(url)
     });
     window.onpopstate = function (ev) {
-        kanso.handle(kanso.design_doc, kanso.getURL());
-    };
-    window.onhashchange = function (ev) {
-        kanso.handle(kanso.design_doc, kanso.getURL());
+        kanso.handle(design_doc, getURL());
     };
 });
 
