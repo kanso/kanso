@@ -1,80 +1,85 @@
 <script type="text/javascript">
+(function () {
 
-var design_doc;
+    var design_doc;
+    var moduleCache = {};
 
-function getBaseURL() {
-    var match = /(.*\/_rewrite).*$/.exec(window.location.pathname);
-    if (match) {
-        return match[1];
+    function getBaseURL() {
+        var match = /(.*\/_rewrite).*$/.exec(window.location.pathname);
+        if (match) {
+            return match[1];
+        }
+        return '';
     }
-    return '';
-}
 
-function getURL() {
-    if (window.location.hash) {
-        return window.location.hash.substr(1);
+    function getURL() {
+        if (window.location.hash) {
+            return window.location.hash.substr(1);
+        }
+        var match = /\/_rewrite(.*)$/.exec(window.location.pathname);
+        if (match) {
+            return match[1] || '/';
+        }
+        return window.location.pathname || '/';
     }
-    var match = /\/_rewrite(.*)$/.exec(window.location.pathname);
-    if (match) {
-        return match[1] || '/';
+
+    function getPropertyPath(obj, p) {
+        // normalize to remove unessecary . and .. from paths
+        // TODO: port this to browser
+        // var parts = path.normalize(p).split('/');
+        var parts = p.split('/');
+
+        // if path is empty, return the root object
+        if (!p) return obj;
+
+        // loop through all parts of the path, throwing an exception
+        // if a property doesn't exist
+        var a = obj;
+        for (var i=0; i<parts.length; i++) {
+            var x = parts[i];
+            if(a[x] === undefined) throw new Error('Invalid path: ' + p);
+            a = a[x];
+        }
+        return a;
     }
-    return window.location.pathname || '/';
-}
 
-var moduleCache = {};
-
-function getPropertyPath(obj, p) {
-    // normalize to remove unessecary . and .. from paths
-    // TODO: port this to browser
-    // var parts = path.normalize(p).split('/');
-    var parts = p.split('/');
-
-    // if path is empty, return the root object
-    if (!p) return obj;
-
-    // loop through all parts of the path, throwing an exception
-    // if a property doesn't exist
-    var a = obj;
-    for (var i=0; i<parts.length; i++) {
-        var x = parts[i];
-        if(a[x] === undefined) throw new Error('Invalid path: ' + p);
-        a = a[x];
+    function require(path) {
+        if (!design_doc) {
+            throw new Error('no design doc loaded');
+        }
+        // TODO: normalize path after resolving relative to current module
+        if (!moduleCache[path]) {
+            var module = {exports: {}};
+            var fn = eval('(function (module, exports, require) {' +
+                getPropertyPath(design_doc, path) +
+            '});');
+            // TODO: create require with current path defined in closure, instead
+            // of passing kanso.require
+            fn(module, module.exports, require);
+            moduleCache[path] = module.exports;
+        }
+        return moduleCache[path];
     }
-    return a;
-}
 
-function require(path) {
-    if (!design_doc) {
-        throw new Error('no design doc loaded');
-    }
-    // TODO: normalize path after resolving relative to current module
-    if (!moduleCache[path]) {
-        var module = {exports: {}};
-        var fn = eval('(function (module, exports, require) {' +
-            getPropertyPath(design_doc, path) +
-        '});');
-        // TODO: create require with current path defined in closure, instead
-        // of passing kanso.require
-        fn(module, module.exports, require);
-        moduleCache[path] = module.exports;
-    }
-    return moduleCache[path];
-}
+    // make require available globally
+    this['require'] = require;
 
-$.getJSON(getBaseURL() + '/_designdoc', function (data) {
-    design_doc = data;
-    var kanso = require('kanso');
-    kanso.handle(design_doc, getURL());
-    $('a').live('click', function (ev) {
-        var url = $(this).attr('href');
-        // TODO: test for external / internal urls
-        ev.preventDefault();
-        kanso.handle(design_doc, url);
-        kanso.setURL(url)
-    });
-    window.onpopstate = function (ev) {
+    // fetch design_doc and handle current URL
+    $.getJSON(getBaseURL() + '/_designdoc', function (data) {
+        design_doc = data;
+        var kanso = require('kanso');
         kanso.handle(design_doc, getURL());
-    };
-});
+        $('a').live('click', function (ev) {
+            var url = $(this).attr('href');
+            // TODO: test for external / internal urls
+            ev.preventDefault();
+            kanso.handle(design_doc, url);
+            kanso.setURL(url)
+        });
+        window.onpopstate = function (ev) {
+            kanso.handle(design_doc, getURL());
+        };
+    });
 
+})();
 </script>
