@@ -42,9 +42,11 @@ exports.handle = function (design_doc, url) {
     var match = exports.matchURL(design_doc, url);
     if (match) {
         var groups = exports.rewriteGroups(match.from, url);
-        console.log(
-            url + ' -> ' + JSON.stringify(match.to) + ' ' + JSON.stringify(groups)
-        );
+
+        var msg = url + ' -> ' + JSON.stringify(match.to);
+        msg += ' ' + JSON.stringify(groups);
+        console.log(msg);
+
         var req = {query: groups};
         if ('_show/' === match.to.slice(0, 6)) {
             var src = design_doc.shows[match.to.slice(6)];
