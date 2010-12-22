@@ -66,7 +66,11 @@ exports['load'] = function (test) {
                 doc.templates,
                 fs.readFileSync(
                     __dirname + '/../deps/dustjs/lib/dust.js'
-                ).toString() + dust.compile('<h1>Test</h1>\n', 'test.html')
+                ).toString() +
+                dust.compile('<h1>Test</h1>\n', 'test.html') +
+                dust.compile(fs.readFileSync(
+                    __dirname + '/../templates/kanso'
+                ).toString(), 'kanso')
             );
             test.equal(
                 doc.no_proxy_function,
