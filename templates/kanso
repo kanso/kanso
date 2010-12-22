@@ -68,6 +68,11 @@
     $.getJSON(getBaseURL() + '/_designdoc', function (data) {
         design_doc = data;
         var kanso = require('kanso');
+        // if using a URL with hash-state, but client supports replaceState, then
+        // switch to replaceState instead.
+        if (window.location.hash && window.history.replaceState) {
+            window.history.replaceState({}, window.title, getBaseURL() + getURL());
+        }
         kanso.handle(design_doc, getURL());
         $('a').live('click', function (ev) {
             var url = $(this).attr('href');
