@@ -11,6 +11,7 @@
         margin: 4.236em;
         font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
         color: #292626;
+        width: 56em;
       }
       h1 {
         line-height: 1em;
@@ -46,6 +47,23 @@
       ul {
         line-height: 2.618em;
       }
+      h2, h3 {
+        margin: 2.618em 0 1.618em 0;
+      }
+      h2 {
+        font-size: 1.618em;
+        font-weight: bold;
+      }
+      h3 {
+        font-size: 1em;
+        font-weight: bold;
+      }
+      pre {
+        border: dashed 1px #D6CDA0;
+        border-left: 0.382em solid #D6CDA0;
+        padding: 1em 2.618em;
+        margin: 0;
+      }
     </style>
   </head> 
   <body> 
@@ -58,5 +76,18 @@
       <li><strong>Searchable and degradable</strong> - add Google-indexable pages and support clients without JavaScript</li>
       <li><strong>Familiar</strong> - all this can be done by using the CouchDB design doc APIs</li>
     </ul>
+    <h2>Getting started</h2>
+    <h3>Installation</h3>
+    <p>
+      Install the most recent <em>stable</em> version of
+      <a href="http://nodejs.org/#download">node</a>, then clone
+      <a href="https://github.com/caolan/kanso">KansoJS</a> from GitHub.
+      Fetch the relevant submodules by doing this in the cloned directory:
+    </p>
+    <pre>git submodule init
+git submodule update</pre>
+    <p>You are then ready to install:</p>
+    <pre>make &amp;&amp; sudo make install</pre>
+    <!--<h3>Starting a project</h3>-->
   </body>
 </html>
