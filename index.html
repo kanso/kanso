@@ -68,15 +68,62 @@
   </head> 
   <body> 
     <h1>Kanso<span>JS</span></h1>
+
     <p>The deceptively simple way to write <a href="http://couchapp.org">CouchApps</a>.</p>
+
     <ul class="features">
       <li><strong>Flexible</strong> - a lightweight CommonJS environment</li>
       <li><strong>Reduced code fragmentation</strong> - by bringing the client-side and server-side together</li>
-      <li><strong>Latest URL support</strong> - supports pushState and hash-based URLs automatically</li>
+      <li><strong>Automatic history support</strong> - uses pushState and hash-based URLs automatically</li>
       <li><strong>Searchable and degradable</strong> - add Google-indexable pages and support clients without JavaScript</li>
       <li><strong>Familiar</strong> - all this can be done by using the CouchDB design doc APIs</li>
     </ul>
+
+    <h2>The idea</h2>
+
+    <h3>Browser and server together</h3>
+    <p>
+      The simple idea behind KansoJS is to add support for the design doc
+      API to the client-side. CouchDB already allows you to respond to requests
+      dynamically using list and show functions. Now, you can add client-side code
+      too, so you can make additional requests and perform more complex
+      operations in the browser.  CouchDB itself can then run the basic
+      parts of these functions as a fall-back for search-engines or browsers
+      without JavaScript enabled.
+    </p>
+    <p>
+      This means the redirects you define for list and show functions also
+      fire in the browser, allowing for automatic URL handling using pushState or
+      location.hash. It also means you get the relevant view or document for a URL
+      automatically fetched for your client-side code, leaving you to worry about
+      what to do with it!
+    <p>
+
+    <h3>CommonJS</h3>
+    <p>
+      Writing your JavaScript in
+      <a href="http://wiki.commonjs.org/wiki/Modules">CommonJS modules</a> is much
+      nicer than loading separate files which all modify the global scope. You may
+      already know that you can now use CommonJS modules in your CouchDB list,
+      show, validation and other functions. This makes it an ideal style to use
+      throughout your application.
+    </p>
+    <p>
+      One problem with CouchApps is the reliance on structuring your data on the
+      filesystem as you would like it to appear in the design doc. This means a
+      complex hierarchy of folders and files to represent properties in a JSON
+      document. It would be much better if you could represent this information in
+      whichever way suits the project. By loading the design doc data from a
+      module, its up to you how to structure it on the filesystem.
+    </p>
+    <p>
+      Instead of relying on CouchApp macros to include code from other files (by
+      using special comments in your code), you can do it more cleanly using
+      the CommonJS 'require' function.
+    </p>
+
     <h2>Getting started</h2>
+
     <h3>Installation</h3>
     <p>
       Install the most recent <em>stable</em> version of
@@ -88,6 +135,5 @@
 git submodule update</pre>
     <p>You are then ready to install:</p>
     <pre>make &amp;&amp; sudo make install</pre>
-    <!--<h3>Starting a project</h3>-->
   </body>
 </html>
