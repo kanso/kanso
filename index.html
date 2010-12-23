@@ -6,12 +6,14 @@
     <link  href="//fonts.googleapis.com/css?family=Ubuntu:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css" >
     <style>
       body {
+        line-height: 1.618em;
         font-size: 12px;
         margin: 4.236em;
         font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
         color: #292626;
       }
       h1 {
+        line-height: 1em;
         font-family: 'Ubuntu', serif;
         font-size: 4.236em;
         font-weight: normal;
@@ -28,7 +30,6 @@
         margin-left: 0.146em;
       }
       p {
-        line-height: 1.618em;
         margin: 2.618em 0;
         padding: 0;
       }
@@ -42,10 +43,20 @@
         background-color: #96896F;
         color: white;
       }
+      ul {
+        line-height: 2.618em;
+      }
     </style>
   </head> 
   <body> 
     <h1>Kanso<span>JS</span></h1>
-    <p>The <a href="http://couchapp.org">CouchApp</a> development framework.</p>
+    <p>The deceptively simple way to write <a href="http://couchapp.org">CouchApps</a>.</p>
+    <ul class="features">
+      <li><strong>Flexible</strong> - a lightweight CommonJS environment</li>
+      <li><strong>Reduced code fragmentation</strong> - by bringing the client-side and server-side together</li>
+      <li><strong>Latest URL support</strong> - supports pushState and hash-based URLs automatically</li>
+      <li><strong>Searchable and degradable</strong> - add Google-indexable pages and support clients without JavaScript</li>
+      <li><strong>Familiar</strong> - all this can be done by using the CouchDB design doc APIs</li>
+    </ul>
   </body>
 </html>
