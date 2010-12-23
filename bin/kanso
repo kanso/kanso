@@ -12,43 +12,53 @@ function usage() {
     console.log('Available commands:');
     console.log('  push    Upload a project to a CouchDB instance');
     console.log('  show    Load a project and output resulting JSON');
-};
+}
 
 if (!args.length) {
     usage();
 }
 else {
     switch (args[0]) {
-        case 'show':
-            var dir = args[2] || '.';
-            settings.load(dir, function (err, settings) {
-                if (err) return console.error(err.message || err);
-                kanso.load(dir, settings, function (err, doc) {
-                    if (err) return console.error(err.message || err);
-                    console.log(JSON.stringify(doc, null, 4));
-                });
-            });
-            break;
-        case 'push':
-            if (!args[1]) {
-                return console.error('No CouchDB URL specified');
+    case 'show':
+        var dir = args[2] || '.';
+        settings.load(dir, function (err, settings) {
+            if (err) {
+                return console.error(err.message || err);
             }
-            var dir = args[2] || '.';
-            settings.load(dir, function (err, settings) {
-                if (err) return console.error(err.message || err);
-                kanso.load(dir, settings, function (err, doc) {
-                    var db = couchdb(args[1]);
-                    db.ensureDB(function (err) {
-                        if (err) return console.error(err.message || err);
-                        var id = '_design/' + settings.name;
-                        db.save(id, doc, {force: true}, function (err) {
-                            if (err) return console.error(err.message || err);
-                        });
+            kanso.load(dir, settings, function (err, doc) {
+                if (err) {
+                    return console.error(err.message || err);
+                }
+                console.log(JSON.stringify(doc, null, 4));
+            });
+        });
+        break;
+    case 'push':
+        if (!args[1]) {
+            return console.error('No CouchDB URL specified');
+        }
+        var dir = args[2] || '.';
+        settings.load(dir, function (err, settings) {
+            if (err) {
+                return console.error(err.message || err);
+            }
+            kanso.load(dir, settings, function (err, doc) {
+                var db = couchdb(args[1]);
+                db.ensureDB(function (err) {
+                    if (err) {
+                        return console.error(err.message || err);
+                    }
+                    var id = '_design/' + settings.name;
+                    db.save(id, doc, {force: true}, function (err) {
+                        if (err) {
+                            return console.error(err.message || err);
+                        }
                     });
                 });
             });
-            break;
-        default:
-            usage();
+        });
+        break;
+    default:
+        usage();
     }
 }

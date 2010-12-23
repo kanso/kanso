@@ -1,10 +1,13 @@
+/*global window: true */
 var templates = require('templates');
 
 exports.template = function (name, context) {
     var r = '';
     templates.render(name, context, function (err, result) {
-      if (err) throw err;
-      r = result;
+        if (err) {
+            throw err;
+        }
+        r = result;
     });
     return r;
 };
@@ -19,22 +22,24 @@ exports.rewriteGroups = function (pattern, url) {
     var values = m.slice(1);
     var keys = [];
     var matches = pattern.match(/:\w+/) || [];
-    for (var i=0; i<matches.length; i++) {
+    for (var i = 0; i < matches.length; i += 1) {
         keys.push(matches[i].substr(1));
-    };
+    }
     var groups = {};
-    for (var i=0; i<keys.length; i++) {
-        groups[keys[i]] = values[i];
-    };
+    for (var j = 0; j < keys.length; j += 1) {
+        groups[keys[j]] = values[j];
+    }
     return groups;
 };
 
 exports.matchURL = function (design_doc, url) {
     var rewrites = design_doc.rewrites;
-    for (var i=0; i<rewrites.length; i++) {
+    for (var i = 0; i < rewrites.length; i += 1) {
         var r = rewrites[i];
         var re = new RegExp('^' + r.from.replace(/:\w+/, '([^/]+)') + '$');
-        if (re.test(url)) return r;
+        if (re.test(url)) {
+            return r;
+        }
     }
 };
 
@@ -48,20 +53,20 @@ exports.handle = function (design_doc, url) {
         console.log(msg);
 
         var req = {query: groups};
+        var src, fn, client = true;
+
         if ('_show/' === match.to.slice(0, 6)) {
-            var src = design_doc.shows[match.to.slice(6)];
+            src = design_doc.shows[match.to.slice(6)];
             // TODO: cache the eval'd fn
-            var fn = eval('(' + src + ')');
+            fn = eval('(' + src + ')');
             var doc = {};
-            var client = true;
             fn(doc, req, client);
         }
-        if ('_list/' === match.to.slice(0, 6)) {
-            var src = design_doc.lists[match.to.slice(6)];
+        else if ('_list/' === match.to.slice(0, 6)) {
+            src = design_doc.lists[match.to.slice(6)];
             // TODO: cache the eval'd fn
-            var fn = eval('(' + src + ')');
+            fn = eval('(' + src + ')');
             var head = {};
-            var client = true;
             fn(head, req, client);
         }
     }
@@ -77,13 +82,14 @@ exports.setURL = function (url) {
         var fullurl  = exports.getBaseURL() + url;
         window.history.pushState({}, window.title, fullurl);
     }
-    else if('hash' in window.location) {
+    else if ('hash' in window.location) {
         window.location.hash = url;
     }
 };
 
 exports.getBaseURL = function () {
-    var match = /(.*\/_rewrite).*$/.exec(window.location.pathname);
+    var re = new RegExp('(.*\\/_rewrite).*$');
+    var match = re.exec(window.location.pathname);
     if (match) {
         return match[1];
     }
@@ -94,7 +100,8 @@ exports.getURL = function () {
     if (window.location.hash) {
         return window.location.hash.substr(1);
     }
-    var match = /\/_rewrite(.*)$/.exec(window.location.pathname);
+    var re = new RegExp('\\/_rewrite(.*)$');
+    var match = re.exec(window.location.pathname);
     if (match) {
         return match[1] || '/';
     }
