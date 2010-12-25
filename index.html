@@ -79,6 +79,14 @@
       <li><strong>Familiar</strong> - all this can be done by using the CouchDB design doc APIs</li>
     </ul>
 
+    <p>
+      CouchApps are JavaScript and HTML based apps served directly
+      from CouchDB. This means a super-simple stack and portable apps that can be
+      shared and deployed using CouchDB's builtin replication.
+      If you're not familiar with CouchApps, I highly recommend reading
+      <a href="http://couchapp.org/page/what-is-couchapp">What in the HTTP is a CouchApp?</a>.
+    </p>
+
     <h2>The idea</h2>
 
     <h3>Browser and server together</h3>
@@ -97,7 +105,7 @@
         $('#main').html(result);
     }
     else {
-        // return a complete rendered page
+        // fallback, returns a complete rendered page
         return kanso.template('base', {main: result});
     }
 };</pre>
@@ -118,14 +126,6 @@
       show, validation and other functions. This makes it an ideal style to use
       throughout your application.
     </p>
-    <p>
-      One problem with CouchApps is the reliance on structuring your data on the
-      filesystem as you would like it to appear in the design doc. This means a
-      complex hierarchy of folders and files to represent properties in a JSON
-      document. It would be much better if you could represent this information in
-      whichever way suits the project. By loading the design doc data from a
-      module, its up to you how to structure it on the filesystem.
-    </p>
     <pre>var kanso = require('kanso');
 
 exports.rewrites = [
@@ -137,6 +137,14 @@ exports.shows = {
         ...
     }
 };</pre>
+    <p>
+      One problem with CouchApps is the reliance on structuring your data on the
+      filesystem as you would like it to appear in the design doc. This means a
+      complex hierarchy of folders and files to represent properties in a JSON
+      document. It would be much better if you could represent this information in
+      whichever way suits the project. By loading the design doc data from a
+      module, its up to you how to structure it on the filesystem.
+    </p>
     <p>
       Instead of relying on CouchApp macros to include code from other files (by
       using special comments in your code), you can do it more cleanly using
