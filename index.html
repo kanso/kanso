@@ -73,8 +73,8 @@
 
     <ul class="features">
       <li><strong>Flexible</strong> - a lightweight CommonJS environment</li>
-      <li><strong>Reduced code fragmentation</strong> - by bringing the client-side and server-side together</li>
-      <li><strong>Automatic history support</strong> - uses pushState and hash-based URLs automatically</li>
+      <li><strong>Reduces code fragmentation</strong> - by bringing the client-side and server-side together</li>
+      <li><strong>Automatic history support</strong> - adds pushState and hash-based URLs automatically</li>
       <li><strong>Searchable and degradable</strong> - add Google-indexable pages and support clients without JavaScript</li>
       <li><strong>Familiar</strong> - all this can be done by using the CouchDB design doc APIs</li>
     </ul>
@@ -91,6 +91,16 @@
       parts of these functions as a fall-back for search-engines or browsers
       without JavaScript enabled.
     </p>
+    <pre>function example_show(doc, req, client) {
+    if (client) {
+        // being run client-side, update the current page
+        $('#main').html(result);
+    }
+    else {
+        // return a complete rendered page
+        return kanso.template('base', {main: result});
+    }
+};</pre>
     <p>
       This means the redirects you define for list and show functions also
       fire in the browser, allowing for automatic URL handling using pushState or
@@ -116,6 +126,17 @@
       whichever way suits the project. By loading the design doc data from a
       module, its up to you how to structure it on the filesystem.
     </p>
+    <pre>var kanso = require('kanso');
+
+exports.rewrites = [
+    {from: '/:id', to: '_shows/example/:id'}
+];
+
+exports.shows = {
+    example: function (doc, req, client) {
+        ...
+    }
+};</pre>
     <p>
       Instead of relying on CouchApp macros to include code from other files (by
       using special comments in your code), you can do it more cleanly using
