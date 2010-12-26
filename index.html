@@ -4,6 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
     <title>KansoJS</title> 
     <link  href="//fonts.googleapis.com/css?family=Ubuntu:regular,italic,bold,bolditalic" rel="stylesheet" type="text/css" >
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
     <style>
       body {
         line-height: 1.618em;
@@ -64,6 +65,9 @@
         padding: 1em 2.618em;
         margin: 0;
       }
+      code {
+        background-color: white !important;
+      }
     </style>
   </head> 
   <body> 
@@ -99,7 +103,7 @@
       parts of these functions as a fall-back for search-engines or browsers
       without JavaScript enabled.
     </p>
-    <pre>function example_show(doc, req, client) {
+    <pre><code class="javascript">function example_show(doc, req, client) {
     if (client) {
         // being run client-side, update the current page
         $('#main').html(result);
@@ -108,7 +112,7 @@
         // fallback, returns a complete rendered page
         return kanso.template('base', {main: result});
     }
-};</pre>
+};</code></pre>
     <p>
       This means the redirects you define for list and show functions also
       fire in the browser, allowing for automatic URL handling using pushState or
@@ -126,7 +130,7 @@
       show, validation and other functions. This makes it an ideal style to use
       throughout your application.
     </p>
-    <pre>var kanso = require('kanso');
+    <pre><code class="javascript">var kanso = require('kanso');
 
 exports.rewrites = [
     {from: '/:id', to: '_shows/example/:id'}
@@ -136,7 +140,7 @@ exports.shows = {
     example: function (doc, req, client) {
         ...
     }
-};</pre>
+};</code></pre>
     <p>
       One problem with CouchApps is the reliance on structuring your data on the
       filesystem as you would like it to appear in the design doc. This means a
@@ -199,5 +203,79 @@ git submodule update</pre>
       for now, this can be fixed later using
       <a href="http://wiki.apache.org/couchdb/Virtual_Hosts">virtual hosts</a>.
     </p>
+
+    <h3>kanso.json</h3>
+    <p>
+      Let's take a look at the kanso.json file first. This file contains the
+      settings for the app, and tells kanso which files and directories to load
+      and how to load them.
+    </p>
+    <pre><code class="javascript">{
+    "name": "bookstore",          // the name of the app
+    "load": "app",                // the module to get design doc properties from
+    "modules": ["lib","app.js"],  // files and directories to load as commonjs modules
+    "templates": "templates",     // templates directory
+    "attachments": "static"       // files and directories to load as attachments
+}</code></pre>
+    <p>
+      The name determines the id of the design doc, in this case it would be
+      _design/bookstore. You may also notice that the modules and attachments
+      properties accept either a single string or an array of strings as their
+      values. Currently, only one templates folder is supported, although its
+      possible to use subdirectories below that.
+    </p>
+    <p>
+      Perhaps the most important part is the 'load' property. This tells kanso
+      which module to require and use for the design doc. This means any exported
+      values in this module will be used in the resulting design doc.
+    </p>
+
+    <h3>app.js</h3>
+    <p>
+      This file contains some exported properties which are used in the resulting
+      design doc, this is where the action happens and you get to define the
+      behaviour of your app:
+    </p>
+    <pre><code class="javascript">var kanso = require('kanso');
+
+
+exports.rewrites = [
+    {from: '/', to: '_show/welcome'}
+];
+
+exports.shows = {
+    welcome: function (doc, req, client) {
+        return kanso.template('welcome.html');
+    }
+};</code></pre>
+    <p>
+      You'll notice the the skeleton project we generated comes with a rewrite
+      already setup. This rewrites the root url to a show function called 'welcome'.
+      The welcome function then shows the welcome template (the page you've already
+      seen after pushing the app).
+    </p>
+    <p>
+      There are a couple of interesting things here. Firstly, we've required a
+      'kanso' module which doesn't exist in our project directory. This is a special
+      module which is always present in your apps, and added automatically by kanso
+      itself.
+    </p>
+    <p>
+      Secondly, we're actually using the context of the module inside the
+      welcome function. With a normal CouchApp these functions are just converted
+      to strings and inserted into the design doc, but kanso will try to proxy the
+      function using a require call (remember I said CouchDB supports CommonJS?).
+      This means we have access to the normal scope of the surrounding code,
+      allowing us to use the kanso module we required at the top of the module
+      inside the welcome function.
+    </p>
+    <p>
+      <strong>Note:</strong> The one important exception to this is view functions,
+      CouchDB views do not support CommonJS modules in the same way and must be
+      self contained.
+    </p>
+
+    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
   </body>
 </html>
