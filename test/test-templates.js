@@ -26,22 +26,8 @@ exports['load'] = function (test) {
 
 exports['load multiple dirs'] = function (test) {
     var doc = {settings: {templates: ['lib','deps']}};
-    var find_calls = [];
-    var _find = templates.find;
-    templates.find = function (p, cb) {
-        find_calls.push(p);
-        cb(null, ['file']);
-    };
-    var _addFiles = templates.addFiles;
-    templates.addFiles = function (dir, files, doc, cb) {
-        test.same(files, ['file','file']);
-        cb();
-    };
     templates.load('dir', doc, function (err) {
-        test.ifError(err);
-        test.same(find_calls, ['dir/lib','dir/deps']);
-        templates.find = _find;
-        templates.addFiles = _addFiles;
+        test.ok(err instanceof Error);
         test.done();
     });
 };
