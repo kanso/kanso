@@ -275,6 +275,41 @@ exports.shows = {
       self contained.
     </p>
 
+    <h3>templates/base.html</h3>
+    <p>
+      Kanso uses <a href="http://akdubya.github.com/dustjs/#about">Dust</a>
+      templates. These templates look similar to <a href="http://mustache.github.com">Mustache</a>, but provide some
+      powerful additions such as filters, path lookups, blocks and better 
+      partials support. Dust templates can also be pre-compiled, meaning your
+      templates are compiled when you 'kanso push', not each time a page is
+      rendered.
+    </p>
+    <p>
+      <a href="http://akdubya.github.com/dustjs">Learn more about the dust syntax</a>
+    </p>
+    <pre><code class="html">&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"&gt; 
+  &lt;head&gt; 
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt; 
+    &lt;title&gt;{+title/}&lt;/title&gt; 
+    {&gt;kanso/}
+  &lt;/head&gt; 
+  &lt;body&gt; 
+    {+content/}
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    <p>
+      Here you can see two types of dust tag. The tags in the format {+...} define
+      a block. Blocks are placeholders which other templates can later fill in. You'll see
+      the 'title' and 'content' blocks filled in when we look at the welcome.html template.
+    </p>
+    <p>
+      The other tag type {&gt;...} is a partial. The 'kanso' partial is similar to
+      the kanso module we required earlier, it is automatically added
+      and not part of the project's files. The 'kanso' partial sets
+      up the client-side code and handles the current URL, it should be included
+      in every html response from the server.
+    </p>
+
     <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
   </body>
