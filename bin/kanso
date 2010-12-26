@@ -58,6 +58,14 @@ else {
             });
         });
         break;
+    case 'create':
+        var dir = args[1];
+        kanso.create(dir, function (err) {
+            if (err) {
+                return console.error(err.message || err);
+            }
+        });
+        break;
     default:
         usage();
     }

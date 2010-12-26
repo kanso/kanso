@@ -225,3 +225,10 @@ exports['stringifyFunctions'] = function (test) {
     test.equals(stringified.h.length, 3);
     test.done();
 };
+
+exports['rmTrailingSlash'] = function (test) {
+    test.equal(utils.rmTrailingSlash('/some/path/'), '/some/path');
+    test.equal(utils.rmTrailingSlash('/some/path'), '/some/path');
+    test.equal(utils.rmTrailingSlash('/'), '/');
+    test.done();
+};

@@ -18,7 +18,7 @@ build: stamp-build
 stamp-build: $(wildcard  deps/* lib/*.js)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
-	cp -R bin deps templates commonjs lib $(BUILDDIR)/kanso
+	cp -R bin deps project templates commonjs lib $(BUILDDIR)/kanso
 	printf '#!/bin/sh\n$(NODEJS) $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $$@' > $(BUILDDIR)/kanso.sh
 
 test:

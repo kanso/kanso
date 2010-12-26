@@ -164,5 +164,41 @@ exports.shows = {
 git submodule update</pre>
     <p>You are then ready to install:</p>
     <pre>make &amp;&amp; sudo make install</pre>
+
+    <h3>Starting a project</h3>
+    <p>
+      For this tutorial we'll be creating a basic app that displays books by
+      author. First, change to the location you wish to create the project directory
+      in, then start a new project by doing:
+    </p>
+    <pre>kanso create bookstore</pre>
+    <p>
+      This will create a new directory called 'bookstore' containing a project
+      skeleton to get you started. The contents of this directory should look
+      something like the following:
+    </p>
+    <pre>bookstore
+  |- lib                        commonjs modules relevant to the app
+  |- static                     static files to be attached to design doc
+  |- templates                  templates used by the app
+     |- base.html
+     |- welcome.html
+  |- app.js                     the module loaded as a design doc
+  |- kanso.json                 kanso settings
+    </pre>
+    <p>
+      Before exploring these files in more detail, lets push the app to a couchdb
+      database and check that everything works. For this tutorial, I'll assume you
+      have a local couchdb database running at localhost:5984 (the default settings).
+    </p>
+    <pre>kanso push http://localhost:5984/bookstore</pre>
+    <p>
+      If you now visit
+      <a href="http://localhost:5984/bookstore/_design/bookstore/_rewrite/">http://localhost:5984/bookstore/_design/bookstore/_rewrite/</a>
+      you should see a basic welcome page. Don't worry about the long and ugly URL
+      for now, this can be fixed later using
+      <a href="http://wiki.apache.org/couchdb/Virtual_Hosts">virtual hosts</a>
+      in CouchDB.
+    </p>
   </body>
 </html>

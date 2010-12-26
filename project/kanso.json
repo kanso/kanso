@@ -1,0 +1,7 @@
+{
+    "name": "$NAME",
+    "load": "app",
+    "modules": ["lib","app.js"],
+    "templates": "templates",
+    "attachments": "static"
+}
