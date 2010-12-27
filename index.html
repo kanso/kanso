@@ -86,7 +86,7 @@
     <p>
       CouchApps are JavaScript and HTML based apps served directly
       from CouchDB. This means a super-simple stack and portable apps that can be
-      shared and deployed using CouchDB's builtin replication.
+      shared and deployed using CouchDB's built-in replication.
       If you're not familiar with CouchApps, I highly recommend reading
       <a href="http://couchapp.org/page/what-is-couchapp">What in the HTTP is a CouchApp?</a>.
     </p>
@@ -95,13 +95,16 @@
 
     <h3>Browser and server together</h3>
     <p>
-      The simple idea behind KansoJS is to add support for the design doc
-      API to the client-side. CouchDB already allows you to respond to requests
-      dynamically using list and show functions. Now, you can add client-side code
-      too, so you can make additional requests and perform more complex
-      operations in the browser.  CouchDB itself can then run the basic
-      parts of these functions as a fall-back for search-engines or browsers
-      without JavaScript enabled.
+      The simple idea behind Kanso is support the design doc API in the browser.
+    </p>
+    <p>
+      CouchDB already allows dynamic responses using list and show functions.
+      Now, you can add client-side code too. That means you're able to fetch more
+      documents or perform other complex operations from the browser.
+      CouchDB itself can then run the basic parts as a fall-back for search engines
+      or browsers without JavaScript. The rewrites you define will fire in the
+      browser too, allowing for automatic URL handling using pushState or
+      location.hash.
     </p>
     <pre><code class="javascript">function example_show(doc, req, client) {
     if (client) {
@@ -113,13 +116,16 @@
         return kanso.template('base', {main: result});
     }
 };</code></pre>
+    <p><strong>STOP</strong>... and just think about that for a moment.</p>
     <p>
-      This means the redirects you define for list and show functions also
-      fire in the browser, allowing for automatic URL handling using pushState or
-      location.hash. It also means you get the relevant view or document for a URL
-      automatically fetched for your client-side code, leaving you to worry about
-      what to do with it!
-    <p>
+      OK, it probably seems a pretty obvious thing to do, you might even consider it
+      messy, but just think about all the things I'm <strong>not</strong> having
+      to write. I'm not having to set up Sammy.js on the client side with URL rewrite
+      rules that match CouchDB. I'm not having to fetch the correct document for
+      that URL in the browser before I'm able to template the current page.
+      I'm also not having to maintain two sets of code, one for the browser and
+      another for CouchDB.
+    </p>
 
     <h3>CommonJS</h3>
     <p>
@@ -161,7 +167,7 @@ exports.shows = {
     <p>
       Install the most recent <em>stable</em> version of
       <a href="http://nodejs.org/#download">node</a>, then clone
-      <a href="https://github.com/caolan/kanso">KansoJS</a> from GitHub.
+      <a href="https://github.com/caolan/kanso">Kanso</a> from GitHub.
       Fetch the relevant submodules by doing this in the cloned directory:
     </p>
     <pre>git submodule init
