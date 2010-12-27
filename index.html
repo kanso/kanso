@@ -309,6 +309,12 @@ exports.shows = {
       up the client-side code and handles the current URL, it should be included
       in every html response from the server.
     </p>
+    <p>
+      If you're familiar with Mustache templates, one important difference to notice
+      is that these tags must be closed, as you would with HTML tags. That means
+      doing {+block}...{/block} for example. Tags can also be self-closing, like
+      HTML tags: {+block/}.
+    </p>
 
     <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
