@@ -316,6 +316,23 @@ exports.shows = {
       HTML tags: {+block/}.
     </p>
 
+    <h3>templates/welcome.html</h3>
+    <pre><code class="no-highlight">{&gt;"base.html"/}
+
+{&lt;title}It worked!{/title}
+
+{&lt;content}
+
+&lt;h1&gt;It worked!&lt;/h1&gt;
+&lt;p&gt;Welcome to your new Kanso-powered app.&lt;p&gt;
+
+{/content}</code></pre>
+
+    <p>
+      This renders the 'base.html' template, overriding the title and content
+      blocks. Being able to compose templates like this can be very useful.
+    </p>
+
     <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
   </body>
