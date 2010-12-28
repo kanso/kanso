@@ -66,28 +66,34 @@
         return a;
     };
 
-    exports.require = function (path) {
-        if (!exports.design_doc) {
-            throw new Error('no design doc loaded');
-        }
-        // TODO: normalize path after resolving relative to current module
-        if (!exports.moduleCache[path]) {
-            var module = {exports: {}};
-            var fn = eval('(function (module, exports, require) {' +
-                exports.getPropertyPath(exports.design_doc, path) +
-            '});');
-            // TODO: create require with current path defined in closure,
-            // instead of passing kanso.require
-            fn(module, module.exports, exports.require);
-            exports.moduleCache[path] = module.exports;
-        }
-        return exports.moduleCache[path];
+    exports.createRequire = function (current) {
+        return function (target) {
+            if (!exports.design_doc) {
+                throw new Error('no design doc loaded');
+            }
+            var path;
+            if (target.charAt(0) === '.') {
+                path = exports.normalizePath(current + '/' + target);
+            }
+            else {
+                path = exports.normalizePath(target);
+            }
+            if (!exports.moduleCache[path]) {
+                var module = {exports: {}};
+                var fn = eval('(function (module, exports, require) {' +
+                    exports.getPropertyPath(exports.design_doc, path) +
+                '});');
+                fn(module, module.exports, exports.createRequire(path));
+                exports.moduleCache[path] = module.exports;
+            }
+            return exports.moduleCache[path];
+        };
     };
 
     if (typeof require === 'undefined') {
         // make require available globally, unless already in a commonjs
         // environment
-        this.require = exports.require;
+        this.require = exports.createRequire('');
     }
 
     exports.init = function () {
@@ -96,7 +102,7 @@
             exports.design_doc = data;
 
             // load the rest of the kanso module
-            var kanso = exports.require('kanso');
+            var kanso = require('kanso');
             for (var k in kanso) {
                 if (kanso.hasOwnProperty(k)) {
                     exports[k] = kanso[k];
