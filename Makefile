@@ -36,6 +36,6 @@ clean:
 	rm -rf $(BUILDDIR) stamp-build
 
 lint:
-	nodelint --config nodelint.cfg ./bin/kanso ./commonjs/kanso.js ./lib/*.js
+	nodelint --config nodelint.cfg ./bin/kanso ./commonjs/kanso.js ./lib/*.js ./templates/bootstrap.js
 
 .PHONY: test install uninstall build all
