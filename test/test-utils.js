@@ -33,11 +33,13 @@ exports['getPropertyPath'] = function (test) {
         some: {
             example: {path: 'val'},
             other: {path: 'val2'}
-        }
+        },
+        example: 'val3'
     };
     test.equals(utils.getPropertyPath(obj, 'test'), 'test');
     test.equals(utils.getPropertyPath(obj, 'some/example/path'), 'val');
     test.same(utils.getPropertyPath(obj, 'some/other'), {path: 'val2'});
+    test.equals(utils.getPropertyPath(obj, './some/.././example'), 'val3');
     test.same(utils.getPropertyPath(obj, ''), obj);
     test.done();
 };

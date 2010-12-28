@@ -30,11 +30,23 @@
         return window.location.pathname || '/';
     };
 
+    exports.normalizePath = function (p) {
+        var path = [];
+        var parts = p.split('/');
+        for (var i = 0; i < parts.length; i += 1) {
+            if (parts[i] === '..') {
+                path.pop();
+            }
+            else if (parts[i] !== '.') {
+                path.push(parts[i]);
+            }
+        }
+        return path.join('/');
+    };
+
     exports.getPropertyPath = function (obj, p) {
         // normalize to remove unessecary . and .. from paths
-        // TODO: port this to browser
-        // var parts = path.normalize(p).split('/');
-        var parts = p.split('/');
+        var parts = exports.normalizePath(p).split('/');
 
         // if path is empty, return the root object
         if (!p) {
@@ -64,8 +76,8 @@
             var fn = eval('(function (module, exports, require) {' +
                 exports.getPropertyPath(exports.design_doc, path) +
             '});');
-            // TODO: create require with current path defined in closure, instead
-            // of passing kanso.require
+            // TODO: create require with current path defined in closure,
+            // instead of passing kanso.require
             fn(module, module.exports, exports.require);
             exports.moduleCache[path] = module.exports;
         }
@@ -73,7 +85,8 @@
     };
 
     if (typeof require === 'undefined') {
-        // make require available globally, unless already in a commonjs environment
+        // make require available globally, unless already in a commonjs
+        // environment
         this.require = exports.require;
     }
 

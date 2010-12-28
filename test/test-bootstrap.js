@@ -60,3 +60,20 @@ exports['getURL hash priority over pathname'] = function (test) {
     );
     test.done();
 };
+
+exports['getPropertyPath'] = function (test) {
+    var obj = {
+        test: 'test',
+        some: {
+            example: {path: 'val'},
+            other: {path: 'val2'}
+        },
+        example: 'val3'
+    };
+    test.equals(bootstrap.getPropertyPath(obj, 'test'), 'test');
+    test.equals(bootstrap.getPropertyPath(obj, 'some/example/path'), 'val');
+    test.same(bootstrap.getPropertyPath(obj, 'some/other'), {path: 'val2'});
+    test.equals(bootstrap.getPropertyPath(obj, './some/.././example'), 'val3');
+    test.same(bootstrap.getPropertyPath(obj, ''), obj);
+    test.done();
+};
