@@ -52,22 +52,22 @@ exports.handle = function (design_doc, url) {
         msg += ' ' + JSON.stringify(groups);
         console.log(msg);
 
-        var req = {query: groups};
-        var src, fn, client = true;
+        var req = {query: groups, client: true};
+        var src, fn;
 
         if ('_show/' === match.to.slice(0, 6)) {
             src = design_doc.shows[match.to.slice(6)];
             // TODO: cache the eval'd fn
             fn = eval('(' + src + ')');
             var doc = {};
-            fn(doc, req, client);
+            fn(doc, req);
         }
         else if ('_list/' === match.to.slice(0, 6)) {
             src = design_doc.lists[match.to.slice(6)];
             // TODO: cache the eval'd fn
             fn = eval('(' + src + ')');
             var head = {};
-            fn(head, req, client);
+            fn(head, req);
         }
     }
     else {

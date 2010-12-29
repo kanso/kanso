@@ -108,8 +108,8 @@
       browser too, allowing for automatic URL handling using pushState or
       location.hash.
     </p>
-    <pre><code class="javascript">function example_show(doc, req, client) {
-    if (client) {
+    <pre><code class="javascript">function example_show(doc, req) {
+    if (req.client) {
         // being run client-side, update the current page
         $('#main').html(result);
     }
@@ -145,7 +145,7 @@ exports.rewrites = [
 ];
 
 exports.shows = {
-    example: function (doc, req, client) {
+    example: function (doc, req) {
         ...
     }
 };</code></pre>
@@ -252,7 +252,7 @@ exports.rewrites = [
 ];
 
 exports.shows = {
-    welcome: function (doc, req, client) {
+    welcome: function (doc, req) {
         return kanso.template('welcome.html');
     }
 };</code></pre>

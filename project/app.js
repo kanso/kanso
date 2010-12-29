@@ -6,7 +6,7 @@ exports.rewrites = [
 ];
 
 exports.shows = {
-    welcome: function (doc, req, client) {
+    welcome: function (doc, req) {
         return kanso.template('welcome.html');
     }
 };
