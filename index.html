@@ -379,7 +379,7 @@ exports.shows = {
         map: function (doc) {
             if (doc.type === 'book') {
                 for (var i = 0; i &lt; doc.authors.length; i++) {
-                    emit(doc.authors[i], doc._id);
+                    emit(doc.authors[i], {title: doc.title});
                 }
             }
         }
