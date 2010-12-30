@@ -386,7 +386,7 @@ exports.shows = {
     }
 };</code></pre>
     <p>
-      This can be split into seperate files at any point and included using
+      This can be split into separate files at any point and included using
       require(), but for now we're going to keep everything in app.js.
     </p>
     <p>Let's push the app again to update it:</p>
@@ -394,6 +394,35 @@ exports.shows = {
     <p>
       You can now see the results at
       <a href="http://localhost:5984/bookstore/_design/bookstore/_view/books_by_author">http://localhost:5984/bookstore/_design/bookstore/_view/books_by_author</a>.
+    </p>
+
+    <h3>Adding lists and rewrites</h3>
+    <p>
+      Now we have a working view, lets setup a list function to replace the
+      default welcome page. Add the following to app.js:
+    </p>
+    <pre><code class="javascript">exports.lists = {
+    authors: function (head, req) {
+        start({"headers": {"Content-Type": "text/html"} });
+        var row;
+        var html = '&lt;ul&gt;'
+        while (row = getRow()) {
+            html += '&lt;li&gt;' + row.key + '&lt;/li&gt;';
+        }
+        html += '&lt;/ul&gt;';
+        return html;
+    }
+};</code></pre>
+    <p>
+      Now, update the rewrite rules so the root URL points to the new list
+      function instead of the welcome page:
+    </p>
+    <pre><code class="javascript">exports.rewrites = [
+    {from: '/', to: '_list/authors/books_by_author'}
+];</code></pre>
+    <p>
+      Push the app again, then open 
+      <a href="http://localhost:5984/bookstore/_design/bookstore/_rewrite/">http://localhost:5984/bookstore/_design/bookstore/_rewrite/</a>.
     </p>
 
     <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
