@@ -341,6 +341,61 @@ exports.shows = {
       blocks. Being able to compose templates like this can be very useful.
     </p>
 
+    <h2>The Bookstore</h2>
+    <p>
+      OK, now we've explored a skeleton Kanso project, let's start building our
+      own web app on top of it. Open Futon and view the bookstore database at
+      <a href="http://localhost:5984/_utils/database.html?bookstore">http://localhost:5984/_utils/database.html?bookstore</a>.
+      You should have already created this when we pushed the new project to
+      localhost in the 'Getting started' section above.
+    </p>
+    <p>Add the following documents:</p>
+    <pre><code type="javascript">{
+  "type": "book",
+  "authors": ["J. Chris Anderson","Jan Lehnardt","Noah Slater"],
+  "title": "CouchDB: The Definitive Guide"
+}
+
+{
+  "type": "book",
+  "authors": ["D Crockford"],
+  "title": "JavaScript: The Good Parts"
+}
+
+{
+  "type": "book",
+  "authors": ["Joe Armstrong"],
+  "title": "Programming Erlang: Software for a Concurrent World"
+}</code></pre>
+
+    <h3>Creating views</h3>
+    <p>
+      Now we have some data to play with, lets create a view to list books
+      by author. For this, we'll need to edit the app.js file to include the
+      following:
+    <p>
+<pre><code type="javascript">exports.views = {
+    books_by_author: {
+        map: function (doc) {
+            if (doc.type === 'book') {
+                for (var i = 0; i &lt; doc.authors.length; i++) {
+                    emit(doc.authors[i], doc._id);
+                }
+            }
+        }
+    }
+};</code></pre>
+    <p>
+      This can be split into seperate files at any point and included using
+      require(), but for now we're going to keep everything in app.js.
+    </p>
+    <p>Let's push the app again to update it:</p>
+    <pre>kanso push http://localhost:5984/bookstore</pre>
+    <p>
+      You can now see the results at
+      <a href="http://localhost:5984/bookstore/_design/bookstore/_view/books_by_author">http://localhost:5984/bookstore/_design/bookstore/_view/books_by_author</a>.
+    </p>
+
     <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
   </body>
