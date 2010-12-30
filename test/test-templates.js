@@ -68,6 +68,7 @@ exports['find'] = function (test) {
     var _descendants = utils.descendants;
     utils.descendants = function (p, callback) {
         return callback(null, [
+            'dir/.swp',
             '.one.html',
             'two.html',
             'three',
