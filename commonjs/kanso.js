@@ -1,7 +1,15 @@
 /*global window: true */
 var templates = require('templates');
 
-exports.template = function (name, context) {
+exports.requestBaseURL = function (req) {
+    if (req.headers['x-couchdb-vhost-path']) {
+        return '';
+    }
+    return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
+};
+
+exports.template = function (req, name, context) {
+    context.baseURL = exports.requestBaseURL(req);
     var r = '';
     templates.render(name, context, function (err, result) {
         if (err) {

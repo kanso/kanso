@@ -20,7 +20,7 @@ exports.shows = {
             }
         }
         else {
-            return kanso.template('base.html', {name: name});
+            return kanso.template(req, 'base.html', {name: name});
         }
     }
 };
