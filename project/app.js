@@ -8,6 +8,16 @@ exports.rewrites = [
 
 exports.shows = {
     welcome: function (doc, req) {
-        return kanso.template(req, 'welcome.html', {});
+        var content = kanso.template(req, 'welcome.html', {});
+
+        if (req.client) {
+            $('#content').html(content);
+        }
+        else {
+            return kanso.template(req, 'base.html', {
+                title: 'It worked!',
+                content: content
+            });
+        }
     }
 };

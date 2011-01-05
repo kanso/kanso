@@ -2,10 +2,12 @@
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"> 
   <head> 
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /> 
-    <title>{+title/}</title> 
+    <title>{title}</title> 
   </head> 
   <body> 
-    {+content/}
+    <div id="content">
+      {content|s}
+    </div>
     <script src="{baseURL}/static/jquery-1.4.2.min.js"></script>
     <script src="{baseURL}/kanso.js"></script>
   </body>
