@@ -82,6 +82,12 @@ exports['load'] = function (test) {
                     ).toString('base64')
                 }
             });
+            test.same(doc.rewrites, [
+                {from: '/kanso.js', to: 'kanso.js'},
+                {from: '/_db/*', to: '../../*'},
+                {from: '/_designdoc', to: './'},
+                {from: '/', to: '_show/testshow'}
+            ]);
             test.done();
         });
     });

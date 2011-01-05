@@ -1,5 +1,9 @@
 exports.testproperty = "test property";
 
+exports.rewrites = [
+    {from: '/', to: '_show/testshow'}
+];
+
 exports.shows = {
     testshow: function (doc, req) {
         return "test";
