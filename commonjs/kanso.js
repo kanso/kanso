@@ -91,9 +91,10 @@ exports.setURL = function (url) {
         var fullurl  = exports.getBaseURL() + url;
         window.history.pushState({}, window.title, fullurl);
     }
-    else if ('hash' in window.location) {
+    // this is now set *before* handling as it trigger an onhashchange event
+    /*else if ('hash' in window.location) {
         window.location.hash = url;
-    }
+    }*/
 };
 
 exports.getBaseURL = function () {

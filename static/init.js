@@ -111,13 +111,27 @@
                 var url = exports.appPath($(this).attr('href'));
                 // TODO: test for external / internal urls
                 ev.preventDefault();
-                exports.handle(exports.design_doc, url);
-                exports.setURL(url);
+
+                // changing the hash triggers onhashchange, which then fires
+                // exports.handle for us
+                if (window.onhashchange) {
+                    window.location.hash = url;
+                }
+                else {
+                    exports.handle(exports.design_doc, url);
+                    exports.setURL(url);
+                }
             });
 
-            window.onpopstate = function (ev) {
+            var _handle = function (ev) {
                 exports.handle(exports.design_doc, exports.getURL());
             };
+            if ('onpopstate' in window) {
+                window.onpopstate = _handle;
+            }
+            else {
+                window.onhashchange = _handle;
+            }
         });
     };
 
