@@ -96,6 +96,18 @@
         this.require = exports.createRequire('');
     }
 
+    /**
+     * Converts {baseURL}/some/path to /some/path
+     */
+
+    exports.appPath = function (p) {
+        var base = exports.getBaseURL();
+        if (p.slice(0, base.length) === base) {
+            return p.slice(base.length);
+        }
+        return p;
+    };
+
     exports.init = function () {
         // fetch design_doc and handle current URL
         $.getJSON(exports.getBaseURL() + '/_designdoc', function (data) {
@@ -120,7 +132,7 @@
             exports.handle(exports.design_doc, exports.getURL());
 
             $('a').live('click', function (ev) {
-                var url = $(this).attr('href');
+                var url = exports.appPath($(this).attr('href'));
                 // TODO: test for external / internal urls
                 ev.preventDefault();
                 exports.handle(exports.design_doc, url);
