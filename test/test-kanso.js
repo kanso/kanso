@@ -75,7 +75,7 @@ exports['load'] = function (test) {
                     'content-type': 'text/plain',
                     'data': 'dGVzdCBkYXRhCg=='
                 },
-                'kanso/init.js': {
+                'kanso.js': {
                     'content-type': 'application/javascript',
                     'data': fs.readFileSync(
                         __dirname + '/../static/init.js'
