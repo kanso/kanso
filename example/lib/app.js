@@ -4,6 +4,7 @@ var kanso = require('kanso');
 exports.rewrites = [
     {from: '/', to: '_show/hello'},
     {from: '/static/*', to: 'static/*'},
+    {from: '/_kanso/*', to: 'kanso/*'},
     {from: '/_db/*', to: '../../*'},
     {from: '/_designdoc', to: './'},
     {from: '/:name', to: '_show/hello'}

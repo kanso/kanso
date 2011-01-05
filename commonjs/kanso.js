@@ -1,6 +1,7 @@
 /*global window: true */
 var templates = require('templates');
 
+
 exports.requestBaseURL = function (req) {
     if (req.headers['x-couchdb-vhost-path']) {
         return '';
@@ -114,4 +115,16 @@ exports.getURL = function () {
         return match[1] || '/';
     }
     return window.location.pathname || '/';
+};
+
+/**
+ * Converts {baseURL}/some/path to /some/path
+ */
+
+exports.appPath = function (p) {
+    var base = exports.getBaseURL();
+    if (p.slice(0, base.length) === base) {
+        return p.slice(base.length);
+    }
+    return p;
 };

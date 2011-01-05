@@ -7,8 +7,6 @@
 
 (function (exports) {
 
-    exports.moduleCache = {};
-
     exports.getBaseURL = function () {
         var re = new RegExp('(.*\\/_rewrite).*$');
         var match = re.exec(window.location.pathname);
@@ -18,17 +16,7 @@
         return '';
     };
 
-    exports.getURL = function () {
-        if (window.location.hash) {
-            return window.location.hash.substr(1);
-        }
-        var re = new RegExp('\\/_rewrite(.*)$');
-        var match = re.exec(window.location.pathname);
-        if (match) {
-            return match[1] || '/';
-        }
-        return window.location.pathname || '/';
-    };
+    exports.moduleCache = {};
 
     exports.normalizePath = function (p) {
         var path = [];
@@ -96,18 +84,6 @@
         this.require = exports.createRequire('');
     }
 
-    /**
-     * Converts {baseURL}/some/path to /some/path
-     */
-
-    exports.appPath = function (p) {
-        var base = exports.getBaseURL();
-        if (p.slice(0, base.length) === base) {
-            return p.slice(base.length);
-        }
-        return p;
-    };
-
     exports.init = function () {
         // fetch design_doc and handle current URL
         $.getJSON(exports.getBaseURL() + '/_designdoc', function (data) {
@@ -144,5 +120,10 @@
             };
         });
     };
+
+    // run init function if in the browser
+    if (typeof module === 'undefined') {
+        exports.init();
+    }
 
 }((typeof exports === 'undefined') ? this.kanso = {}: module.exports));

@@ -63,22 +63,6 @@ exports['load'] = function (test) {
                 'module2': 'exports.name = "module two";\n'
             });
             test.equal(
-                doc.templates,
-                fs.readFileSync(
-                    __dirname + '/../deps/dustjs/lib/dust.js'
-                ).toString() +
-                dust.compile('<h1>Test</h1>\n', 'test.html') +
-                dust.compile(
-                    '<script type="text/javascript">' +
-                        fs.readFileSync(
-                            __dirname + '/../templates/bootstrap.js'
-                        ).toString() +
-                        'kanso.init();' +
-                    '</script>',
-                    'kanso'
-                )
-            );
-            test.equal(
                 doc.no_proxy_function,
                 'function (){return "test";}'
             );
@@ -90,6 +74,12 @@ exports['load'] = function (test) {
                 'static/test.txt': {
                     'content-type': 'text/plain',
                     'data': 'dGVzdCBkYXRhCg=='
+                },
+                'kanso/init.js': {
+                    'content-type': 'application/javascript',
+                    'data': fs.readFileSync(
+                        __dirname + '/../static/init.js'
+                    ).toString('base64')
                 }
             });
             test.done();

@@ -1,10 +1,18 @@
-var bootstrap = require('../templates/bootstrap');
+var modules = require('../lib/modules'),
+    fs = require('fs');
+
+var context = {window: {}};
+
+var kanso = modules.require({}, {
+    'kanso': fs.readFileSync(__dirname + '/../commonjs/kanso.js').toString(),
+    'templates': '// templates module'
+}, '/', 'kanso', context);
 
 
 exports['getBaseURL'] = function (test) {
     var testpath = function (p) {
-        global.window = {location: {pathname: p}};
-        return bootstrap.getBaseURL();
+        context.window.location = {pathname: p};
+        return kanso.getBaseURL();
     };
     test.equal(testpath('/'), '');
     test.equal(testpath('/some/path'), '');
@@ -21,8 +29,8 @@ exports['getBaseURL'] = function (test) {
 
 exports['getURL using pathname'] = function (test) {
     var testpath = function (p) {
-        global.window = {location: {pathname: p}};
-        return bootstrap.getURL();
+        context.window.location = {pathname: p};
+        return kanso.getURL();
     };
     test.equal(testpath('/'), '/');
     test.equal(testpath('/some/path'), '/some/path');
@@ -33,8 +41,8 @@ exports['getURL using pathname'] = function (test) {
 
 exports['getURL using hash'] = function (test) {
     var testpath = function (p, h) {
-        global.window = {location: {pathname: p, hash: h}};
-        return bootstrap.getURL();
+        context.window.location = {pathname: p, hash: h};
+        return kanso.getURL();
     };
     test.equal(testpath('/', '#/'), '/');
     test.equal(testpath('/', '#/some/path'), '/some/path');
@@ -48,8 +56,8 @@ exports['getURL using hash'] = function (test) {
 
 exports['getURL hash priority over pathname'] = function (test) {
     var testpath = function (p, h) {
-        global.window = {location: {pathname: p, hash: h}};
-        return bootstrap.getURL();
+        context.window.location = {pathname: p, hash: h};
+        return kanso.getURL();
     };
     test.equal(testpath('/other/path', '#/'), '/');
     test.equal(testpath('/other/path', '#/some/path'), '/some/path');
@@ -58,22 +66,5 @@ exports['getURL hash priority over pathname'] = function (test) {
         testpath('/db/_design/doc/_rewrite/other/path','#/some/path'),
         '/some/path'
     );
-    test.done();
-};
-
-exports['getPropertyPath'] = function (test) {
-    var obj = {
-        test: 'test',
-        some: {
-            example: {path: 'val'},
-            other: {path: 'val2'}
-        },
-        example: 'val3'
-    };
-    test.equals(bootstrap.getPropertyPath(obj, 'test'), 'test');
-    test.equals(bootstrap.getPropertyPath(obj, 'some/example/path'), 'val');
-    test.same(bootstrap.getPropertyPath(obj, 'some/other'), {path: 'val2'});
-    test.equals(bootstrap.getPropertyPath(obj, './some/.././example'), 'val3');
-    test.same(bootstrap.getPropertyPath(obj, ''), obj);
     test.done();
 };
