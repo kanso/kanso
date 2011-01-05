@@ -115,7 +115,7 @@
     }
     else {
         // fallback, returns a complete rendered page
-        return kanso.template('base', {main: result});
+        return kanso.template(req, 'base.html', {main: result});
     }
 };</code></pre>
     <p><strong>STOP</strong>... and just think about that for a moment.</p>
@@ -253,7 +253,7 @@ exports.rewrites = [
 
 exports.shows = {
     welcome: function (doc, req) {
-        return kanso.template('welcome.html');
+        return kanso.template(req, 'welcome.html', {});
     }
 };</code></pre>
     <p>
