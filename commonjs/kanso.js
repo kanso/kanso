@@ -61,7 +61,13 @@ exports.handle = function (design_doc, url) {
         msg += ' ' + JSON.stringify(groups);
         console.log(msg);
 
-        var req = {query: groups, client: true};
+        var req = {
+            query: groups,
+            headers: {},
+            client: true,
+            path: url.split('/')
+        };
+
         var src, fn;
 
         if ('_show/' === match.to.slice(0, 6)) {
