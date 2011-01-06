@@ -156,11 +156,15 @@ exports.handle = function (design_doc, url) {
         var parts = match.to.split('/');
         var src, fn, name;
 
-        if (parts[0] === '_show/') {
+        if (parts[0] === '_show') {
             exports.runShow(design_doc, req, parts[1], parts[2]);
         }
-        else if (parts[1] === '_list/') {
+        else if (parts[0] === '_list') {
             exports.runList(design_doc, req, parts[1], parts[2]);
+        }
+        else {
+            // TODO: decide what happens here
+            alert('Unknown rewrite target: ' + match.to);
         }
     }
     else {
