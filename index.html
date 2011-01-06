@@ -421,13 +421,25 @@ exports.shows = {
     <pre><code class="javascript">exports.lists = {
     authors: function (head, req) {
         start({"headers": {"Content-Type": "text/html"} });
-        var row;
-        var html = '&lt;ul&gt;'
+
+        var row, rows = [];
         while (row = getRow()) {
-            html += '&lt;li&gt;' + row.key + '&lt;/li&gt;';
+            rows.push(row);
         }
-        html += '&lt;/ul&gt;';
-        return html;
+        var content = kanso.template(req, 'authors.html', {
+            rows: rows
+        });
+
+        if (req.client) {
+            $('#content').html(content);
+            document.title = 'Authors';
+        }
+        else {
+            return kanso.template(req, 'base.html', {
+                title: 'Authors',
+                content: content
+            });
+        }
     }
 };</code></pre>
     <p>
@@ -437,6 +449,12 @@ exports.shows = {
     <pre><code class="javascript">exports.rewrites = [
     {from: '/', to: '_list/authors/books_by_author'}
 ];</code></pre>
+    <p>Next, lets add the 'authors.html' template to the templates folder:</p>
+    <pre><code class="html">&lt;ul&gt;
+    {#rows}
+        &lt;li&gt;{key}&lt;/li&gt;
+    {/rows}
+&lt;/ul&gt;</code></pre>
     <p>
       Push the app again, then open 
       <a href="http://localhost:5984/bookstore/_design/bookstore/_rewrite/">http://localhost:5984/bookstore/_design/bookstore/_rewrite/</a>.
