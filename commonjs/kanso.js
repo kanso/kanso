@@ -80,11 +80,24 @@ exports.matchURL = function (design_doc, url) {
  * eg: "/:name" with groups {name: 'test'} -> "/test"
  */
 
-exports.replaceGroups = function (str, groups) {
-    for (var k in groups) {
-        str = str.replace(':' + k, groups[k]);
+exports.replaceGroups = function (val, groups) {
+    if (typeof val === 'string') {
+        for (var k in groups) {
+            if (val === ':' + k) {
+                val = decodeURIComponent(groups[k]);
+            }
+        }
     }
-    return str;
+    else if (val.length) {
+        for (var k in groups) {
+            for (var i = 0; i < val.length; i += 1) {
+                if (val[i] === ':' + k) {
+                    val[i] = decodeURIComponent(groups[k]);
+                }
+            }
+        }
+    }
+    return val;
 };
 
 exports.createRequest = function (url, match) {
@@ -101,16 +114,30 @@ exports.createRequest = function (url, match) {
     if (groups) {
         for (k in groups) {
             if (groups.hasOwnProperty(k)) {
-                query[k] = groups[k];
+                query[k] = decodeURIComponent(groups[k]);
             }
         }
     }
-    return {
+    var req = {
         query: query,
         headers: {},
         client: true,
         path: url.split('/')
     };
+    return req;
+};
+
+exports.stringifyQuery = function (query) {
+    var q = {};
+    for (var k in query) {
+        if (typeof query[k] !== 'string') {
+            q[k] = JSON.stringify(query[k]);
+        }
+        else {
+            q[k] = query[k];
+        }
+    }
+    return q;
 };
 
 /**
@@ -141,8 +168,13 @@ exports.runShow = function (design_doc, req, name, docid, callback) {
     var fn = eval('(' + src + ')');
     if (docid) {
         // TODO: handle errors!
-        $.getJSON(exports.getBaseURL() + '/_db/' + docid, function (doc) {
-            catchErr(fn, [doc, req], callback);
+        $.ajax({
+            url: exports.getBaseURL() + '/_db/' + docid,
+            dataType: 'json',
+            data: exports.stringifyQuery(req.query),
+            success: function (doc) {
+                catchErr(fn, [doc, req], callback);
+            }
         });
     }
     else {
@@ -160,14 +192,19 @@ exports.runList = function (design_doc, req, name, view, callback) {
         var url = exports.getBaseURL() + '/_db/_design/' +
                   kanso.name + '/_view/' + view;
         // TODO: handle errors!
-        $.getJSON(url, function (data) {
-            getRow = function () {
-                return data.rows.shift();
-            };
-            catchErr(fn, [head, req], callback);
-            getRow = function () {
-                return null;
-            };
+        $.ajax({
+            url: url,
+            dataType: 'json',
+            data: exports.stringifyQuery(req.query),
+            success: function (data) {
+                getRow = function () {
+                    return data.rows.shift();
+                };
+                catchErr(fn, [head, req], callback);
+                getRow = function () {
+                    return null;
+                };
+            }
         });
     }
     // TODO: check if it should throw here
