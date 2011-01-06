@@ -2,6 +2,19 @@
 var templates = require('templates');
 
 
+// create global functions
+if (typeof getRow === 'undefined') {
+    this.getRow = function () {
+        return null;
+    };
+}
+if (typeof start === 'undefined') {
+    this.start = function (options) {
+        console.log('start: ' + JSON.stringify(options));
+    };
+}
+
+
 exports.requestBaseURL = function (req) {
     if (req.headers['x-couchdb-vhost-path']) {
         return '';
@@ -52,37 +65,102 @@ exports.matchURL = function (design_doc, url) {
     }
 };
 
+exports.createRequest = function (url, match) {
+    var groups = exports.rewriteGroups(match.from, url);
+    return {
+        query: groups,
+        headers: {},
+        client: true,
+        path: url.split('/')
+    };
+};
+
+/**
+ * if callback is present catch errors and pass to callback, otherwise
+ * re-throw errors.
+ */
+function catchErr(fn, args, callback) {
+    try {
+        var result = fn.apply(null, args);
+        if (callback) {
+            callback(null, result);
+        }
+    }
+    catch (e) {
+        if (callback) {
+            callback(e);
+        }
+        else {
+            throw e;
+        }
+    }
+}
+
+exports.runShow = function (design_doc, req, name, docid, callback) {
+    var result;
+    var src = design_doc.shows[name];
+    // TODO: cache the eval'd fn
+    var fn = eval('(' + src + ')');
+    if (docid) {
+        // TODO: handle errors!
+        $.getJSON(exports.getBaseURL() + '/_db/' + docid, function (doc) {
+            catchErr(fn, [doc, req], callback);
+        });
+    }
+    else {
+        catchErr(fn, [null, req], callback);
+    }
+};
+
+exports.runList = function (design_doc, req, name, view, callback) {
+    var src = design_doc.lists[name];
+    // TODO: cache the eval'd fn
+    var fn = eval('(' + src + ')');
+    // TODO: implement proper lists api!
+    var head = {};
+    if (view) {
+        var url = exports.getBaseURL() + '/_db/_design/' +
+                  kanso.name + '/_view/' + view
+        // TODO: handle errors!
+        $.getJSON(url, function (data) {
+            getRow = function () {
+                return data.rows.shift();
+            };
+            catchErr(fn, [head, req], callback);
+            getRow = function () {
+                return null;
+            };
+        });
+    }
+    // TODO: check if it should throw here
+    else {
+        var e = new Error('no view specified');
+        if (callback) {
+            callback(e);
+        }
+        else {
+            throw e;
+        }
+    }
+};
+
 exports.handle = function (design_doc, url) {
     var match = exports.matchURL(design_doc, url);
     if (match) {
-        var groups = exports.rewriteGroups(match.from, url);
+        var req = exports.createRequest(url, match);;
 
         var msg = url + ' -> ' + JSON.stringify(match.to);
-        msg += ' ' + JSON.stringify(groups);
+        msg += ' ' + JSON.stringify(req.query);
         console.log(msg);
 
-        var req = {
-            query: groups,
-            headers: {},
-            client: true,
-            path: url.split('/')
-        };
+        var parts = match.to.split('/');
+        var src, fn, parts, name;
 
-        var src, fn;
-
-        if ('_show/' === match.to.slice(0, 6)) {
-            src = design_doc.shows[match.to.slice(6)];
-            // TODO: cache the eval'd fn
-            fn = eval('(' + src + ')');
-            var doc = {};
-            fn(doc, req);
+        if (parts[0] === '_show/') {
+            exports.runShow(design_doc, req, parts[1], parts[2]);
         }
-        else if ('_list/' === match.to.slice(0, 6)) {
-            src = design_doc.lists[match.to.slice(6)];
-            // TODO: cache the eval'd fn
-            fn = eval('(' + src + ')');
-            var head = {};
-            fn(head, req);
+        else if (parts[1] === '_list/') {
+            exports.runList(design_doc, req, parts[1], parts[2]);
         }
     }
     else {

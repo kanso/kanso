@@ -12,6 +12,7 @@ exports.shows = {
 
         if (req.client) {
             $('#content').html(content);
+            document.title = 'It worked!';
         }
         else {
             return kanso.template(req, 'base.html', {

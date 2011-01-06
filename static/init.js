@@ -88,6 +88,7 @@
         // fetch design_doc and handle current URL
         $.getJSON(exports.getBaseURL() + '/_designdoc', function (data) {
             exports.design_doc = data;
+            exports.name = exports.design_doc.settings.name;
 
             // load the rest of the kanso module
             var kanso = require('kanso');
