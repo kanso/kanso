@@ -1,4 +1,4 @@
-/*global window: true */
+/*global window: true, getRow: true, start: true, $: true, kanso: true */
 var templates = require('templates');
 
 
@@ -120,7 +120,7 @@ exports.runList = function (design_doc, req, name, view, callback) {
     var head = {};
     if (view) {
         var url = exports.getBaseURL() + '/_db/_design/' +
-                  kanso.name + '/_view/' + view
+                  kanso.name + '/_view/' + view;
         // TODO: handle errors!
         $.getJSON(url, function (data) {
             getRow = function () {
@@ -147,14 +147,14 @@ exports.runList = function (design_doc, req, name, view, callback) {
 exports.handle = function (design_doc, url) {
     var match = exports.matchURL(design_doc, url);
     if (match) {
-        var req = exports.createRequest(url, match);;
+        var req = exports.createRequest(url, match);
 
         var msg = url + ' -> ' + JSON.stringify(match.to);
         msg += ' ' + JSON.stringify(req.query);
         console.log(msg);
 
         var parts = match.to.split('/');
-        var src, fn, parts, name;
+        var src, fn, name;
 
         if (parts[0] === '_show/') {
             exports.runShow(design_doc, req, parts[1], parts[2]);
