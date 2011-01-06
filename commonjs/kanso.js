@@ -65,10 +65,38 @@ exports.matchURL = function (design_doc, url) {
     }
 };
 
+/**
+ * replace group names in a string with the value of that group
+ * eg: "/:name" with groups {name: 'test'} -> "/test"
+ */
+
+exports.replaceGroups = function (str, groups) {
+    for (var k in groups) {
+        str = str.replace(':' + k, groups[k]);
+    }
+    return str;
+};
+
 exports.createRequest = function (url, match) {
     var groups = exports.rewriteGroups(match.from, url);
+    var query = {};
+    var k;
+    if (match.query) {
+        for (k in match.query) {
+            if (match.query.hasOwnProperty(k)) {
+                query[k] = exports.replaceGroups(match.query[k], groups);
+            }
+        }
+    }
+    if (groups) {
+        for (k in groups) {
+            if (groups.hasOwnProperty(k)) {
+                query[k] = groups[k];
+            }
+        }
+    }
     return {
-        query: groups,
+        query: query,
         headers: {},
         client: true,
         path: url.split('/')
