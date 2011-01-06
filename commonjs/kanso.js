@@ -2,6 +2,11 @@
 var templates = require('templates');
 
 
+var isBrowser = false;
+if (typeof window !== 'undefined') {
+    isBrowser = true;
+}
+
 // create global functions
 if (typeof getRow === 'undefined') {
     this.getRow = function () {
@@ -23,7 +28,12 @@ exports.requestBaseURL = function (req) {
 };
 
 exports.template = function (req, name, context) {
-    context.baseURL = exports.requestBaseURL(req);
+    if (isBrowser) {
+        context.baseURL = exports.getBaseURL(req);
+    }
+    else {
+        context.baseURL = exports.requestBaseURL(req);
+    }
     var r = '';
     templates.render(name, context, function (err, result) {
         if (err) {
