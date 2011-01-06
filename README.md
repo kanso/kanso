@@ -1,6 +1,6 @@
 # KansoJS
 
-The deceptively simple way to write [CouchApps](http://couchapp.org).
+The surprisingly simple way to write [CouchApps](http://couchapp.org).
 
 * __Flexible__ - a lightweight CommonJS environment
 * __Reduces code fragmentation__ - by bringing the client-side and server-side together

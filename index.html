@@ -73,9 +73,7 @@
   <body> 
     <h1>Kanso<span>JS</span></h1>
 
-    <a href="http://github.com/caolan/kanso"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://assets2.github.com/img/7afbc8b248c68eb468279e8c17986ad46549fb71?repo=&url=http%3A%2F%2Fs3.amazonaws.com%2Fgithub%2Fribbons%2Fforkme_right_darkblue_121621.png&path=" alt="Fork me on GitHub"></a>
-
-    <p>The deceptively simple way to write <a href="http://couchapp.org">CouchApps</a>.</p>
+    <p>The surprisingly simple way to write <a href="http://couchapp.org">CouchApps</a>.</p>
 
     <ul class="features">
       <li><strong>Flexible</strong> - a lightweight CommonJS environment</li>
@@ -97,16 +95,24 @@
 
     <h3>Browser and server together</h3>
     <p>
-      The simple idea behind Kanso is support the design doc API in the browser.
+      I hate writing everything twice in order to have fast and dynamic
+      sites which also provide fallbacks. Its annoying to copy around URL
+      maps so that JavaScript can manipulate browser history sensibly.
+      Its really annoying to have to implement validation twice, usually
+      in two different languages.
+    </p>
+    <p>
+      The simple idea behind Kanso is to support the design doc API in the
+      browser.
     </p>
     <p>
       CouchDB already allows dynamic responses using list and show functions.
-      Now, you can add client-side code too. That means you're able to fetch more
-      documents or perform other complex operations from the browser.
-      CouchDB itself can then run the basic parts as a fall-back for search engines
-      or browsers without JavaScript. The rewrites you define will fire in the
-      browser too, allowing for automatic URL handling using pushState or
-      location.hash.
+      Now, you can add client-side code too. That means you're able to fetch
+      additional documents or perform other complex operations from the
+      browser. CouchDB itself can then run the basic parts as a fall-back for
+      search engines or browsers without JavaScript. The rewrites you define
+      will fire in the browser too, allowing for automatic URL handling using
+      pushState or location.hash.
     </p>
     <pre><code class="javascript">function example_show(doc, req) {
     if (req.client) {
@@ -120,23 +126,22 @@
 };</code></pre>
     <p><strong>STOP</strong>... and just think about that for a moment.</p>
     <p>
-      OK, it probably seems a pretty obvious thing to do, you might even consider it
-      messy, but just think about all the things I'm <strong>not</strong> having
-      to write. I'm not having to set up Sammy.js on the client side with URL rewrite
-      rules that match CouchDB. I'm not having to fetch the correct document for
-      that URL in the browser before I'm able to template the current page.
-      I'm also not having to maintain two sets of code, one for the browser and
-      another for CouchDB.
+      Think about all the things I'm <strong>not</strong> having to write.
+      I'm not having to set up Sammy.js on the client side with URL rewrite
+      rules that match CouchDB. I'm not having to fetch the document
+      for that URL before I'm able to template the page. I'm
+      also not having to maintain two completely different sets of code,
+      one for the browser and another for CouchDB.
     </p>
 
     <h3>CommonJS</h3>
     <p>
       Writing your JavaScript in
-      <a href="http://wiki.commonjs.org/wiki/Modules">CommonJS modules</a> is much
-      nicer than loading separate files which all modify the global scope. You may
-      already know that you can now use CommonJS modules in your CouchDB list,
-      show, validation and other functions. This makes it an ideal style to use
-      throughout your application.
+      <a href="http://wiki.commonjs.org/wiki/Modules">CommonJS modules</a> is
+      much nicer than loading separate files which all modify the global
+      scope. You may already know that you can use CommonJS modules in
+      your CouchDB list, show, validation and other functions. This makes it
+      an ideal style to use throughout your application.
     </p>
     <pre><code class="javascript">var kanso = require('kanso');
 
@@ -202,6 +207,7 @@ git submodule update</pre>
       Before exploring these files in more detail, lets push the app to a couchdb
       database and check that everything works. For this tutorial, I'll assume you
       have a local couchdb database running at localhost:5984 (the default settings).
+      In your project directory, do the following:
     </p>
     <pre>kanso push http://localhost:5984/bookstore</pre>
     <p>
@@ -227,15 +233,15 @@ git submodule update</pre>
 }</code></pre>
     <p>
       The name determines the id of the design doc, in this case it would be
-      _design/bookstore. You may also notice that the modules and attachments
-      properties accept either a single string or an array of strings as their
+      "_design/bookstore". You may also notice that the modules and attachments
+      properties accept either a string or an array of strings as their
       values. Currently, only one templates folder is supported, although its
       possible to use subdirectories below that.
     </p>
     <p>
       Perhaps the most important part is the 'load' property. This tells kanso
-      which module to require and use for the design doc. This means any exported
-      values in this module will be used in the resulting design doc.
+      which module to require and use for the design doc. This means any
+      exported values in this module will be used in the resulting design doc.
     </p>
 
     <h3>app.js</h3>
@@ -248,97 +254,108 @@ git submodule update</pre>
 
 
 exports.rewrites = [
+    {from: '/static/*', to: 'static/jquery-1.4.2.min.js'},
     {from: '/', to: '_show/welcome'}
 ];
 
 exports.shows = {
     welcome: function (doc, req) {
-        return kanso.template(req, 'welcome.html', {});
+        var content = kanso.template(req, 'welcome.html', {});
+
+        if (req.client) {
+            $('#content').html(content);
+            document.title = 'It worked!';
+        }
+        else {
+            return kanso.template(req, 'base.html', {
+                title: 'It worked!',
+                content: content
+            });
+        }
     }
 };</code></pre>
     <p>
-      You'll notice the skeleton project we generated comes with a rewrite
-      already setup. This rewrites the root url to a show function called 'welcome'.
-      The welcome function then shows the welcome template (the page you've already
-      seen after pushing the app).
+      You'll notice the skeleton project we generated comes with some rewrites
+      already set up. The first exposes the static directory, the second
+      rewrites the root url to a show function called 'welcome'. The welcome
+      function then shows the welcome template (the page you've already
+      seen after pushing the app). If this function is run client-side,
+      it replaces the contents of the current page with the welcome message,
+      otherwise it returns a new page.
     </p>
     <p>
       There are a couple of interesting things here. Firstly, we've required a
-      'kanso' module which doesn't exist in our project directory. This is a special
-      module which is always present in your apps, and added automatically by kanso
-      itself.
+      'kanso' module which doesn't exist in our project directory. This is a
+      special module which is always present in your apps, and added
+      automatically by kanso itself. The kanso module provides access to core
+      components such as templating.
     </p>
     <p>
       Secondly, we're actually using the context of the module inside the
-      welcome function. With a normal CouchApp these functions are just converted
-      to strings and inserted into the design doc, but kanso will try to proxy the
-      function using a require call (remember I said CouchDB supports CommonJS?).
-      This means we have access to the normal scope of the surrounding code,
-      allowing us to use the kanso module we required at the top of the module
-      inside the welcome function.
+      welcome function. With a normal CouchApp these functions are just
+      converted to strings and inserted into the design doc, but kanso will
+      try to proxy the function using a require call (remember I said CouchDB
+      supports CommonJS?). This means we have access to the normal scope of
+      the surrounding code, allowing us to use the kanso module we required at
+      the top of the module inside the welcome function.
     </p>
     <p>
-      <strong>Note:</strong> The one important exception to this is view functions,
-      CouchDB views do not support CommonJS modules in the same way and must be
-      self contained.
+      <strong>Note:</strong> The one important exception to this is view
+      functions, CouchDB views do not support CommonJS modules in the same way
+      and must be self contained.
     </p>
 
     <h3>templates/base.html</h3>
     <p>
       Kanso uses <a href="http://akdubya.github.com/dustjs/#about">Dust</a>
-      templates. These templates look similar to <a href="http://mustache.github.com">Mustache</a>, but provide some
+      templates. These templates look similar to
+      <a href="http://mustache.github.com">Mustache</a>, but provide some
       powerful additions such as filters, path lookups, blocks and better 
       partials support. Dust templates can also be pre-compiled, meaning your
       templates are compiled when you 'kanso push', not each time a page is
       rendered.
     </p>
-    <p>
-      <a href="http://akdubya.github.com/dustjs">Learn more about the dust syntax</a>
-    </p>
     <pre><code class="html">&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"&gt; 
   &lt;head&gt; 
     &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt; 
-    &lt;title&gt;{+title/}&lt;/title&gt; 
-    {&gt;kanso/}
+    &lt;title&gt;{title}&lt;/title&gt; 
   &lt;/head&gt; 
   &lt;body&gt; 
-    {+content/}
+    {content|s}
+    &lt;script src="{baseURL}/static/jquery-1.4.2.min.js"&gt;&lt;/script&gt;
+    &lt;script src="{baseURL}/kanso.js"&gt;&lt;/script&gt;
   &lt;/body&gt;
 &lt;/html&gt;</code></pre>
     <p>
-      Here you can see two types of dust tag. The tags in the format {+...} define
-      a block. Blocks are placeholders which other templates can later fill in. You'll see
-      the 'title' and 'content' blocks filled in when we look at the welcome.html template.
+      <a href="http://akdubya.github.com/dustjs">Learn more about the dust syntax</a>
     </p>
     <p>
-      The other tag type {&gt;...} is a partial. The 'kanso' partial is similar to
-      the kanso module we required earlier, it is automatically added
-      and not part of the project's files. The 'kanso' partial sets
-      up the client-side code and handles the current URL, it should be included
-      in every html response from the server.
+      This template should be fairly self-explanatory. We describe a basic
+      html document and render some variables: 'title', 'content' and
+      'baseURL'.
     </p>
     <p>
-      If you're familiar with Mustache templates, one important difference to notice
-      is that these tags must be closed, as you would with HTML tags. That means
-      doing {+block}...{/block} for example. Tags can also be self-closing, like
-      HTML tags: {+block/}.
+      The 'content' variable passes through a filter 's'. This just means the
+      value isn't escaped (we're going to be putting html in there!).
+    </p>
+    <p>
+        The variable 'baseURL' also deserves a mention. This is automatically
+        made available in templates, and changes depending on whether the
+        request uses a virtual host or not. If you've used CouchApps with
+        virtual hosts before, you may be familiar with the problem of
+        including stylesheets and javascript without knowing the current
+        full path. Using baseURL fixes that, meaning you can run your CouchApp
+        either behind a virtual host or access it directly in the
+        /db/_design/doc/_rewrite/ style.
     </p>
 
     <h3>templates/welcome.html</h3>
-    <pre><code class="no-highlight">{&gt;"base.html"/}
-
-{&lt;title}It worked!{/title}
-
-{&lt;content}
-
-&lt;h1&gt;It worked!&lt;/h1&gt;
-&lt;p&gt;Welcome to your new Kanso-powered app.&lt;p&gt;
-
-{/content}</code></pre>
+    <pre><code class="no-highlight">&lt;h1&gt;It worked!&lt;/h1&gt;
+&lt;p&gt;Welcome to your new Kanso-powered app.&lt;p&gt;</code></pre>
 
     <p>
-      This renders the 'base.html' template, overriding the title and content
-      blocks. Being able to compose templates like this can be very useful.
+        Not much to see here, just some HTML we put into the 'content'
+        section of the base.html template.
     </p>
 
     <h2>The Bookstore</h2>
@@ -424,6 +441,9 @@ exports.shows = {
       Push the app again, then open 
       <a href="http://localhost:5984/bookstore/_design/bookstore/_rewrite/">http://localhost:5984/bookstore/_design/bookstore/_rewrite/</a>.
     </p>
+
+    <!-- GitHub ribbon -->
+    <a href="http://github.com/caolan/kanso"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://assets2.github.com/img/7afbc8b248c68eb468279e8c17986ad46549fb71?repo=&url=http%3A%2F%2Fs3.amazonaws.com%2Fgithub%2Fribbons%2Fforkme_right_darkblue_121621.png&path=" alt="Fork me on GitHub"></a>
 
     <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
     <script>hljs.initHighlightingOnLoad();</script>
