@@ -106,7 +106,7 @@
                 );
             }
 
-            exports.handle(exports.design_doc, exports.getURL());
+            exports.handle(exports.getURL());
 
             $('a').live('click', function (ev) {
                 var url = exports.appPath($(this).attr('href'));
@@ -119,13 +119,13 @@
                     window.location.hash = url;
                 }
                 else {
-                    exports.handle(exports.design_doc, url);
+                    exports.handle(url);
                     exports.setURL(url);
                 }
             });
 
             var _handle = function (ev) {
-                exports.handle(exports.design_doc, exports.getURL());
+                exports.handle(exports.getURL());
             };
             if ('onpopstate' in window) {
                 window.onpopstate = _handle;

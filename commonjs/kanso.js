@@ -64,8 +64,8 @@ exports.rewriteGroups = function (pattern, url) {
     return groups;
 };
 
-exports.matchURL = function (design_doc, url) {
-    var rewrites = design_doc.rewrites;
+exports.matchURL = function (url) {
+    var rewrites = kanso.design_doc.rewrites;
     for (var i = 0; i < rewrites.length; i += 1) {
         var r = rewrites[i];
         var re = new RegExp('^' + r.from.replace(/:\w+/, '([^/]+)') + '$');
@@ -173,9 +173,9 @@ function catchErr(fn, args, callback) {
     }
 }
 
-exports.runShow = function (design_doc, req, name, docid, callback) {
+exports.runShow = function (req, name, docid, callback) {
     var result;
-    var src = design_doc.shows[name];
+    var src = kanso.design_doc.shows[name];
     // TODO: cache the eval'd fn
     var fn = eval('(' + src + ')');
     if (docid) {
@@ -194,8 +194,8 @@ exports.runShow = function (design_doc, req, name, docid, callback) {
     }
 };
 
-exports.runList = function (design_doc, req, name, view, callback) {
-    var src = design_doc.lists[name];
+exports.runList = function (req, name, view, callback) {
+    var src = kanso.design_doc.lists[name];
     // TODO: cache the eval'd fn
     var fn = eval('(' + src + ')');
     // TODO: implement proper lists api!
@@ -231,8 +231,8 @@ exports.runList = function (design_doc, req, name, view, callback) {
     }
 };
 
-exports.handle = function (design_doc, url) {
-    var match = exports.matchURL(design_doc, url);
+exports.handle = function (url) {
+    var match = exports.matchURL(url);
     if (match) {
         var req = exports.createRequest(url, match);
 
@@ -245,10 +245,10 @@ exports.handle = function (design_doc, url) {
         var src, fn, name;
 
         if (parts[0] === '_show') {
-            exports.runShow(design_doc, req, parts[1], parts[2]);
+            exports.runShow(req, parts[1], parts[2]);
         }
         else if (parts[0] === '_list') {
-            exports.runList(design_doc, req, parts[1], parts[2]);
+            exports.runList(req, parts[1], parts[2]);
         }
         else {
             // TODO: decide what happens here
