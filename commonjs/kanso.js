@@ -100,6 +100,18 @@ exports.replaceGroups = function (val, groups) {
     return val;
 };
 
+exports.replaceGroupsInPath = function (val, groups) {
+    var parts = val.split('/');
+    for (var i = 0; i < parts.length; i += 1) {
+        for (var k in groups) {
+            if (parts[i] === ':' + k) {
+                parts[i] = decodeURIComponent(groups[k]);
+            }
+        }
+    }
+    return parts.join('/');
+};
+
 exports.createRequest = function (url, match) {
     var groups = exports.rewriteGroups(match.from, url);
     var query = {};
@@ -224,6 +236,7 @@ exports.handle = function (design_doc, url) {
     if (match) {
         var req = exports.createRequest(url, match);
 
+        match.to = exports.replaceGroupsInPath(match.to, req.query);
         var msg = url + ' -> ' + JSON.stringify(match.to);
         msg += ' ' + JSON.stringify(req.query);
         console.log(msg);
