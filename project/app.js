@@ -8,14 +8,14 @@ exports.rewrites = [
 
 exports.shows = {
     welcome: function (doc, req) {
-        var content = kanso.template(req, 'welcome.html', {});
+        var content = kanso.template('welcome.html', req, {});
 
         if (req.client) {
             $('#content').html(content);
             document.title = 'It worked!';
         }
         else {
-            return kanso.template(req, 'base.html', {
+            return kanso.template('base.html', req, {
                 title: 'It worked!',
                 content: content
             });

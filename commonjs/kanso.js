@@ -27,7 +27,7 @@ exports.requestBaseURL = function (req) {
     return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
 };
 
-exports.template = function (req, name, context) {
+exports.template = function (name, req, context) {
     if (isBrowser) {
         context.baseURL = exports.getBaseURL(req);
     }
