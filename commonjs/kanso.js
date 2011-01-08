@@ -175,20 +175,52 @@ function catchErr(fn, args, callback) {
     }
 }
 
+exports.getDoc = function (id, q, callback) {
+    if (!isBrowser) {
+        throw new Error('getDoc cannot be called server-side');
+    }
+    $.ajax({
+        url: exports.getBaseURL() + '/_db/' + id,
+        dataType: 'json',
+        data: exports.stringifyQuery(q),
+        success: function (doc) {
+            callback(null, doc);
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            callback(errorThrown || new Error(textStatus));
+        }
+    });
+};
+
+exports.getView = function (view, q, callback) {
+    if (!isBrowser) {
+        throw new Error('getView cannot be called server-side');
+    }
+    var base = exports.getBaseURL();
+    $.ajax({
+        url: base +'/_db/_design/' + kanso.name + '/_view/' + view,
+        dataType: 'json',
+        data: exports.stringifyQuery(q),
+        success: function (doc) {
+            callback(null, doc);
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            callback(errorThrown || new Error(textStatus));
+        }
+    });
+};
+
 exports.runShow = function (req, name, docid, callback) {
     var result;
     var src = kanso.design_doc.shows[name];
     // TODO: cache the eval'd fn
     var fn = eval('(' + src + ')');
     if (docid) {
-        // TODO: handle errors!
-        $.ajax({
-            url: exports.getBaseURL() + '/_db/' + docid,
-            dataType: 'json',
-            data: exports.stringifyQuery(req.query),
-            success: function (doc) {
-                catchErr(fn, [doc, req], callback);
+        exports.getDoc(docid, req.query, function (err, doc) {
+            if (err) {
+                return callback(err);
             }
+            catchErr(fn, [doc, req], callback);
         });
     }
     else {
@@ -203,22 +235,17 @@ exports.runList = function (req, name, view, callback) {
     // TODO: implement proper lists api!
     var head = {};
     if (view) {
-        var url = exports.getBaseURL() + '/_db/_design/' +
-                  kanso.name + '/_view/' + view;
-        // TODO: handle errors!
-        $.ajax({
-            url: url,
-            dataType: 'json',
-            data: exports.stringifyQuery(req.query),
-            success: function (data) {
-                getRow = function () {
-                    return data.rows.shift();
-                };
-                catchErr(fn, [head, req], callback);
-                getRow = function () {
-                    return null;
-                };
+        exports.getView(view, req.query, function (err, data) {
+            if (err) {
+                return callback(err);
             }
+            getRow = function () {
+                return data.rows.shift();
+            };
+            catchErr(fn, [head, req], callback);
+            getRow = function () {
+                return null;
+            };
         });
     }
     // TODO: check if it should throw here
