@@ -81,9 +81,9 @@ exports.matchURL = function (url) {
  */
 
 exports.replaceGroups = function (val, groups) {
-    var result = val;
+    var k, result = val;
     if (typeof val === 'string') {
-        for (var k in groups) {
+        for (k in groups) {
             if (val === ':' + k) {
                 result = decodeURIComponent(groups[k]);
             }
@@ -92,7 +92,7 @@ exports.replaceGroups = function (val, groups) {
     else if (val.length) {
         result = val.slice();
         for (var i = 0; i < val.length; i += 1) {
-            for (var k in groups) {
+            for (k in groups) {
                 if (val[i] === ':' + k) {
                     result[i] = decodeURIComponent(groups[k]);
                 }
