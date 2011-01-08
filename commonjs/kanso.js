@@ -81,23 +81,25 @@ exports.matchURL = function (url) {
  */
 
 exports.replaceGroups = function (val, groups) {
+    var result = val;
     if (typeof val === 'string') {
         for (var k in groups) {
             if (val === ':' + k) {
-                val = decodeURIComponent(groups[k]);
+                result = decodeURIComponent(groups[k]);
             }
         }
     }
     else if (val.length) {
-        for (var k in groups) {
-            for (var i = 0; i < val.length; i += 1) {
+        result = val.slice();
+        for (var i = 0; i < val.length; i += 1) {
+            for (var k in groups) {
                 if (val[i] === ':' + k) {
-                    val[i] = decodeURIComponent(groups[k]);
+                    result[i] = decodeURIComponent(groups[k]);
                 }
             }
         }
     }
-    return val;
+    return result;
 };
 
 exports.replaceGroupsInPath = function (val, groups) {
