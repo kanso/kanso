@@ -198,7 +198,7 @@ exports.getView = function (view, q, callback) {
     }
     var base = exports.getBaseURL();
     $.ajax({
-        url: base +'/_db/_design/' + kanso.name + '/_view/' + view,
+        url: base + '/_db/_design/' + kanso.name + '/_view/' + view,
         dataType: 'json',
         data: exports.stringifyQuery(q),
         success: function (doc) {
