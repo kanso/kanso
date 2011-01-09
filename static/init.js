@@ -81,7 +81,7 @@
             }
             if (!exports.moduleCache[path]) {
                 var module = {exports: {}};
-                var fn = eval('(function (module, exports, require) {' +
+                eval('var fn = (function (module, exports, require) {' +
                     exports.getPropertyPath(exports.design_doc, path) +
                 '});');
                 fn(module, module.exports, exports.createRequire(path));
@@ -98,6 +98,18 @@
     }
 
     exports.init = function () {
+
+        if (!window.console) {
+            // console.log is going to cause errors, just stub the functions
+            // for now. TODO: add logging utility for IE?
+            window.console = {
+                log: function () {},
+                error: function () {},
+                info: function () {},
+                warn: function () {}
+            };
+        }
+
         // fetch design_doc and handle current URL
         $.getJSON(exports.getBaseURL() + '/_designdoc', function (data) {
             exports.design_doc = data;
