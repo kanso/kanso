@@ -25,3 +25,13 @@ exports['getPropertyPath'] = function (test) {
     test.same(init.getPropertyPath(obj, ''), obj);
     test.done();
 };
+
+exports['dirname'] = function (test) {
+    test.equal(init.dirname('/'), '/');
+    test.equal(init.dirname('/test'), '/');
+    test.equal(init.dirname('/some/path'), '/some');
+    test.equal(init.dirname('/a/b/c'), '/a/b');
+    test.equal(init.dirname('a/b/c'), 'a/b');
+    test.equal(init.dirname('a/b'), 'a');
+    test.done();
+};

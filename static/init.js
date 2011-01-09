@@ -54,6 +54,18 @@
         return a;
     };
 
+    exports.dirname = function (p) {
+        if (p === '/') {
+            return p;
+        }
+        var parts = p.split('/');
+        parts.pop();
+        if (parts.length === 1 && parts[0] === '') {
+            return '/';
+        }
+        return parts.join('/');
+    };
+
     exports.createRequire = function (current) {
         return function (target) {
             if (!exports.design_doc) {
@@ -61,7 +73,8 @@
             }
             var path;
             if (target.charAt(0) === '.') {
-                path = exports.normalizePath(current + '/' + target);
+                var dir = exports.dirname(current);
+                path = exports.normalizePath(dir + '/' + target);
             }
             else {
                 path = exports.normalizePath(target);
