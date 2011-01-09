@@ -43,7 +43,8 @@ else {
                 return console.error(err.message || err);
             }
             kanso.load(dir, settings, function (err, doc) {
-                var db = couchdb(args[1]);
+                var url = args[1].replace(/\/$/, '');
+                var db = couchdb(url);
                 db.ensureDB(function (err) {
                     if (err) {
                         return console.error(err.message || err);
@@ -52,6 +53,12 @@ else {
                     db.save(id, doc, {force: true}, function (err) {
                         if (err) {
                             return console.error(err.message || err);
+                        }
+                        else {
+                            console.log(
+                                'Running at ' + url + '/_design/' +
+                                settings.name + '/_rewrite/'
+                            );
                         }
                     });
                 });
