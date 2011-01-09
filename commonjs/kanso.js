@@ -214,24 +214,26 @@ exports.runShow = function (req, name, docid, callback) {
     var result;
     var src = kanso.design_doc.shows[name];
     // TODO: cache the eval'd fn
-    var fn = eval('(' + src + ')');
+    eval('var fn = (' + src + ')');
     if (docid) {
         exports.getDoc(docid, req.query, function (err, doc) {
             if (err) {
                 return callback(err);
             }
-            catchErr(fn, [doc, req], callback);
+            //catchErr(fn, [doc, req], callback);
+            fn(doc, req);
         });
     }
     else {
-        catchErr(fn, [null, req], callback);
+        //catchErr(fn, [null, req], callback);
+        fn(null, doc);
     }
 };
 
 exports.runList = function (req, name, view, callback) {
     var src = kanso.design_doc.lists[name];
     // TODO: cache the eval'd fn
-    var fn = eval('(' + src + ')');
+    eval('var fn = (' + src + ')');
     // TODO: implement proper lists api!
     var head = {};
     if (view) {
@@ -242,7 +244,8 @@ exports.runList = function (req, name, view, callback) {
             getRow = function () {
                 return data.rows.shift();
             };
-            catchErr(fn, [head, req], callback);
+            //catchErr(fn, [head, req], callback);
+            fn(head, req);
             getRow = function () {
                 return null;
             };
