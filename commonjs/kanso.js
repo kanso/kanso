@@ -331,6 +331,21 @@ exports.getURL = function () {
  */
 
 exports.appPath = function (p) {
+    if (/\w+:/.test(p)) {
+        // include protocol
+        var origin = p.split('/').slice(0, 3).join('/');
+        // coerce window.location to a real string so we can use split in IE
+        var loc = '' + window.location;
+        if (origin === loc.split('/').slice(0, 3).join('/')) {
+            // remove origin, set p to pathname only
+            // IE often adds this to a tags, hence why we strip it out now
+            p = p.substr(origin.length);
+        }
+        else {
+            // not same origin, return original full path
+            return p;
+        }
+    }
     var base = exports.getBaseURL();
     if (p.slice(0, base.length) === base) {
         return p.slice(base.length);

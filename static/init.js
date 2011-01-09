@@ -140,12 +140,16 @@
 
                 // changing the hash triggers onhashchange, which then fires
                 // exports.handle for us
-                if (window.onhashchange) {
+                if (window.onpopstate) {
+                    exports.handle(url);
+                    exports.setURL(url);
+                }
+                else if (window.onhashchange) {
                     window.location.hash = url;
                 }
                 else {
+                    window.location.hash = url;
                     exports.handle(url);
-                    exports.setURL(url);
                 }
             });
 
@@ -155,7 +159,7 @@
             if ('onpopstate' in window) {
                 window.onpopstate = _handle;
             }
-            else {
+            else if ('onhashchange' in window) {
                 window.onhashchange = _handle;
             }
         });
