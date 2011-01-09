@@ -2,7 +2,7 @@ var kanso = require('kanso');
 
 
 exports.rewrites = [
-    {from: '/static/*', to: 'static/jquery-1.4.2.min.js'},
+    {from: '/static/*', to: 'static/*'},
     {from: '/', to: '_show/welcome'}
 ];
 
