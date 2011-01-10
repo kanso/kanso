@@ -46,14 +46,14 @@ exports.template = function (name, req, context) {
 
 exports.rewriteGroups = function (pattern, url) {
     // TODO: add 'splats' as well as named params
-    var re = new RegExp('^' + pattern.replace(/:\w+/, '([^/]+)') + '$');
+    var re = new RegExp('^' + pattern.replace(/:\w+/g, '([^/]+)') + '$');
     var m = re.exec(url);
     if (!m) {
         return [];
     }
     var values = m.slice(1);
     var keys = [];
-    var matches = pattern.match(/:\w+/) || [];
+    var matches = pattern.match(/:\w+/g) || [];
     for (var i = 0; i < matches.length; i += 1) {
         keys.push(matches[i].substr(1));
     }
@@ -68,7 +68,10 @@ exports.matchURL = function (url) {
     var rewrites = kanso.design_doc.rewrites;
     for (var i = 0; i < rewrites.length; i += 1) {
         var r = rewrites[i];
-        var re = new RegExp('^' + r.from.replace(/:\w+/, '([^/]+)') + '$');
+        var re = new RegExp('^' + r.from.replace(/:\w+/g, '([^/]+)') + '$');
+        console.log(re);
+        console.log(url);
+        console.log(re.test(url));
         if (re.test(url)) {
             return r;
         }
