@@ -1,13 +1,17 @@
 /*global window: true, getRow: true, start: true, $: true, kanso: true */
+
 var templates = require('templates');
 
 
-var isBrowser = false;
+exports.isBrowser = false;
 if (typeof window !== 'undefined') {
-    isBrowser = true;
+    exports.isBrowser = true;
 }
 
-// create global functions
+/**
+ * Global functions required to match the CouchDB JavaScript environment.
+ */
+
 if (typeof getRow === 'undefined') {
     this.getRow = function () {
         return null;
@@ -20,20 +24,8 @@ if (typeof start === 'undefined') {
 }
 
 
-exports.requestBaseURL = function (req) {
-    if (req.headers['x-couchdb-vhost-path']) {
-        return '';
-    }
-    return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
-};
-
 exports.template = function (name, req, context) {
-    if (isBrowser) {
-        context.baseURL = exports.getBaseURL(req);
-    }
-    else {
-        context.baseURL = exports.requestBaseURL(req);
-    }
+    context.baseURL = exports.getBaseURL(req);
     var r = '';
     templates.render(name, context, function (err, result) {
         if (err) {
@@ -179,7 +171,7 @@ function catchErr(fn, args, callback) {
 }
 
 exports.getDoc = function (id, q, callback) {
-    if (!isBrowser) {
+    if (!exports.isBrowser) {
         throw new Error('getDoc cannot be called server-side');
     }
     $.ajax({
@@ -196,7 +188,7 @@ exports.getDoc = function (id, q, callback) {
 };
 
 exports.getView = function (view, q, callback) {
-    if (!isBrowser) {
+    if (!exports.isBrowser) {
         throw new Error('getView cannot be called server-side');
     }
     var base = exports.getBaseURL();
@@ -223,13 +215,11 @@ exports.runShow = function (req, name, docid, callback) {
             if (err) {
                 return callback(err);
             }
-            //catchErr(fn, [doc, req], callback);
-            fn(doc, req);
+            catchErr(fn, [doc, req], callback);
         });
     }
     else {
-        //catchErr(fn, [null, req], callback);
-        fn(null, doc);
+        catchErr(fn, [null, req], callback);
     }
 };
 
@@ -247,8 +237,7 @@ exports.runList = function (req, name, view, callback) {
             getRow = function () {
                 return data.rows.shift();
             };
-            //catchErr(fn, [head, req], callback);
-            fn(head, req);
+            catchErr(fn, [head, req], callback);
             getRow = function () {
                 return null;
             };
@@ -308,13 +297,32 @@ exports.setURL = function (url) {
     }*/
 };
 
-exports.getBaseURL = function () {
-    var re = new RegExp('(.*\\/_rewrite).*$');
-    var match = re.exec(window.location.pathname);
-    if (match) {
-        return match[1];
+
+/**
+ * Returns the path to prefix to any URLs. When running behind a
+ * virtual host, there is nothing to prefix URLs with. When accessing the
+ * app directly, URLs need to be prefixed with /db/_design/appname/_rewrite.
+ *
+ * The request object argument is only required when run server-side.
+ *
+ * @param {Object} req
+ * @returns {String}
+ * @api public
+ */
+
+exports.getBaseURL = function (req) {
+    if (exports.isBrowser) {
+        var re = new RegExp('(.*\\/_rewrite).*$');
+        var match = re.exec(window.location.pathname);
+        if (match) {
+            return match[1];
+        }
+        return '';
     }
-    return '';
+    if (req.headers['x-couchdb-vhost-path']) {
+        return '';
+    }
+    return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
 };
 
 exports.getURL = function () {
