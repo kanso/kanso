@@ -148,3 +148,19 @@ exports['replaceGroups'] = function (test) {
     );
     test.done();
 };
+
+exports['rewriteSplat'] = function (test) {
+    test.strictEqual(
+        kanso.rewriteSplat('/some/path', '/some/path'),
+        undefined
+    );
+    test.strictEqual(
+        kanso.rewriteSplat('/some/path/*', '/some/path/'),
+        ''
+    );
+    test.equal(
+        kanso.rewriteSplat('/some/path/*', '/some/path/splat/value'),
+        'splat/value'
+    );
+    test.done();
+};

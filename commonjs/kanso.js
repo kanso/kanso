@@ -70,6 +70,25 @@ exports.rewriteGroups = function (pattern, url) {
     return groups;
 };
 
+/**
+ * Extracts a splat value from a rewrite pattern and matching URL.
+ *
+ * @param {String} pattern
+ * @param {String} url
+ * @returns {String}
+ */
+
+exports.rewriteSplat = function (pattern, url) {
+    // splats are only supported at the end of a rewrite pattern
+    if (pattern.charAt(pattern.length - 1) === '*') {
+        var re = new RegExp(pattern.substr(0, pattern.length - 1) + '(.*)');
+        var match = re.exec(url);
+        if (match) {
+            return match[1];
+        }
+    }
+};
+
 exports.matchURL = function (url) {
     var rewrites = kanso.design_doc.rewrites;
     for (var i = 0; i < rewrites.length; i += 1) {
@@ -275,10 +294,9 @@ exports.handle = function (url) {
     var match = exports.matchURL(url);
     if (match) {
         var req = exports.createRequest(url, match);
-        // TODO: call function to get potential splat value from url
-        // splats should *not* be added to req.query!
+        var splat = exports.rewriteSplat(match.from, url);
 
-        match.to = exports.replaceGroups(match.to, req.query);
+        match.to = exports.replaceGroups(match.to, req.query, splat);
         var msg = url + ' -> ' + JSON.stringify(match.to);
         msg += ' ' + JSON.stringify(req.query);
         console.log(msg);
