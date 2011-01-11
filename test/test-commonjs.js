@@ -111,3 +111,16 @@ exports['getURL hash priority over pathname'] = function (test) {
     );
     test.done();
 };
+
+exports['rewriteGroups'] = function (test) {
+    test.same(kanso.rewriteGroups('/some/path', '/some/path'), {});
+    test.same(
+        kanso.rewriteGroups('/path/:name', '/path/somename'),
+        {name: 'somename'}
+    );
+    test.same(
+        kanso.rewriteGroups('/:one/:two/:three', '/a/b/c'),
+        {one: 'a', two: 'b', three: 'c'}
+    );
+    test.done();
+};
