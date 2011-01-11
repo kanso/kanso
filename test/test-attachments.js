@@ -63,11 +63,11 @@ exports['addFiles'] = function (test) {
         test.same(doc, {
             '_attachments': {
                 'static/file1.css': {
-                    'content-type': 'text/css',
+                    'content_type': 'text/css',
                     'data': '1'
                 },
                 'static/file2.txt': {
-                    'content-type': 'text/plain',
+                    'content_type': 'text/plain',
                     'data': '2'
                 }
             }

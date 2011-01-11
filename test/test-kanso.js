@@ -72,11 +72,11 @@ exports['load'] = function (test) {
             });
             test.same(doc._attachments, {
                 'static/test.txt': {
-                    'content-type': 'text/plain',
+                    'content_type': 'text/plain',
                     'data': 'dGVzdCBkYXRhCg=='
                 },
                 'kanso.js': {
-                    'content-type': 'application/javascript',
+                    'content_type': 'application/javascript',
                     'data': fs.readFileSync(
                         __dirname + '/../static/init.js'
                     ).toString('base64')
