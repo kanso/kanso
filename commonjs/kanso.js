@@ -125,21 +125,6 @@ exports.replaceGroups = function (val, groups, splat) {
     return result;
 };
 
-exports.replaceGroupsInPath = function (val, groups) {
-    // TODO: add splats argument
-    // splats are available for rewriting match.to, but not accessible on the
-    // request object (couchdb 1.1.x)
-    var parts = val.split('/');
-    for (var i = 0; i < parts.length; i += 1) {
-        for (var k in groups) {
-            if (parts[i] === ':' + k) {
-                parts[i] = decodeURIComponent(groups[k]);
-            }
-        }
-    }
-    return parts.join('/');
-};
-
 exports.createRequest = function (url, match) {
     var groups = exports.rewriteGroups(match.from, url);
     var query = {};
@@ -293,8 +278,7 @@ exports.handle = function (url) {
         // TODO: call function to get potential splat value from url
         // splats should *not* be added to req.query!
 
-        // TODO: pass splat value to replaceGroupsInPath
-        match.to = exports.replaceGroupsInPath(match.to, req.query);
+        match.to = exports.replaceGroups(match.to, req.query);
         var msg = url + ' -> ' + JSON.stringify(match.to);
         msg += ' ' + JSON.stringify(req.query);
         console.log(msg);
