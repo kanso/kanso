@@ -93,7 +93,7 @@ exports.matchURL = function (url) {
  * @returns {String}
  */
 
-exports.replaceGroups = function (val, groups) {
+exports.replaceGroups = function (val, groups, splat) {
     var k, result = val;
     if (typeof val === 'string') {
         result = val.split('/');
@@ -101,6 +101,9 @@ exports.replaceGroups = function (val, groups) {
             for (k in groups) {
                 if (result[i] === ':' + k) {
                     result[i] = decodeURIComponent(groups[k]);
+                }
+                else if (result[i] === '*') {
+                    result[i] = splat;
                 }
             }
         }
@@ -112,6 +115,9 @@ exports.replaceGroups = function (val, groups) {
             for (k in groups) {
                 if (val[i] === ':' + k) {
                     result[i] = decodeURIComponent(groups[k]);
+                }
+                else if (val[i] === '*') {
+                    result[i] = splat;
                 }
             }
         }

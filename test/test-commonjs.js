@@ -142,5 +142,9 @@ exports['replaceGroups'] = function (test) {
         }),
         '/a/b/c'
     );
+    test.equal(
+        kanso.replaceGroups('/some/:group/*', {group: 'val'}, 'splat/value'),
+        '/some/val/splat/value'
+    );
     test.done();
 };
