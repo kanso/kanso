@@ -36,8 +36,22 @@ exports.template = function (name, req, context) {
     return r;
 };
 
+
+/**
+ * Extracts groups from a url, eg:
+ * '/some/path' with pattern '/some/:name' -> {name: 'path'}
+ *
+ * @param {String} pattern
+ * @param {String} url
+ * @returns {Object}
+ */
+
 exports.rewriteGroups = function (pattern, url) {
-    // TODO: add 'splats' as well as named params
+    // TODO: add 'splats' as well as named params?
+    // splats are available for rewriting match.to, but not accessible on the
+    // request object (couchdb 1.1.x)
+    // - perhaps don't bother extracting them at this point and have a
+    // seperate function to get them from the request
     var re = new RegExp('^' + pattern.replace(/:\w+/g, '([^/]+)') + '$');
     var m = re.exec(url);
     if (!m) {
@@ -71,18 +85,26 @@ exports.matchURL = function (url) {
 };
 
 /**
- * replace group names in a string with the value of that group
+ * Replace group names in a string with the value of that group
  * eg: "/:name" with groups {name: 'test'} -> "/test"
+ *
+ * @param {String} val
+ * @param {Object} groups
+ * @returns {String}
  */
 
 exports.replaceGroups = function (val, groups) {
     var k, result = val;
     if (typeof val === 'string') {
-        for (k in groups) {
-            if (val === ':' + k) {
-                result = decodeURIComponent(groups[k]);
+        result = val.split('/');
+        for (var i = 0; i < result.length; i += 1) {
+            for (k in groups) {
+                if (result[i] === ':' + k) {
+                    result[i] = decodeURIComponent(groups[k]);
+                }
             }
         }
+        result = result.join('/');
     }
     else if (val.length) {
         result = val.slice();
@@ -98,6 +120,9 @@ exports.replaceGroups = function (val, groups) {
 };
 
 exports.replaceGroupsInPath = function (val, groups) {
+    // TODO: add splats argument
+    // splats are available for rewriting match.to, but not accessible on the
+    // request object (couchdb 1.1.x)
     var parts = val.split('/');
     for (var i = 0; i < parts.length; i += 1) {
         for (var k in groups) {
@@ -259,7 +284,10 @@ exports.handle = function (url) {
     var match = exports.matchURL(url);
     if (match) {
         var req = exports.createRequest(url, match);
+        // TODO: call function to get potential splat value from url
+        // splats should *not* be added to req.query!
 
+        // TODO: pass splat value to replaceGroupsInPath
         match.to = exports.replaceGroupsInPath(match.to, req.query);
         var msg = url + ' -> ' + JSON.stringify(match.to);
         msg += ' ' + JSON.stringify(req.query);

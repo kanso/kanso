@@ -124,3 +124,23 @@ exports['rewriteGroups'] = function (test) {
     );
     test.done();
 };
+
+exports['replaceGroups'] = function (test) {
+    test.equal(
+        kanso.replaceGroups('/some/string', {some: 'groups'}),
+        '/some/string'
+    );
+    test.equal(
+        kanso.replaceGroups('/some/:group', {group: 'val'}),
+        '/some/val'
+    );
+    test.equal(
+        kanso.replaceGroups('/:one/:two/:three', {
+            one: 'a',
+            two: 'b',
+            three: 'c'
+        }),
+        '/a/b/c'
+    );
+    test.done();
+};
