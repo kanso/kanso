@@ -47,11 +47,6 @@ exports.template = function (name, req, context) {
  */
 
 exports.rewriteGroups = function (pattern, url) {
-    // TODO: add 'splats' as well as named params?
-    // splats are available for rewriting match.to, but not accessible on the
-    // request object (couchdb 1.1.x)
-    // - perhaps don't bother extracting them at this point and have a
-    // seperate function to get them from the request
     var re = new RegExp('^' + pattern.replace(/:\w+/g, '([^/]+)') + '$');
     var m = re.exec(url);
     if (!m) {
@@ -93,10 +88,13 @@ exports.matchURL = function (url) {
     var rewrites = kanso.design_doc.rewrites;
     for (var i = 0; i < rewrites.length; i += 1) {
         var r = rewrites[i];
-        var re = new RegExp('^' + r.from.replace(/:\w+/g, '([^/]+)') + '$');
-        console.log(re);
-        console.log(url);
-        console.log(re.test(url));
+        var from = r.from;
+        from = from.replace(/\*$/, '(.*)');
+        from = from.replace(/:\w+/g, '([^/]+)')
+        var re = new RegExp('^' + from + '$');
+        //console.log(re);
+        //console.log(url);
+        //console.log(re.test(url));
         if (re.test(url)) {
             return r;
         }
@@ -294,6 +292,10 @@ exports.handle = function (url) {
     var match = exports.matchURL(url);
     if (match) {
         var req = exports.createRequest(url, match);
+
+        // splats are available for rewriting match.to, but not accessible on
+        // the request object (couchdb 1.1.x), storing in a separate variable
+        // for now
         var splat = exports.rewriteSplat(match.from, url);
 
         match.to = exports.replaceGroups(match.to, req.query, splat);

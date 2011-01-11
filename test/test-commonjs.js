@@ -1,7 +1,7 @@
 var modules = require('../lib/modules'),
     fs = require('fs');
 
-var context = {window: {}};
+var context = {window: {}, kanso: {design_doc: {}}};
 
 var kanso = modules.require({}, {
     'kanso': fs.readFileSync(__dirname + '/../commonjs/kanso.js').toString(),
@@ -161,6 +161,25 @@ exports['rewriteSplat'] = function (test) {
     test.equal(
         kanso.rewriteSplat('/some/path/*', '/some/path/splat/value'),
         'splat/value'
+    );
+    test.done();
+};
+
+exports['matchURL'] = function (test) {
+    context.kanso.design_doc.rewrites = [
+        {from: '/simple', to: 'one'},
+        {from: '/with/:group', to: 'two'},
+        {from: '/with/:group/and/*', to: 'three'}
+    ];
+    test.equal(kanso.matchURL('/nomatch'), undefined);
+    test.same(kanso.matchURL('/simple'), {from: '/simple', to: 'one'});
+    test.same(
+        kanso.matchURL('/with/groupval'),
+        {from: '/with/:group', to: 'two'}
+    );
+    test.same(
+        kanso.matchURL('/with/groupval/and/splat/value'),
+        {from: '/with/:group/and/*', to: 'three'}
     );
     test.done();
 };
