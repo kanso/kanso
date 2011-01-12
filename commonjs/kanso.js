@@ -1,12 +1,25 @@
 /*global window: true, getRow: true, start: true, $: true, kanso: true */
 
+/**
+ * Module dependencies
+ */
+
 var templates = require('templates');
 
+
+/**
+ * Some functions calculate results differently depending on the execution
+ * environment. The isBrowser value is used to set the correct environment
+ * for these functions, and is only exported to make unit testing easier.
+ *
+ * You should not need to change this value during normal usage.
+ */
 
 exports.isBrowser = false;
 if (typeof window !== 'undefined') {
     exports.isBrowser = true;
 }
+
 
 /**
  * Global functions required to match the CouchDB JavaScript environment.
@@ -24,6 +37,19 @@ if (typeof start === 'undefined') {
 }
 
 
+/**
+ * Synchronously render dust template and return result, automatically adding
+ * baseURL to the template's context. The request object is required so we
+ * can determine the value of baseURL.
+ *
+ * @param {String} name
+ * @param {Object} req
+ * @param {Object} context
+ * @return {String}
+ * @api public
+ */
+
+// TODO: add unit tests for this function
 exports.template = function (name, req, context) {
     context.baseURL = exports.getBaseURL(req);
     var r = '';
@@ -152,6 +178,17 @@ exports.replaceGroups = function (val, groups, splat) {
     return result;
 };
 
+
+/**
+ * Creates a new request object from a url and matching rewrite object.
+ * Query parameters are automatically populated from rewrite pattern.
+ *
+ * @param {String} url
+ * @param {Object} match
+ * @returns {Object}
+ */
+
+ // TODO: parse query params from the url and add to req.query
 exports.createRequest = function (url, match) {
     var groups = exports.rewriteGroups(match.from, url);
     var query = {};
@@ -185,6 +222,17 @@ exports.createRequest = function (url, match) {
     return req;
 };
 
+/**
+ * Properly encodes query parameters to CouchDB views etc. Handle complex
+ * keys and other non-string parameters by passing through JSON.stringify.
+ * Returns a shallow-copied clone of the original query after complex values
+ * have been stringified.
+ *
+ * @param {Object} query
+ * @returns {Object}
+ */
+
+// TODO: add unit tests for this function
 exports.stringifyQuery = function (query) {
     var q = {};
     for (var k in query) {
@@ -198,16 +246,24 @@ exports.stringifyQuery = function (query) {
     return q;
 };
 
+
 /**
- * if callback is present catch errors and pass to callback, otherwise
+ * If callback is present catch errors and pass to callback, otherwise
  * re-throw errors.
+ *
+ * @param {Function} fn
+ * @param {Array} args
+ * @param {Function} callback
  */
-function catchErr(fn, args, callback) {
+
+// TODO: add unit tests for this function
+function catchErr(fn, args, /*optional*/callback) {
     try {
         var result = fn.apply(null, args);
         if (callback) {
             callback(null, result);
         }
+        return result;
     }
     catch (e) {
         if (callback) {
@@ -219,6 +275,19 @@ function catchErr(fn, args, callback) {
     }
 }
 
+
+/**
+ * Fetches a document from the database the app is running on. Results are
+ * passed to the callback, with the first argument of the callback reserved
+ * for any exceptions that occurred (node.js style).
+ *
+ * @param {String} id
+ * @param {Object} q
+ * @param {Function} callback
+ */
+
+// TODO: add unit tests for this function
+// TODO: make q argument optional?
 exports.getDoc = function (id, q, callback) {
     if (!exports.isBrowser) {
         throw new Error('getDoc cannot be called server-side');
@@ -236,6 +305,19 @@ exports.getDoc = function (id, q, callback) {
     });
 };
 
+
+/**
+ * Fetches a view from the database the app is running on. Results are
+ * passed to the callback, with the first argument of the callback reserved
+ * for any exceptions that occurred (node.js style).
+ *
+ * @param {String} view
+ * @param {Object} q
+ * @param {Function} callback
+ */
+
+// TODO: add unit tests for this function
+// TODO: make q argument optional?
 exports.getView = function (view, q, callback) {
     if (!exports.isBrowser) {
         throw new Error('getView cannot be called server-side');
@@ -254,6 +336,18 @@ exports.getView = function (view, q, callback) {
     });
 };
 
+
+/**
+ * Evaluates a show function, then fetches the relevant document and calls
+ * the show function with the result.
+ *
+ * @param {Object} req
+ * @param {String} name
+ * @param {String} docid
+ * @param {Function} callback
+ */
+
+// TODO: add unit tests for this function
 exports.runShow = function (req, name, docid, callback) {
     var result;
     var src = kanso.design_doc.shows[name];
@@ -272,6 +366,18 @@ exports.runShow = function (req, name, docid, callback) {
     }
 };
 
+
+/**
+ * Evaluates a list function, then fetches the relevant view and calls
+ * the list function with the result.
+ *
+ * @param {Object} req
+ * @param {String} name
+ * @param {String} view
+ * @param {Function} callback
+ */
+
+// TODO: add unit tests for this function
 exports.runList = function (req, name, view, callback) {
     var src = kanso.design_doc.lists[name];
     // TODO: cache the eval'd fn
@@ -304,6 +410,15 @@ exports.runList = function (req, name, view, callback) {
     }
 };
 
+
+/**
+ * Creates a request object for the url and runs appropriate show or list
+ * functions.
+ *
+ * @param {String} url
+ */
+
+// TODO: add unit tests for this function
 exports.handle = function (url) {
     var match = exports.matchURL(url);
     if (match) {
@@ -332,10 +447,19 @@ exports.handle = function (url) {
     }
 };
 
+
+/**
+ * If pushState is supported, add an entry for the given url, prefixed with
+ * the baseURL for the app.
+ *
+ * @param {String} url
+ */
+
+// TODO: add unit tests for this function
 exports.setURL = function (url) {
     if (window.history.pushState) {
         var fullurl  = exports.getBaseURL() + url;
-        window.history.pushState({}, window.title, fullurl);
+        window.history.pushState({}, document.title, fullurl);
     }
     // this is now set *before* handling as it trigger an onhashchange event
     /*else if ('hash' in window.location) {
@@ -371,6 +495,14 @@ exports.getBaseURL = function (req) {
     return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
 };
 
+
+/**
+ * Gets the current app-level URL (without baseURL prefix).
+ *
+ * @returns {String}
+ * @api public
+ */
+
 exports.getURL = function () {
     if (window.location.hash) {
         return window.location.hash.substr(1);
@@ -384,9 +516,14 @@ exports.getURL = function () {
 };
 
 /**
- * Converts {baseURL}/some/path to /some/path
+ * Converts a full url to an app-level url (without baseURL prefix).
+ * example: {baseURL}/some/path -> /some/path
+ *
+ * @param {String} p
+ * @returns {String}
  */
 
+// TODO: add unit tests for this function
 exports.appPath = function (p) {
     if (/\w+:/.test(p)) {
         // include protocol
@@ -404,7 +541,9 @@ exports.appPath = function (p) {
         }
     }
     var base = exports.getBaseURL();
+    // TODO: should this be substr not slice?
     if (p.slice(0, base.length) === base) {
+        // TODO: should this be substr not slice?
         return p.slice(base.length);
     }
     return p;
