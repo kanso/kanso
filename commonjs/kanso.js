@@ -125,7 +125,7 @@ exports.matchURL = function (url) {
         var r = rewrites[i];
         var from = r.from;
         from = from.replace(/\*$/, '(.*)');
-        from = from.replace(/:\w+/g, '([^/]+)')
+        from = from.replace(/:\w+/g, '([^/]+)');
         var re = new RegExp('^' + from + '$');
         if (re.test(url)) {
             return r;
@@ -143,11 +143,12 @@ exports.matchURL = function (url) {
  */
 
 exports.replaceGroups = function (val, groups, splat) {
-    var k, result = val;
+    var k, match, result = val;
+
     if (typeof val === 'string') {
         result = val.split('/');
         for (var i = 0; i < result.length; i += 1) {
-            var match = false;
+            match = false;
             for (k in groups) {
                 if (result[i] === ':' + k) {
                     result[i] = decodeURIComponent(groups[k]);
@@ -162,16 +163,16 @@ exports.replaceGroups = function (val, groups, splat) {
     }
     else if (val.length) {
         result = val.slice();
-        for (var i = 0; i < val.length; i += 1) {
-            var match = false;
+        for (var j = 0; j < val.length; j += 1) {
+            match = false;
             for (k in groups) {
-                if (val[i] === ':' + k) {
-                    result[i] = decodeURIComponent(groups[k]);
+                if (val[j] === ':' + k) {
+                    result[j] = decodeURIComponent(groups[k]);
                     match = true;
                 }
             }
-            if (!match && val[i] === '*') {
-                result[i] = splat;
+            if (!match && val[j] === '*') {
+                result[j] = splat;
             }
         }
     }
@@ -352,7 +353,8 @@ exports.runShow = function (req, name, docid, callback) {
     var result;
     var src = kanso.design_doc.shows[name];
     // TODO: cache the eval'd fn
-    eval('var fn = (' + src + ')');
+    var fn;
+    eval('fn = (' + src + ')');
     if (docid) {
         exports.getDoc(docid, req.query, function (err, doc) {
             if (err) {
@@ -381,7 +383,8 @@ exports.runShow = function (req, name, docid, callback) {
 exports.runList = function (req, name, view, callback) {
     var src = kanso.design_doc.lists[name];
     // TODO: cache the eval'd fn
-    eval('var fn = (' + src + ')');
+    var fn;
+    eval('fn = (' + src + ')');
     // TODO: implement proper lists api!
     var head = {};
     if (view) {

@@ -81,7 +81,8 @@
             }
             if (!exports.moduleCache[path]) {
                 var module = {exports: {}};
-                eval('var fn = (function (module, exports, require) {' +
+                var fn;
+                eval('fn = (function (module, exports, require) {' +
                     exports.getPropertyPath(exports.design_doc, path) +
                 '});');
                 fn(module, module.exports, exports.createRequire(path));
