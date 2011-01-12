@@ -84,6 +84,15 @@ exports.rewriteSplat = function (pattern, url) {
     }
 };
 
+
+/**
+ * Attempts to match rewrite from patterns to a URL, returning the
+ * matching rewrite object if successful.
+ *
+ * @param {String} url
+ * @return {Object}
+ */
+
 exports.matchURL = function (url) {
     var rewrites = kanso.design_doc.rewrites;
     for (var i = 0; i < rewrites.length; i += 1) {
@@ -92,9 +101,6 @@ exports.matchURL = function (url) {
         from = from.replace(/\*$/, '(.*)');
         from = from.replace(/:\w+/g, '([^/]+)')
         var re = new RegExp('^' + from + '$');
-        //console.log(re);
-        //console.log(url);
-        //console.log(re.test(url));
         if (re.test(url)) {
             return r;
         }
@@ -115,13 +121,15 @@ exports.replaceGroups = function (val, groups, splat) {
     if (typeof val === 'string') {
         result = val.split('/');
         for (var i = 0; i < result.length; i += 1) {
+            var match = false;
             for (k in groups) {
                 if (result[i] === ':' + k) {
                     result[i] = decodeURIComponent(groups[k]);
+                    match = true;
                 }
-                else if (result[i] === '*') {
-                    result[i] = splat;
-                }
+            }
+            if (!match && result[i] === '*') {
+                result[i] = splat;
             }
         }
         result = result.join('/');
@@ -129,13 +137,15 @@ exports.replaceGroups = function (val, groups, splat) {
     else if (val.length) {
         result = val.slice();
         for (var i = 0; i < val.length; i += 1) {
+            var match = false;
             for (k in groups) {
                 if (val[i] === ':' + k) {
                     result[i] = decodeURIComponent(groups[k]);
+                    match = true;
                 }
-                else if (val[i] === '*') {
-                    result[i] = splat;
-                }
+            }
+            if (!match && val[i] === '*') {
+                result[i] = splat;
             }
         }
     }
@@ -160,11 +170,17 @@ exports.createRequest = function (url, match) {
             }
         }
     }
+    // splats are available for rewriting match.to, but not accessible on
+    // the request object (couchdb 1.1.x), storing in a separate variable
+    // for now
+    var splat = exports.rewriteSplat(match.from, url);
+    var to = exports.replaceGroups(match.to, query, splat);
+
     var req = {
         query: query,
         headers: {},
         client: true,
-        path: url.split('/')
+        path: to.split('/')
     };
     return req;
 };
@@ -292,29 +308,21 @@ exports.handle = function (url) {
     var match = exports.matchURL(url);
     if (match) {
         var req = exports.createRequest(url, match);
-
-        // splats are available for rewriting match.to, but not accessible on
-        // the request object (couchdb 1.1.x), storing in a separate variable
-        // for now
-        var splat = exports.rewriteSplat(match.from, url);
-
-        match.to = exports.replaceGroups(match.to, req.query, splat);
-        var msg = url + ' -> ' + JSON.stringify(match.to);
+        var msg = url + ' -> ' + JSON.stringify(req.path.join('/'));
         msg += ' ' + JSON.stringify(req.query);
         console.log(msg);
 
-        var parts = match.to.split('/');
         var src, fn, name;
 
-        if (parts[0] === '_show') {
-            exports.runShow(req, parts[1], parts[2]);
+        if (req.path[0] === '_show') {
+            exports.runShow(req, req.path[1], req.path[2]);
         }
-        else if (parts[0] === '_list') {
-            exports.runList(req, parts[1], parts[2]);
+        else if (req.path[0] === '_list') {
+            exports.runList(req, req.path[1], req.path[2]);
         }
         else {
             // TODO: decide what happens here
-            alert('Unknown rewrite target: ' + match.to);
+            alert('Unknown rewrite target: ' + req.path.join('/'));
         }
     }
     else {

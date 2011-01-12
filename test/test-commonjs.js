@@ -1,7 +1,7 @@
 var modules = require('../lib/modules'),
     fs = require('fs');
 
-var context = {window: {}, kanso: {design_doc: {}}};
+var context = {window: {}, kanso: {design_doc: {}}, console: console};
 
 var kanso = modules.require({}, {
     'kanso': fs.readFileSync(__dirname + '/../commonjs/kanso.js').toString(),
@@ -146,6 +146,10 @@ exports['replaceGroups'] = function (test) {
         kanso.replaceGroups('/some/:group/*', {group: 'val'}, 'splat/value'),
         '/some/val/splat/value'
     );
+    test.equal(
+        kanso.replaceGroups('static/*', {}, 'splat/value'),
+        'static/splat/value'
+    );
     test.done();
 };
 
@@ -180,6 +184,38 @@ exports['matchURL'] = function (test) {
     test.same(
         kanso.matchURL('/with/groupval/and/splat/value'),
         {from: '/with/:group/and/*', to: 'three'}
+    );
+    test.done();
+};
+
+exports['createRequest'] = function (test) {
+    test.same(
+        kanso.createRequest('/path', {from: '/path', to: '_show/testshow'}),
+        {path: ['_show','testshow'], client: true, headers: {}, query: {}}
+    );
+    test.same(
+        kanso.createRequest(
+            '/path/group%20val/bar',
+            {from: '/path/:group/:foo', to: '_show/testshow/:foo'}
+        ),
+        {
+            path: ['_show','testshow','bar'],
+            client: true,
+            headers: {},
+            query: {group: 'group val', foo: 'bar'}
+        }
+    );
+    test.same(
+        kanso.createRequest(
+            '/path/some/file',
+            {from: '/path/*', to: 'static/*'}
+        ),
+        {
+            path: ['static','some','file'],
+            client: true,
+            headers: {},
+            query: {}
+        }
     );
     test.done();
 };
