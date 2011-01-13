@@ -3,6 +3,7 @@
 var kanso = require('../lib/kanso'),
     settings = require('../lib/settings'),
     couchdb = require('../lib/couchdb'),
+    utils = require('../lib/utils'),
     logger = require('../lib/logger');
 
 
@@ -30,7 +31,7 @@ if (!args.length) {
 else {
     switch (args[0]) {
     case 'show':
-        var dir = args[2] || '.';
+        var dir = args[1] || '.';
         settings.load(dir, function (err, settings) {
             if (err) {
                 return logger.error(err);
@@ -83,9 +84,11 @@ else {
             if (err) {
                 return logger.error(err);
             }
+            logger.end(utils.abspath(dir));
         });
         break;
     default:
         usage();
+        logger.clean_exit = true;
     }
 }
