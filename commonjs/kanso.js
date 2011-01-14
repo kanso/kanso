@@ -370,6 +370,22 @@ exports.runShow = function (req, name, docid, callback) {
 
 
 /**
+ * Creates a head object for passing to a list function from the results
+ * of a view.
+ */
+
+exports.createHead = function (data) {
+    var head = {};
+    for (var k in data) {
+        if (k !== 'rows') {
+            head[k] = data[k];
+        }
+    }
+    return head;
+};
+
+
+/**
  * Evaluates a list function, then fetches the relevant view and calls
  * the list function with the result.
  *
@@ -385,9 +401,9 @@ exports.runList = function (req, name, view, callback) {
     // TODO: cache the eval'd fn
     var fn;
     eval('fn = (' + src + ')');
-    // TODO: implement proper lists api!
-    var head = {};
     if (view) {
+        // update_seq used in head parameter passed to list function
+        req.query.update_seq = true;
         exports.getView(view, req.query, function (err, data) {
             if (err) {
                 return callback(err);
@@ -395,6 +411,7 @@ exports.runList = function (req, name, view, callback) {
             getRow = function () {
                 return data.rows.shift();
             };
+            var head = exports.createHead(data);
             catchErr(fn, [head, req], callback);
             getRow = function () {
                 return null;
