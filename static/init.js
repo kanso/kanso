@@ -98,6 +98,23 @@
         this.require = exports.createRequire('');
     }
 
+    exports.isAppURL = function (url) {
+        if (/\w+:/.test(url)) {
+            // include protocol
+            var origin = url.split('/').slice(0, 3).join('/');
+            // coerce window.location to a real string so we can use
+            // split in IE
+            var loc = '' + window.location;
+            if (origin === loc.split('/').slice(0, 3).join('/')) {
+                // same origin
+                return true;
+            }
+            // not same origin
+            return false;
+        }
+        return true;
+    };
+
     exports.init = function () {
 
         if (!window.console) {
@@ -135,22 +152,26 @@
             exports.handle(exports.getURL());
 
             $('a').live('click', function (ev) {
-                var url = exports.appPath($(this).attr('href'));
-                // TODO: test for external / internal urls
-                ev.preventDefault();
+                var href = $(this).attr('href');
 
-                // changing the hash triggers onhashchange, which then fires
-                // exports.handle for us
-                if (window.onpopstate) {
-                    exports.handle(url);
-                    exports.setURL(url);
-                }
-                else if (window.onhashchange) {
-                    window.location.hash = url;
-                }
-                else {
-                    window.location.hash = url;
-                    exports.handle(url);
+                if (exports.isAppURL(href)) {
+                    var url = exports.appPath(href);
+                    // TODO: test for external / internal urls
+                    ev.preventDefault();
+
+                    // changing the hash triggers onhashchange, which then
+                    // fires exports.handle for us
+                    if (window.onpopstate) {
+                        exports.handle(url);
+                        exports.setURL(url);
+                    }
+                    else if (window.onhashchange) {
+                        window.location.hash = url;
+                    }
+                    else {
+                        window.location.hash = url;
+                        exports.handle(url);
+                    }
                 }
             });
 
