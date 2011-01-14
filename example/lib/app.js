@@ -17,7 +17,7 @@ exports.shows = {
             }
         }
         else {
-            return kanso.template(req, 'base.html', {name: name});
+            return kanso.template('base.html', req, {name: name});
         }
     }
 };
