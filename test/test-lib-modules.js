@@ -13,6 +13,10 @@ exports['load'] = function (test) {
     modules.addFiles = function (dir, files, doc, cb) {
         test.equal(dir, 'dir');
         test.same(files, ['file1','file2','file3']);
+        modules.addFiles = function (dir, files, doc, cb) {
+            // called again to add default commonjs dir
+            cb();
+        };
         cb();
     };
     modules.load('dir', doc, function (err) {
@@ -34,11 +38,16 @@ exports['load multiple dirs'] = function (test) {
     var _addFiles = modules.addFiles;
     modules.addFiles = function (dir, files, doc, cb) {
         test.same(files, ['file','file']);
+        modules.addFiles = function (dir, files, doc, cb) {
+            // called again to add default commonjs dir
+            cb();
+        };
         cb();
     };
     modules.load('dir', doc, function (err) {
         test.ifError(err);
-        test.same(find_calls, ['dir/lib','dir/deps']);
+        // the last find call is to add default commonjs dir
+        test.same(find_calls.slice(0,2), ['dir/lib','dir/deps']);
         modules.find = _find;
         modules.addFiles = _addFiles;
         test.done();

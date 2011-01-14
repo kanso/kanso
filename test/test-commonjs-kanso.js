@@ -3,10 +3,13 @@ var modules = require('../lib/modules'),
 
 var context = {window: {}, kanso: {design_doc: {}}, console: console};
 
+var commonjs_dir = __dirname + '/../commonjs/kanso';
 var kanso = modules.require({}, {
-    'kanso': fs.readFileSync(__dirname + '/../commonjs/kanso.js').toString(),
+    'kanso': {
+        'core': fs.readFileSync(commonjs_dir + '/core.js').toString()
+    },
     'templates': '// templates module'
-}, '/', 'kanso', context);
+}, '/', 'kanso/core', context);
 
 
 exports['getBaseURL - browser'] = function (test) {

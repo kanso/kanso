@@ -134,7 +134,7 @@
             exports.name = exports.design_doc.settings.name;
 
             // load the rest of the kanso module
-            var kanso = require('kanso');
+            var kanso = require('kanso/core');
             for (var k in kanso) {
                 if (kanso.hasOwnProperty(k)) {
                     exports[k] = kanso[k];

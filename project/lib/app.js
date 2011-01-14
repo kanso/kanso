@@ -1,4 +1,4 @@
-var kanso = require('kanso');
+var kanso = require('kanso/core');
 
 
 exports.rewrites = [

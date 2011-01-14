@@ -14,7 +14,7 @@ for (var i = 0; i < args.length; i += 1) {
         args.splice(i, 1);
         logger.level = 'debug';
     }
-};
+}
 
 
 function usage() {

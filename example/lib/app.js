@@ -1,4 +1,4 @@
-var kanso = require('kanso');
+var kanso = require('kanso/core');
 
 
 exports.rewrites = [
@@ -8,16 +8,21 @@ exports.rewrites = [
 ];
 
 exports.shows = {
-    'hello': function (doc, req, client) {
+    'hello': function (doc, req) {
+        var greeting = (req.query && req.query.greeting) || 'hello';
         var name = (req.query && req.query.name) || 'world';
+
         if (req.client) {
-            $('#result').html('hello ' + name);
+            $('#result').html(greeting + ' ' + name);
             if (name !== 'world') {
                 $('#result').append(' <br/><a href="/">back<a>');
             }
         }
         else {
-            return kanso.template('base.html', req, {name: name});
+            return kanso.template('base.html', req, {
+                name: name,
+                greeting: greeting
+            });
         }
     }
 };
