@@ -530,7 +530,7 @@ exports.getBaseURL = function (req) {
 
 exports.getURL = function () {
     if (window.location.hash) {
-        return window.location.hash.substr(1);
+        return decodeURIComponent(window.location.hash.substr(1)) || '/';
     }
     var re = new RegExp('\\/_rewrite(.*)$');
     var loc = urlParse('' + window.location);
@@ -540,7 +540,7 @@ exports.getURL = function () {
         if (window.location.search) {
             url.search = window.location.search;
         }
-        return urlFormat(url);
+        return urlFormat(url) || '/';
     }
     return window.location.pathname || '/';
 };

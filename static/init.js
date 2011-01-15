@@ -147,12 +147,13 @@
                         exports.handle(url);
                         exports.setURL(url);
                     }
-                    else if (window.onhashchange) {
+                    /*else if (window.onhashchange) {
                         window.location.hash = url;
-                    }
+                    }*/
                     else {
-                        window.location.hash = url;
-                        exports.handle(url);
+                        $.history.load(url);
+                        //window.location.hash = url;
+                        //exports.handle(url);
                     }
                 }
             });
@@ -163,8 +164,11 @@
             if ('onpopstate' in window) {
                 window.onpopstate = _handle;
             }
-            else if ('onhashchange' in window) {
+            /*else if ('onhashchange' in window) {
                 window.onhashchange = _handle;
+            }*/
+            else {
+                $.history.init(_handle);
             }
         });
     };
