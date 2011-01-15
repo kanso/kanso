@@ -2,8 +2,8 @@
  * From node.js v0.2.6
  */
 
-var path = require("./path"),
-    querystring = require('./querystring');
+var path = require("kanso/path"),
+    querystring = require('kanso/querystring');
 
 
 // define these here so at least they only have to be compiled once on the

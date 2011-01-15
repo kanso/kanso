@@ -3,10 +3,13 @@ var modules = require('../lib/modules'),
 
 var context = {window: {}, kanso: {design_doc: {}}, console: console};
 
-var commonjs_dir = __dirname + '/../commonjs/kanso';
+var m_dir = __dirname + '/../commonjs/kanso';
 var kanso = modules.require({}, {
     'kanso': {
-        'core': fs.readFileSync(commonjs_dir + '/core.js').toString()
+        'core': fs.readFileSync(m_dir + '/core.js').toString(),
+        'url': fs.readFileSync(m_dir + '/url.js').toString(),
+        'path': fs.readFileSync(m_dir + '/path.js').toString(),
+        'querystring': fs.readFileSync(m_dir + '/querystring.js').toString()
     },
     'templates': '// templates module'
 }, '/', 'kanso/core', context);

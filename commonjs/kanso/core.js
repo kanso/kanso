@@ -4,7 +4,8 @@
  * Module dependencies
  */
 
-var templates = require('templates');
+var templates = require('templates'),
+    urlParse = require('./url').parse;
 
 
 /**
@@ -579,19 +580,14 @@ exports.appPath = function (p) {
  */
 
 exports.isAppURL = function (url) {
-    if (/\w+:/.test(url)) {
-        // include protocol
-        var origin = url.split('/').slice(0, 3).join('/');
-        // coerce window.location to a real string so we can use
-        // split in IE
-        var loc = '' + window.location;
-        if (origin === loc.split('/').slice(0, 3).join('/')) {
-            // same origin
-            return true;
-        }
-        // not same origin
-        return false;
+    var u = urlParse(url);
+    // coerce window.location to a real string in IE
+    var loc = urlParse('' + window.location);
+    if (u.protocol === loc.protocol &&
+        u.hostname === loc.hostname &&
+        u.port === loc.port) {
+        return true;
     }
-    return true;
+    return false;
 };
 
