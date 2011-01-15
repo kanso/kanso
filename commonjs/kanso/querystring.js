@@ -2,6 +2,11 @@
  * From node.js v0.2.6
  */
 
+// Browser-friendly version of Array.isArray
+var _isArray = function(obj) {
+    return toString.call(obj) === '[object Array]';
+};
+
 // Query String Utilities
 
 var QueryString = exports;
@@ -97,7 +102,7 @@ QueryString.parse = function (qs, sep, eq) {
             var end = offset + all.length === key.length;
             name = name || nameInBrackets || nameIn2Quotes || nameIn1Quotes;
             next = end ? value : {};
-            if (Array.isArray(res[name])) {
+            if (_isArray(res[name])) {
                 res[name].push(next);
                 res = next;
             }
