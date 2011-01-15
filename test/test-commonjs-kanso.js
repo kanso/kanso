@@ -128,6 +128,10 @@ exports['rewriteGroups'] = function (test) {
         kanso.rewriteGroups('/:one/:two/:three', '/a/b/c'),
         {one: 'a', two: 'b', three: 'c'}
     );
+    test.same(
+        kanso.rewriteGroups('/path/:name', '/path/foo?test=123'),
+        {name: 'foo'}
+    );
     test.done();
 };
 
@@ -221,6 +225,18 @@ exports['createRequest'] = function (test) {
             client: true,
             headers: {},
             query: {}
+        }
+    );
+    test.same(
+        kanso.createRequest(
+            '/path/val?param=test&q=blah',
+            {from: '/path/:group', to: '_show/testshow'}
+        ),
+        {
+            path: ['_show','testshow'],
+            client: true,
+            headers: {},
+            query: {group: 'val', param: 'test', q: 'blah'}
         }
     );
     test.done();

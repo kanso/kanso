@@ -74,8 +74,9 @@ exports.template = function (name, req, context) {
  */
 
 exports.rewriteGroups = function (pattern, url) {
+    var pathname = urlParse(url).pathname;
     var re = new RegExp('^' + pattern.replace(/:\w+/g, '([^/]+)') + '$');
-    var m = re.exec(url);
+    var m = re.exec(pathname);
     if (!m) {
         return [];
     }
@@ -193,7 +194,7 @@ exports.replaceGroups = function (val, groups, splat) {
  // TODO: parse query params from the url and add to req.query
 exports.createRequest = function (url, match) {
     var groups = exports.rewriteGroups(match.from, url);
-    var query = {};
+    var query = urlParse(url, true).query || {};
     var k;
     if (match.query) {
         for (k in match.query) {
