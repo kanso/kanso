@@ -5,7 +5,9 @@
  */
 
 var templates = require('templates'),
-    urlParse = require('./url').parse;
+    url = require('./url'),
+    urlParse = url.parse,
+    urlFormat = url.format;
 
 
 /**
@@ -122,6 +124,7 @@ exports.rewriteSplat = function (pattern, url) {
  */
 
 exports.matchURL = function (url) {
+    var pathname = urlParse(url).pathname;
     var rewrites = kanso.design_doc.rewrites;
     for (var i = 0; i < rewrites.length; i += 1) {
         var r = rewrites[i];
@@ -129,7 +132,7 @@ exports.matchURL = function (url) {
         from = from.replace(/\*$/, '(.*)');
         from = from.replace(/:\w+/g, '([^/]+)');
         var re = new RegExp('^' + from + '$');
-        if (re.test(url)) {
+        if (re.test(pathname)) {
             return r;
         }
     }
@@ -530,9 +533,14 @@ exports.getURL = function () {
         return window.location.hash.substr(1);
     }
     var re = new RegExp('\\/_rewrite(.*)$');
-    var match = re.exec(window.location.pathname);
+    var loc = urlParse('' + window.location);
+    var match = re.exec(loc.pathname);
     if (match) {
-        return match[1] || '/';
+        var url = {pathname: match[1] || '/'};
+        if (window.location.search) {
+            url.search = window.location.search;
+        }
+        return urlFormat(url);
     }
     return window.location.pathname || '/';
 };

@@ -78,7 +78,12 @@ exports['getBaseURL - couchdb no request'] = function (test) {
 
 exports['getURL using pathname'] = function (test) {
     var testpath = function (p) {
-        context.window.location = {pathname: p};
+        context.window.location = {
+            pathname: p,
+            toString: function () {
+                return p;
+            }
+        };
         return kanso.getURL();
     };
     test.equal(testpath('/'), '/');

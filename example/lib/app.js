@@ -13,6 +13,7 @@ exports.shows = {
         var name = (req.query && req.query.name) || 'world';
 
         if (req.client) {
+            console.log(req);
             $('#result').html(greeting + ' ' + name);
             if (name !== 'world') {
                 $('#result').append(' <br/><a href="/">back<a>');

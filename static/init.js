@@ -139,7 +139,6 @@
 
                 if (exports.isAppURL(href)) {
                     var url = exports.appPath(href);
-                    // TODO: test for external / internal urls
                     ev.preventDefault();
 
                     // changing the hash triggers onhashchange, which then
