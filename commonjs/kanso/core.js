@@ -537,6 +537,26 @@ exports.getURL = function () {
 };
 
 /**
+ * Tests is two urls are of the same origin. Accepts parsed url objects
+ * or strings as arguments.
+ */
+
+// TODO: add unit tests for this function
+exports.sameOrigin = function (a, b) {
+    var ap = (typeof a === 'string') ? urlParse(a): a;
+    var bp = (typeof b === 'string') ? urlParse(b): b;
+    // if one url is relative to current origin, return true
+    if (ap.protocol === undefined || bp.protocol === undefined) {
+        return true;
+    }
+    return (
+        ap.protocol === bp.protocol &&
+        ap.hostname === bp.hostname &&
+        ap.port === bp.port
+    );
+};
+
+/**
  * Converts a full url to an app-level url (without baseURL prefix).
  * example: {baseURL}/some/path -> /some/path
  *
@@ -580,14 +600,7 @@ exports.appPath = function (p) {
  */
 
 exports.isAppURL = function (url) {
-    var u = urlParse(url);
     // coerce window.location to a real string in IE
-    var loc = urlParse('' + window.location);
-    if (u.protocol === loc.protocol &&
-        u.hostname === loc.hostname &&
-        u.port === loc.port) {
-        return true;
-    }
-    return false;
+    return exports.sameOrigin(url, '' + window.location);
 };
 

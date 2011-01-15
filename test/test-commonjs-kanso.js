@@ -227,13 +227,14 @@ exports['createRequest'] = function (test) {
 };
 
 exports['isAppURL'] = function (test) {
+    context.window.location = 'http://hostname:port/';
     test.equal(kanso.isAppURL('/'), true);
     test.equal(kanso.isAppURL('/some/path'), true);
     test.equal(kanso.isAppURL('some/path'), true);
-    context.window.location = 'http://hostname:port/';
     test.equal(kanso.isAppURL('http://hostname:port/some/path'), true);
     test.equal(kanso.isAppURL('http://hostname:port'), true);
     test.equal(kanso.isAppURL('http://otherhost:port/some/path'), false);
+    test.equal(kanso.isAppURL('http://otherhost:port'), false);
     test.equal(kanso.isAppURL('http://otherhost:port'), false);
     test.done();
 };
