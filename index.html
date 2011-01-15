@@ -122,7 +122,7 @@
     }
     else {
         // fallback, returns a complete rendered page
-        return kanso.template(req, 'base.html', {main: result});
+        return kanso.template('base.html', req, {main: result});
     }
 };</code></pre>
     <p><strong>STOP</strong>... and just think about that for a moment.</p>
@@ -261,14 +261,14 @@ exports.rewrites = [
 
 exports.shows = {
     welcome: function (doc, req) {
-        var content = kanso.template(req, 'welcome.html', {});
+        var content = kanso.template('welcome.html', req, {});
 
         if (req.client) {
             $('#content').html(content);
             document.title = 'It worked!';
         }
         else {
-            return kanso.template(req, 'base.html', {
+            return kanso.template('base.html', req, {
                 title: 'It worked!',
                 content: content
             });
@@ -427,7 +427,7 @@ exports.shows = {
         while (row = getRow()) {
             rows.push(row);
         }
-        var content = kanso.template(req, 'authors.html', {
+        var content = kanso.template('authors.html', req, {
             rows: rows
         });
 
@@ -436,7 +436,7 @@ exports.shows = {
             document.title = 'Authors';
         }
         else {
-            return kanso.template(req, 'base.html', {
+            return kanso.template('base.html', req, {
                 title: 'Authors',
                 content: content
             });
