@@ -3,8 +3,32 @@
  */
 
 // Browser-friendly version of Array.isArray
-var _isArray = function(obj) {
-    return toString.call(obj) === '[object Array]';
+var _isArray = Array.isArray || function (obj) {
+    return Object.prototype.toString.call(obj) === '[object Array]';
+};
+
+// cross-browser map implementation
+var _map = function (obj, iterator, context) {
+    if (obj.map) {
+        return obj.map(iterator, context);
+    }
+    var results = [];
+    var len = obj.length;
+    for (var i = 0; i < len; i += 1) {
+        results[results.length] = iterator.call(context, obj[i], i, obj);
+    }
+    return results;
+};
+
+// cross-browser Object.keys implementation
+var _keys = function (obj) {
+    var keys = [];
+    for (var k in obj) {
+        if (obj.hasOwnProperty(k)) {
+            keys.push(k);
+        }
+    }
+    return keys;
 };
 
 // Query String Utilities
@@ -44,7 +68,7 @@ QueryString.stringify = function (obj, sep, eq, munge, name) {
         return QueryString.escape(name) + eq + QueryString.escape(obj);
     case '[object Array]':
         name = name + (munge ? "[]" : "");
-        return obj.map(function (item) {
+        return _map(obj, function (item) {
             return QueryString.stringify(item, sep, eq, munge, name);
         }).join(sep);
     }
@@ -61,9 +85,9 @@ QueryString.stringify = function (obj, sep, eq, munge, name) {
 
     var begin = name ? name + "[" : "",
         end = name ? "]" : "",
-        keys = Object.keys(obj),
+        keys = _keys(obj),
         n,
-        s = Object.keys(obj).map(function (key) {
+        s = _map(_keys(obj), function (key) {
             n = begin + key + end;
             return QueryString.stringify(obj[key], sep, eq, munge, n);
         }).join(sep);
@@ -91,7 +115,7 @@ QueryString.parse = function (qs, sep, eq) {
     if (qs === undefined) {
         return {};
     }
-    String(qs).split(sep || "&").map(function (keyValue) {
+    _map(String(qs).split(sep || "&"), function (keyValue) {
         var res = obj,
             next,
             kv = keyValue.split(eq || "="),
