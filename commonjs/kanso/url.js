@@ -6,6 +6,18 @@ var path = require("kanso/path"),
     querystring = require('kanso/querystring');
 
 
+// cross-browser Object.keys implementation
+var _keys = function (obj) {
+    var keys = [];
+    for (var k in obj) {
+        if (obj.hasOwnProperty(k)) {
+            keys.push(k);
+        }
+    }
+    return keys;
+};
+
+
 // define these here so at least they only have to be compiled once on the
 // first module load.
 var protocolPattern = /^([a-z0-9]+:)/,
@@ -97,7 +109,7 @@ exports.parse = function (url, parseQueryString, slashesDenoteHost) {
 
         // pull out the auth and port.
         var p = parseHost(out.host);
-        var keys = Object.keys(p);
+        var keys = _keys(p);
         for (var j = 0, l2 = keys.length; j < l2; j += 1) {
             var key = keys[j];
             out[key] = p[key];
