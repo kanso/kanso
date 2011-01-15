@@ -4,7 +4,7 @@
  * Module dependencies
  */
 
-var templates = require('templates'),
+var templates = require('./templates'), // templates module auto-generated
     url = require('./url'),
     urlParse = url.parse,
     urlFormat = url.format;
