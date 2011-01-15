@@ -1,4 +1,3 @@
-var window = global.window = {};
 var init = require('../static/init');
 
 
@@ -34,17 +33,5 @@ exports['dirname'] = function (test) {
     test.equal(init.dirname('/a/b/c'), '/a/b');
     test.equal(init.dirname('a/b/c'), 'a/b');
     test.equal(init.dirname('a/b'), 'a');
-    test.done();
-};
-
-exports['isAppURL'] = function (test) {
-    test.equal(init.isAppURL('/'), true);
-    test.equal(init.isAppURL('/some/path'), true);
-    test.equal(init.isAppURL('some/path'), true);
-    window.location = 'http://hostname:port/';
-    test.equal(init.isAppURL('http://hostname:port/some/path'), true);
-    test.equal(init.isAppURL('http://hostname:port'), true);
-    test.equal(init.isAppURL('http://otherhost:port/some/path'), false);
-    test.equal(init.isAppURL('http://otherhost:port'), false);
     test.done();
 };

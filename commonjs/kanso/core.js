@@ -568,3 +568,30 @@ exports.appPath = function (p) {
     }
     return p;
 };
+
+
+/**
+ * Used to decide whether to handle a link or not. Should detect app vs.
+ * external urls.
+ *
+ * @param {String} url
+ * @return {Boolean}
+ */
+
+exports.isAppURL = function (url) {
+    if (/\w+:/.test(url)) {
+        // include protocol
+        var origin = url.split('/').slice(0, 3).join('/');
+        // coerce window.location to a real string so we can use
+        // split in IE
+        var loc = '' + window.location;
+        if (origin === loc.split('/').slice(0, 3).join('/')) {
+            // same origin
+            return true;
+        }
+        // not same origin
+        return false;
+    }
+    return true;
+};
+
