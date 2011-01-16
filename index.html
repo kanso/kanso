@@ -185,23 +185,26 @@ git submodule update</pre>
 
     <h3>Starting a project</h3>
     <p>
-      For this tutorial we'll be creating a basic app that displays books by
-      author. First, change to the location you wish to create the project directory
-      in, then start a new project by doing:
+      For this tutorial we'll be creating a basic app that displays albums by
+      artist name. First, change to the location you wish to create the project
+      directory in, then start a new project by doing:
     </p>
-    <pre>kanso create bookstore</pre>
+    <pre>kanso create recordstore</pre>
     <p>
-      This will create a new directory called 'bookstore' containing a project
+      This will create a new directory called 'recordstore' containing a project
       skeleton to get you started. The contents of this directory should look
       something like the following:
     </p>
-    <pre>bookstore
+    <pre>recordstore
   |- lib                        commonjs modules relevant to the app
+     |- app.js                  the module loaded as a design doc
   |- static                     static files to be attached to design doc
+     |- jquery-1.4.2.min.js     some dependencies
+     |- jquery.history.js
+     |- json2.js
   |- templates                  templates used by the app
      |- base.html
      |- welcome.html
-  |- app.js                     the module loaded as a design doc
   |- kanso.json                 kanso settings
     </pre>
     <p>
@@ -210,10 +213,10 @@ git submodule update</pre>
       have a local couchdb database running at localhost:5984 (the default settings).
       In your project directory, do the following:
     </p>
-    <pre>kanso push http://localhost:5984/bookstore</pre>
+    <pre>kanso push http://localhost:5984/recordstore</pre>
     <p>
       If you now visit
-      <a href="http://localhost:5984/bookstore/_design/bookstore/_rewrite/">http://localhost:5984/bookstore/_design/bookstore/_rewrite/</a>
+      <a href="http://localhost:5984/recordstore/_design/recordstore/_rewrite/">http://localhost:5984/recordstore/_design/recordstore/_rewrite/</a>
       you should see a basic welcome page. Don't worry about the long and ugly URL
       for now, this can be fixed later using
       <a href="http://wiki.apache.org/couchdb/Virtual_Hosts">virtual hosts</a>.
@@ -226,36 +229,31 @@ git submodule update</pre>
       and how to load them.
     </p>
     <pre><code class="javascript">{
-    "name": "bookstore",          // the name of the app
-    "load": "app",                // the module to get design doc properties from
-    "modules": ["lib","app.js"],  // files and directories to load as commonjs modules
+    "name": "recordstore",        // the name of the app
+    "load": "lib/app",            // the module to get design doc properties from
+    "modules": "lib",             // files and directories to load as commonjs modules
     "templates": "templates",     // templates directory
     "attachments": "static"       // files and directories to load as attachments
 }</code></pre>
     <p>
       The name determines the id of the design doc, in this case it would be
-      "_design/bookstore". You may also notice that the modules and attachments
-      properties accept either a string or an array of strings as their
-      values. Currently, only one templates folder is supported, although its
-      possible to use subdirectories below that.
-    </p>
-    <p>
-      Perhaps the most important part is the 'load' property. This tells kanso
-      which module to require and use for the design doc. This means any
-      exported values in this module will be used in the resulting design doc.
+      "_design/recordstore". Perhaps the most important part is the 'load' property.
+      This tells kanso which module to require and use for the design doc. This
+      means any exported values in this module will be used in the resulting design
+      doc.
     </p>
 
-    <h3>app.js</h3>
+    <h3>lib/app.js</h3>
     <p>
       This file contains some exported properties which are used in the resulting
       design doc, this is where the action happens and you get to define the
       behaviour of your app:
     </p>
-    <pre><code class="javascript">var kanso = require('kanso');
+    <pre><code class="javascript">var kanso = require('kanso/core');
 
 
 exports.rewrites = [
-    {from: '/static/*', to: 'static/jquery-1.4.2.min.js'},
+    {from: '/static/*', to: 'static/*'},
     {from: '/', to: '_show/welcome'}
 ];
 
@@ -286,10 +284,9 @@ exports.shows = {
     </p>
     <p>
       There are a couple of interesting things here. Firstly, we've required a
-      'kanso' module which doesn't exist in our project directory. This is a
-      special module which is always present in your apps, and added
-      automatically by kanso itself. The kanso module provides access to core
-      components such as templating.
+      'kanso/core' module which doesn't exist in our project directory. This is
+      one of the kanso modules automatically added to your app when you push
+      to couchdb, and provides access to core components such as templating.
     </p>
     <p>
       Secondly, we're actually using the context of the module inside the
@@ -316,14 +313,19 @@ exports.shows = {
       templates are compiled when you 'kanso push', not each time a page is
       rendered.
     </p>
-    <pre><code class="html">&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"&gt; 
+    <pre><code class="html">
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"&gt; 
   &lt;head&gt; 
     &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt; 
     &lt;title&gt;{title}&lt;/title&gt; 
   &lt;/head&gt; 
   &lt;body&gt; 
-    {content|s}
+    &lt;div id="content"&gt;
+      {content|s}
+    &lt;/div&gt;
     &lt;script src="{baseURL}/static/jquery-1.4.2.min.js"&gt;&lt;/script&gt;
+    &lt;script src="{baseURL}/static/jquery.history.js"&gt;&lt;/script&gt;
+    &lt;script src="{baseURL}/static/json2.js"&gt;&lt;/script&gt;
     &lt;script src="{baseURL}/kanso.js"&gt;&lt;/script&gt;
   &lt;/body&gt;
 &lt;/html&gt;</code></pre>
@@ -359,107 +361,43 @@ exports.shows = {
         section of the base.html template.
     </p>
 
-    <h2>The Bookstore</h2>
+    <h2>The Recordstore</h2>
     <p>
       OK, now we've explored a skeleton Kanso project, let's start building our
-      own web app on top of it. Open Futon and view the bookstore database at
-      <a href="http://localhost:5984/_utils/database.html?bookstore">http://localhost:5984/_utils/database.html?bookstore</a>.
+      own web app on top of it. Open Futon and view the recordstore database at
+      <a href="http://localhost:5984/_utils/database.html?recordstore">http://localhost:5984/_utils/database.html?recordstore</a>.
       You should have already created this when we pushed the new project to
       localhost in the 'Getting started' section above.
     </p>
     <p>Add the following documents:</p>
     <pre><code type="javascript">{
-  "type": "book",
-  "authors": ["J. Chris Anderson","Jan Lehnardt","Noah Slater"],
-  "title": "CouchDB: The Definitive Guide"
-}
-
+  "type": "album",
+  "title": "Blue Lines",
+  "artist": "Massive Attack",
+  "cover": "http://userserve-ak.last.fm/serve/174s/47527219.png"
+},
 {
-  "type": "book",
-  "authors": ["D Crockford"],
-  "title": "JavaScript: The Good Parts"
-}
-
+  "type": "album",
+  "title": "Mezzanine",
+  "artist": "Massive Attack",
+  "cover": "http://userserve-ak.last.fm/serve/174s/38150483.png"
+},
 {
-  "type": "book",
-  "authors": ["Joe Armstrong"],
-  "title": "Programming Erlang: Software for a Concurrent World"
+  "type": "album",
+  "artist": "Underworld",
+  "title": "Beaucoup Fish",
+  "cover": "http://userserve-ak.last.fm/serve/174s/41665159.png"
 }</code></pre>
+    <p>
+      Feel free to use your own selection of great albums if you wish, just
+      make sure you add more than one by the same artist so we can
+      demonstrate something later.
+    </p>
 
     <h3>Creating views</h3>
     <p>
-      Now we have some data to play with, lets create a view to list books
-      by author. For this, we'll need to edit the app.js file to include the
-      following:
+      Coming soon...
     <p>
-<pre><code type="javascript">exports.views = {
-    books_by_author: {
-        map: function (doc) {
-            if (doc.type === 'book') {
-                for (var i = 0; i &lt; doc.authors.length; i++) {
-                    emit(doc.authors[i], {title: doc.title});
-                }
-            }
-        }
-    }
-};</code></pre>
-    <p>
-      This can be split into separate files at any point and included using
-      require(), but for now we're going to keep everything in app.js.
-    </p>
-    <p>Let's push the app again to update it:</p>
-    <pre>kanso push http://localhost:5984/bookstore</pre>
-    <p>
-      You can now see the results at
-      <a href="http://localhost:5984/bookstore/_design/bookstore/_view/books_by_author">http://localhost:5984/bookstore/_design/bookstore/_view/books_by_author</a>.
-    </p>
-
-    <h3>Adding lists and rewrites</h3>
-    <p>
-      Now we have a working view, lets setup a list function to replace the
-      default welcome page. Add the following to app.js:
-    </p>
-    <pre><code class="javascript">exports.lists = {
-    authors: function (head, req) {
-        start({"headers": {"Content-Type": "text/html"} });
-
-        var row, rows = [];
-        while (row = getRow()) {
-            rows.push(row);
-        }
-        var content = kanso.template('authors.html', req, {
-            rows: rows
-        });
-
-        if (req.client) {
-            $('#content').html(content);
-            document.title = 'Authors';
-        }
-        else {
-            return kanso.template('base.html', req, {
-                title: 'Authors',
-                content: content
-            });
-        }
-    }
-};</code></pre>
-    <p>
-      Now, update the rewrite rules so the root URL points to the new list
-      function instead of the welcome page:
-    </p>
-    <pre><code class="javascript">exports.rewrites = [
-    {from: '/', to: '_list/authors/books_by_author'}
-];</code></pre>
-    <p>Next, lets add the 'authors.html' template to the templates folder:</p>
-    <pre><code class="html">&lt;ul&gt;
-    {#rows}
-        &lt;li&gt;{key}&lt;/li&gt;
-    {/rows}
-&lt;/ul&gt;</code></pre>
-    <p>
-      Push the app again, then open 
-      <a href="http://localhost:5984/bookstore/_design/bookstore/_rewrite/">http://localhost:5984/bookstore/_design/bookstore/_rewrite/</a>.
-    </p>
 
     <!-- GitHub ribbon -->
     <a href="http://github.com/caolan/kanso"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://assets2.github.com/img/7afbc8b248c68eb468279e8c17986ad46549fb71?repo=&url=http%3A%2F%2Fs3.amazonaws.com%2Fgithub%2Fribbons%2Fforkme_right_darkblue_121621.png&path=" alt="Fork me on GitHub"></a>
