@@ -21,6 +21,7 @@
         font-weight: normal;
         letter-spacing: -0.055em;
         color: black;
+        margin-bottom: 0.809em;
       }
       h1 span {
         font-size: 0.618em;
@@ -68,6 +69,23 @@
       code {
         background-color: white !important;
       }
+      .step {
+        position: relative;
+        height: 380px;
+      }
+      .step img {
+        position: absolute;
+        top: 1.618em;
+        left: 0;
+      }
+      .step p {
+        border-left: 2px solid #ccc;
+        position: absolute;
+        top: 1.618em;
+        left: 370px;
+        padding-left: 20px;
+        margin: 0;
+      }
     </style>
   </head> 
   <body> 
@@ -79,7 +97,7 @@
       <li><strong>Flexible</strong> - a lightweight CommonJS environment</li>
       <li><strong>Reduces code fragmentation</strong> - by bringing the client-side and server-side together</li>
       <li><strong>Automatic history support</strong> - adds pushState and hash-based URLs automatically</li>
-      <li><strong>Searchable and degradable</strong> - add Google-indexable pages and support clients without JavaScript</li>
+      <li><strong>Searchable and degradable</strong> - easily add Google-indexable pages and support clients without JavaScript</li>
       <li><strong>Familiar</strong> - all this can be done by using the CouchDB design doc APIs</li>
     </ul>
 
@@ -92,6 +110,8 @@
     </p>
 
     <h2>The idea</h2>
+
+    <iframe src="https://docs.google.com/present/embed?id=dd5rhn5s_1153b9rndh&size=l" frameborder="0" width="700" height="559"></iframe>
 
     <h3>Browser and server together</h3>
     <p>
@@ -125,7 +145,6 @@
         return kanso.template('base.html', req, {main: result});
     }
 };</code></pre>
-    <p><strong>STOP</strong>... and just think about that for a moment.</p>
     <p>
       Think about all the things I'm <strong>not</strong> having to write.
       I'm not having to set up Sammy.js on the client side with URL rewrite
@@ -137,12 +156,20 @@
 
     <h3>CommonJS</h3>
     <p>
+        The only problem with pushing all our application logic into the
+        design doc is that its JSON, and JSON isn't a nice format to develop
+        in. For starters, we have to write functions as strings and
+        we can't include code from other files! This is why KansoJS has
+        adopted the use of CommonJS modules instead of plain JSON for
+        writing design docs.
+    <p>
       Writing your JavaScript in
       <a href="http://wiki.commonjs.org/wiki/Modules">CommonJS modules</a> is
-      much nicer than loading separate files which all modify the global
-      scope. You may already know that you can use CommonJS modules in
-      your CouchDB list, show, validation and other functions. This makes it
-      an ideal style to use throughout your application.
+      much nicer than the traditional way of loading separate files which all
+      modify the global scope. You may already know that you can use CommonJS
+      modules in your CouchDB lists, shows, validate_doc_update and other
+      functions. This makes it an ideal style to use throughout your
+      application.
     </p>
     <pre><code class="javascript">var kanso = require('kanso');
 
@@ -370,7 +397,7 @@ exports.shows = {
       localhost in the 'Getting started' section above.
     </p>
     <p>Add the following documents:</p>
-    <pre><code type="javascript">{
+    <pre><code class="javascript">{
   "type": "album",
   "title": "Blue Lines",
   "artist": "Massive Attack",
@@ -396,8 +423,109 @@ exports.shows = {
 
     <h3>Creating views</h3>
     <p>
-      Coming soon...
+      To keep things clean and tidy, we're going to create a new module for
+      storing views. Create a new file at lib/views.js with the following content:
     <p>
+    <pre><code class="javascript">exports.artists = {
+    map: function (doc) {
+        if (doc.type === 'album') {
+            emit(doc.artist, null);
+        }
+    },
+    reduce: function (keys, values, rereduce) {
+        return true;
+    }
+};</code></pre>
+    <p>
+      Next, we need to export these views from the lib/app.js file so they are
+      included in the design document. To include code from another file we can
+      use require. Add the following to the end of lib/app.js.
+    </p>
+    <pre><code class="javascript">exports.views = require('./views');</code></pre>
+    <p>
+      Now, if we push the app again we should see the new view available in futon.
+      Push the app using the following command:
+    </p>
+    <pre>kanso push http://localhost:5984/recordstore</pre>
+    <p>
+      Then, visit
+      <a href="http://localhost:5984/_utils/database.html?recordstore/_design/recordstore/_view/artists">http://localhost:5984/_utils/database.html?recordstore/_design/recordstore/_view/artists</a>
+      to see the results of the newly created view.
+    </p>
+
+    <h3>Templates and list functions</h3>
+    <p>
+      Now we have a view and some data, let's replace the welcome page with a list
+      of artists. Once again, we'll create a new module for this code. Add a file at
+      lib/lists.js with the following content:
+    </p>
+    <pre><code class="javascript">var kanso = require('kanso/core');
+
+
+exports.artists = function (head, req) {
+    start({headers: {'Content-Type': 'text/html'}});
+    var row, rows = [];
+    while (row = getRow()) {
+        rows.push(row);
+    }
+    // create a html list of artists
+    var content = kanso.template('artists.html', req, {rows: rows});
+
+    if (req.client) {
+        // if client-side, replace the HTML of the content div with the list
+        $('#content').html(content);
+        // update the page title
+        document.title = 'Artists';
+    }
+    else {
+        // if server-side, return a newly rendered page using the base template
+        return kanso.template('base.html', req, {
+            title: 'Artists',
+            content: content
+        });
+    }
+};</code></pre>
+    <p>
+      This list function will be used with the artists view we created earlier.
+      When run server-side it will render a complete HTML page, and when run
+      client-side it will update the current page's content and title instead.
+    </p>
+    <p>
+      Again, we need to export this from lib/app.js too.
+    </p>
+    <pre><code class="javascript">exports.lists = require('./lists');</code></pre>
+    <p>
+      You may have noticed we used a template 'artists.html' in our list function.
+      This template doesn't exist, so we need to create it. Add a file at
+      templates/artists.html with the following content:
+    </p>
+    <pre><code class="html">&lt;h1&gt;Artists&lt;/h1&gt;
+
+&lt;ul&gt;
+  {#rows}
+    &lt;li&gt;&lt;a href="{baseURL}/{key|uc}"&gt;{key}&lt;/a&gt;&lt;/li&gt;
+  {/rows}
+&lt;/ul&gt;</code></pre>
+    <p>
+      Finally, let's replace the welcome page with our new list function.
+      Update lib/app.js to the following:
+    </p>
+    <pre><code class="javascript">var kanso = require('kanso/core');
+
+
+exports.rewrites = [
+    {from: '/static/*', to: 'static/*'},
+    {from: '/', to: '_list/artists/artists', query: {group: true}}
+];
+
+exports.views = require('./views');
+exports.lists = require('./lists');</code></pre>
+    <p>
+      We've removed the old welcome show function and added a rewrite from the
+      root URL to the new artists list function. Push the app again, then visit
+      <a href="http://localhost:5984/recordstore/_design/recordstore/_rewrite/">http://localhost:5984/recordstore/_design/recordstore/_rewrite/</a>.
+      You should see a list of artist links. The linked pages don't exist yet.
+    </p>
 
     <!-- GitHub ribbon -->
     <a href="http://github.com/caolan/kanso"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://assets2.github.com/img/7afbc8b248c68eb468279e8c17986ad46549fb71?repo=&url=http%3A%2F%2Fs3.amazonaws.com%2Fgithub%2Fribbons%2Fforkme_right_darkblue_121621.png&path=" alt="Fork me on GitHub"></a>
