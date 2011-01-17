@@ -56,7 +56,9 @@ exports['addFiles'] = function (test) {
             'settings': {
                 'templates': 'templates'
             },
-            'templates': 'dustsrctmpl1tmpl2tmpl3'
+            'kanso': {
+                'templates': 'dustsrctmpl1tmpl2tmpl3'
+            }
         });
         fs.readFile = _readFile;
         dust.compile = _compile;
