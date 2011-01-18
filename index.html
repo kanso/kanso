@@ -114,6 +114,7 @@
     <iframe src="https://docs.google.com/present/embed?id=dd5rhn5s_1153b9rndh&size=l" frameborder="0" width="700" height="559"></iframe>
 
     <h3>Browser and server together</h3>
+    <!--
     <p>
       I hate writing everything twice in order to have fast and dynamic
       sites which also provide fallbacks. Its annoying to copy around URL
@@ -126,6 +127,7 @@
       browser. You're already defining much of the application's behaviour
       in the design doc, why should you have to redefine it all over again?
     </p>
+    -->
     <p>
       CouchDB already allows dynamic responses using list and show functions.
       Now, you can add client-side code too. That means you're able to fetch
@@ -524,7 +526,19 @@ exports.lists = require('./lists');</code></pre>
       We've removed the old welcome show function and added a rewrite from the
       root URL to the new artists list function. Push the app again, then visit
       <a href="http://localhost:5984/recordstore/_design/recordstore/_rewrite/">http://localhost:5984/recordstore/_design/recordstore/_rewrite/</a>.
-      You should see a list of artist links. The linked pages don't exist yet.
+      You should see a list of artist links (the linked pages don't exist yet).
+    </p>
+
+    <h2>To be continued...</h2>
+    <p>
+      This tutorial is a work in progress, if you have any additions then
+      please fork the <a href="https://github.com/caolan/kanso">Kanso project</a>
+      on GitHub and edit the index.html file. Any questions or comments can be
+      sent to <a href="https://github.com/caolan">caolan</a> on GitHub.
+    </p>
+    <p>
+      To be kept informed, <a href="https://github.com/kanso">Watch the Kanso project on GitHub</a>
+      or follow <a href="http://twitter.com/caolan">@caolan</a> on Twitter.
     </p>
 
     <!-- GitHub ribbon -->
