@@ -11,7 +11,8 @@ The surprisingly simple way to write [CouchApps](http://couchapp.org).
 
 [Read more...](http://kansojs.org)
 
-------------------
+
+## The Idea
 
 With a normal CouchApp, you define the behaviour of your app in a design
 document which you push to CouchDB. This can describe URL patterns,
