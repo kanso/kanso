@@ -25,9 +25,9 @@ test:
 	nodeunit test
 
 install: build
-	install --directory $(NODEJSLIBDIR)
-	cp -a $(BUILDDIR)/kanso $(NODEJSLIBDIR)
-	install --mode=0755 $(BUILDDIR)/kanso.sh $(BINDIR)/kanso
+	#install --directory $(NODEJSLIBDIR)
+	cp -ra $(BUILDDIR)/kanso $(NODEJSLIBDIR)
+	install -m 0755 $(BUILDDIR)/kanso.sh $(BINDIR)/kanso
 
 uninstall:
 	rm -rf $(NODEJSLIBDIR)/kanso $(NODEJSLIBDIR)/kanso.js $(BINDIR)/kanso
