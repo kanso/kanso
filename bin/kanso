@@ -1,11 +1,8 @@
 #!/usr/bin/env node
 
-var kanso = require('../lib/kanso'),
-    settings = require('../lib/settings'),
-    couchdb = require('../lib/couchdb'),
-    data = require('../lib/data'),
-    utils = require('../lib/utils'),
-    logger = require('../lib/logger');
+var path = require('path'),
+    logger = require('../lib/logger'),
+    commands = require('../lib/commands');
 
 
 var args = process.argv.slice(2);
@@ -17,15 +14,31 @@ for (var i = 0; i < args.length; i += 1) {
     }
 }
 
+function padRight(str, len) {
+    while (str.length < len) {
+        str = str + ' ';
+    }
+    return str;
+}
+
+function longest(arr) {
+    return arr.reduce(function (a, x) {
+        if (x.length > a) {
+            return x.length;
+        }
+        return a;
+    }, 0);
+}
+
 
 function usage() {
     console.log('Usage: kanso COMMAND [ARGS]');
     console.log('');
     console.log('Available commands:');
-    console.log('  push        Upload a project to a CouchDB instance');
-    console.log('  show        Load a project and output resulting JSON');
-    console.log('  create      Create a new project skeleton');
-    console.log('  pushdata    Push a file or directory of json files to DB');
+    var len = longest(Object.keys(commands));
+    Object.keys(commands).forEach(function (k) {
+        console.log('  ' + padRight(k, len) + '    ' + commands[k].summary);
+    });
     logger.clean_exit = true;
 }
 
@@ -33,101 +46,12 @@ if (!args.length) {
     usage();
 }
 else {
-    switch (args[0]) {
-    case 'show':
-        var dir = args[1] || '.';
-        settings.load(dir, function (err, settings) {
-            if (err) {
-                return logger.error(err);
-            }
-            kanso.load(dir, settings, function (err, doc) {
-                if (err) {
-                    return logger.error(err);
-                }
-                // output to console (not a log entry, actual output)
-                console.log(JSON.stringify(doc, null, 4));
-                logger.clean_exit = true;
-            });
-        });
-        break;
-    case 'push':
-        if (!args[1]) {
-            return logger.error('No CouchDB URL specified');
-        }
-        var dir = args[2] || '.';
-        settings.load(dir, function (err, settings) {
-            if (err) {
-                return logger.error(err);
-            }
-            kanso.load(dir, settings, function (err, doc) {
-                var url = args[1].replace(/\/$/, '');
-                var db = couchdb(url);
-                db.ensureDB(function (err) {
-                    if (err) {
-                        return logger.error(err);
-                    }
-                    var id = '_design/' + settings.name;
-                    db.save(id, doc, {force: true}, function (err) {
-                        if (err) {
-                            return logger.error(err);
-                        }
-                        else {
-                            logger.end(
-                                url + '/_design/' +
-                                settings.name + '/_rewrite/'
-                            );
-                        }
-                    });
-                });
-            });
-        });
-        break;
-    case 'create':
-        var dir = args[1];
-        kanso.create(dir, function (err) {
-            if (err) {
-                return logger.error(err);
-            }
-            logger.end(utils.abspath(dir));
-        });
-        break;
-    case 'pushdata':
-        var force = false;
-        for (var i = 0; i < args.length; i += 1) {
-            if (args[i] === '-f' || args[i] === '--force') {
-                force = true;
-                args.splice(i, 1);
-                i = 0;
-            }
-        }
-        if (!args[1]) {
-            return logger.error('No CouchDB URL specified');
-        }
-        if (!args[2]) {
-            return logger.error('No data file or directory specified');
-        }
-        var path = args[2] || '.';
-        var db = couchdb(args[1]);
-        data.eachDoc(path, function (p, doc, cb) {
-            logger.info('Loaded ' + p + (doc._id ? ' (' + doc._id + ')': ''));
-            db.save(doc._id, doc, {force: force}, function (err) {
-                if (!err) {
-                    logger.info(
-                        'Saved ' + p + (doc._id ? ' (' + doc._id + ')': '')
-                    );
-                }
-                cb(err);
-            });
-        },
-        function (err) {
-            if (err) {
-                return logger.error(err);
-            }
-            logger.end('uploads complete');
-        });
-        break;
-    default:
+    var cmd = args.shift();
+    if (cmd in commands) {
+        commands[cmd].run(args);
+    }
+    else {
+        logger.error('No such command: ' + cmd);
         usage();
-        logger.clean_exit = true;
     }
 }
