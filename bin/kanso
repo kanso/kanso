@@ -108,11 +108,13 @@ else {
         }
         var path = args[2] || '.';
         var db = couchdb(args[1]);
-        data.eachDoc(path, function (doc, cb) {
-            logger.info('Loaded ' + doc._id);
+        data.eachDoc(path, function (p, doc, cb) {
+            logger.info('Loaded ' + p + (doc._id ? ' (' + doc._id + ')': ''));
             db.save(doc._id, doc, {force: force}, function (err) {
                 if (!err) {
-                    logger.info('Saved ' + doc._id);
+                    logger.info(
+                        'Saved ' + p + (doc._id ? ' (' + doc._id + ')': '')
+                    );
                 }
                 cb(err);
             });
