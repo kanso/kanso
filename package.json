@@ -1,0 +1,16 @@
+{
+    "name": "kanso",
+    "description": "The surprisingly simple way to write CouchApps",
+    "maintainers": [
+        {"name": "Caolan McMahon", "web": "https://github.com/caolan"}
+    ],
+    "version": "0.0.1",
+    "repository": {
+        "type": "git",
+        "url": "http://github.com/caolan/kanso.git"
+    },
+    "bugs": {"web": "http://github.com/caolan/kanso/issues"},
+    "directories": { "lib": "./lib" },
+    "bin": {"kanso": "./bin/kanso"},
+    "main": "lib/kanso.js"
+}
