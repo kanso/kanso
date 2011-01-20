@@ -23,6 +23,7 @@ function usage() {
     console.log('Available commands:');
     console.log('  push    Upload a project to a CouchDB instance');
     console.log('  show    Load a project and output resulting JSON');
+    logger.clean_exit = true;
 }
 
 if (!args.length) {
