@@ -22,9 +22,10 @@ function usage() {
     console.log('Usage: kanso COMMAND [ARGS]');
     console.log('');
     console.log('Available commands:');
-    console.log('  push    Upload a project to a CouchDB instance');
-    console.log('  show    Load a project and output resulting JSON');
-    console.log('  create  Create a new project skeleton');
+    console.log('  push        Upload a project to a CouchDB instance');
+    console.log('  show        Load a project and output resulting JSON');
+    console.log('  create      Create a new project skeleton');
+    console.log('  pushdata    Push a file or directory of json files to DB');
     logger.clean_exit = true;
 }
 
