@@ -26,7 +26,7 @@ test:
 
 install: build
 	#install --directory $(NODEJSLIBDIR)
-	cp -ra $(BUILDDIR)/kanso $(NODEJSLIBDIR)
+	cp -Ra $(BUILDDIR)/kanso $(NODEJSLIBDIR)
 	install -m 0755 $(BUILDDIR)/kanso.sh $(BINDIR)/kanso
 
 uninstall:
