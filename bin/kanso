@@ -47,7 +47,10 @@ if (!args.length) {
 }
 else {
     var cmd = args.shift();
-    if (cmd in commands) {
+    if (cmd === '-h' || cmd === '--help') {
+        usage();
+    }
+    else if (cmd in commands) {
         commands[cmd].run(args);
     }
     else {
