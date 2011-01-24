@@ -10,3 +10,6 @@
 [submodule "deps/node-mime"]
 	path = deps/node-mime
 	url = git://github.com/bentomas/node-mime.git
+[submodule "deps/dustjs"]
+	path = deps/dustjs
+	url = git://github.com/akdubya/dustjs.git
