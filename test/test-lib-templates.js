@@ -7,7 +7,7 @@ var templates = require('../lib/templates'),
 exports['load'] = function (test) {
     var doc = {settings: {templates: 'templates'}};
     var _find = templates.find;
-    templates.find = function (p, cb) {
+    templates.find = function (p, pdir, cb) {
         cb(null, ['file1','file2','file3']);
     };
     var _addFiles = templates.addFiles;
@@ -81,7 +81,7 @@ exports['find'] = function (test) {
             '.example.html.swp'
         ]);
     };
-    templates.find('p', function (err, files) {
+    templates.find('p', '', function (err, files) {
         test.ifError(err);
         test.same(files, [
             'two.html',

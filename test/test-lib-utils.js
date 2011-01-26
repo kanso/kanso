@@ -102,6 +102,10 @@ exports['relpath'] = function (test) {
         'subdir'
     );
     test.equals(utils.relpath('file.ext', dir), 'file.ext');
+    test.equals(
+        utils.relpath('../dir/lib/file.ext', '../dir'),
+        'lib/file.ext'
+    );
     test.done();
 };
 

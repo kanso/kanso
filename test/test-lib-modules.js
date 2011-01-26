@@ -6,7 +6,7 @@ var modules = require('../lib/modules'),
 exports['load'] = function (test) {
     var doc = {settings: {modules: 'lib'}};
     var _find = modules.find;
-    modules.find = function (p, cb) {
+    modules.find = function (p, pdir, cb) {
         cb(null, ['file1','file2','file3']);
     };
     var _addFiles = modules.addFiles;
@@ -31,7 +31,7 @@ exports['load multiple dirs'] = function (test) {
     var doc = {settings: {modules: ['lib','deps']}};
     var find_calls = [];
     var _find = modules.find;
-    modules.find = function (p, cb) {
+    modules.find = function (p, pdir, cb) {
         find_calls.push(p);
         cb(null, ['file']);
     };
@@ -91,7 +91,34 @@ exports['find'] = function (test) {
             '.example.js.swp'
         ]);
     };
-    modules.find('p', function (err, files) {
+    modules.find('p', '', function (err, files) {
+        test.ifError(err);
+        test.same(files, [
+            'two.js',
+            'dir/subdir/file.js',
+            '/home/user/project/file.js'
+        ]);
+        utils.descendants = _descendants;
+        test.done();
+    });
+};
+
+exports['find - hidden project path'] = function (test) {
+    // npm stores the package inside a hidden directory
+    var _descendants = utils.descendants;
+    utils.descendants = function (p, callback) {
+        return callback(null, [
+            '.one.js',
+            'two.js',
+            'three',
+            'dir/subdir/file.js',
+            'dir/.hiddendir/file.js',
+            '/home/user/project/file.js',
+            '/home/user/project/.file.js',
+            '.example.js.swp'
+        ]);
+    };
+    modules.find('p', '', function (err, files) {
         test.ifError(err);
         test.same(files, [
             'two.js',

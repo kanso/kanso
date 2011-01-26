@@ -10,7 +10,9 @@ exports['load'] = function (test) {
     settings.load(pdir, function (err, settings) {
         test.ifError(err);
         kanso.load(pdir, settings, function (err, doc) {
-            test.ifError(err);
+            if (err) {
+                throw err;
+            }
             test.same(doc.settings, {
                 'name': 'testproject',
                 'load': 'lib/app',

@@ -6,7 +6,7 @@ var attachments = require('../lib/attachments'),
 exports['load'] = function (test) {
     var doc = {settings: {attachments: 'attachments'}};
     var _find = attachments.find;
-    attachments.find = function (p, cb) {
+    attachments.find = function (p, pdir, cb) {
         cb(null, ['file1','file2','file3']);
     };
     var _addFiles = attachments.addFiles;
@@ -27,7 +27,7 @@ exports['load multiple dirs'] = function (test) {
     var doc = {settings: {attachments: ['lib','deps']}};
     var find_calls = [];
     var _find = attachments.find;
-    attachments.find = function (p, cb) {
+    attachments.find = function (p, pdir, cb) {
         find_calls.push(p);
         cb(null, ['file']);
     };
@@ -81,7 +81,7 @@ exports['find'] = function (test) {
     var _descendants = utils.descendants;
     utils.descendants = function (p, callback) {
         return callback(null, [
-            '.one.html',
+            '.project/.one.html',
             'two.html',
             'three',
             'dir/subdir/file.html',
@@ -92,7 +92,7 @@ exports['find'] = function (test) {
             'static/jquery-1.4.2.min.js'
         ]);
     };
-    attachments.find('p', function (err, files) {
+    attachments.find('p', '', function (err, files) {
         test.ifError(err);
         test.same(files, [
             'two.html',
