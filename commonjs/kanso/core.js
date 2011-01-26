@@ -462,7 +462,12 @@ exports.handle = function (url) {
         }
         else {
             // TODO: decide what happens here
-            alert('Unknown rewrite target: ' + req.path.join('/'));
+            //alert('Unknown rewrite target: ' + req.path.join('/'));
+            console.log('Unknown rewrite target: ' + req.path.join('/'));
+            var url = exports.getBaseURL() + '/_db/_design/' + kanso.name +
+                      '/' + req.path.join('/');
+            console.log('redirecting to: ' + url);
+            window.location = url;
         }
     }
     else {
