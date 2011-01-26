@@ -159,7 +159,12 @@
             });
 
             var _handle = function (ev) {
-                exports.handle(exports.getURL());
+                var url = exports.getURL();
+                exports.handle(url);
+                // for google analytics
+                if (window.pageTracker) {
+                    pageTracker._trackPageview(url);
+                }
             };
             if ('onpopstate' in window) {
                 window.onpopstate = _handle;
