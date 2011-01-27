@@ -447,6 +447,7 @@ exports.runList = function (req, name, view, callback) {
 exports.handle = function (url) {
     var match = exports.matchURL(url);
     if (match) {
+        var parsed = urlParse(url);
         var req = exports.createRequest(url, match);
         var msg = url + ' -> ' + JSON.stringify(req.path.join('/'));
         msg += ' ' + JSON.stringify(req.query);
@@ -468,6 +469,16 @@ exports.handle = function (url) {
                       '/' + req.path.join('/');
             console.log('redirecting to: ' + url);
             window.location = url;
+        }
+
+        if (parsed.hash) {
+            // we have to handle in-page anchors manually because we've
+            // hijacked the hash part of the url
+            // TODO: DO THIS AFTER RUNSHOW / RUNLIST CALLBACKS!
+            var el = $(parsed.hash);
+            if (el.length) {
+                window.scrollTo(0, el.offset().top);
+            }
         }
     }
     else {
@@ -580,6 +591,12 @@ exports.sameOrigin = function (a, b) {
 
 // TODO: add unit tests for this function
 exports.appPath = function (p) {
+    // hash links need current URL prepending
+    if (p.charAt(0) === '#') {
+        var newurl = urlParse(exports.getURL());
+        newurl.hash = p;
+        return exports.appPath(urlFormat(newurl));
+    }
     if (/\w+:/.test(p)) {
         // include protocol
         var origin = p.split('/').slice(0, 3).join('/');
