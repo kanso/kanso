@@ -98,6 +98,10 @@
         this.require = exports.createRequire('');
     }
 
+    exports.hashUnescape = function (hash) {
+        return hash.replace(/%2F/g, '/');
+    };
+
     exports.init = function () {
 
         if (!window.console) {
@@ -151,7 +155,16 @@
                         window.location.hash = url;
                     }*/
                     else {
-                        $.history.load(url);
+                        // TODO: make this an option?
+                        if (window.location.pathname !== '/') {
+                            // redirect to root so hash-based urls look nicer
+                            window.location = '/#' + exports.hashUnescape(
+                                encodeURIComponent(url)
+                            );
+                        }
+                        else {
+                            $.history.load(url);
+                        }
                         //window.location.hash = url;
                         //exports.handle(url);
                     }
@@ -173,7 +186,9 @@
                 window.onhashchange = _handle;
             }*/
             else {
-                $.history.init(_handle);
+                $.history.init(_handle, {
+                    unescape: exports.hashUnescape
+                });
             }
         });
     };
