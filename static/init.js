@@ -158,9 +158,8 @@
                         // TODO: make this an option?
                         if (window.location.pathname !== '/') {
                             // redirect to root so hash-based urls look nicer
-                            window.location = '/#' + exports.hashUnescape(
-                                encodeURIComponent(url)
-                            );
+                            window.location = exports.getBaseURL() + '/#' +
+                                exports.hashUnescape(encodeURIComponent(url));
                         }
                         else {
                             $.history.load(url);
