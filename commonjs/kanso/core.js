@@ -453,13 +453,25 @@ exports.handle = function (url) {
         msg += ' ' + JSON.stringify(req.query);
         console.log(msg);
 
+        function after(err) {
+            if (!err && parsed.hash) {
+                // we have to handle in-page anchors manually because we've
+                // hijacked the hash part of the url
+                // TODO: don't re-handle the page if only the hash has changed
+                var el = $(parsed.hash);
+                if (el.length) {
+                    window.scrollTo(0, el.offset().top);
+                }
+            }
+        }
+
         var src, fn, name;
 
         if (req.path[0] === '_show') {
-            exports.runShow(req, req.path[1], req.path[2]);
+            exports.runShow(req, req.path[1], req.path[2], after);
         }
         else if (req.path[0] === '_list') {
-            exports.runList(req, req.path[1], req.path[2]);
+            exports.runList(req, req.path[1], req.path[2], after);
         }
         else {
             // TODO: decide what happens here
@@ -469,16 +481,6 @@ exports.handle = function (url) {
                       '/' + req.path.join('/');
             console.log('redirecting to: ' + url);
             window.location = url;
-        }
-
-        if (parsed.hash) {
-            // we have to handle in-page anchors manually because we've
-            // hijacked the hash part of the url
-            // TODO: DO THIS AFTER RUNSHOW / RUNLIST CALLBACKS!
-            var el = $(parsed.hash);
-            if (el.length) {
-                window.scrollTo(0, el.offset().top);
-            }
         }
     }
     else {
