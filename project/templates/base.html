@@ -10,7 +10,15 @@
     </div>
     <script src="{baseURL}/static/jquery-1.4.2.min.js"></script>
     <script src="{baseURL}/static/jquery.history.js"></script>
-    <script src="{baseURL}/static/json2.js"></script>
-    <script src="{baseURL}/kanso.js"></script>
+    <script>
+        if (typeof JSON === 'undefined') {
+            $.getScript("{baseURL}/static/json2.js", function () {
+                $.getScript("{baseURL}/kanso.js");
+            });
+        }
+        else {
+            $.getScript("{baseURL}/kanso.js");
+        }
+    </script>
   </body>
 </html>
