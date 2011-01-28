@@ -5,6 +5,7 @@
  */
 
 var templates = require('./templates'), // templates module auto-generated
+    settings = require('./settings'), // settings module auto-generate
     url = require('./url'),
     urlParse = url.parse,
     urlFormat = url.format;
@@ -524,6 +525,9 @@ exports.setURL = function (url) {
  */
 
 exports.getBaseURL = function (req) {
+    if ('baseURL' in settings) {
+        return settings.baseURL;
+    }
     if (exports.isBrowser) {
         var re = new RegExp('(.*\\/_rewrite).*$');
         var match = re.exec(window.location.pathname);

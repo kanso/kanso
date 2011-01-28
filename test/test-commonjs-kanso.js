@@ -10,7 +10,8 @@ var kanso = modules.require({}, {
         'url': fs.readFileSync(m_dir + '/url.js').toString(),
         'path': fs.readFileSync(m_dir + '/path.js').toString(),
         'templates': '// templates module',
-        'querystring': fs.readFileSync(m_dir + '/querystring.js').toString()
+        'querystring': fs.readFileSync(m_dir + '/querystring.js').toString(),
+        'settings': 'module.exports = {};'
     },
 }, '/', 'kanso/core', context);
 
