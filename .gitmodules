@@ -13,3 +13,6 @@
 [submodule "deps/dustjs"]
 	path = deps/dustjs
 	url = git://github.com/akdubya/dustjs.git
+[submodule "deps/UglifyJS"]
+	path = deps/UglifyJS
+	url = git://github.com/mishoo/UglifyJS.git
