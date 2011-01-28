@@ -156,7 +156,8 @@
                     }*/
                     else {
                         // TODO: make this an option?
-                        if (window.location.pathname !== '/') {
+                        var winpath = window.location.pathname;
+                        if (winpath !== exports.getBaseURL() + '/') {
                             // redirect to root so hash-based urls look nicer
                             window.location = exports.getBaseURL() + '/#' +
                                 exports.hashUnescape(encodeURIComponent(url));
