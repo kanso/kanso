@@ -55,7 +55,7 @@ exports['load multiple dirs'] = function (test) {
 };
 
 exports['addFiles'] = function (test) {
-    var doc = {};
+    var doc = {settings: {}};
     var files = ['dir/lib/file1.js', 'dir/lib/file2.js', 'dir/deps/file3.js'];
     var _readFile = fs.readFile;
     fs.readFile = function (p, cb) {
@@ -64,6 +64,7 @@ exports['addFiles'] = function (test) {
     modules.addFiles('dir', files, doc, function (err) {
         test.ifError(err);
         test.same(doc, {
+            'settings': {},
             'lib': {
                 'file1': '1',
                 'file2': '2'

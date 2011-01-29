@@ -46,7 +46,7 @@ exports['load multiple dirs'] = function (test) {
 };
 
 exports['addFiles'] = function (test) {
-    var doc = {};
+    var doc = {settings: {}};
     var files = [
         'dir/static/file1.css',
         'dir/static/file2.txt',
@@ -61,6 +61,7 @@ exports['addFiles'] = function (test) {
     attachments.addFiles('dir', files, doc, function (err) {
         test.ifError(err);
         test.same(doc, {
+            'settings': {},
             '_attachments': {
                 'static/file1.css': {
                     'content_type': 'text/css',
