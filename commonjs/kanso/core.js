@@ -454,7 +454,7 @@ exports.handle = function (url) {
         msg += ' ' + JSON.stringify(req.query);
         console.log(msg);
 
-        function after(err) {
+        var after = function (err) {
             if (!err && parsed.hash) {
                 // we have to handle in-page anchors manually because we've
                 // hijacked the hash part of the url
@@ -464,7 +464,7 @@ exports.handle = function (url) {
                     window.scrollTo(0, el.offset().top);
                 }
             }
-        }
+        };
 
         var src, fn, name;
 
@@ -478,10 +478,10 @@ exports.handle = function (url) {
             // TODO: decide what happens here
             //alert('Unknown rewrite target: ' + req.path.join('/'));
             console.log('Unknown rewrite target: ' + req.path.join('/'));
-            var url = exports.getBaseURL() + '/_db/_design/' + kanso.name +
+            var newurl = exports.getBaseURL() + '/_db/_design/' + kanso.name +
                       '/' + req.path.join('/');
-            console.log('redirecting to: ' + url);
-            window.location = url;
+            console.log('redirecting to: ' + newurl);
+            window.location = newurl;
         }
     }
     else {
