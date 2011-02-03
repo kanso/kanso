@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 var path = require('path'),
+    utils = require('../lib/utils'),
     logger = require('../lib/logger'),
     commands = require('../lib/commands');
 
@@ -14,30 +15,15 @@ for (var i = 0; i < args.length; i += 1) {
     }
 }
 
-function padRight(str, len) {
-    while (str.length < len) {
-        str = str + ' ';
-    }
-    return str;
-}
-
-function longest(arr) {
-    return arr.reduce(function (a, x) {
-        if (x.length > a) {
-            return x.length;
-        }
-        return a;
-    }, 0);
-}
-
-
 function usage() {
     console.log('Usage: kanso COMMAND [ARGS]');
     console.log('');
     console.log('Available commands:');
-    var len = longest(Object.keys(commands));
+    var len = utils.longest(Object.keys(commands));
     Object.keys(commands).forEach(function (k) {
-        console.log('  ' + padRight(k, len) + '    ' + commands[k].summary);
+        console.log(
+            '  ' + utils.padRight(k, len) + '    ' + commands[k].summary
+        );
     });
     logger.clean_exit = true;
 }
