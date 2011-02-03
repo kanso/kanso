@@ -7,6 +7,15 @@
 
 (function (exports) {
 
+    /**
+     * This is because the first page hit also triggers kanso to handle the url
+     * client-side. Knowing it is the first page being loaded means we can stop
+     * the pageTracker code from submitting the URL twice. Exported because this
+     * might be useful information to other modules, it should not be modified
+     * by them.
+     */
+    exports.initial_hit = true;
+
     exports.getBaseURL = function () {
         var re = new RegExp('(.*\\/_rewrite).*$');
         var match = re.exec(window.location.pathname);
@@ -174,10 +183,16 @@
             var _handle = function (ev) {
                 var url = exports.getURL();
                 exports.handle(url);
-                // for google analytics
-                if (window.pageTracker) {
+                /**
+                 * if google analytics is included on the page, and this url
+                 * has not been tracked (not the initial hit) then manually
+                 * track a page view. This is done consistently for hash-based
+                 * and pushState urls
+                 */
+                if (window.pageTracker && !exports.initial_hit) {
                     pageTracker._trackPageview(url);
                 }
+                exports.initial_hit = false;
             };
             if ('onpopstate' in window) {
                 window.onpopstate = _handle;
