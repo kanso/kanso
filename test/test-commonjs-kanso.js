@@ -207,7 +207,13 @@ exports['matchURL'] = function (test) {
 exports['createRequest'] = function (test) {
     test.same(
         kanso.createRequest('/path', {from: '/path', to: '_show/testshow'}),
-        {path: ['_show','testshow'], client: true, headers: {}, query: {}}
+        {
+            path: ['_show','testshow'],
+            client: true,
+            initial_hit: true,
+            headers: {},
+            query: {}
+        }
     );
     test.same(
         kanso.createRequest(
@@ -217,6 +223,7 @@ exports['createRequest'] = function (test) {
         {
             path: ['_show','testshow','bar'],
             client: true,
+            initial_hit: true,
             headers: {},
             query: {group: 'group val', foo: 'bar'}
         }
@@ -229,6 +236,7 @@ exports['createRequest'] = function (test) {
         {
             path: ['static','some','file'],
             client: true,
+            initial_hit: true,
             headers: {},
             query: {}
         }
@@ -241,6 +249,7 @@ exports['createRequest'] = function (test) {
         {
             path: ['_show','testshow'],
             client: true,
+            initial_hit: true,
             headers: {},
             query: {group: 'val', param: 'test', q: 'blah'}
         }
