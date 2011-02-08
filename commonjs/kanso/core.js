@@ -26,6 +26,17 @@ if (typeof window !== 'undefined') {
 
 
 /**
+ * This is because the first page hit also triggers kanso to handle the url
+ * client-side. Knowing it is the first page being loaded means we can stop
+ * the pageTracker code from submitting the URL twice. Exported because this
+ * might be useful information to other modules, it should not be modified
+ * by them.
+ */
+
+exports.initial_hit = true;
+
+
+/**
  * Global functions required to match the CouchDB JavaScript environment.
  */
 
@@ -223,8 +234,9 @@ exports.createRequest = function (url, match) {
     var req = {
         query: query,
         headers: {},
+        path: to.split('/'),
         client: true,
-        path: to.split('/')
+        initial_hit: exports.initial_hit
     };
     return req;
 };
@@ -489,6 +501,17 @@ exports.handle = function (url) {
         alert('404');
         // TODO: render a standard 404 template?
     }
+
+    /**
+     * if google analytics is included on the page, and this url
+     * has not been tracked (not the initial hit) then manually
+     * track a page view. This is done consistently for hash-based
+     * and pushState urls
+     */
+    if (window.pageTracker && !exports.initial_hit) {
+        pageTracker._trackPageview(url);
+    }
+    exports.initial_hit = false;
 };
 
 
