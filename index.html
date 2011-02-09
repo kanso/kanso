@@ -418,6 +418,10 @@ exports.shows = {
   "cover": "http://userserve-ak.last.fm/serve/174s/41665159.png"
 }</code></pre>
     <p>
+      This can be done with the fairly ugly curl command below:
+    </p>
+    <pre style="white-space: pre-wrap;">curl -X POST -H "Content-Type: application/json" --data '{"docs": [{"type": "album", "title": "Blue Lines", "artist": "Massive Attack", "cover": "http://userserve-ak.last.fm/serve/174s/47527219.png"}, {"type": "album", "title": "Mezzanine", "artist": "Massive Attack", "cover": "http://userserve-ak.last.fm/serve/174s/38150483.png"}, {"type": "album", "artist": "Underworld", "title": "Beaucoup Fish", "cover": "http://userserve-ak.last.fm/serve/174s/41665159.png"}]}' http://127.0.0.1:5984/recordstore/_bulk_docs</pre>
+    <p>
       Feel free to use your own selection of great albums if you wish, just
       make sure you add more than one by the same artist so we can
       demonstrate something later.
