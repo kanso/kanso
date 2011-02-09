@@ -103,18 +103,6 @@
     };
 
     exports.init = function () {
-
-        if (!window.console) {
-            // console.log is going to cause errors, just stub the functions
-            // for now. TODO: add logging utility for IE?
-            window.console = {
-                log: function () {},
-                error: function () {},
-                info: function () {},
-                warn: function () {}
-            };
-        }
-
         // fetch design_doc and handle current URL
         $.getJSON(exports.getBaseURL() + '/_designdoc', function (data) {
             exports.design_doc = data;
@@ -127,62 +115,7 @@
                     exports[k] = kanso[k];
                 }
             }
-
-            // if using a URL with hash-state, but client supports replaceState,
-            // then switch to replaceState instead.
-            if (window.location.hash && window.history.replaceState) {
-                window.history.replaceState(
-                    {}, window.title, exports.getBaseURL() + exports.getURL()
-                );
-            }
-
-            exports.handle(exports.getURL());
-
-            $('a').live('click', function (ev) {
-                var href = $(this).attr('href');
-
-                if (exports.isAppURL(href)) {
-                    var url = exports.appPath(href);
-                    ev.preventDefault();
-
-                    // changing the hash triggers onhashchange, which then
-                    // fires exports.handle for us
-                    if (window.onpopstate) {
-                        exports.handle(url);
-                        exports.setURL(url);
-                    }
-                    /*else if (window.onhashchange) {
-                        window.location.hash = url;
-                    }*/
-                    else {
-                        // TODO: make this an option?
-                        var winpath = window.location.pathname;
-                        if (winpath !== exports.getBaseURL() + '/') {
-                            // redirect to root so hash-based urls look nicer
-                            window.location = exports.getBaseURL() + '/#' +
-                                exports.hashUnescape(encodeURIComponent(url));
-                        }
-                        else {
-                            $.history.load(url);
-                        }
-                        //window.location.hash = url;
-                        //exports.handle(url);
-                    }
-                }
-            });
-
-            var _handle = function (ev) {
-                var url = exports.getURL();
-                exports.handle(url);
-            };
-            if ('onpopstate' in window) {
-                window.onpopstate = _handle;
-            }
-            else {
-                $.history.init(_handle, {
-                    unescape: exports.hashUnescape
-                });
-            }
+            kanso.init(exports.design_doc);
         });
     };
 
