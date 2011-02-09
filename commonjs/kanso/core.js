@@ -597,10 +597,19 @@ exports.handle = function (url) {
                 // we have to handle in-page anchors manually because we've
                 // hijacked the hash part of the url
                 // TODO: don't re-handle the page if only the hash has changed
-                var el = $(parsed.hash);
-                if (el.length) {
-                    window.scrollTo(0, el.offset().top);
+
+                // test if a valid element name or id
+                if (/#[A-Za-z_\-:\.]+/.test(parsed.hash)) {
+                    var el = $(parsed.hash);
+                    if (el.length) {
+                        window.scrollTo(0, el.offset().top);
+                    }
                 }
+                else if (parsed.hash === '#') {
+                    // scroll to top of page
+                    window.scrollTo(0, 0);
+                }
+                // TODO: handle invalid values?
             }
         };
 
