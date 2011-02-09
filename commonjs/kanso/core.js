@@ -294,6 +294,33 @@ function catchErr(fn, args, /*optional*/callback) {
     }
 }
 
+/**
+ * Returns a function for handling ajax responsed from jquery and calls
+ * the callback with the data or appropriate error.
+ *
+ * @param {Function} callback
+ */
+
+function onComplete(callback) {
+    return function (req) {
+        var resp = $.httpData(req, "json");
+        if (req.status == 200) {
+            callback(null, resp);
+        }
+        else if (resp.error) {
+            var err = new Error(resp.reason || resp.error);
+            err.error = resp.error;
+            err.reason = resp.reason;
+            err.status = req.status;
+            callback(err);
+        }
+        else {
+            // TODO: map status code to meaningful error message
+            callback(new Error('Returned status code: ' + req.status));
+        }
+    };
+}
+
 
 /**
  * Fetches a document from the database the app is running on. Results are
@@ -315,12 +342,7 @@ exports.getDoc = function (id, q, callback) {
         url: exports.getBaseURL() + '/_db/' + id,
         dataType: 'json',
         data: exports.stringifyQuery(q),
-        success: function (doc) {
-            callback(null, doc);
-        },
-        error: function (XMLHttpRequest, textStatus, errorThrown) {
-            callback(errorThrown || new Error(textStatus));
-        }
+        complete: onComplete(callback)
     });
 };
 
@@ -346,12 +368,24 @@ exports.getView = function (view, q, callback) {
         url: base + '/_db/_design/' + kanso.name + '/_view/' + view,
         dataType: 'json',
         data: exports.stringifyQuery(q),
-        success: function (doc) {
-            callback(null, doc);
-        },
-        error: function (XMLHttpRequest, textStatus, errorThrown) {
-            callback(errorThrown || new Error(textStatus));
-        }
+        complete: onComplete(callback)
+    });
+};
+
+/**
+ * Logs out the current user.
+ *
+ * @param {Function} callback
+ */
+
+exports.logout = function (callback) {
+    $.ajax({
+        type: "DELETE",
+        url: "/_session", // don't need baseURL, /_session always available
+        dataType: "json",
+        username: "_",
+        password : "_",
+        complete: onComplete(callback)
     });
 };
 
@@ -467,7 +501,11 @@ exports.handle = function (url) {
         console.log(msg);
 
         var after = function (err) {
-            if (!err && parsed.hash) {
+            if (err) {
+                alert(err);
+                throw err;
+            }
+            else if (parsed.hash) {
                 // we have to handle in-page anchors manually because we've
                 // hijacked the hash part of the url
                 // TODO: don't re-handle the page if only the hash has changed
