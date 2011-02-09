@@ -389,7 +389,7 @@ function catchErr(fn, args, /*optional*/callback) {
 function onComplete(callback) {
     return function (req) {
         var resp = $.httpData(req, "json");
-        if (req.status == 200) {
+        if (req.status === 200) {
             callback(null, resp);
         }
         else if (resp.error) {
