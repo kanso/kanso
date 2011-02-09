@@ -379,6 +379,9 @@ exports.getView = function (view, q, callback) {
  */
 
 exports.logout = function (callback) {
+    if (!exports.isBrowser) {
+        throw new Error('logout cannot be called server-side');
+    }
     $.ajax({
         type: "DELETE",
         url: "/_session", // don't need baseURL, /_session always available
