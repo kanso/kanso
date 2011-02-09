@@ -1,4 +1,5 @@
-/*global window: true, getRow: true, start: true, $: true, kanso: true */
+/*global window: false, getRow: true, start: true, $: false, pageTracker: true,
+  kanso: true */
 
 /**
  * Module dependencies
@@ -134,7 +135,7 @@ exports.init = function (design_doc) {
         eval('fn = (' + design_doc.init + ')');
         fn();
     }
-}
+};
 
 
 /**
