@@ -138,13 +138,15 @@
       pushState or location.hash.
     </p>
     <pre><code class="javascript">function example_show(doc, req) {
+    var content = kanso.template('welcome.html', req, {});
+
     if (req.client) {
         // being run client-side, update the current page
-        $('#main').html(result);
+        $('#main').html(content);
     }
     else {
         // fallback, returns a complete rendered page
-        return kanso.template('base.html', req, {main: result});
+        return kanso.template('base.html', req, {main: content});
     }
 };</code></pre>
     <p>
