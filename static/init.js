@@ -81,6 +81,10 @@
             }
             if (!exports.moduleCache[path]) {
                 var module = {exports: {}};
+                // add to cache before eval'ing so circular requires are
+                // possible
+                exports.moduleCache[path] = {};
+
                 var fn;
                 eval('fn = (function (module, exports, require) {' +
                     exports.getPropertyPath(exports.design_doc, path) +

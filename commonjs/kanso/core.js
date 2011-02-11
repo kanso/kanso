@@ -6,8 +6,10 @@
  */
 
 var templates = require('./templates'), // templates module auto-generated
-    settings = require('./settings'), // settings module auto-generate
     url = require('./url'),
+    db = require('./db'),
+    utils = require('./utils'),
+    session = require('./session'),
     urlParse = url.parse,
     urlFormat = url.format;
 
@@ -18,12 +20,14 @@ var templates = require('./templates'), // templates module auto-generated
  * for these functions, and is only exported to make unit testing easier.
  *
  * You should not need to change this value during normal usage.
+ *
+ * This was moved to utils to avoid a circular dependency between
+ * core.js and db.js... however, it should be accessed via the core.js module
+ * as it may get moved back once circular dependencies are fixed in couchdb's
+ * commonjs implementation.
  */
 
-exports.isBrowser = false;
-if (typeof window !== 'undefined') {
-    exports.isBrowser = true;
-}
+exports.isBrowser = utils.isBrowser;
 
 
 /**
@@ -153,6 +157,9 @@ exports.init = function (design_doc) {
 // TODO: add unit tests for this function
 exports.template = function (name, req, context) {
     context.baseURL = exports.getBaseURL(req);
+    if (utils.isBrowser) {
+        console.dir(templates);
+    }
     var r = '';
     templates.render(name, context, function (err, result) {
         if (err) {
@@ -292,7 +299,6 @@ exports.replaceGroups = function (val, groups, splat) {
  * @returns {Object}
  */
 
- // TODO: parse query params from the url and add to req.query
 exports.createRequest = function (url, match) {
     var groups = exports.rewriteGroups(match.from, url);
     var query = urlParse(url, true).query || {};
@@ -327,30 +333,6 @@ exports.createRequest = function (url, match) {
     return req;
 };
 
-/**
- * Properly encodes query parameters to CouchDB views etc. Handle complex
- * keys and other non-string parameters by passing through JSON.stringify.
- * Returns a shallow-copied clone of the original query after complex values
- * have been stringified.
- *
- * @param {Object} query
- * @returns {Object}
- */
-
-// TODO: add unit tests for this function
-exports.stringifyQuery = function (query) {
-    var q = {};
-    for (var k in query) {
-        if (typeof query[k] !== 'string') {
-            q[k] = JSON.stringify(query[k]);
-        }
-        else {
-            q[k] = query[k];
-        }
-    }
-    return q;
-};
-
 
 /**
  * If callback is present catch errors and pass to callback, otherwise
@@ -380,104 +362,6 @@ function catchErr(fn, args, /*optional*/callback) {
     }
 }
 
-/**
- * Returns a function for handling ajax responsed from jquery and calls
- * the callback with the data or appropriate error.
- *
- * @param {Function} callback
- */
-
-function onComplete(callback) {
-    return function (req) {
-        var resp = $.httpData(req, "json");
-        if (req.status === 200) {
-            callback(null, resp);
-        }
-        else if (resp.error) {
-            var err = new Error(resp.reason || resp.error);
-            err.error = resp.error;
-            err.reason = resp.reason;
-            err.status = req.status;
-            callback(err);
-        }
-        else {
-            // TODO: map status code to meaningful error message
-            callback(new Error('Returned status code: ' + req.status));
-        }
-    };
-}
-
-
-/**
- * Fetches a document from the database the app is running on. Results are
- * passed to the callback, with the first argument of the callback reserved
- * for any exceptions that occurred (node.js style).
- *
- * @param {String} id
- * @param {Object} q
- * @param {Function} callback
- */
-
-// TODO: add unit tests for this function
-// TODO: make q argument optional?
-exports.getDoc = function (id, q, callback) {
-    if (!exports.isBrowser) {
-        throw new Error('getDoc cannot be called server-side');
-    }
-    $.ajax({
-        url: exports.getBaseURL() + '/_db/' + id,
-        dataType: 'json',
-        data: exports.stringifyQuery(q),
-        complete: onComplete(callback)
-    });
-};
-
-
-/**
- * Fetches a view from the database the app is running on. Results are
- * passed to the callback, with the first argument of the callback reserved
- * for any exceptions that occurred (node.js style).
- *
- * @param {String} view
- * @param {Object} q
- * @param {Function} callback
- */
-
-// TODO: add unit tests for this function
-// TODO: make q argument optional?
-exports.getView = function (view, q, callback) {
-    if (!exports.isBrowser) {
-        throw new Error('getView cannot be called server-side');
-    }
-    var base = exports.getBaseURL();
-    $.ajax({
-        url: base + '/_db/_design/' + kanso.name + '/_view/' + view,
-        dataType: 'json',
-        data: exports.stringifyQuery(q),
-        complete: onComplete(callback)
-    });
-};
-
-/**
- * Logs out the current user.
- *
- * @param {Function} callback
- */
-
-exports.logout = function (callback) {
-    if (!exports.isBrowser) {
-        throw new Error('logout cannot be called server-side');
-    }
-    $.ajax({
-        type: "DELETE",
-        url: "/_session", // don't need baseURL, /_session always available
-        dataType: "json",
-        username: "_",
-        password : "_",
-        complete: onComplete(callback)
-    });
-};
-
 
 /**
  * Evaluates a show function, then fetches the relevant document and calls
@@ -497,7 +381,7 @@ exports.runShow = function (req, name, docid, callback) {
     var fn;
     eval('fn = (' + src + ')');
     if (docid) {
-        exports.getDoc(docid, req.query, function (err, doc) {
+        db.getDoc(docid, req.query, function (err, doc) {
             if (err) {
                 return callback(err);
             }
@@ -545,7 +429,7 @@ exports.runList = function (req, name, view, callback) {
     if (view) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
-        exports.getView(view, req.query, function (err, data) {
+        db.getView(view, req.query, function (err, data) {
             if (err) {
                 return callback(err);
             }
@@ -672,34 +556,13 @@ exports.setURL = function (url) {
 
 
 /**
- * Returns the path to prefix to any URLs. When running behind a
- * virtual host, there is nothing to prefix URLs with. When accessing the
- * app directly, URLs need to be prefixed with /db/_design/appname/_rewrite.
- *
- * The request object argument is only required when run server-side.
- *
- * @param {Object} req
- * @returns {String}
- * @api public
+ * This was moved to utils to avoid a circular dependency between
+ * core.js and db.js... however, it should be accessed via the core.js module
+ * as it may get moved back once circular dependencies are fixed in couchdb's
+ * commonjs implementation.
  */
 
-exports.getBaseURL = function (req) {
-    if ('baseURL' in settings) {
-        return settings.baseURL;
-    }
-    if (exports.isBrowser) {
-        var re = new RegExp('(.*\\/_rewrite).*$');
-        var match = re.exec(window.location.pathname);
-        if (match) {
-            return match[1];
-        }
-        return '';
-    }
-    if (req.headers['x-couchdb-vhost-path']) {
-        return '';
-    }
-    return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
-};
+exports.getBaseURL = utils.getBaseURL;
 
 
 /**
