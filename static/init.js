@@ -1,4 +1,4 @@
-/*global window: false, $: false, pageTracker: false */
+/*global window: false, $: false, pageTracker: false, kanso: true */
 
 /**
  * bootstrapped kanso code,
