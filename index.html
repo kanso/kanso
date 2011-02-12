@@ -138,7 +138,7 @@
       pushState or location.hash.
     </p>
     <pre><code class="javascript">function example_show(doc, req) {
-    var content = kanso.template('welcome.html', req, {});
+    var content = templates.render('welcome.html', req, {});
 
     if (req.client) {
         // being run client-side, update the current page
@@ -146,7 +146,7 @@
     }
     else {
         // fallback, returns a complete rendered page
-        return kanso.template('base.html', req, {main: content});
+        return templates.render('base.html', req, {main: content});
     }
 };</code></pre>
     <p>
@@ -175,7 +175,7 @@
       functions. This makes it an ideal style to use throughout your
       application.
     </p>
-    <pre><code class="javascript">var kanso = require('kanso');
+    <pre><code class="javascript">var templates = require('kanso/templates');
 
 exports.rewrites = [
     {from: '/:id', to: '_shows/example/:id'}
@@ -280,7 +280,7 @@ git submodule update</pre>
       design doc, this is where the action happens and you get to define the
       behaviour of your app:
     </p>
-    <pre><code class="javascript">var kanso = require('kanso/core');
+    <pre><code class="javascript">var templates = require('kanso/templates');
 
 
 exports.rewrites = [
@@ -290,14 +290,14 @@ exports.rewrites = [
 
 exports.shows = {
     welcome: function (doc, req) {
-        var content = kanso.template('welcome.html', req, {});
+        var content = templates.render('welcome.html', req, {});
 
         if (req.client) {
             $('#content').html(content);
             document.title = 'It worked!';
         }
         else {
-            return kanso.template('base.html', req, {
+            return templates.render('base.html', req, {
                 title: 'It worked!',
                 content: content
             });
@@ -315,9 +315,9 @@ exports.shows = {
     </p>
     <p>
       There are a couple of interesting things here. Firstly, we've required a
-      'kanso/core' module which doesn't exist in our project directory. This is
+      'kanso/templates' module which doesn't exist in our project directory. This is
       one of the kanso modules automatically added to your app when you push
-      to couchdb, and provides access to core components such as templating.
+      to couchdb, and provides access to templates.
     </p>
     <p>
       Secondly, we're actually using the context of the module inside the
@@ -467,7 +467,7 @@ exports.shows = {
       of artists. Once again, we'll create a new module for this code. Add a file at
       lib/lists.js with the following content:
     </p>
-    <pre><code class="javascript">var kanso = require('kanso/core');
+    <pre><code class="javascript">var templates = require('kanso/templates');
 
 
 exports.artists = function (head, req) {
@@ -477,7 +477,7 @@ exports.artists = function (head, req) {
         rows.push(row);
     }
     // create a html list of artists
-    var content = kanso.template('artists.html', req, {rows: rows});
+    var content = templates.render('artists.html', req, {rows: rows});
 
     if (req.client) {
         // if client-side, replace the HTML of the content div with the list
@@ -487,7 +487,7 @@ exports.artists = function (head, req) {
     }
     else {
         // if server-side, return a newly rendered page using the base template
-        return kanso.template('base.html', req, {
+        return templates.render('base.html', req, {
             title: 'Artists',
             content: content
         });
@@ -518,10 +518,7 @@ exports.artists = function (head, req) {
       Finally, let's replace the welcome page with our new list function.
       Update lib/app.js to the following:
     </p>
-    <pre><code class="javascript">var kanso = require('kanso/core');
-
-
-exports.rewrites = [
+    <pre><code class="javascript">exports.rewrites = [
     {from: '/static/*', to: 'static/*'},
     {from: '/', to: '_list/artists/artists', query: {group: true}}
 ];
