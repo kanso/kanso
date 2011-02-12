@@ -434,7 +434,7 @@ exports.shows = {
       To keep things clean and tidy, we're going to create a new module for
       storing views. Create a new file at lib/views.js with the following content:
     <p>
-    <pre><code class="javascript">exports.artists = {
+    <pre><code class="javascript">exports.artist_names = {
     map: function (doc) {
         if (doc.type === 'album') {
             emit(doc.artist, null);
@@ -457,7 +457,7 @@ exports.shows = {
     <pre>kanso push http://localhost:5984/recordstore</pre>
     <p>
       Then, visit
-      <a href="http://localhost:5984/_utils/database.html?recordstore/_design/recordstore/_view/artists">http://localhost:5984/_utils/database.html?recordstore/_design/recordstore/_view/artists</a>
+      <a href="http://localhost:5984/_utils/database.html?recordstore/_design/recordstore/_view/artist_names">http://localhost:5984/_utils/database.html?recordstore/_design/recordstore/_view/artist_names</a>
       to see the results of the newly created view.
     </p>
 
@@ -494,7 +494,7 @@ exports.artists = function (head, req) {
     }
 };</code></pre>
     <p>
-      This list function will be used with the artists view we created earlier.
+      This list function will be used with the artist_names view we created earlier.
       When run server-side it will render a complete HTML page, and when run
       client-side it will update the current page's content and title instead.
     </p>
@@ -520,7 +520,7 @@ exports.artists = function (head, req) {
     </p>
     <pre><code class="javascript">exports.rewrites = [
     {from: '/static/*', to: 'static/*'},
-    {from: '/', to: '_list/artists/artists', query: {group: true}}
+    {from: '/', to: '_list/artists/artist_names', query: {group: true}}
 ];
 
 exports.views = require('./views');
