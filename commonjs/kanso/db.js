@@ -4,7 +4,8 @@
  * Module dependencies
  */
 
-var utils = require('./utils');
+var utils = require('./utils'),
+    settings = require('./settings');
 
 
 /**
@@ -94,7 +95,7 @@ exports.getView = function (view, q, callback) {
     }
     var base = utils.getBaseURL();
     var req = {
-        url: base + '/_db/_design/' + kanso.name + '/_view/' + view,
+        url: base + '/_db/_design/' + settings.name + '/_view/' + view,
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);

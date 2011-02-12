@@ -7,15 +7,6 @@
 
 (function (exports) {
 
-    exports.getBaseURL = function () {
-        var re = new RegExp('(.*\\/_rewrite).*$');
-        var match = re.exec(window.location.pathname);
-        if (match) {
-            return match[1];
-        }
-        return '';
-    };
-
     exports.moduleCache = {};
 
     exports.normalizePath = function (p) {
@@ -32,28 +23,6 @@
         return path.join('/');
     };
 
-    exports.getPropertyPath = function (obj, p) {
-        // normalize to remove unessecary . and .. from paths
-        var parts = exports.normalizePath(p).split('/');
-
-        // if path is empty, return the root object
-        if (!p) {
-            return obj;
-        }
-
-        // loop through all parts of the path, throwing an exception
-        // if a property doesn't exist
-        var a = obj;
-        for (var i = 0; i < parts.length; i += 1) {
-            var x = parts[i];
-            if (a[x] === undefined) {
-                throw new Error('Invalid path: ' + p);
-            }
-            a = a[x];
-        }
-        return a;
-    };
-
     exports.dirname = function (p) {
         if (p === '/') {
             return p;
@@ -68,9 +37,6 @@
 
     exports.createRequire = function (current) {
         return function (target) {
-            if (!exports.design_doc) {
-                throw new Error('no design doc loaded');
-            }
             var path;
             if (target.charAt(0) === '.') {
                 var dir = exports.dirname(current);
@@ -79,20 +45,18 @@
             else {
                 path = exports.normalizePath(target);
             }
-            if (!exports.moduleCache[path]) {
-                var module = {exports: {}};
-                // add to cache before eval'ing so circular requires are
-                // possible
-                exports.moduleCache[path] = {};
-
-                var fn;
-                eval('fn = (function (module, exports, require) {' +
-                    exports.getPropertyPath(exports.design_doc, path) +
-                '});');
-                fn(module, module.exports, exports.createRequire(path));
-                exports.moduleCache[path] = module.exports;
+            var m = kanso.moduleCache[path];
+            if (!m) {
+                throw new Error('No such module: ' + path);
             }
-            return exports.moduleCache[path];
+            if (!m.loaded) {
+                m.exports = {};
+                // set this to true *before* calling m.load so circular
+                // requires don't blow the call stack
+                m.loaded = true;
+                m.load(m, m.exports, exports.createRequire(path));
+            }
+            return m.exports;
         };
     };
 
@@ -102,30 +66,22 @@
         this.require = exports.createRequire('');
     }
 
-    exports.hashUnescape = function (hash) {
-        return hash.replace(/%2F/g, '/');
-    };
-
     exports.init = function () {
-        // fetch design_doc and handle current URL
-        $.getJSON(exports.getBaseURL() + '/_designdoc', function (data) {
-            exports.design_doc = data;
-            exports.name = exports.design_doc.settings.name;
-
-            // load the rest of the kanso module
-            var kanso = require('kanso/core');
-            for (var k in kanso) {
-                if (kanso.hasOwnProperty(k)) {
-                    exports[k] = kanso[k];
-                }
+        var kanso = require('kanso/core');
+        for (var k in kanso) {
+            if (kanso.hasOwnProperty(k)) {
+                exports[k] = kanso[k];
             }
-            kanso.init(exports.design_doc);
-        });
+        }
+        kanso.init();
     };
-
-    // run init function if in the browser
-    if (typeof module === 'undefined') {
-        exports.init();
-    }
 
 }((typeof exports === 'undefined') ? this.kanso = {}: module.exports));
+
+
+/**
+ * lib/app.js adds the wrapped and concatenated list of commonjs modules after
+ * this code.
+ */
+
+

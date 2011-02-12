@@ -5,7 +5,8 @@
  * Module dependencies
  */
 
-var templates = require('./templates'), // templates module auto-generated
+var templates = require('./templates'), // module auto-generated
+    settings = require('./settings'), // module auto-generated
     url = require('./url'),
     db = require('./db'),
     utils = require('./utils'),
@@ -45,15 +46,29 @@ exports.initial_hit = true;
  * Global functions required to match the CouchDB JavaScript environment.
  */
 
-if (typeof getRow === 'undefined') {
-    this.getRow = function () {
+if (typeof getRow === 'undefined' && typeof window !== 'undefined') {
+    window.getRow = function () {
         return null;
     };
 }
-if (typeof start === 'undefined') {
-    this.start = function (options) {
+if (typeof start === 'undefined' && typeof window !== 'undefined') {
+    window.start = function (options) {
         console.log('start: ' + JSON.stringify(options));
     };
+}
+
+
+/**
+ * The module loaded as the design document (load property in kanso.json).
+ * Likely to cause circular require in couchdb so only run browser side.
+ * TODO: when circular requires are fixed in couchdb, remove the isBrowser check
+ */
+
+if (utils.isBrowser) {
+    exports.app = {};
+    if (settings.load) {
+        exports.app = require(settings.load);
+    }
 }
 
 
@@ -61,10 +76,7 @@ if (typeof start === 'undefined') {
  * Called by kanso.js once the design doc has been loaded.
  */
 
-exports.init = function (design_doc) {
-
-    // expose design_doc
-    exports.design_doc = design_doc;
+exports.init = function () {
 
     if (!window.console) {
         // console.log is going to cause errors, just stub the functions
@@ -134,10 +146,8 @@ exports.init = function (design_doc) {
     }
 
     // call init on app too
-    if (design_doc.init) {
-        var fn;
-        eval('fn = (' + design_doc.init + ')');
-        fn();
+    if (exports.app.init) {
+        exports.app.init();
     }
 };
 
@@ -230,7 +240,7 @@ exports.rewriteSplat = function (pattern, url) {
 
 exports.matchURL = function (url) {
     var pathname = urlParse(url).pathname;
-    var rewrites = kanso.design_doc.rewrites;
+    var rewrites = kanso.app.rewrites;
     for (var i = 0; i < rewrites.length; i += 1) {
         var r = rewrites[i];
         var from = r.from;
@@ -335,35 +345,6 @@ exports.createRequest = function (url, match) {
 
 
 /**
- * If callback is present catch errors and pass to callback, otherwise
- * re-throw errors.
- *
- * @param {Function} fn
- * @param {Array} args
- * @param {Function} callback
- */
-
-// TODO: add unit tests for this function
-function catchErr(fn, args, /*optional*/callback) {
-    try {
-        var result = fn.apply(null, args);
-        if (callback) {
-            callback(null, result);
-        }
-        return result;
-    }
-    catch (e) {
-        if (callback) {
-            callback(e);
-        }
-        else {
-            throw e;
-        }
-    }
-}
-
-
-/**
  * Evaluates a show function, then fetches the relevant document and calls
  * the show function with the result.
  *
@@ -376,20 +357,19 @@ function catchErr(fn, args, /*optional*/callback) {
 // TODO: add unit tests for this function
 exports.runShow = function (req, name, docid, callback) {
     var result;
-    var src = kanso.design_doc.shows[name];
-    // TODO: cache the eval'd fn
-    var fn;
-    eval('fn = (' + src + ')');
+    var fn = kanso.app.shows[name];
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
             if (err) {
                 return callback(err);
             }
-            catchErr(fn, [doc, req], callback);
+            fn(doc, req);
+            callback();
         });
     }
     else {
-        catchErr(fn, [null, req], callback);
+        fn(null, req);
+        callback();
     }
 };
 
@@ -422,10 +402,7 @@ exports.createHead = function (data) {
 
 // TODO: add unit tests for this function
 exports.runList = function (req, name, view, callback) {
-    var src = kanso.design_doc.lists[name];
-    // TODO: cache the eval'd fn
-    var fn;
-    eval('fn = (' + src + ')');
+    var fn = kanso.app.lists[name];
     if (view) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
@@ -437,10 +414,11 @@ exports.runList = function (req, name, view, callback) {
                 return data.rows.shift();
             };
             var head = exports.createHead(data);
-            catchErr(fn, [head, req], callback);
+            fn(head, req);
             getRow = function () {
                 return null;
             };
+            callback();
         });
     }
     // TODO: check if it should throw here
@@ -473,12 +451,8 @@ exports.handle = function (url) {
         msg += ' ' + JSON.stringify(req.query);
         console.log(msg);
 
-        var after = function (err) {
-            if (err) {
-                alert(err);
-                throw err;
-            }
-            else if (parsed.hash) {
+        var after = function () {
+            if (parsed.hash) {
                 // we have to handle in-page anchors manually because we've
                 // hijacked the hash part of the url
                 // TODO: don't re-handle the page if only the hash has changed
@@ -510,8 +484,8 @@ exports.handle = function (url) {
             // TODO: decide what happens here
             //alert('Unknown rewrite target: ' + req.path.join('/'));
             console.log('Unknown rewrite target: ' + req.path.join('/'));
-            var newurl = exports.getBaseURL() + '/_db/_design/' + kanso.name +
-                      '/' + req.path.join('/');
+            var newurl = exports.getBaseURL() + '/_db/_design/' +
+                settings.name + '/' + req.path.join('/');
             console.log('redirecting to: ' + newurl);
             window.location = newurl;
         }
