@@ -5,8 +5,7 @@
  * Module dependencies
  */
 
-var templates = require('./templates'), // module auto-generated
-    settings = require('./settings'), // module auto-generated
+var settings = require('./settings'), // module auto-generated
     url = require('./url'),
     db = require('./db'),
     utils = require('./utils'),
@@ -149,35 +148,6 @@ exports.init = function () {
     if (exports.app.init) {
         exports.app.init();
     }
-};
-
-
-/**
- * Synchronously render dust template and return result, automatically adding
- * baseURL to the template's context. The request object is required so we
- * can determine the value of baseURL.
- *
- * @param {String} name
- * @param {Object} req
- * @param {Object} context
- * @return {String}
- * @api public
- */
-
-// TODO: add unit tests for this function
-exports.template = function (name, req, context) {
-    context.baseURL = exports.getBaseURL(req);
-    if (utils.isBrowser) {
-        console.dir(templates);
-    }
-    var r = '';
-    templates.render(name, context, function (err, result) {
-        if (err) {
-            throw err;
-        }
-        r = result;
-    });
-    return r;
 };
 
 
