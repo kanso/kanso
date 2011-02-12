@@ -63,6 +63,9 @@ exports['addFiles'] = function (test) {
     };
     modules.addFiles('dir', files, doc, function (err) {
         test.ifError(err);
+        // TODO: add tests for these properties
+        delete doc._attachments;
+        delete doc._wrapped_modules;
         test.same(doc, {
             'settings': {},
             'lib': {

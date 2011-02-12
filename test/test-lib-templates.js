@@ -14,6 +14,7 @@ exports['load'] = function (test) {
     templates.addFiles = function (dir, files, doc, cb) {
         test.equal(dir, 'dir');
         test.same(files, ['file1','file2','file3']);
+        doc.kanso = {templates: {}};
         cb();
     };
     templates.load('dir', doc, function (err) {

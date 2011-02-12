@@ -72,22 +72,14 @@ exports['load'] = function (test) {
                 fn1: 'function (){return "one";}',
                 fn2: 'function (){return "two";}'
             });
-            test.same(doc._attachments, {
-                'static/test.txt': {
+            test.same(doc._attachments['static/test.txt'], {
                     'content_type': 'text/plain',
                     'data': 'dGVzdCBkYXRhCg=='
-                },
-                'kanso.js': {
-                    'content_type': 'application/javascript',
-                    'data': fs.readFileSync(
-                        __dirname + '/../static/init.js'
-                    ).toString('base64')
-                }
             });
+            // TODO: test value of _attachments['kanso.js']
             test.same(doc.rewrites, [
                 {from: '/kanso.js', to: 'kanso.js'},
                 {from: '/_db/*', to: '../../*'},
-                {from: '/_designdoc', to: './'},
                 {from: '/', to: '_show/testshow'}
             ]);
             test.done();

@@ -128,11 +128,11 @@ exports['rewriteSplat'] = function (test) {
 };
 
 exports['matchURL'] = function (test) {
-    context.kanso.design_doc.rewrites = [
+    context.kanso.app = {rewrites: [
         {from: '/simple', to: 'one'},
         {from: '/with/:group', to: 'two'},
         {from: '/with/:group/and/*', to: 'three'}
-    ];
+    ]};
     test.equal(kanso.matchURL('/nomatch'), undefined);
     test.same(kanso.matchURL('/simple'), {from: '/simple', to: 'one'});
     test.same(
