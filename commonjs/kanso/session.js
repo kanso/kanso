@@ -2,7 +2,8 @@
  * Module dependencies
  */
 
-var db = require('./db');
+var db = require('./db'),
+    utils = require('./utils');
 
 
 /**
@@ -13,7 +14,7 @@ var db = require('./db');
 
 // TODO: add unit tests for this function
 exports.logout = function (callback) {
-    if (!exports.isBrowser) {
+    if (!utils.isBrowser) {
         throw new Error('logout cannot be called server-side');
     }
     db.request({
@@ -21,5 +22,25 @@ exports.logout = function (callback) {
         url: "/_session", // don't need baseURL, /_session always available
         username: "_",
         password : "_",
+    }, callback);
+};
+
+/**
+ * Attempt to login using the username and password provided.
+ *
+ * @param {String} username
+ * @param {String} password
+ * @param {Function} callback
+ */
+
+// TODO: add unit tests for this function
+exports.login = function (username, password, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('login cannot be called server-side');
+    }
+    db.request({
+        type: "POST",
+        url: "/_session",
+        data: {name: username, password: password},
     }, callback);
 };
