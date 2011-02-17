@@ -1,0 +1,85 @@
+<html>
+<head>
+  <title>Kanso</title>
+  <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+  <link rel="stylesheet" href="kanso.css" />
+</head>
+<body>
+  <div id="topbar"></div>
+  <div id="topbar_overlay"></div>
+  <div id="container">
+    <ul id="navigation">
+      <li><a class="selected" href="index.html">Intro</a></li>
+      <li><a href="tutorial.html">Tutorial</a></li>
+      <li><a href="#">Docs</a></li>
+      <li><a href="#">Code &rArr;</a></li>
+    </ul>
+    <a id="sitename" href="#">
+      <img src="kanso_ribbon.png" />
+    </a>
+    <!--
+    <h1>The simple way to write CouchApps</h1>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. In lacinia facilisis accumsan. Etiam nulla lectus, bibendum quis mollis nec, pharetra ut metus. Pellentesque nec enim sit amet massa suscipit aliquam id ac ligula. Praesent quis turpis sit amet sem imperdiet ultricies. Phasellus elementum lorem a purus interdum aliquet. Nullam neque risus, condimentum non porta eget, tempus vitae magna. Aenean condimentum consequat diam ut ullamcorper. Aliquam vel dictum leo. Cras felis metus, pulvinar et adipiscing ut, pulvinar quis ante. Nullam in turpis libero. Nulla vitae ullamcorper nisl. Fusce quis neque libero. Maecenas euismod dolor et diam pulvinar venenatis.</p>
+    <p>Nullam malesuada adipiscing purus id pellentesque. Aenean tincidunt turpis ac justo semper ornare. Praesent dapibus sodales volutpat. Morbi dignissim nisl non lacus vestibulum faucibus. Proin a mauris erat, ut aliquam magna. Praesent risus quam, aliquam quis molestie ac, bibendum sit amet nunc. Praesent non aliquam sem. Duis id fermentum erat. Proin pulvinar condimentum elit, quis consequat nisi cursus non. In ornare felis lacinia purus molestie sed hendrerit diam blandit. Praesent eget metus est.</p>
+    -->
+    <h1>What is Kanso?</h1>
+
+    <h2>Future of web-apps</h2>
+    <p>
+      Modern web development increasingly means pushing more logic onto the client.
+      This provides us with fast and responsive interfaces, but not without cost.
+      When grafted onto traditional web-frameworks, rich interfaces require the
+      complete re-implementation of features on both the server and client-side.
+      Form validation, Templating and URL routing must either be handled at both
+      ends or become fragile and insecure.
+    </p>
+    <p>
+      What's needed is a harmonious environment, which can deliver enhanced
+      interfaces without breaking the web. Search engines and other users still
+      need access to key content, and all this needs to be delivered in a way that
+      is fast and scalable.
+    </p>
+    <p>
+      CouchApps and CouchDB provide us with the building blocks to make this
+      vision a reality. A JavaScript environment for querying and storing your data,
+      accessible over a RESTful API from the web-browser, which can scale down to
+      your mobile phone and up to your cluster in the cloud.
+    </p>
+
+    <h2>CouchApps made simple</h2>
+
+    <p>
+      The problem with CouchApps, is that although using the same language on the
+      server and the client, the environment is different. This leads people to
+      implement client-side only solutions, using whole new APIs and JavaScript
+      frameworks such as Sammy or Backbone.
+    </p>
+    <p>
+      This is where Kanso comes in, an attempt to harmonize the environment between
+      CouchDB and the browser by implementing the design doc API client-side.
+      On top of this foundation will be built one of the first real attempts at a
+      powerful, full-featured CouchApp framework. Designed with non-JavaScript
+      fall-backs and logic sharing in mind.
+    </p>
+    <div class="next">
+      <a class="call" href="tutorial.html">Start the tutorial</a>
+      or <a href="https://github.com/caolan/kanso">watch on GitHub</a>
+    </div>
+
+  <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20477836-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</body>
+</html>

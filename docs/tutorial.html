@@ -1,0 +1,386 @@
+<html>
+<head>
+  <title>Kanso</title>
+  <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+  <link rel="stylesheet" href="kanso.css" />
+</head>
+<body>
+  <div id="topbar"></div>
+  <div id="topbar_overlay"></div>
+  <div id="container">
+    <ul id="navigation">
+      <li><a href="index.html">Intro</a></li>
+      <li><a class="selected" href="tutorial.html">Tutorial</a></li>
+      <li><a href="#">Docs</a></li>
+      <li><a href="#">Code &rArr;</a></li>
+    </ul>
+    <a id="sitename" href="#">
+      <img src="kanso_ribbon.png" />
+    </a>
+    <!--
+    <h1>The simple way to write CouchApps</h1>
+    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. In lacinia facilisis accumsan. Etiam nulla lectus, bibendum quis mollis nec, pharetra ut metus. Pellentesque nec enim sit amet massa suscipit aliquam id ac ligula. Praesent quis turpis sit amet sem imperdiet ultricies. Phasellus elementum lorem a purus interdum aliquet. Nullam neque risus, condimentum non porta eget, tempus vitae magna. Aenean condimentum consequat diam ut ullamcorper. Aliquam vel dictum leo. Cras felis metus, pulvinar et adipiscing ut, pulvinar quis ante. Nullam in turpis libero. Nulla vitae ullamcorper nisl. Fusce quis neque libero. Maecenas euismod dolor et diam pulvinar venenatis.</p>
+    <p>Nullam malesuada adipiscing purus id pellentesque. Aenean tincidunt turpis ac justo semper ornare. Praesent dapibus sodales volutpat. Morbi dignissim nisl non lacus vestibulum faucibus. Proin a mauris erat, ut aliquam magna. Praesent risus quam, aliquam quis molestie ac, bibendum sit amet nunc. Praesent non aliquam sem. Duis id fermentum erat. Proin pulvinar condimentum elit, quis consequat nisi cursus non. In ornare felis lacinia purus molestie sed hendrerit diam blandit. Praesent eget metus est.</p>
+    -->
+    <h1>Getting started</h1>
+
+    <h2>Installation</h2>
+    <p>
+      Install the most recent <em>stable</em> version of
+      <a href="http://nodejs.org/#download">node</a>, then clone
+      <a href="https://github.com/caolan/kanso">Kanso</a> from GitHub.
+      Fetch the relevant submodules by doing the following in the cloned directory:
+    </p>
+    <pre>git submodule init
+git submodule update</pre>
+    <p>You are then ready to install:</p>
+    <pre>make &amp;&amp; sudo make install</pre>
+
+    <h2>Starting a project</h2>
+    <p>
+      For this tutorial we'll be creating a basic app that displays albums by
+      artist name. First, change to the location you wish to create the project
+      directory in, then start a new project by doing:
+    </p>
+    <pre>kanso create recordstore</pre>
+    <p>
+      This will create a new directory called 'recordstore' containing a project
+      skeleton to get you started. The contents of this directory should look
+      something like the following:
+    </p>
+    <pre>recordstore
+  |- lib                        commonjs modules relevant to the app
+     |- app.js                  the module loaded as a design doc
+  |- static                     static files to be attached to design doc
+     |- jquery-1.4.2.min.js     some dependencies
+     |- jquery.history.js
+     |- json2.js
+  |- templates                  templates used by the app
+     |- base.html
+     |- welcome.html
+  |- kanso.json                 kanso settings
+    </pre>
+    <p>
+      Before exploring these files in more detail, lets push the app to a couchdb
+      database and check that everything works. For this tutorial, I'll assume you
+      have a local couchdb database running at localhost:5984 (the default settings).
+      In your project directory, do the following:
+    </p>
+    <pre>kanso push http://localhost:5984/recordstore</pre>
+    <p>
+      If you now visit
+      <a href="http://localhost:5984/recordstore/_design/recordstore/_rewrite/">http://localhost:5984/recordstore/_design/recordstore/_rewrite/</a>
+      you should see a basic welcome page. Don't worry about the long and ugly URL
+      for now, this can be fixed later using
+      <a href="http://wiki.apache.org/couchdb/Virtual_Hosts">virtual hosts</a>.
+    </p>
+
+    <h3>kanso.json</h3>
+    <p>
+      Let's take a look at the kanso.json file first. This file contains the
+      settings for the app, and tells kanso which files and directories to load
+      and how to load them.
+    </p>
+    <pre><code class="javascript">{
+    "name": "recordstore",        // the name of the design document
+    "load": "lib/app",            // module to load design doc from
+    "modules": "lib",             // path to load as commonjs modules
+    "templates": "templates",     // templates directory
+    "attachments": "static"       // path to load as attachments
+}</code></pre>
+    <p>
+      The name determines the id of the design doc, in this case it would be
+      "_design/recordstore". Perhaps the most important part is the 'load' property.
+      This tells kanso which module to require and use for the design doc. This
+      means any exported values in this module will be used in the resulting design
+      doc.
+    </p>
+
+    <h3>lib/app.js</h3>
+    <p>
+      This file contains some exported properties which are used in the resulting
+      design doc, this is where the action happens and you get to define the
+      behaviour of your app:
+    </p>
+    <pre><code class="javascript">var templates = require('kanso/templates');
+
+
+exports.rewrites = [
+    {from: '/static/*', to: 'static/*'},
+    {from: '/', to: '_show/welcome'}
+];
+
+exports.shows = {
+    welcome: function (doc, req) {
+        var content = templates.render('welcome.html', req, {});
+
+        if (req.client) {
+            $('#content').html(content);
+            document.title = 'It worked!';
+        }
+        else {
+            return templates.render('base.html', req, {
+                title: 'It worked!',
+                content: content
+            });
+        }
+    }
+};</code></pre>
+    <p>
+      You'll notice the skeleton project we generated comes with some rewrites
+      already set up. The first exposes the static directory, the second
+      rewrites the root url to a show function called 'welcome'. The welcome
+      function then shows the welcome template (the page you've already
+      seen after pushing the app). If this function is run client-side,
+      it replaces the contents of the current page with the welcome message,
+      otherwise it returns a new page.
+    </p>
+    <p>
+      There are a couple of interesting things here. Firstly, we've required a
+      'kanso/templates' module which doesn't exist in our project directory. This is
+      one of the kanso modules automatically added to your app when you push
+      to couchdb, and provides access to templates.
+    </p>
+    <p>
+      Secondly, we're actually using the context of the module inside the
+      welcome function. With a normal CouchApp these functions are just
+      converted to strings and inserted into the design doc, but kanso will
+      try to proxy the function using a require call (remember I said CouchDB
+      supports CommonJS?). This means we have access to the normal scope of
+      the surrounding code, allowing us to use the kanso module we required at
+      the top of the module inside the welcome function.
+    </p>
+    <p>
+      <strong>Note:</strong> The one important exception to this is view
+      functions, CouchDB views do not support CommonJS modules in the same way
+      and must be self contained.
+    </p>
+
+    <h3>templates/base.html</h3>
+    <p>
+      Kanso uses <a href="http://akdubya.github.com/dustjs/#about">Dust</a>
+      templates. These templates look similar to
+      <a href="http://mustache.github.com">Mustache</a>, but provide some
+      powerful additions such as filters, path lookups, blocks and better 
+      partials support. Dust templates can also be pre-compiled, meaning your
+      templates are compiled when you 'kanso push', not each time a page is
+      rendered.
+    </p>
+    <pre><code class="html">
+&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"&gt; 
+  &lt;head&gt; 
+    &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt; 
+    &lt;title&gt;{title}&lt;/title&gt; 
+  &lt;/head&gt; 
+  &lt;body&gt; 
+    &lt;div id="content"&gt;
+      {content|s}
+    &lt;/div&gt;
+    &lt;script src="{baseURL}/static/jquery-1.4.2.min.js"&gt;&lt;/script&gt;
+    &lt;script src="{baseURL}/static/jquery.history.js"&gt;&lt;/script&gt;
+    &lt;script src="{baseURL}/static/json2.js"&gt;&lt;/script&gt;
+    &lt;script src="{baseURL}/kanso.js"&gt;&lt;/script&gt;
+  &lt;/body&gt;
+&lt;/html&gt;</code></pre>
+    <p>
+      <a href="http://akdubya.github.com/dustjs">Learn more about the dust syntax</a>
+    </p>
+    <p>
+      This template should be fairly self-explanatory. We describe a basic
+      html document and render some variables: 'title', 'content' and
+      'baseURL'.
+    </p>
+    <p>
+      The 'content' variable passes through a filter 's'. This just means the
+      value isn't escaped (we're going to be putting html in there!).
+    </p>
+    <p>
+        The variable 'baseURL' also deserves a mention. This is automatically
+        made available in templates, and changes depending on whether the
+        request uses a virtual host or not. If you've used CouchApps with
+        virtual hosts before, you may be familiar with the problem of
+        including stylesheets and javascript without knowing the current
+        full path. Using baseURL fixes that, meaning you can run your CouchApp
+        either behind a virtual host or access it directly in the
+        /db/_design/doc/_rewrite/ style.
+    </p>
+
+    <h3>templates/welcome.html</h3>
+    <pre><code class="html">&lt;h1&gt;It worked!&lt;/h1&gt;
+&lt;p&gt;Welcome to your new Kanso-powered app.&lt;p&gt;</code></pre>
+
+    <p>
+        Not much to see here, just some HTML we put into the 'content'
+        section of the base.html template.
+    </p>
+
+    <h2>The Recordstore</h2>
+    <p>
+      OK, now we've explored a skeleton Kanso project, let's start building our
+      own web app on top of it. Open Futon and view the recordstore database at
+      <a href="http://localhost:5984/_utils/database.html?recordstore">http://localhost:5984/_utils/database.html?recordstore</a>.
+      You should have already created this when we pushed the new project to
+      localhost in the 'Getting started' section above.
+    </p>
+    <p>Add the following documents:</p>
+    <pre><code class="javascript">{
+  "type": "album",
+  "title": "Blue Lines",
+  "artist": "Massive Attack",
+  "cover": "http://userserve-ak.last.fm/serve/174s/47527219.png"
+},
+{
+  "type": "album",
+  "title": "Mezzanine",
+  "artist": "Massive Attack",
+  "cover": "http://userserve-ak.last.fm/serve/174s/38150483.png"
+},
+{
+  "type": "album",
+  "artist": "Underworld",
+  "title": "Beaucoup Fish",
+  "cover": "http://userserve-ak.last.fm/serve/174s/41665159.png"
+}</code></pre>
+    <p>
+      This can be done with the fairly ugly curl command below:
+    </p>
+    <pre style="white-space: pre-wrap;">curl -X POST -H "Content-Type: application/json" --data '{"docs": [{"type": "album", "title": "Blue Lines", "artist": "Massive Attack", "cover": "http://userserve-ak.last.fm/serve/174s/47527219.png"}, {"type": "album", "title": "Mezzanine", "artist": "Massive Attack", "cover": "http://userserve-ak.last.fm/serve/174s/38150483.png"}, {"type": "album", "artist": "Underworld", "title": "Beaucoup Fish", "cover": "http://userserve-ak.last.fm/serve/174s/41665159.png"}]}' http://127.0.0.1:5984/recordstore/_bulk_docs</pre>
+    <p>
+      Feel free to use your own selection of great albums if you wish, just
+      make sure you add more than one by the same artist so we can
+      demonstrate something later.
+    </p>
+
+    <h2>Creating views</h2>
+    <p>
+      To keep things clean and tidy, we're going to create a new module for
+      storing views. Create a new file at lib/views.js with the following content:
+    <p>
+    <pre><code class="javascript">exports.artist_names = {
+    map: function (doc) {
+        if (doc.type === 'album') {
+            emit(doc.artist, null);
+        }
+    },
+    reduce: function (keys, values, rereduce) {
+        return true;
+    }
+};</code></pre>
+    <p>
+      Next, we need to export these views from the lib/app.js file so they are
+      included in the design document. To include code from another file we can
+      use require. Add the following to the end of lib/app.js.
+    </p>
+    <pre><code class="javascript">exports.views = require('./views');</code></pre>
+    <p>
+      Now, if we push the app again we should see the new view available in futon.
+      Push the app using the following command:
+    </p>
+    <pre>kanso push http://localhost:5984/recordstore</pre>
+    <p>
+      Then, visit
+      <a href="http://localhost:5984/_utils/database.html?recordstore/_design/recordstore/_view/artist_names">http://localhost:5984/_utils/database.html?recordstore/_design/recordstore/_view/artist_names</a>
+      to see the results of the newly created view.
+    </p>
+
+    <h2>Templates and list functions</h2>
+    <p>
+      Now we have a view and some data, let's replace the welcome page with a list
+      of artists. Once again, we'll create a new module for this code. Add a file at
+      lib/lists.js with the following content:
+    </p>
+    <pre><code class="javascript">var templates = require('kanso/templates');
+
+
+exports.artists = function (head, req) {
+    start({headers: {'Content-Type': 'text/html'}});
+    var row, rows = [];
+    while (row = getRow()) {
+        rows.push(row);
+    }
+    // create a html list of artists
+    var content = templates.render('artists.html', req, {rows: rows});
+
+    if (req.client) {
+        // if client-side, replace the HTML of the content div with the list
+        $('#content').html(content);
+        // update the page title
+        document.title = 'Artists';
+    }
+    else {
+        // if server-side, return a full page using the base template
+        return templates.render('base.html', req, {
+            title: 'Artists',
+            content: content
+        });
+    }
+};</code></pre>
+    <p>
+      This list function will be used with the artist_names view we created earlier.
+      When run server-side it will render a complete HTML page, and when run
+      client-side it will update the current page's content and title instead.
+    </p>
+    <p>
+      Again, we need to export this from lib/app.js too.
+    </p>
+    <pre><code class="javascript">exports.lists = require('./lists');</code></pre>
+    <p>
+      You may have noticed we used a template 'artists.html' in our list function.
+      This template doesn't exist, so we need to create it. Add a file at
+      templates/artists.html with the following content:
+    </p>
+    <pre><code class="html">&lt;h1&gt;Artists&lt;/h1&gt;
+
+&lt;ul&gt;
+  {#rows}
+    &lt;li&gt;&lt;a href="{baseURL}/{key|uc}"&gt;{key}&lt;/a&gt;&lt;/li&gt;
+  {/rows}
+&lt;/ul&gt;</code></pre>
+    <p>
+      Finally, let's replace the welcome page with our new list function.
+      Update lib/app.js to the following:
+    </p>
+    <pre><code class="javascript">exports.rewrites = [
+    {from: '/static/*', to: 'static/*'},
+    {from: '/', to: '_list/artists/artist_names', query: {group: true}}
+];
+
+exports.views = require('./views');
+exports.lists = require('./lists');</code></pre>
+    <p>
+      We've removed the old welcome show function and added a rewrite from the
+      root URL to the new artists list function. Push the app again, then visit
+      <a href="http://localhost:5984/recordstore/_design/recordstore/_rewrite/">http://localhost:5984/recordstore/_design/recordstore/_rewrite/</a>.
+      You should see a list of artist links (the linked pages don't exist yet).
+    </p>
+
+    <h2>To be continued...</h2>
+    <p>
+      This tutorial is a work in progress, if you have any additions then
+      please fork the <a href="https://github.com/caolan/kanso">Kanso project</a>
+      on GitHub and explore the docs directory. Any questions or comments can be
+      sent to <a href="https://github.com/caolan">caolan</a> on GitHub.
+    </p>
+    <p>
+      To be kept informed, <a href="https://github.com/kanso">Watch the Kanso project on GitHub</a>
+      or follow <a href="http://twitter.com/caolan">@caolan</a> on Twitter.
+    </p>
+  </div>
+
+  <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20477836-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</body>
+</html>
