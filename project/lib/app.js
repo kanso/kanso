@@ -1,4 +1,4 @@
-var kanso = require('kanso/core');
+var templates = require('kanso/templates');
 
 
 exports.rewrites = [
@@ -8,14 +8,14 @@ exports.rewrites = [
 
 exports.shows = {
     welcome: function (doc, req) {
-        var content = kanso.template('welcome.html', req, {});
+        var content = templates.render('welcome.html', req, {});
 
         if (req.client) {
             $('#content').html(content);
             document.title = 'It worked!';
         }
         else {
-            return kanso.template('base.html', req, {
+            return templates.render('base.html', req, {
                 title: 'It worked!',
                 content: content
             });
