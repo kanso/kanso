@@ -35,7 +35,7 @@ exports.number = function (options) {
     options = options || {};
 
     options.parse = function (raw) {
-        if(raw === null || raw === ''){
+        if (raw === null || raw === '') {
             return NaN;
         }
         return Number(raw);
