@@ -21,3 +21,33 @@ Field.prototype.validate = function (doc, value, raw) {
         }
     }
 };
+
+exports.string = function (options) {
+    options = options || {};
+
+    options.parse = function (raw) {
+        return '' + raw;
+    };
+    return new Field(options);
+};
+
+exports.number = function (options) {
+    options = options || {};
+
+    options.parse = function (raw) {
+        if(raw === null || raw === ''){
+            return NaN;
+        }
+        return Number(raw);
+    };
+    return new Field(options);
+};
+
+exports.boolean = function (options) {
+    options = options || {};
+
+    options.parse = function (raw) {
+        return Boolean(raw);
+    };
+    return new Field(options);
+};

@@ -83,6 +83,29 @@ module.exports = nodeunit.testCase({
         }
 
         test.done();
+    },
+
+    'string field': function (test) {
+        var f = this.fields.string();
+        test.equal(f.parse('some string'), 'some string');
+        test.equal(f.parse(123), '123');
+        test.equal(f.parse(''), '');
+        test.done();
+    },
+
+    'number field': function (test) {
+        var f = this.fields.number();
+        test.equal(f.parse('123'), 123);
+        test.ok(isNaN(f.parse('asdf')));
+        test.ok(isNaN(f.parse('')));
+        test.done();
+    },
+
+    'boolean field': function (test) {
+        var f = this.fields.boolean();
+        test.strictEqual(f.parse('true'), true);
+        test.strictEqual(f.parse(''), false);
+        test.done();
     }
 
 });
