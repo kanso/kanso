@@ -40,6 +40,14 @@ exports.number = function (options) {
         }
         return Number(raw);
     };
+    if (!options.validators) {
+        options.validators = [];
+    }
+    options.validators.unshift(function (doc, value, raw) {
+        if (isNaN(value)) {
+            throw new Error('Not a number');
+        }
+    });
     return new Field(options);
 };
 

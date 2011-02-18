@@ -98,6 +98,10 @@ module.exports = nodeunit.testCase({
         test.equal(f.parse('123'), 123);
         test.ok(isNaN(f.parse('asdf')));
         test.ok(isNaN(f.parse('')));
+        test.equal(f.validators.length, 1);
+        test.throws(function () {
+            f.validators[0]({}, NaN, 'asdf');
+        });
         test.done();
     },
 
