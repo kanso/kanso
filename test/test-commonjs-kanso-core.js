@@ -3,18 +3,21 @@ var testing = require('../lib/testing'),
 
 
 var context = {window: {}, kanso: {design_doc: {}}, console: console};
+var mcache = {};
 
 module.exports = nodeunit.testCase({
 
     setUp: function (cb) {
         var that = this;
-        testing.testRequire('kanso/core', context, {}, function (err, kanso) {
-            if (err) {
-                return cb(err);
+        testing.testRequire(
+            'kanso/core', mcache, context, {}, function (err, kanso) {
+                if (err) {
+                    return cb(err);
+                }
+                that.kanso = kanso;
+                cb();
             }
-            that.kanso = kanso;
-            cb();
-        });
+        );
     },
 
     'getURL using pathname': function (test) {

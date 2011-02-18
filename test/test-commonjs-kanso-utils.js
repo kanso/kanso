@@ -3,18 +3,21 @@ var testing = require('../lib/testing'),
 
 
 var context = {window: {}, kanso: {design_doc: {}}, console: console};
+var mcache = {};
 
 module.exports = nodeunit.testCase({
 
     setUp: function (cb) {
         var that = this;
-        testing.testRequire('kanso/utils', context, {}, function (err, utils) {
-            if (err) {
-                return cb(err);
+        testing.testRequire(
+            'kanso/utils', mcache, context, {}, function (err, utils) {
+                if (err) {
+                    return cb(err);
+                }
+                that.utils = utils;
+                cb();
             }
-            that.utils = utils;
-            cb();
-        });
+        );
     },
 
     'getBaseURL - browser': function (test) {
