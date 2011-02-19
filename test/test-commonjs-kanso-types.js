@@ -102,6 +102,53 @@ module.exports = nodeunit.testCase({
         }, testdoc);
         test.same(errs, []);
         test.done();
+    },
+
+    'validate - extra fields not allowed': function (test) {
+        var types = this.types;
+        var fields = this.fields;
+
+        var testdoc = {
+            type: 'test_type',
+            one: 'one',
+            sub: {
+                extra: 'blah'
+            }
+        };
+        var type_fields = {
+            one: fields.string(),
+            sub: {}
+        }
+        var errs = types.validate({
+            'test_type': {fields: type_fields}
+        }, testdoc);
+
+        test.equals(errs.length, 1);
+        test.equals(errs[0].message, 'Field "sub.extra" not defined');
+        test.done();
+    },
+
+    'validate - extra fields allowed': function (test) {
+        var types = this.types;
+        var fields = this.fields;
+
+        var testdoc = {
+            type: 'test_type',
+            one: 'one',
+            sub: {
+                extra: 'blah'
+            }
+        };
+        var type_fields = {
+            one: fields.string(),
+            sub: {}
+        }
+        var errs = types.validate({
+            'test_type': {fields: type_fields, allow_extra_fields: true}
+        }, testdoc);
+
+        test.same(errs, []);
+        test.done();
     }
 
 });
