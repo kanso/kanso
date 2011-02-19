@@ -60,3 +60,13 @@ exports.getBaseURL = function (req) {
     }
     return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
 };
+
+
+/**
+ * isArray function from underscore.js
+ * http://documentcloud.github.com/underscore
+ */
+
+exports.isArray = Array.isArray || function (obj) {
+    return !!(obj && obj.concat && obj.unshift && !obj.callee);
+};

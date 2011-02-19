@@ -2,7 +2,8 @@
  * Module dependencies
  */
 
-var Field = require('./fields').Field;
+var Field = require('./fields').Field,
+    utils = require('./utils');
 
 
 /**
@@ -46,8 +47,7 @@ exports.validate = function (types, doc) {
  */
 
 exports.validateFields = function (fields, values, doc, path, allow_extra) {
-    var errors = [],
-        path = path || [];
+    var errors = [];
 
     for (var k in values) {
         if (values.hasOwnProperty(k)) {
@@ -70,6 +70,35 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
                 }
                 catch (e) {
                     errors.push(e);
+                }
+            }
+            else if (utils.isArray(f)) {
+                if ((f.length === 0 || !f[0]) && values[k].length > 0) {
+                    if (!allow_extra) {
+                        errors.push(new Error(
+                            'Field "' + path.concat(k).join('.') +
+                            '" should be empty'
+                        ));
+                    }
+                }
+                else {
+                    var v = values[k];
+                    for (var i = 0; i < v.length; i += 1) {
+                        if (f[0] instanceof Field) {
+                            try {
+                                f[0].validate(doc, v[i], v[i]);
+                            }
+                            catch (e2) {
+                                errors.push(e2);
+                            }
+                        }
+                        else {
+                            // recurse through sub-objects
+                            errors = errors.concat(exports.validateFields(
+                                f[0], v, doc, path.concat(k), allow_extra
+                            ));
+                        }
+                    }
                 }
             }
             else {
