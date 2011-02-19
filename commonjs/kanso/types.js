@@ -58,9 +58,11 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
             else if (f === undefined) {
                 // extra field detected
                 if (!allow_extra) {
-                    errors.push(new Error(
-                        'Field "' + path.concat(k).join('.') + '" not defined'
-                    ));
+                    var err = new Error(
+                        'Field "' + path.concat([k]).join('.') + '" not defined'
+                    );
+                    err.field = path.concat([k]);
+                    errors.push(err);
                 }
             }
             else if (f instanceof Field) {
@@ -69,16 +71,19 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
                     f.validate(doc, values[k], values[k]);
                 }
                 catch (e) {
+                    e.field = path.concat([k]);
                     errors.push(e);
                 }
             }
             else if (utils.isArray(f)) {
                 if ((f.length === 0 || !f[0]) && values[k].length > 0) {
                     if (!allow_extra) {
-                        errors.push(new Error(
-                            'Field "' + path.concat(k).join('.') +
+                        var err2 = new Error(
+                            'Field "' + path.concat([k]).join('.') +
                             '" should be empty'
-                        ));
+                        );
+                        err2.field = path.concat([k]);
+                        errors.push(err2);
                     }
                 }
                 else {
@@ -89,13 +94,14 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
                                 f[0].validate(doc, v[i], v[i]);
                             }
                             catch (e2) {
+                                e2.field = path.concat([k, i.toString()]);
                                 errors.push(e2);
                             }
                         }
                         else {
                             // recurse through sub-objects
                             errors = errors.concat(exports.validateFields(
-                                f[0], v, doc, path.concat(k), allow_extra
+                                f[0], v, doc, path.concat([k]), allow_extra
                             ));
                         }
                     }
@@ -105,7 +111,7 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
                 // recurse through sub-objects in the type's schema to find
                 // more fields
                 errors = errors.concat(exports.validateFields(
-                    fields[k], values[k], doc, path.concat(k), allow_extra
+                    fields[k], values[k], doc, path.concat([k]), allow_extra
                 ));
             }
         }

@@ -68,6 +68,7 @@ module.exports = nodeunit.testCase({
         }, doc);
         test.same(errs.length, 1);
         test.same(errs[0].message, 'Not a number');
+        test.same(errs[0].field, ['two']);
         test.done();
     },
 
@@ -123,6 +124,7 @@ module.exports = nodeunit.testCase({
 
         test.equals(errs.length, 1);
         test.equals(errs[0].message, 'Field "sub.extra" not defined');
+        test.same(errs[0].field, ['sub', 'extra']);
         test.done();
     },
 
@@ -190,6 +192,8 @@ module.exports = nodeunit.testCase({
         }, testdoc);
 
         test.equals(errs.length, 2);
+        test.same(errs[0].field, ['list', '0']);
+        test.same(errs[1].field, ['list', '1']);
         test.done();
     },
 
@@ -210,6 +214,7 @@ module.exports = nodeunit.testCase({
 
         test.equal(errs.length, 1);
         test.equal(errs[0].message, 'Field "list" should be empty');
+        test.same(errs[0].field, ['list']);
         test.done();
     },
 
@@ -231,8 +236,6 @@ module.exports = nodeunit.testCase({
         test.same(errs, []);
         test.done();
     }
-
-    // TODO: add field (path) to Errors
 
     // TODO: support multiple definitions inside an array?
     // values can match any one of them?
