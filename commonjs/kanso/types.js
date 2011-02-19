@@ -5,14 +5,12 @@ exports.validate = function (types, doc) {
     if (!doc.type) {
         return; // unknown document type
     }
-    var type;
     for (var k in types) {
         if (types.hasOwnProperty(k) && k === doc.type) {
-            type = types[k];
-            break;
+            return exports.validateFields(types[k].fields, doc, doc);
         }
     }
-    return exports.validateFields(type.fields, doc, doc);
+    return; // unknown document type
 };
 
 
@@ -40,6 +38,5 @@ exports.validateFields = function (fields, values, doc) {
             }
         }
     }
-
     return errors;
 };
