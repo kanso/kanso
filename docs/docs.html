@@ -1,0 +1,61 @@
+<html>
+<head>
+  <title>Kanso</title>
+  <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+  <link rel="stylesheet" href="kanso.css" />
+</head>
+<body>
+  <div id="topbar"></div>
+  <div id="topbar_overlay"></div>
+  <div id="container">
+
+    <ul id="navigation">
+      <li><a href="index.html">Intro</a></li>
+      <li><a href="tutorial.html">Tutorial</a></li>
+      <li><a class="selected" href="docs.html">Docs</a></li>
+      <li><a href="https://github.com/caolan/kanso">Code &rArr;</a></li>
+    </ul>
+
+    <a id="sitename" href="#">
+      <img src="kanso_ribbon.png" />
+    </a>
+
+    <h1>Documentation</h1>
+
+    <h2>Types</h2>
+    <p>
+      Document types can be used to ease the validation of updates and check
+      permissions when creating, updating or deleting documents.
+    </p>
+    <p>
+      Type definitions are just objects which expose some pre-defined properties.
+      Its usually convenient to use a module for each document type, and this is
+      the pattern used in the examples below.
+    </p>
+    <h3>Fields</h3>
+    <pre><code class="javascript">var fields = require('kanso/fields');
+
+exports.fields = {
+    title: fields.string(),
+    link: fields.url()
+};</code></pre>
+
+  </div>
+
+  <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20477836-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</body>
+</html>
