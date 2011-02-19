@@ -23,10 +23,9 @@ exports.validateFields = function (fields, values, doc) {
         if (fields.hasOwnProperty(k)) {
             var f = fields[k];
             if (f instanceof Field) {
-                // its a field, parse raw value and validate
-                var value = f.parse(values[k]);
+                // its a field, validate it
                 try {
-                    f.validate(doc, value, values[k]);
+                    f.validate(doc, values[k], values[k]);
                 }
                 catch (e) {
                     errors.push(e);
