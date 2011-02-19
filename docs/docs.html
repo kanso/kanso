@@ -32,13 +32,39 @@
       Its usually convenient to use a module for each document type, and this is
       the pattern used in the examples below.
     </p>
-    <h3>Fields</h3>
+    <h3>Example</h3>
     <pre><code class="javascript">var fields = require('kanso/fields');
 
 exports.fields = {
     title: fields.string(),
     link: fields.url()
 };</code></pre>
+    <p>
+      A document's type is stored as a string in the 'type' property of the document.
+      This is a commonly used pattern to make querying documents easier, and also
+      allows Kanso to validate a document without having to explicitly say which
+      document type to validate against.
+    </p>
+    <h3>types.validate(types, doc)</h3>
+    <p>
+      Validates a JSON document against its document type. <code>types</code> is
+      a JSON document containing all types to validate against, keyed by name.
+      <code>doc</code> is the document you wish to validate.
+    </p>
+    <p>
+      Returns a list of validation errors, or an empty list if its valid document.
+      Documents of an unknown type return undefined.
+    </p>
+
+
+    <h2>Fields</h2>
+    <p>
+      Fields are used when defining document types and tell Kanso how to parse
+      and validate form data.
+    </p>
+    <h3>fields.string(options)</h3>
+    <h3>fields.number(options)</h3>
+    <h3>fields.boolean(options)</h3>
 
   </div>
 
