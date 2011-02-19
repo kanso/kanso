@@ -1,5 +1,20 @@
+/**
+ * Module dependencies
+ */
+
 var Field = require('./fields').Field;
 
+
+/**
+ * Validate a JSON document against the list of types. Unknown document types
+ * are ignored, otherwise an array of validation errors is returned. For valid
+ * documents the array is empty.
+ *
+ * @param {Object} types
+ * @param {Object} doc
+ * @return {Array}
+ * @api public
+ */
 
 exports.validate = function (types, doc) {
     if (!doc.type) {
@@ -15,6 +30,20 @@ exports.validate = function (types, doc) {
     return; // unknown document type
 };
 
+
+/**
+ * Validates an object containing fields against some values, recursing over
+ * sub-objects and checking for extra fields. When a field and matching value
+ * are detected the field's validate function is run.
+ *
+ * @param {Object} fields
+ * @param {Object} values
+ * @param {Object} doc
+ * @param {Array} path
+ * @param {Boolean} allow_extra
+ * @return {Array}
+ * @api public
+ */
 
 exports.validateFields = function (fields, values, doc, path, allow_extra) {
     var errors = [],
