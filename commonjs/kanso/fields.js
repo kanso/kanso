@@ -8,8 +8,8 @@ var Field = exports.Field = function (options) {
     };
 };
 
-Field.prototype.validate = function (doc, value, raw) {
-    if (raw === '' || raw === null || raw === undefined) {
+Field.prototype.validate = function (doc, value) {
+    if (value === '' || value === null || value === undefined) {
         // don't validate empty fields, but check if required
         if (this.required) {
             throw new Error('required field');
@@ -17,7 +17,7 @@ Field.prototype.validate = function (doc, value, raw) {
     }
     else {
         for (var i = 0; i < this.validators.length; i += 1) {
-            this.validators[i](doc, value, raw);
+            this.validators[i](doc, value);
         }
     }
 };
@@ -43,7 +43,7 @@ exports.number = function (options) {
     if (!options.validators) {
         options.validators = [];
     }
-    options.validators.unshift(function (doc, value, raw) {
+    options.validators.unshift(function (doc, value) {
         if (isNaN(value)) {
             throw new Error('Not a number');
         }

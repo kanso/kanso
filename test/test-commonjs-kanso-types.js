@@ -73,7 +73,7 @@ module.exports = nodeunit.testCase({
     },
 
     'validate - nested': function (test) {
-        test.expect(5);
+        test.expect(4);
         var types = this.types;
         var fields = this.fields;
 
@@ -92,11 +92,10 @@ module.exports = nodeunit.testCase({
                 three: fields.boolean()
             }
         }
-        type_fields.sublevel.three.validators.push(function (doc, value, raw) {
+        type_fields.sublevel.three.validators.push(function (doc, value) {
             test.ok(true, 'sublevel validators called');
             test.same(doc, testdoc);
-            test.same(value, true);
-            test.same(raw, true);
+            test.strictEqual(value, true);
         });
         var errs = types.validate({
             'test_type': {fields: type_fields}

@@ -32,50 +32,47 @@ module.exports = nodeunit.testCase({
     },
 
     'Field.validate - call all validators': function (test) {
-        test.expect(6);
+        test.expect(4);
         var fields = this.fields;
         var testdoc = {test: 'doc'};
 
         var f = new fields.Field({
             validators: [
-                function (doc, val, raw) {
+                function (doc, val) {
                     test.same(doc, testdoc);
                     test.equals(val, 'value');
-                    test.equals(raw, 'raw');
                 },
-                function (doc, val, raw) {
+                function (doc, val) {
                     test.same(doc, testdoc);
                     test.equals(val, 'value');
-                    test.equals(raw, 'raw');
                 }
             ]
         });
-        f.validate(testdoc, 'value', 'raw');
+        f.validate(testdoc, 'value');
 
         test.done();
     },
 
     'Field.validate - exit on first error': function (test) {
-        test.expect(4);
+        test.expect(3);
         var fields = this.fields;
         var testdoc = {test: 'doc'};
         var testerr = new Error('some error');
 
         var f = new fields.Field({
             validators: [
-                function (doc, val, raw) {
+                function (doc, val) {
                     test.same(doc, testdoc);
                     test.equals(val, 'value');
-                    test.equals(raw, 'raw');
                     throw testerr;
                 },
-                function (doc, val, raw) {
+                function (doc, val) {
                     test.ok(false, 'should not be called');
                 }
             ]
         });
         try {
-            f.validate(testdoc, 'value', 'raw');
+            f.validate(testdoc, 'value');
         }
         catch (e) {
             // this should be called

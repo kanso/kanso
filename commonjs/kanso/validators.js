@@ -1,5 +1,5 @@
 /*exports.matchField = function(match_field){
-    return function(doc, value, raw){
+    return function(doc, value){
         if(doc[match_field] !== value){
             throw new Error('Does not match ' + match_field);
         }
@@ -7,7 +7,7 @@
 };*/
 
 exports.min = function (min) {
-    return function (doc, value, raw) {
+    return function (doc, value) {
         if (value < min) {
             throw new Error(
                 'Please enter a value greater than or equal to ' + min
@@ -17,7 +17,7 @@ exports.min = function (min) {
 };
 
 exports.max = function (max) {
-    return function (doc, value, raw) {
+    return function (doc, value) {
         if (value > max) {
             throw new Error(
                 'Please enter a value less than or equal to ' + max
@@ -27,7 +27,7 @@ exports.max = function (max) {
 };
 
 exports.range = function (min, max) {
-    return function (doc, value, raw) {
+    return function (doc, value) {
         if (value < min || value > max) {
             throw new Error(
                 'Please enter a value between ' + min + ' and ' + max
@@ -37,7 +37,7 @@ exports.range = function (min, max) {
 };
 
 exports.minlength = function (val) {
-    return function (doc, value, raw) {
+    return function (doc, value) {
         if (value.length < val) {
             throw new Error('Please enter at least ' + val + ' characters');
         }
@@ -45,7 +45,7 @@ exports.minlength = function (val) {
 };
 
 exports.maxlength = function (val) {
-    return function (doc, value, raw) {
+    return function (doc, value) {
         if (value.length > val) {
             throw new Error('Please enter no more than ' + val + ' characters');
         }
@@ -53,7 +53,7 @@ exports.maxlength = function (val) {
 };
 
 exports.rangelength = function (min, max) {
-    return function (doc, value, raw) {
+    return function (doc, value) {
         if (value.length < min || value.length > max) {
             throw new Error(
                 'Please enter a value between ' + min + ' and ' + max +
@@ -65,7 +65,7 @@ exports.rangelength = function (min, max) {
 
 exports.regexp = function (re, message) {
     re = (typeof re === 'string') ? new RegExp(re): re;
-    return function (doc, value, raw) {
+    return function (doc, value) {
         if (!re.test(value)) {
             throw new Error(message || 'Invalid format');
         }
