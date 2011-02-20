@@ -23,9 +23,13 @@ exports.validate = function (types, doc) {
     }
     for (var k in types) {
         if (types.hasOwnProperty(k) && k === doc.type) {
-            return exports.validateFields(
-                types[k].fields, doc, doc, [], types[k].allow_extra_fields
+            var type = types[k];
+            var fields = types[k].fields;
+            var required_errors = exports.checkRequired(fields, doc, []);
+            var validation_errors = exports.validateFields(
+                fields, doc, doc, [], type.allow_extra_fields
             );
+            return required_errors.concat(validation_errors);
         }
     }
     return; // unknown document type
@@ -33,9 +37,65 @@ exports.validate = function (types, doc) {
 
 
 /**
- * Validates an object containing fields against some values, recursing over
- * sub-objects and checking for extra fields. When a field and matching value
- * are detected the field's validate function is run.
+ * Iterates over fields, checking for an associated value if the field is
+ * required.
+ *
+ * @param {Object} fields
+ * @param {Object} values
+ * @param {Array} path
+ * @return {Array}
+ */
+
+exports.checkRequired = function (fields, values, path) {
+    var errors = [];
+
+    for (var k in fields) {
+        if (fields.hasOwnProperty(k)) {
+            var f = fields[k];
+            if (f instanceof Field && f.required) {
+                console.log('required field: ' + path.join('.'));
+                if (!values.hasOwnProperty(k)) {
+                    var err = new Error('Required field');
+                    err.field = path.concat([k]);
+                    errors.push(err);
+                }
+            }
+            else if (utils.isArray(f)) {
+                if (f[0] instanceof Field && f.required) {
+                    console.log('required field: ' + path.join('.'));
+                    if (!values.hasOwnProperty(k)) {
+                        var err2 = new Error('Required field');
+                        err2.field = path.concat([k]);
+                        errors.push(err2);
+                    }
+                }
+                else {
+                    // recurse through sub-objects
+                    var subvals = values.hasOwnProperty(k) ? values[k]: {};
+                    errors = errors.concat(exports.checkRequired(
+                        f[0], subvals, path.concat([k])
+                    ));
+                }
+            }
+            else {
+                // recurse through sub-objects in the type's schema to find
+                // more fields
+                var subvals2 = values.hasOwnProperty(k) ? values[k]: {};
+                errors = errors.concat(exports.checkRequired(
+                    f, subvals2, path.concat([k])
+                ));
+            }
+        }
+    }
+
+    return errors;
+};
+
+
+/**
+ * Iterates over values and checks against field validators, recursing through
+ * sub-objects. Returns an array of validation errors, or an empty array if
+ * valid.
  *
  * @param {Object} fields
  * @param {Object} values
@@ -43,7 +103,6 @@ exports.validate = function (types, doc) {
  * @param {Array} path
  * @param {Boolean} allow_extra
  * @return {Array}
- * @api public
  */
 
 exports.validateFields = function (fields, values, doc, path, allow_extra) {

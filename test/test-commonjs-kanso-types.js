@@ -234,6 +234,96 @@ module.exports = nodeunit.testCase({
 
         test.same(errs, []);
         test.done();
+    },
+
+    'validate - missing required field': function (test) {
+        var types = this.types;
+        var fields = this.fields;
+
+        var doc = {
+            type: 'test_type',
+            one: 'one'
+        };
+        var errs = types.validate({
+            'test_type': {
+                fields: {
+                    one: fields.string({required: true}),
+                    two: fields.string({required: true})
+                }
+            }
+        }, doc);
+        test.equal(errs.length, 1);
+        test.same(errs[0].field, ['two']);
+        test.equal(errs[0].message, 'Required field');
+        test.done();
+    },
+
+    'validate - falsy required field': function (test) {
+        var types = this.types;
+        var fields = this.fields;
+
+        var doc = {
+            type: 'test_type',
+            one: 'one',
+            two: false
+        };
+        var errs = types.validate({
+            'test_type': {
+                fields: {
+                    one: fields.string({required: true}),
+                    two: fields.string({required: true})
+                }
+            }
+        }, doc);
+        test.same(errs, []);
+        test.done();
+    },
+
+    'validate - nested required field': function (test) {
+        var types = this.types;
+        var fields = this.fields;
+
+        var doc = {
+            type: 'test_type',
+            one: 'one',
+            sub: {
+                obj: {
+                    two: 'asdf'
+                }
+            }
+        };
+        var errs = types.validate({
+            'test_type': {
+                fields: {
+                    one: fields.string({required: true}),
+                    sub: {obj: {two: fields.string({required: true})}}
+                }
+            }
+        }, doc);
+        test.same(errs, []);
+        test.done();
+    },
+
+    'validate - nested missing required field': function (test) {
+        var types = this.types;
+        var fields = this.fields;
+
+        var doc = {
+            type: 'test_type',
+            one: 'one'
+        };
+        var errs = types.validate({
+            'test_type': {
+                fields: {
+                    one: fields.string({required: true}),
+                    sub: {obj: {two: fields.string({required: true})}}
+                }
+            }
+        }, doc);
+        test.equal(errs.length, 1);
+        test.same(errs[0].field, ['sub','obj','two']);
+        test.equal(errs[0].message, 'Required field');
+        test.done();
     }
 
     // TODO: support multiple definitions inside an array?
