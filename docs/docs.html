@@ -66,6 +66,44 @@ exports.fields = {
     <h3>fields.number(options)</h3>
     <h3>fields.boolean(options)</h3>
 
+    <h2>Validators</h2>
+    <p>
+      Used to validate the contents of a document type's field, and usually passed
+      as an array of validation functions to a field type.
+    </p>
+    <h3>Example</h3>
+    <pre><code class="javascript">var fields = require('kanso/fields'),
+    validators = require('kanso/validators');
+
+
+exports.fields = {
+    count: fields.number({
+        validators: [ validators.max(10) ]
+    })
+};</code></pre>
+    <p>
+      Custom validators can be easily created by writing a function which
+      accepts the following arguments, and throws an Error if validation fails:
+    </p>
+    <pre><code class="javascript">exports.myValidator = function (doc, value) {
+    if (value === 'incorrect value') {
+        throw new Error('Validation failed');
+    }
+}</code></pre>
+    <p>
+      Here, <code>doc</code> is the document being validated, and
+      <code>value</code> is the value of the field.
+    </p>
+    <h3>validators.min(val)</h3>
+    <h3>validators.max(val)</h3>
+    <h3>validators.range(min, max)</h3>
+    <h3>validators.minlength(val)</h3>
+    <h3>validators.maxlength(val)</h3>
+    <h3>validators.rangelength(min, max)</h3>
+    <h3>validators.regexp(expression, [message])</h3>
+    <h3>validators.email()</h3>
+    <h3>validators.url()</h3>
+
   </div>
 
   <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
