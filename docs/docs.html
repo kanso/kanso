@@ -22,7 +22,20 @@
 
     <h1>Documentation</h1>
 
-    <h2>Types</h2>
+    <h2>Modules</h2>
+    <ol class="index">
+      <li><a href="#core">Core</a></li>
+      <li><a href="#types">Types</a></li>
+      <li><a href="#fields">Fields</a></li>
+      <li><a href="#validators">Validators</a></li>
+      <li><a href="#db">DB</a></li>
+      <li><a href="#session">Session</a></li>
+      <li><a href="#settings">Settings</a></li>
+      <li><a href="#templates">Templates</a></li>
+      <li><a href="#Utils">Utils</a></li>
+    </ol>
+
+    <h2 id="types">Types</h2>
     <p>
       Document types can be used to ease the validation of updates and check
       permissions when creating, updating or deleting documents.
@@ -48,7 +61,7 @@ exports.fields = {
     <h3>types.validate(types, doc)</h3>
     <p>
       Validates a JSON document against its document type. <code>types</code> is
-      a JSON document containing all types to validate against, keyed by name.
+      an object containing all types to validate against, keyed by name.
       <code>doc</code> is the document you wish to validate.
     </p>
     <p>
@@ -57,7 +70,7 @@ exports.fields = {
     </p>
 
 
-    <h2>Fields</h2>
+    <h2 id="fields">Fields</h2>
     <p>
       Fields are used when defining document types and tell Kanso how to parse
       and validate form data.
@@ -66,7 +79,7 @@ exports.fields = {
     <h3>fields.number(options)</h3>
     <h3>fields.boolean(options)</h3>
 
-    <h2>Validators</h2>
+    <h2 id="validators">Validators</h2>
     <p>
       Used to validate the contents of a document type's field, and usually passed
       as an array of validation functions to a field type.
