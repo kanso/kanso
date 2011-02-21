@@ -1,3 +1,6 @@
+var validators = require('./validators');
+
+
 var Field = exports.Field = function (options) {
     options = options || {};
 
@@ -22,6 +25,7 @@ Field.prototype.validate = function (doc, value) {
     }
 };
 
+
 exports.string = function (options) {
     options = options || {};
 
@@ -30,6 +34,7 @@ exports.string = function (options) {
     };
     return new Field(options);
 };
+
 
 exports.number = function (options) {
     options = options || {};
@@ -51,6 +56,7 @@ exports.number = function (options) {
     return new Field(options);
 };
 
+
 exports.boolean = function (options) {
     options = options || {};
 
@@ -58,4 +64,26 @@ exports.boolean = function (options) {
         return Boolean(raw);
     };
     return new Field(options);
+};
+
+
+exports.url = function (options) {
+    options = options || {};
+
+    if (!options.validators) {
+        options.validators = [];
+    }
+    options.validators.unshift(validators.url());
+    return exports.string(options);
+};
+
+
+exports.email = function (options) {
+    options = options || {};
+
+    if (!options.validators) {
+        options.validators = [];
+    }
+    options.validators.unshift(validators.email());
+    return exports.string(options);
 };

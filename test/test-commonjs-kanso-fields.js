@@ -1,5 +1,7 @@
 var testing = require('../lib/testing'),
-    nodeunit = require('../deps/nodeunit');
+    nodeunit = require('../deps/nodeunit'),
+    // can require this directly because it requires no other dependencies
+    validators = require('../commonjs/kanso/validators');
 
 
 var context = {window: {}, kanso: {design_doc: {}}, console: console};
@@ -87,6 +89,9 @@ module.exports = nodeunit.testCase({
         test.equal(f.parse('some string'), 'some string');
         test.equal(f.parse(123), '123');
         test.equal(f.parse(''), '');
+        var f2 = this.fields.string({validators: ['test'], required: false});
+        test.same(f2.validators, ['test']);
+        test.strictEqual(f2.required, false);
         test.done();
     },
 
@@ -99,6 +104,11 @@ module.exports = nodeunit.testCase({
         test.throws(function () {
             f.validators[0]({}, NaN, 'asdf');
         });
+        var f2 = this.fields.number({validators: ['test'], required: false});
+        test.equal(f2.validators.length, 2);
+        // first validator checks for NaN
+        test.equal(f2.validators[1], 'test');
+        test.strictEqual(f2.required, false);
         test.done();
     },
 
@@ -106,6 +116,29 @@ module.exports = nodeunit.testCase({
         var f = this.fields.boolean();
         test.strictEqual(f.parse('true'), true);
         test.strictEqual(f.parse(''), false);
+        var f2 = this.fields.boolean({validators: ['test'], required: false});
+        test.same(f2.validators, ['test']);
+        test.strictEqual(f2.required, false);
+        test.done();
+    },
+
+    'url field': function (test) {
+        var f = this.fields.url();
+        test.equal(f.parse('some string'), 'some string');
+        test.equal(f.parse(123), '123');
+        test.equal(f.parse(''), '');
+        test.equal(f.validators.length, 1);
+        test.same(f.validators[0].toString(), validators.url().toString());
+        test.done();
+    },
+
+    'email field': function (test) {
+        var f = this.fields.email();
+        test.equal(f.parse('some string'), 'some string');
+        test.equal(f.parse(123), '123');
+        test.equal(f.parse(''), '');
+        test.equal(f.validators.length, 1);
+        test.same(f.validators[0].toString(), validators.email().toString());
         test.done();
     }
 
