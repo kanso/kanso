@@ -151,11 +151,11 @@ code {
 .index {
     margin: 1.618em 0;
     padding: 0 0 0 1.618em;
-    /*list-style-type: none;*/
-    /*padding: 0;*/
+    list-style-type: none;
+    padding: 0;
 }
 .index li {
     margin: 0.146em 0;
     padding: 0;
-    /*display: inline;*/
+    display: inline;
 }
