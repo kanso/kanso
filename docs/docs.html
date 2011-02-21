@@ -20,184 +20,194 @@
       <img src="kanso_ribbon.png" />
     </a>
 
-    <h1>Documentation</h1>
+    <div id="docs">
+      <h1>Documentation</h1>
 
-    <h3>Modules</h3>
-    <ol class="index">
-      <li><a href="#core">core</a></li>
-      <li><a href="#types">types</a></li>
-      <li><a href="#fields">fields</a></li>
-      <li><a href="#validators">validators</a></li>
-      <li><a href="#db">db</a></li>
-      <li><a href="#session">session</a></li>
-      <li><a href="#settings">settings</a></li>
-      <li><a href="#templates">templates</a></li>
-      <li><a href="#Utils">utils</a></li>
-    </ol>
+      <h3>Modules</h3>
+      <ol class="index">
+        <li><a href="#core">core</a></li>
+        <li><a href="#types">types</a></li>
+        <li><a href="#fields">fields</a></li>
+        <li><a href="#validators">validators</a></li>
+        <li><a href="#db">db</a></li>
+        <li><a href="#session">session</a></li>
+        <li><a href="#settings">settings</a></li>
+        <li><a href="#templates">templates</a></li>
+        <li><a href="#utils">utils</a></li>
+      </ol>
 
-    <h3>Commands</h3>
-    <ol class="index">
-      <li><a href="#push">push</a></li>
-      <li><a href="#pushdata">pushdata</a></li>
-      <li><a href="#create">create</a></li>
-      <li><a href="#help">help</a></li>
-      <li><a href="#show">show</a></li>
-      <li><a href="#uuids">uuids</a></li>
-    </ol>
-
-
-    <h2 id="types">Types</h2>
-    <p>
-      Document types can be used to ease the validation of updates and check
-      permissions when creating, updating or deleting documents.
-    </p>
-    <p>
-      Type definitions are just objects which expose some pre-defined properties.
-      Its usually convenient to use a module for each document type, and this is
-      the pattern used in the examples below.
-    </p>
-    <h3>Example</h3>
-    <pre><code class="javascript">var fields = require('kanso/fields');
-
-exports.fields = {
-    title: fields.string(),
-    link: fields.url()
-};</code></pre>
-    <p>
-      A document's type is stored as a string in the 'type' property of the document.
-      This is a commonly used pattern to make querying documents easier, and also
-      allows Kanso to validate a document without having to explicitly say which
-      document type to validate against.
-    </p>
-    <h3>types.validate(types, doc)</h3>
-    <p>
-      Validates a JSON document against its document type. <code>types</code> is
-      an object containing all types to validate against, keyed by name.
-      <code>doc</code> is the document you wish to validate.
-    </p>
-    <p>
-      Returns a list of validation errors, or an empty list if its a valid document.
-      Documents of an unknown type return undefined.
-    </p>
+      <h3>Commands</h3>
+      <ol class="index">
+        <li><a href="#push">push</a></li>
+        <li><a href="#pushdata">pushdata</a></li>
+        <li><a href="#create">create</a></li>
+        <li><a href="#help">help</a></li>
+        <li><a href="#show">show</a></li>
+        <li><a href="#uuids">uuids</a></li>
+      </ol>
 
 
-    <h2 id="fields">Fields</h2>
-    <p>
-      Fields are used when defining document types and tell Kanso how to parse
-      and validate form data.
-    </p>
-    <h3>fields.string(options)</h3>
-    <h3>fields.number(options)</h3>
-    <h3>fields.boolean(options)</h3>
-    <h3>fields.url(options)</h3>
-    <h3>fields.email(options)</h3>
+      <h2 id="core">Core</h2>
 
-    <h2 id="validators">Validators</h2>
-    <p>
-      Used to validate the contents of a document type's field, and usually passed
-      as an array of validation functions to a field type.
-    </p>
-    <h3>Example</h3>
-    <pre><code class="javascript">var fields = require('kanso/fields'),
-    validators = require('kanso/validators');
+      <h2 id="types">Types</h2>
+      <p>
+        Document types can be used to ease the validation of updates and check
+        permissions when creating, updating or deleting documents.
+      </p>
+      <p>
+        Type definitions are just objects which expose some pre-defined properties.
+        Its usually convenient to use a module for each document type, and this is
+        the pattern used in the examples below.
+      </p>
+      <h3>Example</h3>
+      <pre><code class="javascript">var fields = require('kanso/fields');
 
-
-exports.fields = {
-    count: fields.number({
-        validators: [ validators.max(10) ]
-    })
-};</code></pre>
-    <p>
-      Custom validators can be easily created by writing a function which
-      accepts the following arguments, and throws an Error if validation fails:
-    </p>
-    <pre><code class="javascript">exports.myValidator = function (doc, value) {
-    if (value === 'incorrect value') {
-        throw new Error('Validation failed');
-    }
-}</code></pre>
-    <p>
-      Here, <code>doc</code> is the document being validated, and
-      <code>value</code> is the value of the field.
-    </p>
-    <h3>validators.min(val)</h3>
-    <h3>validators.max(val)</h3>
-    <h3>validators.range(min, max)</h3>
-    <h3>validators.minlength(val)</h3>
-    <h3>validators.maxlength(val)</h3>
-    <h3>validators.rangelength(min, max)</h3>
-    <h3>validators.regexp(expression, [message])</h3>
-    <h3>validators.email()</h3>
-    <h3>validators.url()</h3>
+  exports.fields = {
+      title: fields.string(),
+      link: fields.url()
+  };</code></pre>
+      <p>
+        A document's type is stored as a string in the 'type' property of the document.
+        This is a commonly used pattern to make querying documents easier, and also
+        allows Kanso to validate a document without having to explicitly say which
+        document type to validate against.
+      </p>
+      <h3>types.validate(types, doc)</h3>
+      <p>
+        Validates a JSON document against its document type. <code>types</code> is
+        an object containing all types to validate against, keyed by name.
+        <code>doc</code> is the document you wish to validate.
+      </p>
+      <p>
+        Returns a list of validation errors, or an empty list if its a valid document.
+        Documents of an unknown type return undefined.
+      </p>
 
 
+      <h2 id="fields">Fields</h2>
+      <p>
+        Fields are used when defining document types and tell Kanso how to parse
+        and validate form data.
+      </p>
+      <h3>fields.string(options)</h3>
+      <h3>fields.number(options)</h3>
+      <h3>fields.boolean(options)</h3>
+      <h3>fields.url(options)</h3>
+      <h3>fields.email(options)</h3>
 
-    <h2>Commands</h2>
+      <h2 id="validators">Validators</h2>
+      <p>
+        Used to validate the contents of a document type's field, and usually passed
+        as an array of validation functions to a field type.
+      </p>
+      <h3>Example</h3>
+      <pre><code class="javascript">var fields = require('kanso/fields'),
+      validators = require('kanso/validators');
 
-    <h3 id="push">Push</h3>
-    <p>Upload a project to a CouchDB instance.</p>
-    <pre>kanso push [OPTIONS] DB [PATH]
 
-Parameters:
-  DB     The CouchDB instance to upload the app to
-  PATH   The project path to load the app from
+  exports.fields = {
+      count: fields.number({
+          validators: [ validators.max(10) ]
+      })
+  };</code></pre>
+      <p>
+        Custom validators can be easily created by writing a function which
+        accepts the following arguments, and throws an Error if validation fails:
+      </p>
+      <pre><code class="javascript">exports.myValidator = function (doc, value) {
+      if (value === 'incorrect value') {
+          throw new Error('Validation failed');
+      }
+  }</code></pre>
+      <p>
+        Here, <code>doc</code> is the document being validated, and
+        <code>value</code> is the value of the field.
+      </p>
+      <h3>validators.min(val)</h3>
+      <h3>validators.max(val)</h3>
+      <h3>validators.range(min, max)</h3>
+      <h3>validators.minlength(val)</h3>
+      <h3>validators.maxlength(val)</h3>
+      <h3>validators.rangelength(min, max)</h3>
+      <h3>validators.regexp(expression, [message])</h3>
+      <h3>validators.email()</h3>
+      <h3>validators.url()</h3>
 
-Options:
-  --minify               Compress CommonJS modules using UglifyJS
-  --minify-attachments   Compress .js attachments
-  --baseURL PATH         Force the baseURL to a specific value.
-                         (allows vhosts on CouchDB &lt; v1.1.x)
-</pre>
 
-    <h3 id="pushdata">Pushdata</h3>
-    <p>Push a file or directory of JSON files to DB.</p>
-    <pre>kanso pushdata [OPTIONS] DB PATH
+      <h2 id="db">DB</h2>
+      <h2 id="session">Session</h2>
+      <h2 id="settings">Settings</h2>
+      <h2 id="templates">Templates</h2>
+      <h2 id="utils">Utils</h2>
 
-Parameters:
-  DB     The CouchDB instance to upload the documents to
-  PATH   A file or directory containing JSON documents to upload
 
-Options:
-  -f, --force      Ignore document conflict errors and upload anyway
-</pre>
+      <h2>Commands</h2>
 
-    <h3 id="create">Create</h3>
-    <p>Create a new project skeleton.</p>
-    <pre>kanso create PATH
+      <h3 id="push">Push</h3>
+      <p>Upload a project to a CouchDB instance.</p>
+      <pre>kanso push [OPTIONS] DB [PATH]
 
-Parameters:
-  PATH     Path to create a new project skeleton at, project name
-           defaults to last directory in this path
-</pre>
+  Parameters:
+    DB     The CouchDB instance to upload the app to
+    PATH   The project path to load the app from
 
-    <h3 id="help">Help</h3>
-    <p>Show help specific to a command.</p>
-    <pre>kanso help [COMMAND]
+  Options:
+    --minify               Compress CommonJS modules using UglifyJS
+    --minify-attachments   Compress .js attachments
+    --baseURL PATH         Force the baseURL to a specific value.
+                           (allows vhosts on CouchDB &lt; v1.1.x)
+  </pre>
 
-Parameters:
-  COMMAND      The kanso command to show help on
-</pre>
+      <h3 id="pushdata">Pushdata</h3>
+      <p>Push a file or directory of JSON files to DB.</p>
+      <pre>kanso pushdata [OPTIONS] DB PATH
 
-    <h3 id="show">Show</h3>
-    <p>Load a project and output resulting JSON</p>
-    <pre>kanso show [PATH]
+  Parameters:
+    DB     The CouchDB instance to upload the documents to
+    PATH   A file or directory containing JSON documents to upload
 
-Parameters:
-  PATH     Path to project directory to show (defaults to ".")
-</pre>
+  Options:
+    -f, --force      Ignore document conflict errors and upload anyway
+  </pre>
 
-    <h3 id="uuids">UUIDs</h3>
-    <p>Returns UUIDs generated by a CouchDB instance.<p>
-    <pre>kanso uuids [OPTIONS] [URL]
+      <h3 id="create">Create</h3>
+      <p>Create a new project skeleton.</p>
+      <pre>kanso create PATH
 
-Parameters:
-  URL         The CouchDB instance to generate UUIDs from
-              (defaults to http://localhost:5984)
+  Parameters:
+    PATH     Path to create a new project skeleton at, project name
+             defaults to last directory in this path
+  </pre>
 
-Options:
-  -n [NUM], --number [NUM]    The number of UUIDs to generate (default: 1)
-</pre>
+      <h3 id="help">Help</h3>
+      <p>Show help specific to a command.</p>
+      <pre>kanso help [COMMAND]
 
+  Parameters:
+    COMMAND      The kanso command to show help on
+  </pre>
+
+      <h3 id="show">Show</h3>
+      <p>Load a project and output resulting JSON</p>
+      <pre>kanso show [PATH]
+
+  Parameters:
+    PATH     Path to project directory to show (defaults to ".")
+  </pre>
+
+      <h3 id="uuids">UUIDs</h3>
+      <p>Returns UUIDs generated by a CouchDB instance.<p>
+      <pre>kanso uuids [OPTIONS] [URL]
+
+  Parameters:
+    URL         The CouchDB instance to generate UUIDs from
+                (defaults to http://localhost:5984)
+
+  Options:
+    -n [NUM], --number [NUM]    The number of UUIDs to generate (default: 1)
+  </pre>
+
+    </div>
   </div>
 
   <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>

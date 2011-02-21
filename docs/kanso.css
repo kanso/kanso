@@ -159,3 +159,7 @@ code {
     padding: 0;
     display: inline;
 }
+
+#docs h1 {
+    padding-bottom: 0.326em;
+}
