@@ -53,7 +53,6 @@ exports.checkRequired = function (fields, values, path) {
         if (fields.hasOwnProperty(k)) {
             var f = fields[k];
             if (f instanceof Field && f.required) {
-                console.log('required field: ' + path.join('.'));
                 if (!values.hasOwnProperty(k)) {
                     var err = new Error('Required field');
                     err.field = path.concat([k]);
@@ -62,7 +61,6 @@ exports.checkRequired = function (fields, values, path) {
             }
             else if (utils.isArray(f)) {
                 if (f[0] instanceof Field && f.required) {
-                    console.log('required field: ' + path.join('.'));
                     if (!values.hasOwnProperty(k)) {
                         var err2 = new Error('Required field');
                         err2.field = path.concat([k]);
