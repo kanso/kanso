@@ -445,10 +445,14 @@ exports.handle = function (url) {
         var src, fn, name;
 
         if (req.path[0] === '_show') {
-            exports.runShow(req, req.path[1], req.path[2], after);
+            exports.runShow(
+                req, req.path[1], req.path.slice(2).join('/'), after
+            );
         }
         else if (req.path[0] === '_list') {
-            exports.runList(req, req.path[1], req.path[2], after);
+            exports.runList(
+                req, req.path[1], req.path.slice(2).join('/'), after
+            );
         }
         else {
             // TODO: decide what happens here
