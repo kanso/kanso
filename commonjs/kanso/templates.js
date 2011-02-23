@@ -41,6 +41,7 @@ var utils = require('./utils');
 // TODO: add unit tests for this function
 exports.render = function (name, req, context) {
     context.baseURL = utils.getBaseURL(req);
+    context.isBrowser = utils.isBrowser;
     var r = '';
     dust.render(name, context, function (err, result) {
         if (err) {
