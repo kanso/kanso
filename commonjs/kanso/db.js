@@ -103,6 +103,28 @@ exports.getView = function (view, q, callback) {
 
 
 /**
+ * Get all documents (including design docs).
+ *
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+exports.all = function (/*optional*/q, callback) {
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var base = utils.getBaseURL();
+    var req = {
+        url: base + '/_db/_all_docs',
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
  * Properly encodes query parameters to CouchDB views etc. Handle complex
  * keys and other non-string parameters by passing through JSON.stringify.
  * Returns a shallow-copied clone of the original query after complex values
