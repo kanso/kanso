@@ -85,6 +85,22 @@ module.exports = nodeunit.testCase({
             utils.getBaseURL();
         });
         test.done();
+    },
+
+    'propertyPath': function (test) {
+        var utils = this.utils;
+        var obj = {some: {nested: {path: 'yay'}}};
+        test.equal(utils.propertyPath(obj, ['some','nested','path']), 'yay');
+        test.same(utils.propertyPath(obj, ['some','nested']), {path: 'yay'});
+        test.strictEqual(
+            utils.propertyPath(obj, ['some','nested','missing']),
+            undefined
+        );
+        test.strictEqual(
+            utils.propertyPath(obj, ['blah','blah','blah']),
+            undefined
+        );
+        test.done();
     }
 
 });

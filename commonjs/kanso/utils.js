@@ -70,3 +70,15 @@ exports.getBaseURL = function (req) {
 exports.isArray = Array.isArray || function (obj) {
     return !!(obj && obj.concat && obj.unshift && !obj.callee);
 };
+
+
+/**
+ * Traverses an object and its sub-objects using an array of property names.
+ */
+
+exports.propertyPath = function (obj, path) {
+    if (!path.length || !obj) {
+        return obj;
+    }
+    return exports.propertyPath(obj[path.shift()], path);
+};
