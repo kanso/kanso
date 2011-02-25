@@ -82,3 +82,19 @@ exports.propertyPath = function (obj, path) {
     }
     return exports.propertyPath(obj[path.shift()], path);
 };
+
+/**
+ * Makes a shallow-copy of an object and returns it, sub objects and arrays will
+ * not be duplicated just copied by reference.
+ */
+
+exports.clone = function (obj) {
+    if (exports.isArray(obj)) {
+        return obj.slice();
+    }
+    var result = {};
+    for (var k in obj) {
+        result[k] = obj[k];
+    }
+    return result;
+};
