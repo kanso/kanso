@@ -2,37 +2,40 @@
  * Module dependencies
  */
 
-var Field = require('./fields').Field,
-    utils = require('./utils');
+var fields = require('./fields'),
+    widgets = require('./widgets'),
+    utils = require('./utils'),
+    Field = fields.Field;
 
 
-/**
- * Validate a JSON document against the list of types. Unknown document types
- * are ignored, otherwise an array of validation errors is returned. For valid
- * documents the array is empty.
- *
- * @param {Object} types
- * @param {Object} doc
- * @return {Array}
- * @api public
- */
-
-exports.validate = function (types, doc) {
-    if (!doc.type) {
-        return; // unknown document type
+var Type = exports.Type = function (name, options) {
+    if (typeof name !== 'string') {
+        throw Error('First argument must be the type name');
     }
-    for (var k in types) {
-        if (types.hasOwnProperty(k) && k === doc.type) {
-            var type = types[k];
-            var fields = types[k].fields;
-            var required_errors = exports.checkRequired(fields, doc, []);
-            var validation_errors = exports.validateFields(
-                fields, doc, doc, [], type.allow_extra_fields
-            );
-            return required_errors.concat(validation_errors);
-        }
-    }
-    return; // unknown document type
+    this.name = name;
+    this.permissions = options.permissions || {};
+    this.allow_extra_fields = options.allow_extra_fields || false;
+
+    this.fields = options.fields || {};
+    // TODO: set hidden widget, default value and validate
+    this.fields.type = fields.string({
+        default_value: name,
+        widget: widgets.hidden(),
+        validators: [function (doc, value) {
+            if (value !== name) {
+                throw new Error('Unexpected value for type');
+            }
+        }]
+    });
+
+};
+
+Type.prototype.validate = function (doc) {
+    var required_errors = exports.checkRequired(this.fields, doc, []);
+    var validation_errors = exports.validateFields(
+        this.fields, doc, doc, [], this.allow_extra_fields
+    );
+    return required_errors.concat(validation_errors);
 };
 
 
@@ -60,7 +63,7 @@ exports.checkRequired = function (fields, values, path) {
                 }
             }
             else if (utils.isArray(f)) {
-                if (f[0] instanceof Field && f.required) {
+                if (f[0] instanceof Field && f[0].required) {
                     if (!values.hasOwnProperty(k)) {
                         var err2 = new Error('Required field');
                         err2.field = path.concat([k]);
@@ -109,10 +112,12 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
     for (var k in values) {
         if (values.hasOwnProperty(k)) {
             var f = fields[k];
-            if (path.length === 0 && k === 'type') {
+            // TODO: this can be removed if we automatically add a type field to
+            // Type objects
+            //if (path.length === 0 && k === 'type') {
                 // ignore the type property
-            }
-            else if (f === undefined) {
+            //}
+            /*else*/ if (f === undefined) {
                 // extra field detected
                 if (!allow_extra) {
                     var err = new Error(

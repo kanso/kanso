@@ -76,11 +76,29 @@ exports.isArray = Array.isArray || function (obj) {
  * Traverses an object and its sub-objects using an array of property names.
  */
 
-exports.propertyPath = function (obj, path) {
+exports.getPropertyPath = function (obj, path) {
     if (!path.length || !obj) {
         return obj;
     }
-    return exports.propertyPath(obj[path.shift()], path);
+    return exports.getPropertyPath(obj[path.shift()], path);
+};
+
+exports.setPropertyPath = function (obj, path, val) {
+    if (!path.length) {
+        throw new Error('No property path given');
+    }
+    if (path.length === 1) {
+        obj[path[0]] = val;
+        return;
+    }
+    var next = path.shift();
+    if (obj[next] === undefined) {
+        obj[next] = {};
+    }
+    else if (typeof obj[next] !== 'object' && path.length) {
+        throw new Error('Property path conflicts with existing value');
+    }
+    exports.setPropertyPath(obj[next], path, val);
 };
 
 /**

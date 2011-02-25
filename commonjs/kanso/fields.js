@@ -1,14 +1,54 @@
-var validators = require('./validators');
+var validators = require('./validators'),
+    widgets = require('./widgets');
 
 
 var Field = exports.Field = function (options) {
     options = options || {};
 
+    this.default_value = options.default_value;
+    this.label = options.label;
+    this.widget = options.widget || widgets.text();
     this.required = ('required' in options) ? options.required: true;
     this.validators = ('validators' in options) ? options.validators: [];
     this.parse = options.parse || function (raw) {
         return raw;
     };
+};
+
+Field.prototype.errorHTML = function (errors) {
+    if (errors && errors.length) {
+        var html = '<ul class="errors">';
+        for (var i = 0; i < errors.length; i += 1) {
+            html += '<li class="error_msg">' + errors[i] + '</li>';
+        }
+        html += '</ul>';
+        return html;
+    }
+    return '';
+};
+
+Field.prototype.labelText = function (name) {
+    if (this.label) {
+        return this.label;
+    }
+    return name[0].toUpperCase() + name.substr(1).replace('_', ' ');
+};
+
+Field.prototype.labelHTML = function (name, id) {
+    return '<label for="' + (id || 'id_' + name) + '">' +
+        this.labelText(name, id) +
+    '</label>';
+};
+
+Field.prototype.classes = function (errors) {
+    var r = ['field'];
+    if (errors && errors.length) {
+        r.push('error');
+    }
+    if (this.required) {
+        r.push('required');
+    }
+    return r;
 };
 
 Field.prototype.validate = function (doc, value) {
