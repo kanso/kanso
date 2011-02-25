@@ -99,10 +99,11 @@ exports.shows = {
         if (req.method === 'POST') {
             form.validate(req);
         }
-        var content = '<form action="" method="POST">' +
-            form.toHTML() +
-            '<input type="submit" />' +
-        '</form>';
+        var content = templates.render('add_type.html', req, {
+            app: req.query.app,
+            type: req.query.type,
+            form: form.toHTML()
+        });
 
         if (req.client) {
             $('#content').html(content);
