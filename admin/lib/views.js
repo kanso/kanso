@@ -10,7 +10,7 @@ exports.apps = {
 exports.types = {
     map: function (doc) {
         if (doc.type && doc._id.substr(0, 8) !== '_design/') {
-            emit(doc.type, doc._id);
+            emit([doc.type], doc._id);
         }
     }
 };

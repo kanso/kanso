@@ -1,0 +1,9 @@
+<h1>{app} &gt; {type}</h1>
+
+<ul>
+{#rows}
+  <li><a href="{baseURL}/{app}/{type}/view/{id}">{id}</a></li>
+{/rows}
+</ul>
+
+<a href="{baseURL}/{app}/{type}/add">Add new</a>

@@ -5,8 +5,11 @@ exports.options = {
 exports.rewrites = [
     {from: '/static/*', to: 'static/*'},
     {from: '/', to: '_list/applist/apps'},
-    {from: '/:app', to: '_show/typelist/_design/:app'},
-    {from: '/:app/:type', to: '_show/type/_design/:app'}
+    {from: '/:app', to: '_show/types/_design/:app'},
+    {from: '/:app/:type/add', to: '_show/addtype/_design/:app'},
+    {from: '/:app/:type', to: '_list/typelist/types', query: {
+        startkey: [':type'], endkey: [':type', {}]
+    }}
 ];
 
 exports.views = require('./views');

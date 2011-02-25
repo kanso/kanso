@@ -2,7 +2,7 @@ var utils = require('./utils'),
     templates = require('kanso/templates');
 
 
-exports.typelist = function (doc, req) {
+exports.types = function (doc, req) {
     var settings = utils.appRequire(doc, 'kanso/settings');
     var app = utils.appRequire(doc, settings.load);
 
@@ -32,7 +32,7 @@ exports.typelist = function (doc, req) {
     }
 };
 
-exports.type = function (doc, req) {
+exports.addtype = function (doc, req) {
     var settings = utils.appRequire(doc, 'kanso/settings');
     var app = utils.appRequire(doc, settings.load);
     var type = app.types ? app.types[req.query.type]: undefined;
