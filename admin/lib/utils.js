@@ -103,3 +103,9 @@ var Couch = exports.Couch = {
     };
   }
 };
+
+exports.appRequire = function (ddoc, path) {
+    return exports.Couch.compileFunction('function () {\n' +
+    '    return require("' + path + '");\n' +
+    '}', ddoc)();
+};
