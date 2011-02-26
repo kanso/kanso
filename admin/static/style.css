@@ -1,0 +1,56 @@
+body {
+    line-height: 1.618em;
+    font-size: 14px;
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
+    color: #292626;
+    margin: 0;
+    padding: 0;
+}
+p {
+    margin: 2em 0;
+    padding: 0;
+}
+a {
+    text-decoration: none;
+    background-color: #D6CDA0;
+    padding: 0.263em;
+    color: black;
+}
+a:hover {
+    background-color: #96896F;
+    color: white;
+}
+a img {
+    border: none;
+}
+
+h1 {
+    font-size: 1.236em;
+    font-family: 'Helvetica Neue', 'Helvetica', Arial, FreeSans, sans-serif;
+    background: #000;
+    color: #999;
+    height: 2em;
+    line-height: 2em;
+    margin: 0;
+    padding: 0 0 0 .5em;
+    position: relative;
+    font-weight: normal;
+}
+h1 :link, h1 :visited, h1 strong {
+    padding: .4em .5em;
+}
+h1 :link, h1 :visited {
+    background: url(./path.gif) 100% 50% no-repeat;
+    color: #bbb;
+    cursor: pointer;
+    padding-right: 2.2em;
+}
+h1 strong {
+    color: #fff;
+    font-weight: normal;
+    padding-right: 25px;
+}
+h1 strong a {
+    color:#fff !important;
+    background:none !important;
+}
