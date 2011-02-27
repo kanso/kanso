@@ -88,15 +88,7 @@ exports.init = function () {
         };
     }
 
-    // if using a URL with hash-state, but client supports replaceState,
-    // then switch to replaceState instead.
-    if (window.location.hash && window.history.replaceState) {
-        window.history.replaceState(
-            {}, window.title, exports.getBaseURL() + exports.getURL()
-        );
-    }
-
-    exports.handle(exports.getURL());
+    //exports.handle(exports.getURL());
 
     $('a').live('click', function (ev) {
         var href = $(this).attr('href');
@@ -104,45 +96,14 @@ exports.init = function () {
         if (exports.isAppURL(href)) {
             var url = exports.appPath(href);
             ev.preventDefault();
-
-            // changing the hash triggers onhashchange, which then
-            // fires exports.handle for us
-            if (window.onpopstate) {
-                exports.handle(url);
-                exports.setURL(url);
-            }
-            /*else if (window.onhashchange) {
-                window.location.hash = url;
-            }*/
-            else {
-                // TODO: make this an option?
-                var winpath = window.location.pathname;
-                if (winpath !== exports.getBaseURL() + '/') {
-                    // redirect to root so hash-based urls look nicer
-                    window.location = exports.getBaseURL() + '/#' +
-                        exports.hashUnescape(encodeURIComponent(url));
-                }
-                else {
-                    $.history.load(url);
-                }
-                //window.location.hash = url;
-                //exports.handle(url);
-            }
+            exports.setURL(url);
         }
     });
 
-    var _handle = function (ev) {
+    window.History.Adapter.bind(window, 'statechange', function (ev) {
         var url = exports.getURL();
         exports.handle(url);
-    };
-    if ('onpopstate' in window) {
-        window.onpopstate = _handle;
-    }
-    else {
-        $.history.init(_handle, {
-            unescape: exports.hashUnescape
-        });
-    }
+    });
 
     // call init on app too
     if (exports.app.init) {
@@ -492,14 +453,8 @@ exports.handle = function (url) {
 
 // TODO: add unit tests for this function
 exports.setURL = function (url) {
-    if (window.history.pushState) {
-        var fullurl  = exports.getBaseURL() + url;
-        window.history.pushState({}, document.title, fullurl);
-    }
-    // this is now set *before* handling as it trigger an onhashchange event
-    /*else if ('hash' in window.location) {
-        window.location.hash = url;
-    }*/
+    var fullurl  = exports.getBaseURL() + url;
+    window.History.pushState({}, document.title, fullurl);
 };
 
 
@@ -521,20 +476,17 @@ exports.getBaseURL = utils.getBaseURL;
  */
 
 exports.getURL = function () {
-    if (window.location.hash) {
-        return decodeURIComponent(window.location.hash.substr(1)) || '/';
-    }
     var re = new RegExp('\\/_rewrite(.*)$');
-    var loc = urlParse('' + window.location);
+    var loc = urlParse(window.History.getState().url);
     var match = re.exec(loc.pathname);
     if (match) {
         var url = {pathname: match[1] || '/'};
-        if (window.location.search) {
-            url.search = window.location.search;
+        if (loc.search) {
+            url.search = loc.search;
         }
         return urlFormat(url) || '/';
     }
-    return window.location.pathname || '/';
+    return loc.pathname || '/';
 };
 
 /**
