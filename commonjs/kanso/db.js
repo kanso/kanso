@@ -19,7 +19,7 @@ var utils = require('./utils'),
 function onComplete(callback) {
     return function (req) {
         var resp = $.httpData(req, "json");
-        if (req.status === 200) {
+        if (req.status === 200 || req.status === 201 || req.status === 202) {
             callback(null, resp);
         }
         else if (resp.error) {
@@ -63,6 +63,7 @@ exports.request = function (options, callback) {
  * @param {Function} callback
  */
 
+// TODO: encode doc id in url
 // TODO: add unit tests for this function
 // TODO: make q argument optional?
 exports.getDoc = function (id, q, callback) {
@@ -72,6 +73,40 @@ exports.getDoc = function (id, q, callback) {
     var req = {
         url: utils.getBaseURL() + '/_db/' + id,
         data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Saves a document to the database the app is running on. Results are
+ * passed to the callback, with the first argument of the callback reserved
+ * for any exceptions that occurred (node.js style).
+ *
+ * @param {Object} doc
+ * @param {Function} callback
+ */
+
+// TODO: encode doc id in url
+// TODO: add unit tests for this function
+exports.saveDoc = function (doc, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('saveDoc cannot be called server-side');
+    }
+    var method, url = utils.getBaseURL() + '/_db';
+    if (doc._id === undefined) {
+        method = "POST";
+    }
+    else {
+        method = "PUT";
+        url += '/' + doc._id;
+    }
+    var req = {
+        type: method,
+        url: url,
+        data: JSON.stringify(doc),
+        processData: false,
+        contentType: 'application/json'
     };
     exports.request(req, callback);
 };
