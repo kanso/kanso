@@ -29,6 +29,10 @@ Form.prototype.toHTML = function (iterator) {
     );
 };
 
+Form.prototype.isValid = function () {
+    return (!this.errors || this.errors.length === 0);
+};
+
 exports.parseRequest = function (req) {
     var values = {};
     for (var k in req.form) {
