@@ -88,7 +88,21 @@ exports.init = function () {
         };
     }
 
-    //exports.handle(exports.getURL());
+    $('form').live('submit', function (ev) {
+        var action = $(this).attr('action') || exports.getURL();
+        var method = $(this).attr('method').toUpperCase();
+
+        if (exports.isAppURL(action)) {
+            var url = exports.appPath(action);
+            ev.preventDefault();
+            var fields = $(this).serializeArray();
+            var data = {};
+            for (var i = 0; i < fields.length; i += 1) {
+                data[fields[i].name] = fields[i].value;
+            }
+            exports.setURL(method, url, data);
+        }
+    });
 
     $('a').live('click', function (ev) {
         var href = $(this).attr('href');
@@ -96,13 +110,16 @@ exports.init = function () {
         if (exports.isAppURL(href)) {
             var url = exports.appPath(href);
             ev.preventDefault();
-            exports.setURL(url);
+            exports.setURL('GET', url);
         }
     });
 
     window.History.Adapter.bind(window, 'statechange', function (ev) {
         var url = exports.getURL();
-        exports.handle(url);
+        var state_data = window.History.getState().data;
+        var method = state_data.method;
+        var data = state_data.data;
+        exports.handle(method, url, data);
     });
 
     // call init on app too
@@ -169,7 +186,8 @@ exports.rewriteSplat = function (pattern, url) {
  * @return {Object}
  */
 
-exports.matchURL = function (url) {
+// TODO actually match based on method
+exports.matchURL = function (method, url) {
     var pathname = urlParse(url).pathname;
     var rewrites = kanso.app.rewrites;
     for (var i = 0; i < rewrites.length; i += 1) {
@@ -240,7 +258,7 @@ exports.replaceGroups = function (val, groups, splat) {
  * @returns {Object}
  */
 
-exports.createRequest = function (url, match) {
+exports.createRequest = function (method, url, data, match) {
     var groups = exports.rewriteGroups(match.from, url);
     var query = urlParse(url, true).query || {};
     var k;
@@ -265,12 +283,16 @@ exports.createRequest = function (url, match) {
     var to = exports.replaceGroups(match.to, query, splat);
 
     var req = {
+        method: method,
         query: query,
         headers: {},
         path: to.split('/'),
         client: true,
         initial_hit: exports.initial_hit
     };
+    if (data) {
+        req.form = data;
+    }
     return req;
 };
 
@@ -373,11 +395,12 @@ exports.runList = function (req, name, view, callback) {
  */
 
 // TODO: add unit tests for this function
-exports.handle = function (url) {
-    var match = exports.matchURL(url);
+exports.handle = function (method, url, data) {
+    // TODO: actually match based on method
+    var match = exports.matchURL(method, url);
     if (match) {
         var parsed = urlParse(url);
-        var req = exports.createRequest(url, match);
+        var req = exports.createRequest(method, url, data, match);
         var msg = url + ' -> ' + JSON.stringify(req.path.join('/'));
         msg += ' ' + JSON.stringify(req.query);
         console.log(msg);
@@ -452,9 +475,12 @@ exports.handle = function (url) {
  */
 
 // TODO: add unit tests for this function
-exports.setURL = function (url) {
-    var fullurl  = exports.getBaseURL() + url;
-    window.History.pushState({}, document.title, fullurl);
+exports.setURL = function (method, url, data) {
+    var fullurl = exports.getBaseURL() + url;
+    window.History.pushState({
+        method: method,
+        data: data
+    }, document.title, fullurl);
 };
 
 
@@ -477,8 +503,14 @@ exports.getBaseURL = utils.getBaseURL;
 
 exports.getURL = function () {
     var re = new RegExp('\\/_rewrite(.*)$');
-    var loc = urlParse(window.History.getState().url);
-    var match = re.exec(loc.pathname);
+
+    var History_url = window.History.getState().url;
+        parts = /(.*)\/uid=([0-9]+)$/.exec(History_url),
+        url = parts ? (parts[1]||History_url) : History_url;
+
+    var loc = urlParse(url),
+        match = re.exec(loc.pathname);
+
     if (match) {
         var url = {pathname: match[1] || '/'};
         if (loc.search) {
@@ -529,7 +561,7 @@ exports.appPath = function (p) {
         // include protocol
         var origin = p.split('/').slice(0, 3).join('/');
         // coerce window.location to a real string so we can use split in IE
-        var loc = '' + window.location;
+        var loc = '' + window.History.getState().url;
         if (origin === loc.split('/').slice(0, 3).join('/')) {
             // remove origin, set p to pathname only
             // IE often adds this to a tags, hence why we strip it out now
@@ -560,6 +592,6 @@ exports.appPath = function (p) {
 
 exports.isAppURL = function (url) {
     // coerce window.location to a real string in IE
-    return exports.sameOrigin(url, '' + window.location);
+    return exports.sameOrigin(url, '' + window.History.getState().url);
 };
 
