@@ -192,12 +192,14 @@ exports.matchURL = function (method, url) {
     var rewrites = kanso.app.rewrites;
     for (var i = 0; i < rewrites.length; i += 1) {
         var r = rewrites[i];
-        var from = r.from;
-        from = from.replace(/\*$/, '(.*)');
-        from = from.replace(/:\w+/g, '([^/]+)');
-        var re = new RegExp('^' + from + '$');
-        if (re.test(pathname)) {
-            return r;
+        if (!r.method || method === r.method) {
+            var from = r.from;
+            from = from.replace(/\*$/, '(.*)');
+            from = from.replace(/:\w+/g, '([^/]+)');
+            var re = new RegExp('^' + from + '$');
+            if (re.test(pathname)) {
+                return r;
+            }
         }
     }
 };
@@ -399,10 +401,13 @@ exports.handle = function (method, url, data) {
     // TODO: actually match based on method
     var match = exports.matchURL(method, url);
     if (match) {
-        var parsed = urlParse(url);
-        var req = exports.createRequest(method, url, data, match);
-        var msg = url + ' -> ' + JSON.stringify(req.path.join('/'));
-        msg += ' ' + JSON.stringify(req.query);
+        var parsed = urlParse(url),
+            req = exports.createRequest(method, url, data, match);
+
+        var msg = method + ' ' + url + ' -> ' +
+            JSON.stringify(req.path.join('/')) + ' ' +
+            JSON.stringify(req.query);
+
         console.log(msg);
 
         var after = function () {
