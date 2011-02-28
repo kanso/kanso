@@ -117,7 +117,7 @@ exports.init = function () {
     window.History.Adapter.bind(window, 'statechange', function (ev) {
         var url = exports.getURL();
         var state_data = window.History.getState().data;
-        var method = state_data.method;
+        var method = state_data.method || 'GET';
         var data = state_data.data;
         exports.handle(method, url, data);
     });
@@ -329,6 +329,25 @@ exports.runShow = function (req, name, docid, callback) {
 };
 
 
+exports.runUpdate = function (req, name, docid, callback) {
+    var result;
+    var fn = kanso.app.updates[name];
+    if (docid) {
+        db.getDoc(docid, req.query, function (err, doc) {
+            if (err) {
+                return callback(err);
+            }
+            fn(doc, req);
+            callback();
+        });
+    }
+    else {
+        fn(null, req);
+        callback();
+    }
+};
+
+
 /**
  * Creates a head object for passing to a list function from the results
  * of a view.
@@ -443,6 +462,11 @@ exports.handle = function (method, url, data) {
                 req, req.path[1], req.path.slice(2).join('/'), after
             );
         }
+        else if (req.path[0] === '_update') {
+            exports.runUpdate(
+                req, req.path[1], req.path.slice(2).join('/'), after
+            );
+        }
         else {
             // TODO: decide what happens here
             //alert('Unknown rewrite target: ' + req.path.join('/'));
@@ -454,7 +478,7 @@ exports.handle = function (method, url, data) {
         }
     }
     else {
-        console.log(url);
+        console.log(method + ' ' + url + ' -> [404]');
         alert('404');
         // TODO: render a standard 404 template?
     }
