@@ -10,7 +10,7 @@ var fields = require('./fields'),
 
 var Type = exports.Type = function (name, options) {
     if (typeof name !== 'string') {
-        throw Error('First argument must be the type name');
+        throw new Error('First argument must be the type name');
     }
     this.name = name;
     this.permissions = options.permissions || {};
@@ -112,12 +112,7 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
     for (var k in values) {
         if (values.hasOwnProperty(k)) {
             var f = fields[k];
-            // TODO: this can be removed if we automatically add a type field to
-            // Type objects
-            //if (path.length === 0 && k === 'type') {
-                // ignore the type property
-            //}
-            /*else*/ if (f === undefined) {
+            if (f === undefined) {
                 // extra field detected
                 if (!allow_extra) {
                     var err = new Error(
@@ -150,7 +145,7 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
                 }
                 else {
                     var v = values[k];
-                    for (var i = 0; i < v.length; i += 1) {
+                    for (var i = 0; i < v.length; i++) {
                         if (f[0] instanceof Field) {
                             try {
                                 f[0].validate(doc, v[i], v[i]);

@@ -47,7 +47,7 @@ exports.getErrors = function (errors, path) {
     }
     var errs = [];
     var field_name = path.join('.');
-    for (var i = 0; i < errors.length; i += 1) {
+    for (var i = 0; i < errors.length; i++) {
         if (errors[i].field.join('.') === field_name) {
             errs.push(errors[i]);
         }
@@ -92,7 +92,7 @@ exports.renderFields = function (iterator, fields, values, errors, path) {
  * iterator functions for use with renderFields
  */
 
-var wrapWith = function(tag){
+var wrapWith = function (tag) {
     return function (name, field, value, errors) {
         var html = '<' + tag +
             ' class="' + field.classes(errors).join(' ') + '">';

@@ -14,7 +14,7 @@ var _map = function (obj, iterator, context) {
     }
     var results = [];
     var len = obj.length;
-    for (var i = 0; i < len; i += 1) {
+    for (var i = 0; i < len; i++) {
         results[results.length] = iterator.call(context, obj[i], i, obj);
     }
     return results;

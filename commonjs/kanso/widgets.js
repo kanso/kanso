@@ -7,7 +7,7 @@ var Widget = exports.Widget = function (type, options) {
 
 // generates a string for common widget attributes
 Widget.prototype._attrs = function (name) {
-    html = ' name="' + name + '"';
+    var html = ' name="' + name + '"';
     html += ' id=' + (this.id ? '"' + this.id + '"': '"id_' + name + '"');
     if (this.classes.length) {
         html += ' class="' + this.classes.join(' ') + '"';

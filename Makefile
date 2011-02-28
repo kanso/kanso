@@ -38,4 +38,4 @@ clean:
 lint:
 	nodelint --config nodelint.cfg ./bin/kanso ./commonjs/kanso/*.js ./lib/*.js ./static/kanso.js
 
-.PHONY: test install uninstall build all
+.PHONY: test install uninstall build all clean lint

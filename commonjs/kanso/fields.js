@@ -18,7 +18,7 @@ var Field = exports.Field = function (options) {
 Field.prototype.errorHTML = function (errors) {
     if (errors && errors.length) {
         var html = '<ul class="errors">';
-        for (var i = 0; i < errors.length; i += 1) {
+        for (var i = 0; i < errors.length; i++) {
             html += '<li class="error_msg">' + errors[i] + '</li>';
         }
         html += '</ul>';
@@ -59,7 +59,7 @@ Field.prototype.validate = function (doc, value) {
         }
     }
     else {
-        for (var i = 0; i < this.validators.length; i += 1) {
+        for (var i = 0; i < this.validators.length; i++) {
             this.validators[i](doc, value);
         }
     }

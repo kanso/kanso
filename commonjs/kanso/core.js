@@ -97,7 +97,7 @@ exports.init = function () {
             ev.preventDefault();
             var fields = $(this).serializeArray();
             var data = {};
-            for (var i = 0; i < fields.length; i += 1) {
+            for (var i = 0; i < fields.length; i++) {
                 data[fields[i].name] = fields[i].value;
             }
             exports.setURL(method, url, data);
@@ -148,11 +148,11 @@ exports.rewriteGroups = function (pattern, url) {
     var values = m.slice(1);
     var keys = [];
     var matches = pattern.match(/:\w+/g) || [];
-    for (var i = 0; i < matches.length; i += 1) {
+    for (var i = 0; i < matches.length; i++) {
         keys.push(matches[i].substr(1));
     }
     var groups = {};
-    for (var j = 0; j < keys.length; j += 1) {
+    for (var j = 0; j < keys.length; j++) {
         groups[keys[j]] = values[j];
     }
     return groups;
@@ -190,7 +190,7 @@ exports.rewriteSplat = function (pattern, url) {
 exports.matchURL = function (method, url) {
     var pathname = urlParse(url).pathname;
     var rewrites = kanso.app.rewrites;
-    for (var i = 0; i < rewrites.length; i += 1) {
+    for (var i = 0; i < rewrites.length; i++) {
         var r = rewrites[i];
         if (!r.method || method === r.method) {
             var from = r.from;
@@ -218,7 +218,7 @@ exports.replaceGroups = function (val, groups, splat) {
 
     if (typeof val === 'string') {
         result = val.split('/');
-        for (var i = 0; i < result.length; i += 1) {
+        for (var i = 0; i < result.length; i++) {
             match = false;
             for (k in groups) {
                 if (result[i] === ':' + k) {
@@ -234,7 +234,7 @@ exports.replaceGroups = function (val, groups, splat) {
     }
     else if (val.length) {
         result = val.slice();
-        for (var j = 0; j < val.length; j += 1) {
+        for (var j = 0; j < val.length; j++) {
             match = false;
             for (k in groups) {
                 if (val[j] === ':' + k) {
@@ -533,19 +533,19 @@ exports.getBaseURL = utils.getBaseURL;
 exports.getURL = function () {
     var re = new RegExp('\\/_rewrite(.*)$');
 
-    var History_url = window.History.getState().url;
-        parts = /(.*)\/uid=([0-9]+)$/.exec(History_url),
-        url = parts ? (parts[1]||History_url) : History_url;
+    var History_url = window.History.getState().url,
+        parts = new RegExp('(.*)\\/uid=([0-9]+)$').exec(History_url),
+        url = parts ? (parts[1] || History_url) : History_url;
 
     var loc = urlParse(url),
         match = re.exec(loc.pathname);
 
     if (match) {
-        var url = {pathname: match[1] || '/'};
+        var newurl = {pathname: match[1] || '/'};
         if (loc.search) {
-            url.search = loc.search;
+            newurl.search = loc.search;
         }
-        return urlFormat(url) || '/';
+        return urlFormat(newurl) || '/';
     }
     return loc.pathname || '/';
 };
