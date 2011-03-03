@@ -28,12 +28,15 @@ exports.addtype = function (doc, req) {
         $('#content').html(content);
         document.title = settings.name + ' - Types - ' + req.query.type;
         if (form.isValid()) {
-            db.saveDoc(form.values, function (err) {
+            db.saveDoc(form.values, function (err, resp) {
                 if (err) {
                     alert(err);
                 }
                 else {
-                    alert('saved successfully');
+                    //alert('saved successfully');
+                    var baseURL = require('kanso/utils').getBaseURL();
+                    window.location = baseURL + '/' + req.query.app + '/' +
+                        req.query.type + '/view/' + resp.id;
                 }
             });
         }
