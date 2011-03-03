@@ -1,3 +1,6 @@
+var db = require('kanso/db');
+
+
 /**
  * This code is adapted (brutally hacked apart) from share/server/util.js from
  * CouchDB, as this code is not exposed for use within list and show functions.
@@ -108,4 +111,20 @@ exports.appRequire = function (ddoc, path) {
     return exports.Couch.compileFunction('function () {\n' +
     '    return require("' + path + '");\n' +
     '}', ddoc)();
+};
+
+// used to store downloaded design_docs
+exports.design_docs = {};
+
+exports.getDesignDoc = function (name, callback) {
+    if (exports.design_docs[name]) {
+        return callback(null, exports.design_docs[name]);
+    }
+    db.getDoc('_design/' + name, {}, function (err, ddoc) {
+        if (err) {
+            return callback(err);
+        }
+        exports.design_docs[name] = ddoc;
+        return callback(null, exports.design_docs[name]);
+    });
 };

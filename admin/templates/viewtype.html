@@ -1,0 +1,33 @@
+<h1>
+  <a href="{baseURL}/">Overview</a>
+  <a href="{baseURL}/{app}">{app}</a>
+  <a href="{baseURL}/{app}/{type}">{type}</a>
+  <strong><a href="{baseURL}/{app}/{type}/{doc._id}">{doc._id}</a></strong>
+</h1>
+
+<table>
+  <thead>
+    <tr>
+      <th>Field</th>
+      <th>Value</th>
+    </tr>
+  </thead>
+  <tbody>
+    {#doc}
+    <tr>
+      <td>_id</td>
+      <td>{_id}</td>
+    </tr>
+    <tr>
+      <td>_rev</td>
+      <td>{_rev}</td>
+    </tr>
+    {/doc}
+    {#fields}
+    <tr>
+      <td>{field}</td>
+      <td>{value}</td>
+    </tr>
+    {/fields}
+  </tbody>
+</table>
