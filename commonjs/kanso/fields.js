@@ -5,6 +5,7 @@ var validators = require('./validators'),
 var Field = exports.Field = function (options) {
     options = options || {};
 
+    this.omit_empty = options.omit_empty;
     this.default_value = options.default_value;
     this.label = options.label;
     this.widget = options.widget || widgets.text();

@@ -13,7 +13,7 @@ var Form = exports.Form = function (obj, doc) {
 };
 
 Form.prototype.validate = function (req) {
-    this.values = exports.parseRequest(req);
+    this.values = exports.parseRequest(this.fields, req);
     var validation_errors = types.validateFields(
         this.fields, this.values, this.values, [], false
     );
@@ -33,10 +33,21 @@ Form.prototype.isValid = function () {
     return (!this.errors || this.errors.length === 0);
 };
 
-exports.parseRequest = function (req) {
+exports.parseRequest = function (fields, req) {
     var values = {};
     for (var k in req.form) {
-        utils.setPropertyPath(values, k.split('.'), req.form[k]);
+        var f = utils.getPropertyPath(fields, k.split('.'));
+        if (f instanceof Field) {
+            var val = req.form[k];
+            // has a value or omit_empty option is false
+            if ((val !== undefined && val !== '') || !f.omit_empty) {
+                val = f.parse(val);
+                utils.setPropertyPath(values, k.split('.'), val);
+            }
+        }
+        else {
+            utils.setPropertyPath(values, k.split('.'), req.form[k]);
+        }
     }
     return values;
 };
@@ -60,26 +71,31 @@ exports.renderFields = function (iterator, fields, values, errors, path) {
     for (var k in fields) {
         if (fields.hasOwnProperty(k)) {
             var field = fields[k];
-            var value;
-            if (values) {
-                value = utils.getPropertyPath(values, path.concat([k]));
-            }
-            else if (field.default_value) {
-                value = field.default_value;
-            }
-            var errs = exports.getErrors(errors, path.concat([k]));
+            var field_path = path.concat([k]);
+            var errs = exports.getErrors(errors, field_path);
             if (field instanceof Field) {
-                var name = path.concat([k]).join('.');
-                html += iterator(name, field, value, errs);
+                var name = field_path.join('.');
+                var val;
+                if (values) {
+                    val = utils.getPropertyPath(values, field_path);
+                }
+                else if (field.default_value) {
+                    val = field.default_value;
+                }
+                else {
+                    val = undefined;
+                }
+                html += iterator(name, field, val, errs);
             }
             else if (utils.isArray(field)) {
                 // TODO: handle arrays
                 throw new Error('not implemented');
             }
             else {
+                var subvalues = utils.getPropertyPath(values, field_path);
                 // sub-object, recurse through and check for more fields
                 html += exports.renderFields(
-                    iterator, field, value, errors, path.concat([k])
+                    iterator, field, subvalues, errors, field_path
                 );
             }
         }
