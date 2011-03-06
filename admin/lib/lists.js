@@ -49,23 +49,19 @@ exports.fieldPairs = function (Field, fields, doc, path) {
     var pairs = [];
     for (var k in fields) {
         if (fields.hasOwnProperty(k)) {
-            console.log(k);
             if (fields[k] instanceof Field) {
                 pairs.push({
                     field: path.concat([k]).join('.'),
                     value: kanso_utils.getPropertyPath(doc, path.concat([k]))
                 });
-                console.log(pairs);
             }
             else if (typeof fields[k] === 'object') {
                 pairs = pairs.concat(
                     exports.fieldPairs(Field, fields[k], doc, path.concat([k]))
                 );
-                console.log(pairs);
             }
         }
     }
-    console.log(pairs);
     return pairs;
 };
 

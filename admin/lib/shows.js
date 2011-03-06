@@ -62,3 +62,30 @@ exports.addtype = function (doc, req) {
         document.title = settings.name + ' - Types - ' + req.query.type;
     });
 };
+
+exports.edittype = function (doc, req) {
+    if (!req.client) {
+        return templates.render('base.html', req, {
+            title: req.query.app + ' - Types - ' + req.query.type,
+            content: '<p>Javascript must be enabled to view this page</p>'
+        });
+    }
+    utils.getDesignDoc(req.query.app, function (err, ddoc) {
+        var settings = utils.appRequire(ddoc, 'kanso/settings'),
+            app = utils.appRequire(ddoc, settings.load),
+            type = app.types ? app.types[req.query.type]: undefined;
+
+        var forms = utils.appRequire(ddoc, 'kanso/forms'),
+            form = new forms.Form(type, doc);
+
+        var content = templates.render('edit_type.html', req, {
+            app: req.query.app,
+            type: req.query.type,
+            id: req.query.id,
+            form: form.toHTML()
+        });
+
+        $('#content').html(content);
+        document.title = settings.name + ' - Types - ' + req.query.type;
+    });
+};
