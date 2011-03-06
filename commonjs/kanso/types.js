@@ -16,18 +16,34 @@ var Type = exports.Type = function (name, options) {
     this.permissions = options.permissions || {};
     this.allow_extra_fields = options.allow_extra_fields || false;
 
-    this.fields = options.fields || {};
-    // TODO: set hidden widget, default value and validate
-    this.fields.type = fields.string({
-        default_value: name,
-        widget: widgets.hidden(),
-        validators: [function (doc, value) {
-            if (value !== name) {
-                throw new Error('Unexpected value for type');
+    this.fields = {
+        _id: fields.string({
+            required: false,
+            omit_empty: true,
+            widget: widgets.hidden()
+        }),
+        _rev: fields.string({
+            required: false,
+            omit_empty: true,
+            widget: widgets.hidden(),
+        }),
+        type: fields.string({
+            default_value: name,
+            widget: widgets.hidden(),
+            validators: [function (doc, value) {
+                if (value !== name) {
+                    throw new Error('Unexpected value for type');
+                }
+            }]
+        })
+    };
+    if (options.fields) {
+        for (var k in options.fields) {
+            if (options.fields.hasOwnProperty(k)) {
+                this.fields[k] = options.fields[k];
             }
-        }]
-    });
-
+        }
+    }
 };
 
 Type.prototype.validate = function (doc) {
@@ -55,18 +71,21 @@ exports.checkRequired = function (fields, values, path) {
     for (var k in fields) {
         if (fields.hasOwnProperty(k)) {
             var f = fields[k];
-            if (f instanceof Field && f.required) {
-                if (!values.hasOwnProperty(k)) {
-                    var err = new Error('Required field');
-                    err.field = path.concat([k]);
-                    errors.push(err);
+            var f_path = path.concat([k]);
+            if (f instanceof Field) {
+                if (f.required) {
+                    if (!values.hasOwnProperty(k)) {
+                        var err = new Error('Required field');
+                        err.field = f_path;
+                        errors.push(err);
+                    }
                 }
             }
             else if (utils.isArray(f)) {
                 if (f[0] instanceof Field && f[0].required) {
                     if (!values.hasOwnProperty(k)) {
                         var err2 = new Error('Required field');
-                        err2.field = path.concat([k]);
+                        err2.field = f_path;
                         errors.push(err2);
                     }
                 }
@@ -74,7 +93,7 @@ exports.checkRequired = function (fields, values, path) {
                     // recurse through sub-objects
                     var subvals = values.hasOwnProperty(k) ? values[k]: {};
                     errors = errors.concat(exports.checkRequired(
-                        f[0], subvals, path.concat([k])
+                        f[0], subvals, f_path
                     ));
                 }
             }
@@ -83,7 +102,7 @@ exports.checkRequired = function (fields, values, path) {
                 // more fields
                 var subvals2 = values.hasOwnProperty(k) ? values[k]: {};
                 errors = errors.concat(exports.checkRequired(
-                    f, subvals2, path.concat([k])
+                    f, subvals2, f_path
                 ));
             }
         }
