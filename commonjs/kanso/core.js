@@ -427,6 +427,10 @@ exports.handle = function (method, url, data) {
             JSON.stringify(req.path.join('/')) + ' ' +
             JSON.stringify(req.query);
 
+        if (data) {
+            msg += ' data: ' + JSON.stringify(data);
+        }
+
         console.log(msg);
 
         var after = function () {
