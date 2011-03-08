@@ -1,4 +1,5 @@
 var utils = require('./utils'),
+    core = require('kanso/core'),
     templates = require('kanso/templates'),
     db = require('kanso/db');
 
@@ -34,9 +35,8 @@ exports.addtype = function (doc, req) {
                 }
                 else {
                     //alert('saved successfully');
-                    var baseURL = require('kanso/utils').getBaseURL();
-                    window.location = baseURL + '/' + req.query.app + '/' +
-                        req.query.type + '/view/' + resp.id;
+                    core.setURL('GET', '/' + req.query.app + '/' +
+                        req.query.type + '/view/' + resp.id);
                 }
             });
         }
@@ -75,11 +75,29 @@ exports.updatetype = function (doc, req) {
                 }
                 else {
                     //alert('saved successfully');
-                    var baseURL = require('kanso/utils').getBaseURL();
-                    window.location = baseURL + '/' + req.query.app + '/' +
-                        req.query.type + '/view/' + resp.id;
+                    core.setURL('GET', '/' + req.query.app + '/' +
+                        req.query.type + '/view/' + resp.id);
                 }
             });
+        }
+    });
+};
+
+exports.deletetype = function (doc, req) {
+    var baseURL = require('kanso/utils').getBaseURL();
+
+    if (!req.client) {
+        doc._deleted = true;
+        var loc = baseURL + '/' + req.query.app + '/' + req.query.type;
+        return [doc, {code: 302, headers: {'Location': loc}}];
+    }
+    db.removeDoc(doc, function (err, resp) {
+        if (err) {
+            alert(err);
+        }
+        else {
+            //alert('saved successfully');
+            core.setURL('GET',  '/' + req.query.app + '/' + req.query.type);
         }
     });
 };
