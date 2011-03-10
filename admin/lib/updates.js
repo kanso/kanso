@@ -23,7 +23,7 @@ exports.addtype = function (doc, req) {
         var content = templates.render('add_type.html', req, {
             app: req.query.app,
             type: req.query.type,
-            form: form.toHTML()
+            form: form.toHTML(forms.render.table)
         });
 
         $('#content').html(content);
@@ -63,7 +63,7 @@ exports.updatetype = function (doc, req) {
             id: req.query.id,
             app: req.query.app,
             type: req.query.type,
-            form: form.toHTML()
+            form: form.toHTML(forms.render.table)
         });
 
         $('#content').html(content);

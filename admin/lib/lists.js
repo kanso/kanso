@@ -82,11 +82,19 @@ exports.typelist = adminList(function (rows, ddoc, req) {
         var pairs = exports.fieldPairs(
             fields.Field, type.fields, rows[i].doc, []
         );
+        for (var j = 0; j < pairs.length; j++) {
+            if (pairs[j].field === '_rev') {
+                pairs.splice(j, 1);
+                j = -1;
+            }
+        }
         f.push({fields: pairs.slice(0, 5), id: rows[i].id});
     }
     var field_names = [];
     for (var k in type.fields) {
-        field_names.push(k);
+        if (k !== '_rev') {
+            field_names.push(k);
+        }
     }
     var content = templates.render('typelist.html', req, {
         rows: f,

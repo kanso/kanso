@@ -54,3 +54,7 @@ h1 strong a {
     color:#fff !important;
     background:none !important;
 }
+
+th {
+    text-align: left;
+}
