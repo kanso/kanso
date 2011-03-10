@@ -145,8 +145,10 @@ exports.render = {
         return '<tr class="' + field.classes(errors).join(' ') + '">' +
             '<th>' + field.labelHTML(name) + '</th>' +
             '<td>' +
-                field.errorHTML(errors) +
                 field.widget.toHTML(name, value) +
+            '</td>' +
+            '<td class="errors">' +
+                field.errorHTML(errors) +
             '</td>' +
         '</tr>';
     }
