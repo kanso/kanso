@@ -10,7 +10,7 @@ exports.rewrites = [
     {from: '/', to: '_list/applist/apps'},
     {from: '/:app', to: '_show/types/_design/:app'},
     {from: '/:app/:type/add', to: '_show/addtype', method: 'GET'},
-    {from: '/:app/:type/add', to: '_update/updatetype', method: 'POST'},
+    {from: '/:app/:type/add', to: '_update/addtype', method: 'POST'},
     {from: '/:app/:type', to: '_list/typelist/types', query: {
         startkey: [':type'], endkey: [':type', {}], include_docs: true
     }},
