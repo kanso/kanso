@@ -4,6 +4,8 @@
   <strong><a href="{baseURL}/{app}/{type}">{type}</a></strong>
 </h1>
 
+<a href="{baseURL}/{app}/{type}/add">Add new</a>
+
 <table class="typelist">
   <thead>
     <tr>
@@ -17,11 +19,11 @@
   {#rows}
     <tr>
       {#fields}
-        <td>{value}</td>
+        <td class="data"><a href="{baseURL}/{app}/{type}/view/{id}">{value}</a></td>
       {/fields}
-      <td>
+      <td class="actions">
         <a href="{baseURL}/{app}/{type}/edit/{id}">Edit</a>
-        <form action="{baseURL}/{app}/{type}/delete/{id}" method="POST">
+        <form class="delete_form" action="{baseURL}/{app}/{type}/delete/{id}" method="POST">
           <input type="submit" value="Delete" />
         </form>
       </td>
@@ -29,5 +31,3 @@
   {/rows}
   </tbody>
 </table>
-
-<a href="{baseURL}/{app}/{type}/add">Add new</a>
