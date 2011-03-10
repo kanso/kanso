@@ -138,7 +138,10 @@ exports.render = {
     p: wrapWith('p'),
     li: wrapWith('li'),
     table: function (name, field, value, errors) {
-        // TODO: handle hidden, multipleCheckbox and multipleRadio fields
+        // TODO: handle multipleCheckbox and multipleRadio fields
+        if (field.widget.type === 'hidden') {
+            return field.widget.toHTML(name, value);
+        }
         return '<tr class="' + field.classes(errors).join(' ') + '">' +
             '<th>' + field.labelHTML(name) + '</th>' +
             '<td>' +
