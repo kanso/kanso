@@ -82,7 +82,7 @@ exports.number = function (options) {
 
     options.parse = function (raw) {
         if (raw === null || raw === '') {
-            return NaN;
+            return '';
         }
         return Number(raw);
     };
