@@ -25,6 +25,10 @@ body {
     margin: 0;
 }
 
+th {
+    text-align: left;
+}
+
 #main {
     padding: 18px;
 }
@@ -75,7 +79,7 @@ table.typelist {
     clear: left;
     border-collapse: collapse;
     border-spacing: 0;
-    margin: 18px 0;
+    margin: 0 0 18px 0;
     /*width: 100%;*/
 }
 
@@ -96,6 +100,10 @@ table.typelist {
     padding: 0;
     margin: 0;
     border: 0;
+}
+
+.typelist td.data {
+    font-size: 0.9em;
 }
 
 .typelist tr:hover td {
@@ -175,20 +183,34 @@ form.delete_form {
 }
 
 .button:hover {
-    color: #333;
+    color: #000;
 }
 
 .button:hover input {
-    color: #333;
+    color: #000;
 }
 .button:hover input.icon {
     color: #666;
 }
 
 .top_actions {
-    margin: 2px 0 18px 0;
+    margin: 2px 0 12px 0;
+}
+.bottom_actions {
+    margin: 12px 0;
+}
+
+.bottom_actions .button input.icon {
+    margin-right: 0.236em;
+}
+.bottom_actions .button {
+    margin-right: 12px;
 }
 
 td.actions .button {
     margin-right: 18px;
+}
+
+.viewtype th {
+    padding-right: 20px;
 }

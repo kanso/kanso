@@ -22,7 +22,9 @@ exports.addtype = function (doc, req) {
         form.validate(req);
         var content = templates.render('add_type.html', req, {
             app: req.query.app,
+            app_heading: utils.capitalize(req.query.app),
             type: req.query.type,
+            type_heading: utils.typeHeading(req.query.type),
             form: form.toHTML(forms.render.table)
         });
 
@@ -62,7 +64,9 @@ exports.updatetype = function (doc, req) {
         var content = templates.render('edit_type.html', req, {
             id: req.query.id,
             app: req.query.app,
+            app_heading: utils.capitalize(req.query.app),
             type: req.query.type,
+            type_heading: utils.typeHeading(req.query.type),
             form: form.toHTML(forms.render.table)
         });
 

@@ -97,17 +97,13 @@ exports.typelist = adminList(function (rows, ddoc, req) {
         }
     }
 
-    var type_heading = req.query.type;
-    type_heading = type_heading.substr(0,1).toUpperCase() + type_heading.substr(1);
-    type_heading += 's'; // make plural - TODO: add django admin panel for
-                         // custom setting of plurals
-
     var content = templates.render('typelist.html', req, {
         rows: f,
         field_names: field_names,
         app: req.query.app,
+        app_heading: utils.capitalize(req.query.app),
         type: req.query.type,
-        type_heading: type_heading
+        type_heading: utils.typeHeading(req.query.type)
     });
     $('#content').html(content);
     document.title = req.query.app + ' - ' + req.query.type
@@ -136,7 +132,9 @@ exports.viewtype = function (head, req) {
             fields: exports.fieldPairs(fields.Field, type.fields, doc, []),
             doc: doc,
             app: req.query.app,
-            type: req.query.type
+            app_heading: utils.capitalize(req.query.app),
+            type: req.query.type,
+            type_heading: utils.typeHeading(req.query.type)
         });
         var title = req.query.app + ' - ' + req.query.type + ' - ' + req.query.id;
         if (req.client) {

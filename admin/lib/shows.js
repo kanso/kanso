@@ -17,7 +17,8 @@ exports.types = function (doc, req) {
 
     var content = templates.render('types.html', req, {
         types: types,
-        app: settings.name
+        app: settings.name,
+        app_heading: utils.capitalize(settings.name)
     });
 
     if (req.client) {
@@ -55,7 +56,9 @@ exports.addtype = function (doc, req) {
         }
         var content = templates.render('add_type.html', req, {
             app: req.query.app,
+            app_heading: utils.capitalize(req.query.app),
             type: req.query.type,
+            type_heading: utils.typeHeading(req.query.type),
             form: form.toHTML(forms.render.table)
         });
         $('#content').html(content);
@@ -80,7 +83,9 @@ exports.edittype = function (doc, req) {
 
         var content = templates.render('edit_type.html', req, {
             app: req.query.app,
+            app_heading: utils.capitalize(req.query.app),
             type: req.query.type,
+            type_heading: utils.typeHeading(req.query.type),
             id: req.query.id,
             form: form.toHTML(forms.render.table)
         });

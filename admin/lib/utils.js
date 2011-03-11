@@ -1,5 +1,15 @@
 var db = require('kanso/db');
 
+exports.capitalize = function (str) {
+    return str.substr(0, 1).toUpperCase() + str.substr(1);
+};
+
+exports.typeHeading = function (type) {
+    // capitalize and make plural
+    // TODO: add django admin panel for custom setting of plurals
+    return exports.capitalize(type) + 's';
+};
+
 
 /**
  * This code is adapted (brutally hacked apart) from share/server/util.js from
