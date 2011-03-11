@@ -105,8 +105,11 @@ exports.typelist = adminList(function (rows, ddoc, req) {
         type: req.query.type,
         type_heading: utils.typeHeading(req.query.type)
     });
+
     $('#content').html(content);
     document.title = req.query.app + ' - ' + req.query.type
+
+    $('#content table.typelist tr:odd').addClass('odd');
 });
 
 
@@ -134,6 +137,7 @@ exports.viewtype = function (head, req) {
             app: req.query.app,
             app_heading: utils.capitalize(req.query.app),
             type: req.query.type,
+            type_plural: utils.typePlural(req.query.type),
             type_heading: utils.typeHeading(req.query.type)
         });
         var title = req.query.app + ' - ' + req.query.type + ' - ' + req.query.id;

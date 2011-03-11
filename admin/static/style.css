@@ -96,10 +96,13 @@ table.typelist {
 
 
 .typelist td {
-    background-color: #f9f9f9;
+    background-color: #fefefe;
     padding: 0;
     margin: 0;
     border: 0;
+}
+.typelist tr.odd td {
+    background-color: #f9f9f9;
 }
 
 .typelist td.data {
@@ -203,6 +206,7 @@ form.delete_form {
 .bottom_actions .button input.icon {
     margin-right: 0.236em;
 }
+.top_actions .button,
 .bottom_actions .button {
     margin-right: 12px;
 }

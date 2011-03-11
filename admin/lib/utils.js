@@ -4,10 +4,14 @@ exports.capitalize = function (str) {
     return str.substr(0, 1).toUpperCase() + str.substr(1);
 };
 
-exports.typeHeading = function (type) {
+exports.typePlural = function (type) {
     // capitalize and make plural
     // TODO: add django admin panel for custom setting of plurals
-    return exports.capitalize(type) + 's';
+    return type + 's';
+};
+
+exports.typeHeading = function (type) {
+    return exports.capitalize(exports.typePlural(type));
 };
 
 
