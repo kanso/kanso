@@ -96,11 +96,18 @@ exports.typelist = adminList(function (rows, ddoc, req) {
             field_names.push(k);
         }
     }
+
+    var type_heading = req.query.type;
+    type_heading = type_heading.substr(0,1).toUpperCase() + type_heading.substr(1);
+    type_heading += 's'; // make plural - TODO: add django admin panel for
+                         // custom setting of plurals
+
     var content = templates.render('typelist.html', req, {
         rows: f,
         field_names: field_names,
         app: req.query.app,
-        type: req.query.type
+        type: req.query.type,
+        type_heading: type_heading
     });
     $('#content').html(content);
     document.title = req.query.app + ' - ' + req.query.type

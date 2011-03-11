@@ -1,10 +1,17 @@
 <h1>
   <a href="{baseURL}/">Apps</a>
   <a href="{baseURL}/{app}">{app}</a>
-  <strong><a href="{baseURL}/{app}/{type}">{type}</a></strong>
+  <strong><a href="{baseURL}/{app}/{type_heading}">{type_heading}</a></strong>
 </h1>
 
-<a href="{baseURL}/{app}/{type}/add">Add new</a>
+<div id="main">
+
+<div class="top_actions">
+  <a class="button" href="{baseURL}/{app}/{type}/add">
+    <span class="icon">=</span>
+    <span class="label">Add new</span>
+  </a>
+</div>
 
 <table class="typelist">
   <thead>
@@ -12,7 +19,7 @@
       {#field_names}
       <th>{.}</th>
       {/field_names}
-      <th>Actions</th>
+      <th class="actions">Actions</th>
     </tr>
   </thead>
   <tbody>
@@ -22,12 +29,22 @@
         <td class="data"><a href="{baseURL}/{app}/{type}/view/{id}">{value}</a></td>
       {/fields}
       <td class="actions">
-        <a href="{baseURL}/{app}/{type}/edit/{id}">Edit</a>
+        <a class="button" href="{baseURL}/{app}/{type}/view/{id}">
+          <span class="icon">4</span><span class="label">View</span>
+        </a>
+        <a class="button" href="{baseURL}/{app}/{type}/edit/{id}">
+          <span class="icon">p</span><span class="label">Edit</span>
+        </a>
         <form class="delete_form" action="{baseURL}/{app}/{type}/delete/{id}" method="POST">
-          <input type="submit" value="Delete" />
+          <div class="button">
+            <input class="icon" type="submit" value="X" />
+            <input class="label" type="submit" value="Delete" />
+          </div>
         </form>
       </td>
     </tr>
   {/rows}
   </tbody>
 </table>
+
+</div>
