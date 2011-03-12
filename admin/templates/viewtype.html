@@ -2,10 +2,12 @@
   <a href="{baseURL}/">Apps</a>
   <a href="{baseURL}/{app}">{app_heading}</a>
   <a href="{baseURL}/{app}/{type}">{type_heading}</a>
-  <strong><a href="{baseURL}/{app}/{type}/view/{doc._id}">View: {doc._id}</a></strong>
+  <strong><a href="{baseURL}/{app}/{type}/view/{doc._id}">{doc._id}</a></strong>
 </h1>
 
 <div id="main">
+
+  <h2>{doc._id}</h2>
 
   <table class="viewtype">
     {#fields}

@@ -2,12 +2,14 @@
   <a href="{baseURL}/">Apps</a>
   <a href="{baseURL}/{app}">{app_heading}</a>
   <a href="{baseURL}/{app}/{type}">{type_heading}</a>
-  <strong><a href="{baseURL}/{app}/{type}/edit/{id}">Edit: {id}</a></strong>
+  <strong><a href="{baseURL}/{app}/{type}/edit/{id}">Edit {id}</a></strong>
 </h1>
 
 <div id="main">
 
 <form action="" method="POST">
+
+  <h2>Edit {id}</h2>
 
   <table class="form_table">
   {form|s}
