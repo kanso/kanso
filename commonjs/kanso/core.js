@@ -55,6 +55,11 @@ if (typeof start === 'undefined' && typeof window !== 'undefined') {
         console.log('start: ' + JSON.stringify(options));
     };
 }
+if (typeof log === 'undefined' && typeof window !== 'undefined') {
+    window.log = function () {
+        return console.log.apply(console, arguments);
+    };
+}
 
 
 /**
