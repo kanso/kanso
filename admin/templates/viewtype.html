@@ -7,6 +7,12 @@
 
 <div id="main">
 
+  <ul id="flashmessages">
+  {#flashMessages}
+    <li>{.}</li>
+  {/flashMessages}
+  </ul>
+
   <h2>{doc._id}</h2>
 
   <table class="viewtype">

@@ -15,6 +15,8 @@ exports.types = function (doc, req) {
         }
     }
 
+    var res = {code: 200, headers: {'Content-Type': 'text/html'}};
+
     var content = templates.render('types.html', req, {
         types: types,
         app: settings.name,
@@ -26,11 +28,13 @@ exports.types = function (doc, req) {
         document.title = settings.name + ' - Types';
     }
     else {
-        return templates.render('base.html', req, {
+        res.body = templates.render('base.html', req, {
             title: settings.name + ' - Types',
             content: content
         });
     }
+
+    return res;
 };
 
 exports.addtype = function (doc, req) {

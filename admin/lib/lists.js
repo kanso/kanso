@@ -1,6 +1,7 @@
 var utils = require('./utils'),
     kanso_utils = require('kanso/utils'),
-    templates = require('kanso/templates');
+    templates = require('kanso/templates'),
+    flashmessages = require('kanso/flashmessages');
 
 
 /**

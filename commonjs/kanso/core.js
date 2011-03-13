@@ -10,6 +10,8 @@ var settings = require('./settings'), // module auto-generated
     db = require('./db'),
     utils = require('./utils'),
     session = require('./session'),
+    cookies = require('./cookies'),
+    flashmessages = require('./flashmessages'),
     urlParse = url.parse,
     urlFormat = url.format;
 
@@ -52,7 +54,8 @@ if (typeof getRow === 'undefined' && typeof window !== 'undefined') {
 }
 if (typeof start === 'undefined' && typeof window !== 'undefined') {
     window.start = function (options) {
-        console.log('start: ' + JSON.stringify(options));
+        console.log('start');
+        console.log(options);
     };
 }
 if (typeof log === 'undefined' && typeof window !== 'undefined') {
@@ -295,12 +298,34 @@ exports.createRequest = function (method, url, data, match) {
         headers: {},
         path: to.split('/'),
         client: true,
-        initial_hit: exports.initial_hit
+        initial_hit: exports.initial_hit,
+        // TODO: parse cookies that would be sent
+        cookie: cookies.readCookies()
     };
     if (data) {
         req.form = data;
     }
     return req;
+};
+
+
+/**
+ * Handles return values from show / list / update functions
+ */
+
+exports.handleResponse = function (res) {
+    if (typeof res === 'object') {
+        if (res.headers) {
+            exports.handleResponseHeaders(res.headers);
+        }
+    }
+};
+
+exports.handleResponseHeaders = function (headers) {
+    if (headers['Set-Cookie']) {
+        console.log('Setting cookie: ' + headers['Set-Cookie']);
+        document.cookie = headers['Set-Cookie'];
+    }
 };
 
 
@@ -315,7 +340,7 @@ exports.createRequest = function (method, url, data, match) {
  */
 
 // TODO: add unit tests for this function
-exports.runShow = function (req, name, docid, callback) {
+exports.runShowBrowser = function (req, name, docid, callback) {
     var result;
     var fn = kanso.app.shows[name];
     if (docid) {
@@ -323,18 +348,26 @@ exports.runShow = function (req, name, docid, callback) {
             if (err) {
                 return callback(err);
             }
-            fn(doc, req);
+            var res = exports.runShow(fn, doc, req);
+            exports.handleResponse(res);
             callback();
         });
     }
     else {
-        fn(null, req);
+        var res = exports.runShow(fn, null, req);
+        exports.handleResponse(res);
         callback();
     }
 };
 
+exports.runShow = function (fn, doc, req) {
+    flashmessages.readMessages(req);
+    var res = fn(doc, req);
+    req.response_received = true;
+    return flashmessages.updateResponse(req, res);
+};
 
-exports.runUpdate = function (req, name, docid, callback) {
+exports.runUpdateBrowser = function (req, name, docid, callback) {
     var result;
     var fn = kanso.app.updates[name];
     if (docid) {
@@ -342,13 +375,30 @@ exports.runUpdate = function (req, name, docid, callback) {
             if (err) {
                 return callback(err);
             }
-            fn(doc, req);
+            var res = exports.runUpdate(fn, doc, req);
+            req.response_received = true;
+            if (res) {
+                exports.handleResponse(res[1]);
+            }
             callback();
         });
     }
     else {
-        fn(null, req);
+        var res = exports.runUpdate(fn, null, req);
+        req.response_received = true;
+        if (res) {
+            exports.handleResponse(res[1]);
+        }
         callback();
+    }
+};
+
+exports.runUpdate = function (fn, doc, req) {
+    flashmessages.readMessages(req);
+    var val = fn(doc, req);
+    req.response_received = true;
+    if (val) {
+        return [val[0], flashmessages.updateResponse(req, val[1])];
     }
 };
 
@@ -380,7 +430,7 @@ exports.createHead = function (data) {
  */
 
 // TODO: add unit tests for this function
-exports.runList = function (req, name, view, callback) {
+exports.runListBrowser = function (req, name, view, callback) {
     var fn = kanso.app.lists[name];
     if (view) {
         // update_seq used in head parameter passed to list function
@@ -392,8 +442,16 @@ exports.runList = function (req, name, view, callback) {
             getRow = function () {
                 return data.rows.shift();
             };
+            start = function (res) {
+                console.log('start');
+                console.log(res);
+                if (res.headers) {
+                    exports.handleResponseHeaders(res.headers);
+                }
+            };
             var head = exports.createHead(data);
-            fn(head, req);
+            var res = exports.runList(fn, head, req);
+            exports.handleResponse(res);
             getRow = function () {
                 return null;
             };
@@ -410,6 +468,19 @@ exports.runList = function (req, name, view, callback) {
             throw e;
         }
     }
+};
+
+exports.runList = function (fn, head, req) {
+    flashmessages.readMessages(req);
+    var _start = start;
+    var start_res;
+    start = function (res) {
+        start_res = true;
+        _start(flashmessages.updateResponse(req, res));
+    };
+    var val = fn(head, req);
+    start = _start;
+    return val;
 };
 
 
@@ -462,17 +533,17 @@ exports.handle = function (method, url, data) {
         var src, fn, name;
 
         if (req.path[0] === '_show') {
-            exports.runShow(
+            exports.runShowBrowser(
                 req, req.path[1], req.path.slice(2).join('/'), after
             );
         }
         else if (req.path[0] === '_list') {
-            exports.runList(
+            exports.runListBrowser(
                 req, req.path[1], req.path.slice(2).join('/'), after
             );
         }
         else if (req.path[0] === '_update') {
-            exports.runUpdate(
+            exports.runUpdateBrowser(
                 req, req.path[1], req.path.slice(2).join('/'), after
             );
         }

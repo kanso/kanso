@@ -7,6 +7,12 @@
 
 <div id="main">
 
+  <ul id="flashmessages">
+  {#flashMessages}
+    <li>{.}</li>
+  {/flashMessages}
+  </ul>
+
   <h2>Add {type}</h2>
 
   <form action="" method="POST">
