@@ -41,7 +41,7 @@ exports.addtype = function (doc, req) {
     if (!req.client) {
         return templates.render('base.html', req, {
             title: req.query.app + ' - Types - ' + req.query.type,
-            content: '<p>Javascript must be enabled to view this page</p>'
+            content: templates.render('noscript.html', req, {})
         });
     }
     utils.getDesignDoc(req.query.app, function (err, ddoc) {
@@ -74,7 +74,7 @@ exports.edittype = function (doc, req) {
     if (!req.client) {
         return templates.render('base.html', req, {
             title: req.query.app + ' - Types - ' + req.query.type,
-            content: '<p>Javascript must be enabled to view this page</p>'
+            content: templates.render('noscript.html', req, {})
         });
     }
     utils.getDesignDoc(req.query.app, function (err, ddoc) {

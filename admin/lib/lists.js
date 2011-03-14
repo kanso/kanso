@@ -15,7 +15,7 @@ var adminList = function (fn) {
         if (!req.client) {
             return templates.render('base.html', req, {
                 title: 'Admin',
-                content: '<p>Javascript must be enabled to view this page</p>'
+                content: templates.render('noscript.html', req, {})
             });
         }
         var row, rows = [];
@@ -119,7 +119,7 @@ exports.viewtype = function (head, req) {
     if (!req.client) {
         return templates.render('base.html', req, {
             title: req.query.app + ' - Types - ' + req.query.type,
-            content: '<p>Javascript must be enabled to view this page</p>'
+            content: templates.render('noscript.html', req, {})
         });
     }
     var doc = getRow().doc;

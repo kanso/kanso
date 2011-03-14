@@ -97,7 +97,7 @@ table.typelist {
 
 .typelist td {
     background-color: #fefefe;
-    padding: 0;
+    padding: 0.326em 0;
     margin: 0;
     border: 0;
 }
@@ -125,7 +125,7 @@ table.typelist {
 
 th.actions,
 td.actions {
-    width: 200px;
+    min-width: 200px;
     padding-left: 50px !important;
 }
 
@@ -217,4 +217,22 @@ td.actions .button {
 
 .viewtype th {
     padding-right: 20px;
+}
+
+#flashmessages {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 1em 0;
+}
+
+#flashmessages li {
+    padding: 0.5em 1em;
+    background-color: #eee;
+    border-radius: 3px;
+}
+#flashmessages li.error {
+    background-color: #fdd;
+}
+#flashmessages li.success {
+    background-color: #dfd;
 }

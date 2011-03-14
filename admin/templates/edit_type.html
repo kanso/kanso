@@ -7,31 +7,27 @@
 
 <div id="main">
 
-  <ul id="flashmessages">
-  {#flashMessages}
-    <li>{.}</li>
-  {/flashMessages}
-  </ul>
+  {>"flashmessages.html"/}
 
-<form action="" method="POST">
+  <form action="" method="POST">
 
-  <h2>Edit {id}</h2>
+    <h2>Edit {id}</h2>
 
-  <table class="form_table">
-  {form|s}
-  </table>
+    <table class="form_table">
+    {form|s}
+    </table>
 
-  <div class="bottom_actions">
-    <div class="button">
-      <input class="icon" type="submit" value="Y" />
-      <input class="label" type="submit" value="Save changes" />
+    <div class="bottom_actions">
+      <div class="button">
+        <input class="icon" type="submit" value="Y" />
+        <input class="label" type="submit" value="Save changes" />
+      </div>
+      <a class="button" href="{baseURL}/{app}/{type}/view/{id}">
+        <span class="icon">x</span>
+        <span class="label">Cancel</span>
+      </a>
     </div>
-    <a class="button" href="{baseURL}/{app}/{type}/view/{id}">
-      <span class="icon">x</span>
-      <span class="label">Cancel</span>
-    </a>
-  </div>
 
-</form>
+  </form>
 
 </div>
