@@ -349,13 +349,35 @@ exports.runShowBrowser = function (req, name, docid, callback) {
                 return callback(err);
             }
             var res = exports.runShow(fn, doc, req);
-            exports.handleResponse(res);
+            if (res) {
+                exports.handleResponse(res);
+            }
+            else {
+                // returned without response, meaning cookies won't be set by
+                // handleResponseHeaders
+                if (req.outgoing_flash_messages) {
+                    flashmessage.setCookieBrowser(
+                        req, req.outgoing_flash_messages
+                    );
+                }
+            }
             callback();
         });
     }
     else {
         var res = exports.runShow(fn, null, req);
-        exports.handleResponse(res);
+        if (res) {
+            exports.handleResponse(res);
+        }
+        else {
+            // returned without response, meaning cookies won't be set by
+            // handleResponseHeaders
+            if (req.outgoing_flash_messages) {
+                flashmessages.setCookieBrowser(
+                    req, req.outgoing_flash_messages
+                );
+            }
+        }
         callback();
     }
 };
@@ -376,18 +398,34 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
                 return callback(err);
             }
             var res = exports.runUpdate(fn, doc, req);
-            req.response_received = true;
             if (res) {
                 exports.handleResponse(res[1]);
+            }
+            else {
+                // returned without response, meaning cookies won't be set by
+                // handleResponseHeaders
+                if (req.outgoing_flash_messages) {
+                    flashmessages.setCookieBrowser(
+                        req, req.outgoing_flash_messages
+                    );
+                }
             }
             callback();
         });
     }
     else {
         var res = exports.runUpdate(fn, null, req);
-        req.response_received = true;
         if (res) {
             exports.handleResponse(res[1]);
+        }
+        else {
+            // returned without response, meaning cookies won't be set by
+            // handleResponseHeaders
+            if (req.outgoing_flash_messages) {
+                flashmessages.setCookieBrowser(
+                    req, req.outgoing_flash_messages
+                );
+            }
         }
         callback();
     }
@@ -451,7 +489,18 @@ exports.runListBrowser = function (req, name, view, callback) {
             };
             var head = exports.createHead(data);
             var res = exports.runList(fn, head, req);
-            exports.handleResponse(res);
+            if (res) {
+                exports.handleResponse(res);
+            }
+            else {
+                // returned without response, meaning cookies won't be set by
+                // handleResponseHeaders
+                if (req.outgoing_flash_messages) {
+                    flashmessages.setCookieBrowser(
+                        req, req.outgoing_flash_messages
+                    );
+                }
+            }
             getRow = function () {
                 return null;
             };
