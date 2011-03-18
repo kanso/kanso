@@ -11,6 +11,7 @@ var settings = require('./settings'), // module auto-generated
     utils = require('./utils'),
     session = require('./session'),
     cookies = require('./cookies'),
+    uuid = require('./uuid'),
     flashmessages = require('./flashmessages'),
     urlParse = url.parse,
     urlFormat = url.format;
@@ -293,14 +294,14 @@ exports.createRequest = function (method, url, data, match) {
     var to = exports.replaceGroups(match.to, query, splat);
 
     var req = {
+        uuid: uuid.generate(),
         method: method,
         query: query,
         headers: {},
         path: to.split('/'),
         client: true,
         initial_hit: exports.initial_hit,
-        // TODO: parse cookies that would be sent
-        cookie: cookies.readCookies()
+        cookie: cookies.readBrowserCookies()
     };
     if (data) {
         req.form = data;
@@ -383,7 +384,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
 };
 
 exports.runShow = function (fn, doc, req) {
-    flashmessages.readMessages(req);
+    flashmessages.updateRequest(req);
     var res = fn(doc, req);
     req.response_received = true;
     return flashmessages.updateResponse(req, res);
@@ -432,7 +433,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
 };
 
 exports.runUpdate = function (fn, doc, req) {
-    flashmessages.readMessages(req);
+    flashmessages.updateRequest(req);
     var val = fn(doc, req);
     req.response_received = true;
     if (val) {
@@ -483,7 +484,7 @@ exports.runListBrowser = function (req, name, view, callback) {
             start = function (res) {
                 console.log('start');
                 console.log(res);
-                if (res.headers) {
+                if (res && res.headers) {
                     exports.handleResponseHeaders(res.headers);
                 }
             };
@@ -520,7 +521,7 @@ exports.runListBrowser = function (req, name, view, callback) {
 };
 
 exports.runList = function (fn, head, req) {
-    flashmessages.readMessages(req);
+    flashmessages.updateRequest(req);
     var _start = start;
     var start_res;
     start = function (res) {

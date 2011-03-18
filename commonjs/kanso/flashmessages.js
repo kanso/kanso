@@ -5,80 +5,149 @@
  */
 
 var utils = require('./utils'),
-    cookies = require('./cookies');
+    cookies = require('./cookies'),
+    _ = require('./nimble');
 
 
-exports.readCookie = function (req) {
+/**
+ * TODO
+ * SCENARIO 1
+ *  - request arrives, messages are read from cookies
+ *  - addMessage called, message added and marked as outgoing
+ *  - response sent with new message as Set-Cookie
+ *
+ * SCENARIO 2
+ *  - request arrives, messages are read from cookies
+ *  - addMessage called, message added and marked as outgoing
+ *  - template rendered with new message, message marked as not outgoing
+ *  - response sent with no new messages as Set-Cookie
+ *
+ * SCENARIO 3
+ *  - request arrives, messages are read from cookies
+ *  - response sent with no new messages as Set-Cookie
+ *  - async client-side operation completed
+ *  - addMessage called, document.cookie updated manually
+ *    - read current cookie and update, preserving other messages
+ *
+ * SCENARIO 4
+ *  - request arrives, messages are read from cookies
+ *  - response sent with no new messages as Set-Cookie
+ *  - async client-side operation completed
+ *  - addMessage called, document.cookie updated manually
+ *    - read current cookie and update, preserving other messages
+ *  - template rendered in async operation's callback
+ *    - message should be removed from current document.cookie,
+ *      preserving other messages
+ */
+
+
+exports.readRequestCookie = function (req) {
     var cookie = req.cookie['_kanso_flash'];
-    return cookie ? JSON.parse(unescape(cookie)): [];
+    var messages = cookie ? JSON.parse(unescape(cookie)): [];
+    return _.map(messages, function (val) {
+        val.incoming = true;
+        val.outgoing = false;
+        return val;
+    });
 };
 
-exports.readMessages = function (req) {
-    req.flash_messages = exports.readCookie(req);
+exports.readBrowserCookie = function () {
+    var cookie = cookies.readBrowserCookie('_kanso_flash');
+    var messages = cookie ? JSON.parse(unescape(cookie)): [];
+    return _.map(messages, function (val) {
+        val.incoming = true;
+        val.outgoing = false;
+        return val;
+    });
 };
 
-exports.peekMessages = function (req) {
-    var incoming = (req.flash_messages || []);
-    var outgoing = (req.outgoing_flash_messages || []);
-    return incoming.concat(outgoing);
+exports.updateRequest = function (req) {
+    var messages = exports.readRequestCookie(req);
+    req.flash_messages = _.map(messages, function (val) {
+        val.incoming = true;
+        val.outgoing = false;
+        return val;
+    });
+    return req;
 };
 
 exports.getMessages = function (req) {
-    var messages = exports.peekMessages(req);
+    if (utils.isBrowser) {
+        // also remove any messages from this request already set in the cookie
+        var bmessages = _.filter(exports.readBrowserCookie(), function (val) {
+            return val.req !== req.uuid;
+        });
+        exports.setBrowserCookie(req, bmessages);
+    }
+
+    var messages = _.map(req.flash_messages, function (val) {
+        val.outgoing = false;
+        return val;
+    });
     req.flash_messages = messages;
-    req.outgoing_flash_messages = [];
-    return messages;
+
+    return _.map(messages, function (val) {
+        return val.data;
+    });
+};
+
+exports.getOutgoingMessages = function (req) {
+    return _.filter(req.flash_messages, function (val) {
+        return val.outgoing;
+    });
 };
 
 exports.updateResponse = function (req, res) {
-    if (typeof res !== 'object') {
-        res = {code: 200, body: res};
-    }
-    var messages = req.outgoing_flash_messages || [];
-    exports.setCookie(req, res, '_kanso_flash', JSON.stringify(messages));
-    return res;
+    console.log('flashmessages.updateResponse');
+    console.log(messages);
+    var messages = _.map(exports.getOutgoingMessages(req), function (val) {
+        delete val.outgoing;
+        delete val.incoming;
+        return val;
+    });
+    return cookies.setResponseCookie(req, res, {
+        name: '_kanso_flash',
+        value: JSON.stringify(messages)
+    });
 };
 
-exports.cookieString = function (req, name, val) {
-    var baseURL = utils.getBaseURL(req);
-    return escape(name) + '=' + escape(val) + '; path=' + baseURL + '/';
+exports.createMessage = function (req, msg) {
+    return {
+        req: req.uuid,
+        data: msg
+    };
 };
 
-exports.setCookie = function (req, res, name, val) {
-    if (!res.headers) {
-        res.headers = {};
-    }
-    // TODO: is it possible to send multiple set-cookie headers by turning
-    // headers into an array like in node?
-    // XXX: just replacing all cookies for now - not ideal!
-    res.headers['Set-Cookie'] = exports.cookieString(req, name, val);
-};
-
-exports.setCookieBrowser = function (req, messages) {
-    var val = JSON.stringify(messages);
-    var str = exports.cookieString(req, '_kanso_flash', val);
-    console.log('Setting cookie: ' + str);
-    document.cookie = str;
+exports.setBrowserCookie = function (req, messages) {
+    console.log('flashmessages.setBrowserCookie');
+    console.log(messages);
+    cookies.setBrowserCookie(req, {
+        name: '_kanso_flash',
+        value: JSON.stringify(messages)
+    });
 };
 
 // store new messages on the request until the response is sent later,
 // since we don't know the response object until the list / show / update
 // function has returned.
 
-exports.addMessage = function (req, message) {
+exports.addMessage = function (req, msg) {
+    if (!req.flash_messages) {
+        req.flash_messages = [];
+    }
+    var message = exports.createMessage(req, msg);
     if (req.response_received) {
         // the function has already returned, addMessage must have been called
         // in a callback for some client-side only function, set the cookie
         // directly
-        var cookie = cookies.readCookies()['_kanso_flash'];
-        var messages = cookie ? JSON.parse(unescape(cookie)): [];
+        var messages = exports.readBrowserCookie();
+
         messages.push(message);
-        exports.setCookieBrowser(req, messages);
+        exports.setBrowserCookie(req, messages);
+        req.flash_messages.push(message);
     }
     else {
-        if (!req.outgoing_flash_messages) {
-            req.outgoing_flash_messages = [];
-        }
-        req.outgoing_flash_messages.push(message);
+        message.outgoing = true;
+        req.flash_messages.push(message);
     }
 };
