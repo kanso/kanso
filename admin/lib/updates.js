@@ -29,6 +29,17 @@ exports.addtype = function (doc, req) {
                         type: 'error',
                         message: err.toString()
                     });
+
+                    var content = templates.render('add_type.html', req, {
+                        app: req.query.app,
+                        app_heading: utils.capitalize(req.query.app),
+                        type: req.query.type,
+                        type_heading: utils.typeHeading(req.query.type),
+                        form: form.toHTML(forms.render.table)
+                    });
+
+                    $('#content').html(content);
+                    document.title = settings.name + ' - Types - ' + req.query.type;
                 }
                 else {
                     flashmessages.addMessage(req, {
@@ -84,6 +95,18 @@ exports.updatetype = function (doc, req) {
                         type: 'error',
                         message: err.toString()
                     });
+
+                    var content = templates.render('edit_type.html', req, {
+                        id: req.query.id,
+                        app: req.query.app,
+                        app_heading: utils.capitalize(req.query.app),
+                        type: req.query.type,
+                        type_heading: utils.typeHeading(req.query.type),
+                        form: form.toHTML(forms.render.table)
+                    });
+
+                    $('#content').html(content);
+                    document.title = settings.name + ' - Types - ' + req.query.type;
                 }
                 else {
                     flashmessages.addMessage(req, {
@@ -142,7 +165,7 @@ exports.deletetype = function (doc, req) {
                 type: 'success',
                 message: 'Deleted ' + doc._id
             });
-            core.setURL('GET',  '/' + req.query.app + '/' + req.query.type);
         }
+        core.setURL('GET',  '/' + req.query.app + '/' + req.query.type);
     });
 };
