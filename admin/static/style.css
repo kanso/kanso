@@ -96,6 +96,7 @@ table.typelist {
 
 
 .typelist td {
+    vertical-align: top;
     background-color: #fefefe;
     padding: 0.326em 0;
     margin: 0;
