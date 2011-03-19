@@ -20,7 +20,7 @@ exports.logout = function (callback) {
         type: "DELETE",
         url: "/_session", // don't need baseURL, /_session always available
         username: "_",
-        password : "_",
+        password : "_"
     }, callback);
 };
 
@@ -39,6 +39,6 @@ exports.login = function (username, password, callback) {
     db.request({
         type: "POST",
         url: "/_session",
-        data: {name: username, password: password},
+        data: {name: username, password: password}
     }, callback);
 };

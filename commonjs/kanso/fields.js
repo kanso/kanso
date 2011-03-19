@@ -20,7 +20,9 @@ Field.prototype.errorHTML = function (errors) {
     if (errors && errors.length) {
         var html = '<ul class="errors">';
         for (var i = 0; i < errors.length; i++) {
-            html += '<li class="error_msg">' + errors[i] + '</li>';
+            html += '<li class="error_msg">' +
+                (errors[i].message || errors[i].toString()) +
+            '</li>';
         }
         html += '</ul>';
         return html;
@@ -32,7 +34,7 @@ Field.prototype.labelText = function (name) {
     if (this.label) {
         return this.label;
     }
-    return name[0].toUpperCase() + name.substr(1).replace('_', ' ');
+    return name.substr(0, 1).toUpperCase() + name.substr(1).replace('_', ' ');
 };
 
 Field.prototype.labelHTML = function (name, id) {

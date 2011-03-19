@@ -25,7 +25,7 @@ var Type = exports.Type = function (name, options) {
         _rev: fields.string({
             required: false,
             omit_empty: true,
-            widget: widgets.hidden(),
+            widget: widgets.hidden()
         }),
         type: fields.string({
             default_value: name,
