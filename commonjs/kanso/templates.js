@@ -1,4 +1,4 @@
-/*global dust: true */
+/*global dust: true, log: false */
 
 /**
  * CAUTION WHEN EDITING THIS FILE!

@@ -1,3 +1,5 @@
+/*global unescape: false */
+
 /**
  * Flash messages only persist for the next request or the next template render!
  * That means 2 redirects without explicitly currying the flash messages will
@@ -10,7 +12,7 @@ var utils = require('./utils'),
 
 
 exports.readRequestCookie = function (req) {
-    var cookie = req.cookie['_kanso_flash'];
+    var cookie = req.cookie._kanso_flash;
     var messages = cookie ? JSON.parse(unescape(cookie)): [];
     return _.map(messages, function (val) {
         val.incoming = true;

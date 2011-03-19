@@ -1,3 +1,5 @@
+/*global escape: false */
+
 var utils = require('./utils');
 
 

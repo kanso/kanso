@@ -1,5 +1,5 @@
 /*global window: false, getRow: true, start: true, $: false, pageTracker: true,
-  kanso: true */
+  kanso: true, log: true */
 
 /**
  * Module dependencies
@@ -358,7 +358,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
                 // returned without response, meaning cookies won't be set by
                 // handleResponseHeaders
                 if (req.outgoing_flash_messages) {
-                    flashmessage.setCookieBrowser(
+                    flashmessages.setCookieBrowser(
                         req, req.outgoing_flash_messages
                     );
                 }
