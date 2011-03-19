@@ -84,7 +84,7 @@ exports.typelist = adminList(function (rows, ddoc, req) {
             fields.Field, type.fields, rows[i].doc, []
         );
         for (var j = 0; j < pairs.length; j++) {
-            if (pairs[j].field === '_rev') {
+            if (pairs[j].field === '_rev' || pairs[j].field === 'type') {
                 pairs.splice(j, 1);
                 j = -1;
             }
@@ -93,7 +93,7 @@ exports.typelist = adminList(function (rows, ddoc, req) {
     }
     var field_names = [];
     for (var k in type.fields) {
-        if (k !== '_rev') {
+        if (k !== '_rev' && k !== 'type') {
             field_names.push(k);
         }
     }
