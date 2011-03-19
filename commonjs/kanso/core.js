@@ -314,6 +314,8 @@ exports.createRequest = function (method, url, data, match) {
  */
 
 exports.handleResponse = function (res) {
+    console.log('response');
+    console.log(res);
     if (typeof res === 'object') {
         if (res.headers) {
             exports.handleResponseHeaders(res.headers);
@@ -322,8 +324,9 @@ exports.handleResponse = function (res) {
 };
 
 exports.handleResponseHeaders = function (headers) {
+    console.log('headers');
+    console.log(headers);
     if (headers['Set-Cookie']) {
-        console.log('Setting cookie: ' + headers['Set-Cookie']);
         document.cookie = headers['Set-Cookie'];
     }
 };
@@ -520,9 +523,7 @@ exports.runListBrowser = function (req, name, view, callback) {
 exports.runList = function (fn, head, req) {
     flashmessages.updateRequest(req);
     var _start = start;
-    var start_res;
     start = function (res) {
-        start_res = true;
         _start(flashmessages.updateResponse(req, res));
     };
     var val = fn(head, req);

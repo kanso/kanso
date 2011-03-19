@@ -42,10 +42,15 @@ exports.updateRequest = function (req) {
 exports.getMessages = function (req) {
     if (utils.isBrowser) {
         // also remove any messages from this request already set in the cookie
-        var bmessages = _.filter(exports.readBrowserCookie(), function (val) {
+        var cookie_messages = exports.readBrowserCookie();
+        var bmessages = _.filter(cookie_messages, function (val) {
             return val.req !== req.uuid;
         });
-        exports.setBrowserCookie(req, bmessages);
+        if (bmessages.length !== cookie_messages.length) {
+            console.log('removing cookies for this request:');
+            console.log(bmessages);
+            exports.setBrowserCookie(req, bmessages);
+        }
     }
 
     var messages = _.map(req.flash_messages, function (val) {
@@ -66,17 +71,18 @@ exports.getOutgoingMessages = function (req) {
 };
 
 exports.updateResponse = function (req, res) {
-    console.log('flashmessages.updateResponse');
-    console.log(messages);
     var messages = _.map(exports.getOutgoingMessages(req), function (val) {
         delete val.outgoing;
         delete val.incoming;
         return val;
     });
-    return cookies.setResponseCookie(req, res, {
+    console.log('flashmessages.updateResponse');
+    console.log(messages);
+    cookies.setResponseCookie(req, res, {
         name: '_kanso_flash',
         value: JSON.stringify(messages)
     });
+    return res;
 };
 
 exports.createMessage = function (req, msg) {
