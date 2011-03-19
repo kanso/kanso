@@ -87,10 +87,6 @@ exports.renderFields = function (iterator, fields, values, errors, path) {
                 }
                 html += iterator(name, field, val, errs);
             }
-            else if (utils.isArray(field)) {
-                // TODO: handle arrays
-                throw new Error('not implemented');
-            }
             else {
                 var subvalues = utils.getPropertyPath(values, field_path);
                 // sub-object, recurse through and check for more fields
