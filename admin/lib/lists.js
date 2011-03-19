@@ -1,3 +1,6 @@
+/*global emit: false, start: false, log: false, getRow: false, send: false,
+  $: false*/
+
 var utils = require('./utils'),
     kanso_utils = require('kanso/utils'),
     templates = require('kanso/templates'),
@@ -18,9 +21,10 @@ var adminList = function (fn) {
                 content: templates.render('noscript.html', req, {})
             });
         }
-        var row, rows = [];
-        while (row = getRow()) {
+        var row = getRow(), rows = [];
+        while (row) {
             rows.push(row);
+            row = getRow();
         }
         utils.getDesignDoc(req.query.app, function (err, ddoc) {
             if (err) {
@@ -55,9 +59,10 @@ exports.fieldPairs = function (Field, fields, doc, path) {
 
 exports.applist = function (head, req) {
     start({code: 200, headers: {'Content-Type': 'text/html'}});
-    var row, rows = [];
-    while (row = getRow()) {
+    var row = getRow(), rows = [];
+    while (row) {
         rows.push(row);
+        row = getRow();
     }
     var content = templates.render('apps.html', req, {rows: rows});
     if (req.client) {
@@ -108,7 +113,7 @@ exports.typelist = adminList(function (rows, ddoc, req) {
     });
 
     $('#content').html(content);
-    document.title = req.query.app + ' - ' + req.query.type
+    document.title = req.query.app + ' - ' + req.query.type;
 
     $('#content table.typelist tr:odd').addClass('odd');
 });

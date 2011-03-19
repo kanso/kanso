@@ -1,3 +1,6 @@
+/*global emit: false, start: false, log: false, getRow: false, send: false,
+  $: false*/
+
 exports.apps = {
     map: function (doc) {
         var id = doc._id;

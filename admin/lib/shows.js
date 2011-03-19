@@ -1,3 +1,6 @@
+/*global emit: false, start: false, log: false, getRow: false, send: false,
+  $: false*/
+
 var utils = require('./utils'),
     templates = require('kanso/templates');
 

@@ -1,3 +1,6 @@
+/*global emit: false, start: false, log: false, getRow: false, send: false,
+  $: false*/
+
 var utils = require('./utils'),
     core = require('kanso/core'),
     templates = require('kanso/templates'),
@@ -142,16 +145,14 @@ exports.updatetype = function (doc, req) {
 exports.deletetype = function (doc, req) {
     var baseURL = require('kanso/utils').getBaseURL();
 
-    var res = {code: 302, headers: {'Location': loc}};
-
     if (!req.client) {
-        doc._deleted = true;
         var loc = baseURL + '/' + req.query.app + '/' + req.query.type;
+        doc._deleted = true;
         flashmessages.addMessage(req, {
             type: 'success',
             message: 'Deleted ' + doc._id
         });
-        return [doc, res];
+        return [doc, {code: 302, headers: {'Location': loc}}];
     }
     db.removeDoc(doc, function (err, resp) {
         if (err) {
