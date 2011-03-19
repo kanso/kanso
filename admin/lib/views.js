@@ -1,8 +1,10 @@
 exports.apps = {
     map: function (doc) {
         var id = doc._id;
-        if (id !== '_design/admin' && id.substr(0, 8) === '_design/') {
-            emit(id.substr(8), id);
+        if (doc.format === 'kanso') {
+            if (id !== '_design/admin' && id.substr(0, 8) === '_design/') {
+                emit(id.substr(8), id);
+            }
         }
     }
 };
