@@ -119,7 +119,7 @@ var Couch = exports.Couch = {
                         var s = "function (module, exports, require) { " +
                             newModule.current + " }";
                         try {
-                            var func = eval('(' + s + ')');
+                            eval('var func = (' + s + ')');
                             func.apply(sandbox, [
                                 newModule,
                                 newModule.exports,
@@ -142,7 +142,7 @@ var Couch = exports.Couch = {
                 };
                 sandbox.require = require;
             }
-            functionObject = eval('(' + source + ')', sandbox);
+            eval('functionObject = (' + source + ')', sandbox);
         }
         catch (err) {
             throw [
