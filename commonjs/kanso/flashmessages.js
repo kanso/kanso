@@ -9,38 +9,6 @@ var utils = require('./utils'),
     _ = require('./nimble');
 
 
-/**
- * TODO
- * SCENARIO 1
- *  - request arrives, messages are read from cookies
- *  - addMessage called, message added and marked as outgoing
- *  - response sent with new message as Set-Cookie
- *
- * SCENARIO 2
- *  - request arrives, messages are read from cookies
- *  - addMessage called, message added and marked as outgoing
- *  - template rendered with new message, message marked as not outgoing
- *  - response sent with no new messages as Set-Cookie
- *
- * SCENARIO 3
- *  - request arrives, messages are read from cookies
- *  - response sent with no new messages as Set-Cookie
- *  - async client-side operation completed
- *  - addMessage called, document.cookie updated manually
- *    - read current cookie and update, preserving other messages
- *
- * SCENARIO 4
- *  - request arrives, messages are read from cookies
- *  - response sent with no new messages as Set-Cookie
- *  - async client-side operation completed
- *  - addMessage called, document.cookie updated manually
- *    - read current cookie and update, preserving other messages
- *  - template rendered in async operation's callback
- *    - message should be removed from current document.cookie,
- *      preserving other messages
- */
-
-
 exports.readRequestCookie = function (req) {
     var cookie = req.cookie['_kanso_flash'];
     var messages = cookie ? JSON.parse(unescape(cookie)): [];

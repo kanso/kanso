@@ -39,7 +39,6 @@ var utils = require('./utils'),
  * @api public
  */
 
-// TODO: add unit tests for this function
 exports.render = function (name, req, context) {
     context.baseURL = utils.getBaseURL(req);
     context.isBrowser = utils.isBrowser;

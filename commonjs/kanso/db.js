@@ -45,7 +45,6 @@ function onComplete(callback) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 exports.request = function (options, callback) {
     options.complete = onComplete(callback);
     options.dataType = 'json';
@@ -64,7 +63,6 @@ exports.request = function (options, callback) {
  */
 
 // TODO: encode doc id in url
-// TODO: add unit tests for this function
 // TODO: make q argument optional?
 exports.getDoc = function (id, q, callback) {
     if (!utils.isBrowser) {
@@ -88,7 +86,6 @@ exports.getDoc = function (id, q, callback) {
  */
 
 // TODO: encode doc id in url
-// TODO: add unit tests for this function
 exports.saveDoc = function (doc, callback) {
     if (!utils.isBrowser) {
         throw new Error('saveDoc cannot be called server-side');
@@ -120,7 +117,6 @@ exports.saveDoc = function (doc, callback) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 exports.removeDoc = function (doc, callback) {
     if (!utils.isBrowser) {
         throw new Error('saveDoc cannot be called server-side');
@@ -143,7 +139,6 @@ exports.removeDoc = function (doc, callback) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 // TODO: make q argument optional?
 exports.getView = function (view, q, callback) {
     if (!utils.isBrowser) {
@@ -190,7 +185,6 @@ exports.all = function (/*optional*/q, callback) {
  * @returns {Object}
  */
 
-// TODO: add unit tests for this function
 exports.stringifyQuery = function (query) {
     var q = {};
     for (var k in query) {

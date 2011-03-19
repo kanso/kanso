@@ -12,7 +12,6 @@ var db = require('./db'),
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 exports.logout = function (callback) {
     if (!utils.isBrowser) {
         throw new Error('logout cannot be called server-side');
@@ -33,7 +32,6 @@ exports.logout = function (callback) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 exports.login = function (username, password, callback) {
     if (!utils.isBrowser) {
         throw new Error('login cannot be called server-side');

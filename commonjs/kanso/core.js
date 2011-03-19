@@ -195,7 +195,6 @@ exports.rewriteSplat = function (pattern, url) {
  * @return {Object}
  */
 
-// TODO actually match based on method
 exports.matchURL = function (method, url) {
     var pathname = urlParse(url).pathname;
     var rewrites = kanso.app.rewrites;
@@ -340,7 +339,6 @@ exports.handleResponseHeaders = function (headers) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 exports.runShowBrowser = function (req, name, docid, callback) {
     var result;
     var fn = kanso.app.shows[name];
@@ -468,7 +466,6 @@ exports.createHead = function (data) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 exports.runListBrowser = function (req, name, view, callback) {
     var fn = kanso.app.lists[name];
     if (view) {
@@ -541,9 +538,7 @@ exports.runList = function (fn, head, req) {
  * @param {String} url
  */
 
-// TODO: add unit tests for this function
 exports.handle = function (method, url, data) {
-    // TODO: actually match based on method
     var match = exports.matchURL(method, url);
     if (match) {
         var parsed = urlParse(url),
@@ -598,8 +593,6 @@ exports.handle = function (method, url, data) {
             );
         }
         else {
-            // TODO: decide what happens here
-            //alert('Unknown rewrite target: ' + req.path.join('/'));
             console.log('Unknown rewrite target: ' + req.path.join('/'));
             var newurl = exports.getBaseURL() + '/_db/_design/' +
                 settings.name + '/' + req.path.join('/');
@@ -633,7 +626,6 @@ exports.handle = function (method, url, data) {
  * @param {String} url
  */
 
-// TODO: add unit tests for this function
 exports.setURL = function (method, url, data) {
     var fullurl = exports.getBaseURL() + url;
     window.History.pushState({
@@ -685,7 +677,6 @@ exports.getURL = function () {
  * or strings as arguments.
  */
 
-// TODO: add unit tests for this function
 exports.sameOrigin = function (a, b) {
     var ap = (typeof a === 'string') ? urlParse(a): a;
     var bp = (typeof b === 'string') ? urlParse(b): b;
@@ -708,7 +699,6 @@ exports.sameOrigin = function (a, b) {
  * @returns {String}
  */
 
-// TODO: add unit tests for this function
 exports.appPath = function (p) {
     // hash links need current URL prepending
     if (p.charAt(0) === '#') {
@@ -732,10 +722,8 @@ exports.appPath = function (p) {
         }
     }
     var base = exports.getBaseURL();
-    // TODO: should this be substr not slice?
-    if (p.slice(0, base.length) === base) {
-        // TODO: should this be substr not slice?
-        return p.slice(base.length);
+    if (p.substr(0, base.length) === base) {
+        return p.substr(base.length);
     }
     return p;
 };
