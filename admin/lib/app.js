@@ -8,7 +8,7 @@ exports.options = {
 exports.rewrites = [
     {from: '/static/*', to: 'static/*'},
     {from: '/', to: '_list/applist/apps'},
-    {from: '/:app', to: '_show/types/_design/:app'},
+    {from: '/:app', to: '_show/types'},
     {from: '/:app/:type/add', to: '_show/addtype', method: 'GET'},
     {from: '/:app/:type/add', to: '_update/addtype', method: 'POST'},
     {from: '/:app/:type', to: '_list/typelist/types', query: {
