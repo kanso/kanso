@@ -71,6 +71,15 @@ exports.isArray = Array.isArray || function (obj) {
     return !!(obj && obj.concat && obj.unshift && !obj.callee);
 };
 
+/**
+ * isFunction from underscore.js
+ * http://documentcloud.github.com/underscore
+ */
+
+exports.isFunction = function(obj) {
+    return !!(obj && obj.constructor && obj.call && obj.apply);
+};
+
 
 /**
  * Traverses an object and its sub-objects using an array of property names.

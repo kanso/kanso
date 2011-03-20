@@ -1,5 +1,7 @@
 var validators = require('./validators'),
-    widgets = require('./widgets');
+    widgets = require('./widgets'),
+    utils = require('./utils'),
+    permissions = require('./permissions');
 
 
 var Field = exports.Field = function Field(options) {
@@ -70,8 +72,26 @@ Field.prototype.validate = function (doc, value) {
 };
 
 Field.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, userCtx) {
-    for (var i = 0; i < this.permissions.length; i++) {
-        this.permissions[i](newDoc, oldDoc, newVal, oldVal, userCtx);
+    var perms = this.permissions;
+    perms = utils.isArray(perms) ? perms: [perms];
+
+    for (var i = 0; i < perms.length; i++) {
+        var fn = perms[i];
+        if (fn) {
+            if (oldDoc) {
+                if (fn.edit) {
+                    fn.edit(newDoc, oldDoc, newVal, oldVal, userCtx);
+                }
+            }
+            else {
+                if (fn.create) {
+                    fn.create(newDoc, oldDoc, newVal, oldVal, userCtx);
+                }
+            }
+        }
+        if (utils.isFunction(fn)) {
+            fn(newDoc, oldDoc, newVal, oldVal, userCtx);
+        }
     }
 };
 
@@ -136,5 +156,21 @@ exports.email = function (options) {
         options.validators = [];
     }
     options.validators.unshift(validators.email());
+    return exports.string(options);
+};
+
+
+exports.creator = function (options) {
+    options = options || {};
+    if (!options.permissions) {
+        options.permissions = [];
+    }
+    if (!utils.isArray(options.permissions)) {
+        options.permissions = [options.permissions];
+    }
+    options.permissions.unshift({
+        create: permissions.matchUsername(),
+        edit: permissions.uneditable()
+    });
     return exports.string(options);
 };

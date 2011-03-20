@@ -208,7 +208,7 @@ exports.authorizeFields = function (fields, newValues, oldValues, newDoc,
                         newDoc,
                         oldDoc,
                         newValues[k],
-                        oldValues[k],
+                        oldValues ? oldValues[k]: null,
                         userCtx
                     );
                 }
@@ -223,7 +223,7 @@ exports.authorizeFields = function (fields, newValues, oldValues, newDoc,
                 errors = errors.concat(exports.authorizeFields(
                     fields[k],
                     newValues[k],
-                    oldValues[k],
+                    oldValues ? oldValues[k]: null,
                     newDoc,
                     oldDoc,
                     userCtx,
