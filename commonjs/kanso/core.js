@@ -44,6 +44,18 @@ exports.isBrowser = utils.isBrowser;
 exports.initial_hit = true;
 
 
+
+if (typeof window !== 'undefined' && typeof console === 'undefined') {
+    // console.log is going to cause errors, just stub the functions
+    // for now. TODO: add logging utility for IE?
+    var console = window.console = {
+        log: function () {},
+        error: function () {},
+        info: function () {},
+        warn: function () {}
+    };
+}
+
 /**
  * Global functions required to match the CouchDB JavaScript environment.
  */
@@ -85,17 +97,6 @@ if (utils.isBrowser) {
  */
 
 exports.init = function () {
-
-    if (!window.console) {
-        // console.log is going to cause errors, just stub the functions
-        // for now. TODO: add logging utility for IE?
-        window.console = {
-            log: function () {},
-            error: function () {},
-            info: function () {},
-            warn: function () {}
-        };
-    }
 
     $('form').live('submit', function (ev) {
         var action = $(this).attr('action') || exports.getURL();
