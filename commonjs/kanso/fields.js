@@ -102,6 +102,8 @@ exports.number = function (options) {
 
 exports.boolean = function (options) {
     options = options || {};
+    options.widget = options.widget || widgets.checkbox();
+    options.required = options.required || false;
 
     options.parse = function (raw) {
         return Boolean(raw);

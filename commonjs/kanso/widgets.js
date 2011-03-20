@@ -59,3 +59,14 @@ exports.textarea = function (options) {
     };
     return w;
 };
+
+exports.checkbox = function (options) {
+    var w = new Widget('checkbox', options);
+    w.toHTML = function (name, value) {
+        var html = '<input type="checkbox"';
+        html += this._attrs(name);
+        html += value ? ' checked="checked"': '';
+        return html + ' />';
+    };
+    return w;
+};
