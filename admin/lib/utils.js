@@ -142,7 +142,7 @@ var Couch = exports.Couch = {
                 };
                 sandbox.require = require;
             }
-            eval('functionObject = (' + source + ')', sandbox);
+            eval('functionObject = (' + source + ')');
         }
         catch (err) {
             throw [
