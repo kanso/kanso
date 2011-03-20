@@ -67,9 +67,14 @@ Type.prototype.validate = function (doc) {
 };
 
 Type.prototype.authorize = function (newDoc, oldDoc, userCtx) {
-    return exports.authorizeFields(
-        this.fields, newDoc, oldDoc, newDoc, oldDoc, userCtx, []
-    );
+    // TODO: handle created, edit, delete permisions for the Type object
+    // as a whole
+    if (!newDoc._deleted) {
+        return exports.authorizeFields(
+            this.fields, newDoc, oldDoc, newDoc, oldDoc, userCtx, []
+        );
+    }
+    return [];
 };
 
 
@@ -240,14 +245,16 @@ exports.authorizeFields = function (fields, newValues, oldValues, newDoc,
 exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
     var type = (oldDoc && oldDoc.type) || newDoc.type;
     if (type && types[type]) {
-        var validation_errors = types[type].validate(newDoc);
-        if (validation_errors.length) {
-            var err = validation_errors[0];
-            var msg = err.message || err.toString();
-            if (err.field && err.field.length) {
-                msg = err.field.join('.') + ': ' + msg;
+        if (!newDoc._deleted) {
+            var validation_errors = types[type].validate(newDoc);
+            if (validation_errors.length) {
+                var err = validation_errors[0];
+                var msg = err.message || err.toString();
+                if (err.field && err.field.length) {
+                    msg = err.field.join('.') + ': ' + msg;
+                }
+                throw {forbidden: msg};
             }
-            throw {forbidden: msg};
         }
         var permissions_errors = types[type].authorize(newDoc, oldDoc, userCtx);
         if (permissions_errors.length) {
