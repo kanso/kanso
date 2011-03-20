@@ -34,7 +34,7 @@ Field.prototype.labelText = function (name) {
     if (this.label) {
         return this.label;
     }
-    return name.substr(0, 1).toUpperCase() + name.substr(1).replace('_', ' ');
+    return name.substr(0, 1).toUpperCase() + name.substr(1).replace(/_/g, ' ');
 };
 
 Field.prototype.labelHTML = function (name, id) {
