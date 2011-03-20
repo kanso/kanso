@@ -172,5 +172,9 @@ exports.creator = function (options) {
         create: permissions.matchUsername(),
         edit: permissions.uneditable()
     });
+    options.widget = options.widget || widgets.hidden();
+    options.default_value = options.default_value || function (req) {
+        return (req.userCtx && req.userCtx.name) || '';
+    };
     return exports.string(options);
 };

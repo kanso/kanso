@@ -27,10 +27,10 @@ Form.prototype.validate = function (req) {
     return this;
 };
 
-Form.prototype.toHTML = function (iterator) {
+Form.prototype.toHTML = function (req, iterator) {
     iterator = iterator || exports.render.div;
     return exports.renderFields(
-        iterator, this.fields, this.values, this.errors, []
+        req, iterator, this.fields, this.values, this.errors, []
     );
 };
 
@@ -74,7 +74,7 @@ exports.getErrors = function (errors, path) {
     return errs;
 };
 
-exports.renderFields = function (iterator, fields, values, errors, path) {
+exports.renderFields = function (req, iterator, fields, values, errors, path) {
     var html = '';
     for (var k in fields) {
         if (fields.hasOwnProperty(k)) {
@@ -91,7 +91,12 @@ exports.renderFields = function (iterator, fields, values, errors, path) {
                     val = utils.getPropertyPath(values, field_path);
                 }
                 else if (field.default_value) {
-                    val = field.default_value;
+                    if (utils.isFunction(field.default_value)) {
+                        val = field.default_value(req);
+                    }
+                    else {
+                        val = field.default_value;
+                    }
                 }
                 else {
                     val = undefined;
@@ -102,7 +107,7 @@ exports.renderFields = function (iterator, fields, values, errors, path) {
                 var subvalues = utils.getPropertyPath(values, field_path);
                 // sub-object, recurse through and check for more fields
                 html += exports.renderFields(
-                    iterator, field, subvalues, errors, field_path
+                    req, iterator, field, subvalues, errors, field_path
                 );
             }
         }

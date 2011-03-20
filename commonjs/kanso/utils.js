@@ -27,6 +27,15 @@ if (typeof window !== 'undefined') {
 
 
 /**
+ * Used to store userCtx, periodically updated like on session.login and
+ * session.logout. TODO: Or if a permissions error is returned from a db method?
+ */
+
+// TODO: added to utils to avoid circular dependency bug in couchdb
+exports.userCtx = null;
+
+
+/**
  * Returns the path to prefix to any URLs. When running behind a
  * virtual host, there is nothing to prefix URLs with. When accessing the
  * app directly, URLs need to be prefixed with /db/_design/appname/_rewrite.

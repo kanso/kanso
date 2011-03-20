@@ -38,7 +38,7 @@ exports.addtype = function (doc, req) {
                         app_heading: utils.capitalize(req.query.app),
                         type: req.query.type,
                         type_heading: utils.typeHeading(req.query.type),
-                        form: form.toHTML(forms.render.table)
+                        form: form.toHTML(req, forms.render.table)
                     });
 
                     $('#content').html(content);
@@ -65,7 +65,7 @@ exports.addtype = function (doc, req) {
                 app_heading: utils.capitalize(req.query.app),
                 type: req.query.type,
                 type_heading: utils.typeHeading(req.query.type),
-                form: form.toHTML(forms.render.table)
+                form: form.toHTML(req, forms.render.table)
             });
 
             $('#content').html(content);
@@ -105,7 +105,7 @@ exports.updatetype = function (doc, req) {
                         app_heading: utils.capitalize(req.query.app),
                         type: req.query.type,
                         type_heading: utils.typeHeading(req.query.type),
-                        form: form.toHTML(forms.render.table)
+                        form: form.toHTML(req, forms.render.table)
                     });
 
                     $('#content').html(content);
@@ -133,7 +133,7 @@ exports.updatetype = function (doc, req) {
                 app_heading: utils.capitalize(req.query.app),
                 type: req.query.type,
                 type_heading: utils.typeHeading(req.query.type),
-                form: form.toHTML(forms.render.table)
+                form: form.toHTML(req, forms.render.table)
             });
 
             $('#content').html(content);

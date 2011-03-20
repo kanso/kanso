@@ -73,7 +73,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         app_heading: utils.capitalize(req.query.app),
         type: req.query.type,
         type_heading: utils.typeHeading(req.query.type),
-        form: form.toHTML(forms.render.table)
+        form: form.toHTML(req, forms.render.table)
     });
     $('#content').html(content);
     document.title = settings.name + ' - Types - ' + req.query.type;
@@ -93,7 +93,7 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
         type: req.query.type,
         type_heading: utils.typeHeading(req.query.type),
         id: req.query.id,
-        form: form.toHTML(forms.render.table)
+        form: form.toHTML(req, forms.render.table)
     });
 
     $('#content').html(content);

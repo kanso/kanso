@@ -21,7 +21,11 @@ exports.logout = function (callback) {
         url: "/_session", // don't need baseURL, /_session always available
         username: "_",
         password : "_"
-    }, callback);
+    },
+    function (err, resp) {
+        utils.userCtx = (resp && resp.userCtx) || {name: null, roles: []};
+        callback(err, resp);
+    });
 };
 
 /**
@@ -40,5 +44,24 @@ exports.login = function (username, password, callback) {
         type: "POST",
         url: "/_session",
         data: {name: username, password: password}
-    }, callback);
+    },
+    function (err, resp) {
+        utils.userCtx = (resp && resp.userCtx) || {name: null, roles: []};
+        callback(err, resp);
+    });
+};
+
+
+exports.info = function (callback) {
+    if (!utils.isBrowser) {
+        throw new Error('login cannot be called server-side');
+    }
+    db.request({
+        type: "GET",
+        url: "/_session"
+    },
+    function (err, resp) {
+        utils.userCtx = (resp && resp.userCtx) || {name: null, roles: []};
+        callback(err, utils.userCtx);
+    });
 };

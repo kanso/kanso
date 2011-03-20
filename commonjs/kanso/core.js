@@ -79,6 +79,15 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
 
 
 /**
+ * Used to store userCtx, periodically updated like on session.login and
+ * session.logout. TODO: Or if a permissions error is returned from a db method?
+ */
+
+// TODO: added to utils to avoid circular dependency bug in couchdb
+exports.userCtx = utils.userCtx;
+
+
+/**
  * The module loaded as the design document (load property in kanso.json).
  * Likely to cause circular require in couchdb so only run browser side.
  * TODO: when circular requires are fixed in couchdb, remove the isBrowser check
@@ -124,14 +133,35 @@ exports.init = function () {
         }
     });
 
+    var onUserCtx;
+    var userCtx_loaded = false;
     window.History.Adapter.bind(window, 'statechange', function (ev) {
         var url = exports.getURL();
         var state_data = window.History.getState().data;
         var method = state_data.method || 'GET';
         var data = state_data.data;
-        exports.handle(method, url, data);
+        if (!userCtx_loaded) {
+            onUserCtx = function () {
+                exports.handle(method, url, data);
+            };
+        }
+        else {
+            exports.handle(method, url, data);
+        }
     });
 
+    session.info(function (err, userCtx) {
+        if (err) {
+            throw err;
+        }
+        else {
+            utils.userCtx = userCtx;
+        }
+        userCtx_loaded = true;
+        onUserCtx();
+    });
+
+    // TODO: should this be after userCtx is available??
     // call init on app too
     if (exports.app.init) {
         exports.app.init();
@@ -301,7 +331,8 @@ exports.createRequest = function (method, url, data, match) {
         path: to.split('/'),
         client: true,
         initial_hit: exports.initial_hit,
-        cookie: cookies.readBrowserCookies()
+        cookie: cookies.readBrowserCookies(),
+        userCtx: utils.userCtx
     };
     if (data) {
         req.form = data;
