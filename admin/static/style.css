@@ -1,6 +1,6 @@
 @font-face {
     font-family: "Iconic Stroke";
-    src: url(../fonts/iconic_stroke.eot) !important;
+    src: url(fonts/iconic_stroke.eot) !important;
 }
 
 .icon {
@@ -126,7 +126,7 @@ table.typelist {
 
 th.actions,
 td.actions {
-    min-width: 200px;
+    width: 210px;
     padding-left: 50px !important;
 }
 
