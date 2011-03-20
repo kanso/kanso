@@ -1,12 +1,17 @@
-var fields_module = require('./fields'),
-    Field = fields_module.Field,
-    types = require('./types'),
-    Type = types.Type,
+var types = require('./types'),
     utils = require('./utils');
 
 
-var Form = exports.Form = function (obj, doc) {
-    this.fields = (obj instanceof Type) ? obj.fields: obj;
+var Form = exports.Form = function Form(obj, doc) {
+    // TODO: when a module cache is implemented in couchdb, we can change this
+    // to an instanceof check. until then instanceof checks are to be considered
+    // fragile
+    if (utils.constructorName(obj) === 'Type') {
+        this.fields = obj.fields;
+    }
+    else {
+        this.fields = obj;
+    }
     if (doc) {
         this.values = doc;
     }
@@ -37,7 +42,10 @@ exports.parseRequest = function (fields, req) {
     var values = {};
     for (var k in req.form) {
         var f = utils.getPropertyPath(fields, k.split('.'));
-        if (f instanceof Field) {
+        // TODO: when a module cache is implemented in couchdb, we can
+        // change this to an instanceof check. until then instanceof
+        // checks are to be considered fragile
+        if (utils.constructorName(f) === 'Field') {
             var val = req.form[k];
             // has a value or omit_empty option is false
             if ((val !== undefined && val !== '') || !f.omit_empty) {
@@ -73,7 +81,10 @@ exports.renderFields = function (iterator, fields, values, errors, path) {
             var field = fields[k];
             var field_path = path.concat([k]);
             var errs = exports.getErrors(errors, field_path);
-            if (field instanceof Field) {
+            // TODO: when a module cache is implemented in couchdb, we can
+            // change this to an instanceof check. until then instanceof
+            // checks are to be considered fragile
+            if (utils.constructorName(field) === 'Field') {
                 var name = field_path.join('.');
                 var val;
                 if (values) {

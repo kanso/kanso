@@ -100,3 +100,14 @@ exports.setPropertyPath = function (obj, path, val) {
     }
     exports.setPropertyPath(obj[next], path, val);
 };
+
+exports.constructorName = function (obj) {
+    if (obj === null || obj === undefined) {
+        return undefined;
+    }
+    if (obj.constructor.name) {
+        return obj.constructor.name;
+    }
+    var match = /function (.+)\(/.exec(this.constructor.toString());
+    return (match && match.length > 1) ? match[1] : undefined;
+};

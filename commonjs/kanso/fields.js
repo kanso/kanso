@@ -2,7 +2,7 @@ var validators = require('./validators'),
     widgets = require('./widgets');
 
 
-var Field = exports.Field = function (options) {
+var Field = exports.Field = function Field(options) {
     options = options || {};
 
     this.omit_empty = options.omit_empty;
@@ -11,6 +11,7 @@ var Field = exports.Field = function (options) {
     this.widget = options.widget || widgets.text();
     this.required = ('required' in options) ? options.required: true;
     this.validators = ('validators' in options) ? options.validators: [];
+    this.permissions = ('permissions' in options) ? options.permissions: [];
     this.parse = options.parse || function (raw) {
         return raw;
     };
@@ -68,6 +69,11 @@ Field.prototype.validate = function (doc, value) {
     }
 };
 
+Field.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, userCtx) {
+    for (var i = 0; i < this.permissions.length; i++) {
+        this.permissions[i](newDoc, oldDoc, newVal, oldVal, userCtx);
+    }
+};
 
 exports.string = function (options) {
     options = options || {};

@@ -8,7 +8,7 @@ var fields = require('./fields'),
     Field = fields.Field;
 
 
-var Type = exports.Type = function (name, options) {
+var Type = exports.Type = function Type(name, options) {
     if (typeof name !== 'string') {
         throw new Error('First argument must be the type name');
     }
@@ -25,7 +25,19 @@ var Type = exports.Type = function (name, options) {
         _rev: fields.string({
             required: false,
             omit_empty: true,
-            widget: widgets.hidden()
+            widget: widgets.hidden(),
+            permissions: [
+                function (newDoc, oldDoc, newVal, oldVal, userCtx) {
+                    if (oldDoc) {
+                        if (newVal !== oldVal) {
+                            throw new Error(
+                                'Cannot change type field after document has ' +
+                                'been created'
+                            );
+                        }
+                    }
+                }
+            ]
         }),
         type: fields.string({
             default_value: name,
@@ -47,11 +59,17 @@ var Type = exports.Type = function (name, options) {
 };
 
 Type.prototype.validate = function (doc) {
-    var required_errors = exports.checkRequired(this.fields, doc, []);
     var validation_errors = exports.validateFields(
         this.fields, doc, doc, [], this.allow_extra_fields
     );
+    var required_errors = exports.checkRequired(this.fields, doc, []);
     return required_errors.concat(validation_errors);
+};
+
+Type.prototype.authorize = function (newDoc, oldDoc, userCtx) {
+    return exports.authorizeFields(
+        this.fields, newDoc, oldDoc, newDoc, oldDoc, userCtx, []
+    );
 };
 
 
@@ -72,7 +90,10 @@ exports.checkRequired = function (fields, values, path) {
         if (fields.hasOwnProperty(k)) {
             var f = fields[k];
             var f_path = path.concat([k]);
-            if (f instanceof Field) {
+            // TODO: when a module cache is implemented in couchdb, we can
+            // change this to an instanceof check. until then instanceof
+            // checks are to be considered fragile
+            if (utils.constructorName(f) === 'Field') {
                 if (f.required) {
                     if (!values.hasOwnProperty(k)) {
                         var err = new Error('Required field');
@@ -118,14 +139,22 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
             if (f === undefined) {
                 // extra field detected
                 if (!allow_extra) {
-                    var err = new Error(
-                        'Field "' + path.concat([k]).join('.') + '" not defined'
-                    );
-                    err.field = path.concat([k]);
-                    errors.push(err);
+                    // check for couchdb reserved fields, and let couchdb
+                    // handle the validity of those
+                    if (!(path.length === 0 && k.substr(1) !== '_')) {
+                        var err = new Error(
+                            'Field "' + path.concat([k]).join('.') +
+                            '" not defined'
+                        );
+                        err.field = path.concat([k]);
+                        errors.push(err);
+                    }
                 }
             }
-            else if (f instanceof Field) {
+            // TODO: when a module cache is implemented in couchdb, we can
+            // change this to an instanceof check. until then instanceof
+            // checks are to be considered fragile
+            else if (utils.constructorName(f) === 'Field') {
                 // its a field, validate it
                 try {
                     f.validate(doc, values[k], values[k]);
@@ -145,4 +174,81 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
         }
     }
     return errors;
+};
+
+/**
+ * Iterates over values and checks against field permissions, recursing through
+ * sub-objects. Returns an array of permission errors, or an empty array if
+ * valid.
+ *
+ * @param {Object} fields
+ * @param {Object} newValues
+ * @param {Object} oldValues
+ * @param {Object} newDoc
+ * @param {Object} oldDoc
+ * @param {Object} userCtx
+ * @param {Array} path
+ * @return {Array}
+ */
+
+exports.authorizeFields = function (fields, newValues, oldValues, newDoc,
+                                    oldDoc, userCtx, path) {
+    var errors = [];
+
+    for (var k in fields) {
+        if (fields.hasOwnProperty(k)) {
+            var f = fields[k];
+            // TODO: when a module cache is implemented in couchdb, we can
+            // change this to an instanceof check. until then instanceof
+            // checks are to be considered fragile
+            if (utils.constructorName(f) === 'Field') {
+                // its a field, validate it
+                try {
+                    f.authorize(
+                        newDoc,
+                        oldDoc,
+                        newValues[k],
+                        oldValues[k],
+                        userCtx
+                    );
+                }
+                catch (e) {
+                    e.field = path.concat([k]);
+                    errors.push(e);
+                }
+            }
+            else {
+                // recurse through sub-objects in the type's schema to find
+                // more fields
+                errors = errors.concat(exports.authorizeFields(
+                    fields[k],
+                    newValues[k],
+                    oldValues[k],
+                    newDoc,
+                    oldDoc,
+                    userCtx,
+                    path.concat([k])
+                ));
+            }
+        }
+    }
+    return errors;
+};
+
+
+// TODO: when circular requires are fixed in couchdb, remove types argument?
+exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
+    var type = (oldDoc && oldDoc.type) || newDoc.type;
+    if (type && types[type]) {
+        var validation_errors = types[type].validate(newDoc);
+        if (validation_errors.length) {
+            var err = validation_errors[0];
+            throw {forbidden: err.message || err.toString()};
+        }
+        var permissions_errors = types[type].authorize(newDoc, oldDoc, userCtx);
+        if (permissions_errors.length) {
+            var err = permissions_errors[0];
+            throw {unauthorized: err.message || err.toString()};
+        }
+    }
 };
