@@ -8,7 +8,7 @@ exports.join = function () {
 
 exports.normalizeArray = function (parts, keepBlanks) {
     var directories = [], prev;
-    for (var i = 0, l = parts.length - 1; i <= l; i += 1) {
+    for (var i = 0, l = parts.length - 1; i <= l; i++) {
         var directory = parts[i];
 
         // if it's blank, but it's not the first thing, and not the last

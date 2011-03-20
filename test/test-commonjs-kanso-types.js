@@ -29,7 +29,7 @@ module.exports = nodeunit.testCase({
     },
 
     'validate': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var doc = {
@@ -37,20 +37,19 @@ module.exports = nodeunit.testCase({
             one: 'one',
             two: 2
         };
-        var errs = types.validate({
-            'test_type': {
-                fields: {
-                    one: fields.string(),
-                    two: fields.number()
-                }
+        var t = new Type('test_type', {
+            fields: {
+                one: fields.string(),
+                two: fields.number()
             }
-        }, doc);
+        });
+        var errs = t.validate(doc);
         test.same(errs, []);
         test.done();
     },
 
     'validate - error': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var doc = {
@@ -58,14 +57,13 @@ module.exports = nodeunit.testCase({
             one: 'one',
             two: 'asdf'
         };
-        var errs = types.validate({
-            'test_type': {
-                fields: {
-                    one: fields.string(),
-                    two: fields.number()
-                }
+        var t = new Type('test_type', {
+            fields: {
+                one: fields.string(),
+                two: fields.number()
             }
-        }, doc);
+        });
+        var errs = t.validate(doc);
         test.same(errs.length, 1);
         test.same(errs[0].message, 'Not a number');
         test.same(errs[0].field, ['two']);
@@ -74,7 +72,7 @@ module.exports = nodeunit.testCase({
 
     'validate - nested': function (test) {
         test.expect(4);
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var testdoc = {
@@ -97,15 +95,14 @@ module.exports = nodeunit.testCase({
             test.same(doc, testdoc);
             test.strictEqual(value, true);
         });
-        var errs = types.validate({
-            'test_type': {fields: type_fields}
-        }, testdoc);
+        var t = new Type('test_type', {fields: type_fields});
+        var errs = t.validate(testdoc);
         test.same(errs, []);
         test.done();
     },
 
     'validate - extra fields not allowed': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var testdoc = {
@@ -114,12 +111,8 @@ module.exports = nodeunit.testCase({
                 extra: 'blah'
             }
         };
-        var type_fields = {
-            sub: {}
-        }
-        var errs = types.validate({
-            'test_type': {fields: type_fields}
-        }, testdoc);
+        var t = new Type('test_type', {fields: {sub: {}}});
+        var errs = t.validate(testdoc);
 
         test.equals(errs.length, 1);
         test.equals(errs[0].message, 'Field "sub.extra" not defined');
@@ -128,7 +121,7 @@ module.exports = nodeunit.testCase({
     },
 
     'validate - extra fields allowed': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var testdoc = {
@@ -137,19 +130,18 @@ module.exports = nodeunit.testCase({
                 extra: 'blah'
             }
         };
-        var type_fields = {
-            sub: {}
-        }
-        var errs = types.validate({
-            'test_type': {fields: type_fields, allow_extra_fields: true}
-        }, testdoc);
+        var t = new Type('test_type', {
+            fields: {sub: {}},
+            allow_extra_fields: true
+        });
+        var errs = t.validate(testdoc);
 
         test.same(errs, []);
         test.done();
     },
 
     'validate - array': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var testdoc = {
@@ -157,22 +149,22 @@ module.exports = nodeunit.testCase({
             one: 'one',
             list: [1,2,3,4]
         };
-        var type_fields = {
-            one: fields.string(),
-            list: [
-                fields.number()
-            ]
-        }
-        var errs = types.validate({
-            'test_type': {fields: type_fields}
-        }, testdoc);
+        var t = new Type('test_type', {
+            fields: {
+                one: fields.string(),
+                list: [
+                    fields.number()
+                ]
+            }
+        });
+        var errs = t.validate(testdoc);
 
         test.same(errs, []);
         test.done();
     },
 
     'validate - array error': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var testdoc = {
@@ -180,15 +172,15 @@ module.exports = nodeunit.testCase({
             one: 'one',
             list: ['test', 'asdf']
         };
-        var type_fields = {
-            one: fields.string(),
-            list: [
-                fields.number()
-            ]
-        }
-        var errs = types.validate({
-            'test_type': {fields: type_fields}
-        }, testdoc);
+        var t = new Type('test_type', {
+            fields: {
+                one: fields.string(),
+                list: [
+                    fields.number()
+                ]
+            }
+        });
+        var errs = t.validate(testdoc);
 
         test.equals(errs.length, 2);
         test.same(errs[0].field, ['list', '0']);
@@ -197,19 +189,19 @@ module.exports = nodeunit.testCase({
     },
 
     'validate - array extra fields not allowed': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var testdoc = {
             type: 'test_type',
             list: [1,2,3,4]
         };
-        var type_fields = {
-            list: []
-        }
-        var errs = types.validate({
-            'test_type': {fields: type_fields}
-        }, testdoc);
+        var t = new Type('test_type', {
+            fields: {
+                list: []
+            }
+        });
+        var errs = t.validate(testdoc);
 
         test.equal(errs.length, 1);
         test.equal(errs[0].message, 'Field "list" should be empty');
@@ -218,40 +210,41 @@ module.exports = nodeunit.testCase({
     },
 
     'validate - array extra fields allowed': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var testdoc = {
             type: 'test_type',
             list: [1,2,3,4]
         };
-        var type_fields = {
-            list: []
-        }
-        var errs = types.validate({
-            'test_type': {fields: type_fields, allow_extra_fields: true}
-        }, testdoc);
+        var t = new Type('test_type', {
+            fields: {
+                list: []
+            },
+            allow_extra_fields: true
+        });
+        var errs = t.validate(testdoc);
 
         test.same(errs, []);
         test.done();
     },
 
     'validate - missing required field': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var doc = {
             type: 'test_type',
             one: 'one'
         };
-        var errs = types.validate({
-            'test_type': {
-                fields: {
-                    one: fields.string({required: true}),
-                    two: fields.string({required: true})
-                }
+        var t = new Type('test_type', {
+            fields: {
+                one: fields.string({required: true}),
+                two: fields.string({required: true})
             }
-        }, doc);
+        });
+        var errs = t.validate(doc);
+
         test.equal(errs.length, 1);
         test.same(errs[0].field, ['two']);
         test.equal(errs[0].message, 'Required field');
@@ -259,7 +252,7 @@ module.exports = nodeunit.testCase({
     },
 
     'validate - falsy required field': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var doc = {
@@ -267,20 +260,20 @@ module.exports = nodeunit.testCase({
             one: 'one',
             two: false
         };
-        var errs = types.validate({
-            'test_type': {
-                fields: {
-                    one: fields.string({required: true}),
-                    two: fields.string({required: true})
-                }
+        var t = new Type('test_type', {
+            fields: {
+                one: fields.string({required: true}),
+                two: fields.string({required: true})
             }
-        }, doc);
+        });
+        var errs = t.validate(doc);
+
         test.same(errs, []);
         test.done();
     },
 
     'validate - nested required field': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var doc = {
@@ -292,34 +285,34 @@ module.exports = nodeunit.testCase({
                 }
             }
         };
-        var errs = types.validate({
-            'test_type': {
-                fields: {
-                    one: fields.string({required: true}),
-                    sub: {obj: {two: fields.string({required: true})}}
-                }
+        var t = new Type('test_type', {
+            fields: {
+                one: fields.string({required: true}),
+                sub: {obj: {two: fields.string({required: true})}}
             }
-        }, doc);
+        });
+        var errs = t.validate(doc);
+
         test.same(errs, []);
         test.done();
     },
 
     'validate - nested missing required field': function (test) {
-        var types = this.types;
+        var Type = this.types.Type;
         var fields = this.fields;
 
         var doc = {
             type: 'test_type',
             one: 'one'
         };
-        var errs = types.validate({
-            'test_type': {
-                fields: {
-                    one: fields.string({required: true}),
-                    sub: {obj: {two: fields.string({required: true})}}
-                }
+        var t = new Type('test_type', {
+            fields: {
+                one: fields.string({required: true}),
+                sub: {obj: {two: fields.string({required: true})}}
             }
-        }, doc);
+        });
+        var errs = t.validate(doc);
+
         test.equal(errs.length, 1);
         test.same(errs[0].field, ['sub','obj','two']);
         test.equal(errs[0].message, 'Required field');
@@ -328,5 +321,7 @@ module.exports = nodeunit.testCase({
 
     // TODO: support multiple definitions inside an array?
     // values can match any one of them?
+
+    // TODO: test validation of 'type' field
 
 });

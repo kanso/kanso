@@ -19,7 +19,7 @@ var utils = require('./utils'),
 function onComplete(callback) {
     return function (req) {
         var resp = $.httpData(req, "json");
-        if (req.status === 200) {
+        if (req.status === 200 || req.status === 201 || req.status === 202) {
             callback(null, resp);
         }
         else if (resp.error) {
@@ -45,7 +45,6 @@ function onComplete(callback) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 exports.request = function (options, callback) {
     options.complete = onComplete(callback);
     options.dataType = 'json';
@@ -63,7 +62,7 @@ exports.request = function (options, callback) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
+// TODO: encode doc id in url
 // TODO: make q argument optional?
 exports.getDoc = function (id, q, callback) {
     if (!utils.isBrowser) {
@@ -78,6 +77,59 @@ exports.getDoc = function (id, q, callback) {
 
 
 /**
+ * Saves a document to the database the app is running on. Results are
+ * passed to the callback, with the first argument of the callback reserved
+ * for any exceptions that occurred (node.js style).
+ *
+ * @param {Object} doc
+ * @param {Function} callback
+ */
+
+// TODO: encode doc id in url
+exports.saveDoc = function (doc, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('saveDoc cannot be called server-side');
+    }
+    var method, url = utils.getBaseURL() + '/_db';
+    if (doc._id === undefined) {
+        method = "POST";
+    }
+    else {
+        method = "PUT";
+        url += '/' + doc._id;
+    }
+    var req = {
+        type: method,
+        url: url,
+        data: JSON.stringify(doc),
+        processData: false,
+        contentType: 'application/json'
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Deletes a document from the database the app is running on. Results are
+ * passed to the callback, with the first argument of the callback reserved
+ * for any exceptions that occurred (node.js style).
+ *
+ * @param {Object} doc
+ * @param {Function} callback
+ */
+
+exports.removeDoc = function (doc, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('saveDoc cannot be called server-side');
+    }
+    var url = utils.getBaseURL() + '/_db/' +
+        encodeURIComponent(doc._id) +
+        '?rev=' + encodeURIComponent(doc._rev);
+
+    exports.request({type: 'DELETE', url: url}, callback);
+};
+
+
+/**
  * Fetches a view from the database the app is running on. Results are
  * passed to the callback, with the first argument of the callback reserved
  * for any exceptions that occurred (node.js style).
@@ -87,7 +139,6 @@ exports.getDoc = function (id, q, callback) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 // TODO: make q argument optional?
 exports.getView = function (view, q, callback) {
     if (!utils.isBrowser) {
@@ -134,7 +185,6 @@ exports.all = function (/*optional*/q, callback) {
  * @returns {Object}
  */
 
-// TODO: add unit tests for this function
 exports.stringifyQuery = function (query) {
     var q = {};
     for (var k in query) {

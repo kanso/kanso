@@ -1,0 +1,18 @@
+<h1>
+  <a href="{baseURL}/">Apps</a>
+  <strong><a href="{baseURL}/{app}">{app_heading}</a></strong>
+</h1>
+
+<div id="main">
+
+  {>"flashmessages.html"/}
+
+  <h2>Types</h2>
+
+  <ul>
+  {#types}
+    <li><a href="{baseURL}/{app}/{.}">{.}</a></li>
+  {/types}
+  </ul>
+
+</div>

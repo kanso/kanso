@@ -1,0 +1,58 @@
+<h1>
+  <a href="{baseURL}/">Apps</a>
+  <a href="{baseURL}/{app}">{app_heading}</a>
+  <strong><a href="{baseURL}/{app}/{type_heading}">{type_heading}</a></strong>
+</h1>
+
+<div id="main">
+
+  {>"flashmessages.html"/}
+
+  <h2>{type_heading}</h2>
+
+  <div class="top_actions">
+    <a class="button" href="{baseURL}/{app}">
+      <span class="icon">.</span>
+      <span class="label">All types</span>
+    </a>
+    <a class="button" href="{baseURL}/{app}/{type}/add">
+      <span class="icon">=</span>
+      <span class="label">Add {type}</span>
+    </a>
+  </div>
+
+  <table class="typelist">
+    <thead>
+      <tr>
+        {#field_names}
+        <th>{.}</th>
+        {/field_names}
+        <th class="actions">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+    {#rows}
+      <tr>
+        {#fields}
+          <td class="data"><a href="{baseURL}/{app}/{type}/view/{id}">{value}</a></td>
+        {/fields}
+        <td class="actions">
+          <a class="button" href="{baseURL}/{app}/{type}/view/{id}">
+            <span class="icon">4</span><span class="label">View</span>
+          </a>
+          <a class="button" href="{baseURL}/{app}/{type}/edit/{id}">
+            <span class="icon">p</span><span class="label">Edit</span>
+          </a>
+          <form class="delete_form" action="{baseURL}/{app}/{type}/delete/{id}" method="POST">
+            <div class="button">
+              <input class="icon" type="submit" value="X" />
+              <input class="label" type="submit" value="Delete" />
+            </div>
+          </form>
+        </td>
+      </tr>
+    {/rows}
+    </tbody>
+  </table>
+
+</div>

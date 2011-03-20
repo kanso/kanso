@@ -1,5 +1,5 @@
 /*global window: false, getRow: true, start: true, $: false, pageTracker: true,
-  kanso: true */
+  kanso: true, log: true */
 
 /**
  * Module dependencies
@@ -10,6 +10,9 @@ var settings = require('./settings'), // module auto-generated
     db = require('./db'),
     utils = require('./utils'),
     session = require('./session'),
+    cookies = require('./cookies'),
+    uuid = require('./uuid'),
+    flashmessages = require('./flashmessages'),
     urlParse = url.parse,
     urlFormat = url.format;
 
@@ -52,7 +55,13 @@ if (typeof getRow === 'undefined' && typeof window !== 'undefined') {
 }
 if (typeof start === 'undefined' && typeof window !== 'undefined') {
     window.start = function (options) {
-        console.log('start: ' + JSON.stringify(options));
+        console.log('start');
+        console.log(options);
+    };
+}
+if (typeof log === 'undefined' && typeof window !== 'undefined') {
+    window.log = function () {
+        return console.log.apply(console, arguments);
     };
 }
 
@@ -88,15 +97,21 @@ exports.init = function () {
         };
     }
 
-    // if using a URL with hash-state, but client supports replaceState,
-    // then switch to replaceState instead.
-    if (window.location.hash && window.history.replaceState) {
-        window.history.replaceState(
-            {}, window.title, exports.getBaseURL() + exports.getURL()
-        );
-    }
+    $('form').live('submit', function (ev) {
+        var action = $(this).attr('action') || exports.getURL();
+        var method = $(this).attr('method').toUpperCase();
 
-    exports.handle(exports.getURL());
+        if (exports.isAppURL(action)) {
+            var url = exports.appPath(action);
+            ev.preventDefault();
+            var fields = $(this).serializeArray();
+            var data = {};
+            for (var i = 0; i < fields.length; i++) {
+                data[fields[i].name] = fields[i].value;
+            }
+            exports.setURL(method, url, data);
+        }
+    });
 
     $('a').live('click', function (ev) {
         var href = $(this).attr('href');
@@ -104,45 +119,17 @@ exports.init = function () {
         if (exports.isAppURL(href)) {
             var url = exports.appPath(href);
             ev.preventDefault();
-
-            // changing the hash triggers onhashchange, which then
-            // fires exports.handle for us
-            if (window.onpopstate) {
-                exports.handle(url);
-                exports.setURL(url);
-            }
-            /*else if (window.onhashchange) {
-                window.location.hash = url;
-            }*/
-            else {
-                // TODO: make this an option?
-                var winpath = window.location.pathname;
-                if (winpath !== exports.getBaseURL() + '/') {
-                    // redirect to root so hash-based urls look nicer
-                    window.location = exports.getBaseURL() + '/#' +
-                        exports.hashUnescape(encodeURIComponent(url));
-                }
-                else {
-                    $.history.load(url);
-                }
-                //window.location.hash = url;
-                //exports.handle(url);
-            }
+            exports.setURL('GET', url);
         }
     });
 
-    var _handle = function (ev) {
+    window.History.Adapter.bind(window, 'statechange', function (ev) {
         var url = exports.getURL();
-        exports.handle(url);
-    };
-    if ('onpopstate' in window) {
-        window.onpopstate = _handle;
-    }
-    else {
-        $.history.init(_handle, {
-            unescape: exports.hashUnescape
-        });
-    }
+        var state_data = window.History.getState().data;
+        var method = state_data.method || 'GET';
+        var data = state_data.data;
+        exports.handle(method, url, data);
+    });
 
     // call init on app too
     if (exports.app.init) {
@@ -170,11 +157,11 @@ exports.rewriteGroups = function (pattern, url) {
     var values = m.slice(1);
     var keys = [];
     var matches = pattern.match(/:\w+/g) || [];
-    for (var i = 0; i < matches.length; i += 1) {
+    for (var i = 0; i < matches.length; i++) {
         keys.push(matches[i].substr(1));
     }
     var groups = {};
-    for (var j = 0; j < keys.length; j += 1) {
+    for (var j = 0; j < keys.length; j++) {
         groups[keys[j]] = values[j];
     }
     return groups;
@@ -208,17 +195,19 @@ exports.rewriteSplat = function (pattern, url) {
  * @return {Object}
  */
 
-exports.matchURL = function (url) {
+exports.matchURL = function (method, url) {
     var pathname = urlParse(url).pathname;
     var rewrites = kanso.app.rewrites;
-    for (var i = 0; i < rewrites.length; i += 1) {
+    for (var i = 0; i < rewrites.length; i++) {
         var r = rewrites[i];
-        var from = r.from;
-        from = from.replace(/\*$/, '(.*)');
-        from = from.replace(/:\w+/g, '([^/]+)');
-        var re = new RegExp('^' + from + '$');
-        if (re.test(pathname)) {
-            return r;
+        if (!r.method || method === r.method) {
+            var from = r.from;
+            from = from.replace(/\*$/, '(.*)');
+            from = from.replace(/:\w+/g, '([^/]+)');
+            var re = new RegExp('^' + from + '$');
+            if (re.test(pathname)) {
+                return r;
+            }
         }
     }
 };
@@ -237,7 +226,7 @@ exports.replaceGroups = function (val, groups, splat) {
 
     if (typeof val === 'string') {
         result = val.split('/');
-        for (var i = 0; i < result.length; i += 1) {
+        for (var i = 0; i < result.length; i++) {
             match = false;
             for (k in groups) {
                 if (result[i] === ':' + k) {
@@ -253,7 +242,7 @@ exports.replaceGroups = function (val, groups, splat) {
     }
     else if (val.length) {
         result = val.slice();
-        for (var j = 0; j < val.length; j += 1) {
+        for (var j = 0; j < val.length; j++) {
             match = false;
             for (k in groups) {
                 if (val[j] === ':' + k) {
@@ -279,7 +268,7 @@ exports.replaceGroups = function (val, groups, splat) {
  * @returns {Object}
  */
 
-exports.createRequest = function (url, match) {
+exports.createRequest = function (method, url, data, match) {
     var groups = exports.rewriteGroups(match.from, url);
     var query = urlParse(url, true).query || {};
     var k;
@@ -304,13 +293,42 @@ exports.createRequest = function (url, match) {
     var to = exports.replaceGroups(match.to, query, splat);
 
     var req = {
+        uuid: uuid.generate(),
+        method: method,
         query: query,
         headers: {},
         path: to.split('/'),
         client: true,
-        initial_hit: exports.initial_hit
+        initial_hit: exports.initial_hit,
+        cookie: cookies.readBrowserCookies()
     };
+    if (data) {
+        req.form = data;
+    }
     return req;
+};
+
+
+/**
+ * Handles return values from show / list / update functions
+ */
+
+exports.handleResponse = function (res) {
+    console.log('response');
+    console.log(res);
+    if (typeof res === 'object') {
+        if (res.headers) {
+            exports.handleResponseHeaders(res.headers);
+        }
+    }
+};
+
+exports.handleResponseHeaders = function (headers) {
+    console.log('headers');
+    console.log(headers);
+    if (headers['Set-Cookie']) {
+        document.cookie = headers['Set-Cookie'];
+    }
 };
 
 
@@ -324,8 +342,7 @@ exports.createRequest = function (url, match) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
-exports.runShow = function (req, name, docid, callback) {
+exports.runShowBrowser = function (req, name, docid, callback) {
     var result;
     var fn = kanso.app.shows[name];
     if (docid) {
@@ -333,13 +350,95 @@ exports.runShow = function (req, name, docid, callback) {
             if (err) {
                 return callback(err);
             }
-            fn(doc, req);
+            var res = exports.runShow(fn, doc, req);
+            if (res) {
+                exports.handleResponse(res);
+            }
+            else {
+                // returned without response, meaning cookies won't be set by
+                // handleResponseHeaders
+                if (req.outgoing_flash_messages) {
+                    flashmessages.setCookieBrowser(
+                        req, req.outgoing_flash_messages
+                    );
+                }
+            }
             callback();
         });
     }
     else {
-        fn(null, req);
+        var res = exports.runShow(fn, null, req);
+        if (res) {
+            exports.handleResponse(res);
+        }
+        else {
+            // returned without response, meaning cookies won't be set by
+            // handleResponseHeaders
+            if (req.outgoing_flash_messages) {
+                flashmessages.setCookieBrowser(
+                    req, req.outgoing_flash_messages
+                );
+            }
+        }
         callback();
+    }
+};
+
+exports.runShow = function (fn, doc, req) {
+    flashmessages.updateRequest(req);
+    var res = fn(doc, req);
+    req.response_received = true;
+    return flashmessages.updateResponse(req, res);
+};
+
+exports.runUpdateBrowser = function (req, name, docid, callback) {
+    var result;
+    var fn = kanso.app.updates[name];
+    if (docid) {
+        db.getDoc(docid, req.query, function (err, doc) {
+            if (err) {
+                return callback(err);
+            }
+            var res = exports.runUpdate(fn, doc, req);
+            if (res) {
+                exports.handleResponse(res[1]);
+            }
+            else {
+                // returned without response, meaning cookies won't be set by
+                // handleResponseHeaders
+                if (req.outgoing_flash_messages) {
+                    flashmessages.setCookieBrowser(
+                        req, req.outgoing_flash_messages
+                    );
+                }
+            }
+            callback();
+        });
+    }
+    else {
+        var res = exports.runUpdate(fn, null, req);
+        if (res) {
+            exports.handleResponse(res[1]);
+        }
+        else {
+            // returned without response, meaning cookies won't be set by
+            // handleResponseHeaders
+            if (req.outgoing_flash_messages) {
+                flashmessages.setCookieBrowser(
+                    req, req.outgoing_flash_messages
+                );
+            }
+        }
+        callback();
+    }
+};
+
+exports.runUpdate = function (fn, doc, req) {
+    flashmessages.updateRequest(req);
+    var val = fn(doc, req);
+    req.response_received = true;
+    if (val) {
+        return [val[0], flashmessages.updateResponse(req, val[1])];
     }
 };
 
@@ -370,8 +469,7 @@ exports.createHead = function (data) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
-exports.runList = function (req, name, view, callback) {
+exports.runListBrowser = function (req, name, view, callback) {
     var fn = kanso.app.lists[name];
     if (view) {
         // update_seq used in head parameter passed to list function
@@ -383,8 +481,27 @@ exports.runList = function (req, name, view, callback) {
             getRow = function () {
                 return data.rows.shift();
             };
+            start = function (res) {
+                console.log('start');
+                console.log(res);
+                if (res && res.headers) {
+                    exports.handleResponseHeaders(res.headers);
+                }
+            };
             var head = exports.createHead(data);
-            fn(head, req);
+            var res = exports.runList(fn, head, req);
+            if (res) {
+                exports.handleResponse(res);
+            }
+            else {
+                // returned without response, meaning cookies won't be set by
+                // handleResponseHeaders
+                if (req.outgoing_flash_messages) {
+                    flashmessages.setCookieBrowser(
+                        req, req.outgoing_flash_messages
+                    );
+                }
+            }
             getRow = function () {
                 return null;
             };
@@ -403,6 +520,17 @@ exports.runList = function (req, name, view, callback) {
     }
 };
 
+exports.runList = function (fn, head, req) {
+    flashmessages.updateRequest(req);
+    var _start = start;
+    start = function (res) {
+        _start(flashmessages.updateResponse(req, res));
+    };
+    var val = fn(head, req);
+    start = _start;
+    return val;
+};
+
 
 /**
  * Creates a request object for the url and runs appropriate show or list
@@ -411,14 +539,20 @@ exports.runList = function (req, name, view, callback) {
  * @param {String} url
  */
 
-// TODO: add unit tests for this function
-exports.handle = function (url) {
-    var match = exports.matchURL(url);
+exports.handle = function (method, url, data) {
+    var match = exports.matchURL(method, url);
     if (match) {
-        var parsed = urlParse(url);
-        var req = exports.createRequest(url, match);
-        var msg = url + ' -> ' + JSON.stringify(req.path.join('/'));
-        msg += ' ' + JSON.stringify(req.query);
+        var parsed = urlParse(url),
+            req = exports.createRequest(method, url, data, match);
+
+        var msg = method + ' ' + url + ' -> ' +
+            JSON.stringify(req.path.join('/')) + ' ' +
+            JSON.stringify(req.query);
+
+        if (data) {
+            msg += ' data: ' + JSON.stringify(data);
+        }
+
         console.log(msg);
 
         var after = function () {
@@ -445,18 +579,21 @@ exports.handle = function (url) {
         var src, fn, name;
 
         if (req.path[0] === '_show') {
-            exports.runShow(
+            exports.runShowBrowser(
                 req, req.path[1], req.path.slice(2).join('/'), after
             );
         }
         else if (req.path[0] === '_list') {
-            exports.runList(
+            exports.runListBrowser(
+                req, req.path[1], req.path.slice(2).join('/'), after
+            );
+        }
+        else if (req.path[0] === '_update') {
+            exports.runUpdateBrowser(
                 req, req.path[1], req.path.slice(2).join('/'), after
             );
         }
         else {
-            // TODO: decide what happens here
-            //alert('Unknown rewrite target: ' + req.path.join('/'));
             console.log('Unknown rewrite target: ' + req.path.join('/'));
             var newurl = exports.getBaseURL() + '/_db/_design/' +
                 settings.name + '/' + req.path.join('/');
@@ -465,7 +602,7 @@ exports.handle = function (url) {
         }
     }
     else {
-        console.log(url);
+        console.log(method + ' ' + url + ' -> [404]');
         alert('404');
         // TODO: render a standard 404 template?
     }
@@ -490,16 +627,12 @@ exports.handle = function (url) {
  * @param {String} url
  */
 
-// TODO: add unit tests for this function
-exports.setURL = function (url) {
-    if (window.history.pushState) {
-        var fullurl  = exports.getBaseURL() + url;
-        window.history.pushState({}, document.title, fullurl);
-    }
-    // this is now set *before* handling as it trigger an onhashchange event
-    /*else if ('hash' in window.location) {
-        window.location.hash = url;
-    }*/
+exports.setURL = function (method, url, data) {
+    var fullurl = exports.getBaseURL() + url;
+    window.History.pushState({
+        method: method,
+        data: data
+    }, document.title, fullurl);
 };
 
 
@@ -521,20 +654,23 @@ exports.getBaseURL = utils.getBaseURL;
  */
 
 exports.getURL = function () {
-    if (window.location.hash) {
-        return decodeURIComponent(window.location.hash.substr(1)) || '/';
-    }
     var re = new RegExp('\\/_rewrite(.*)$');
-    var loc = urlParse('' + window.location);
-    var match = re.exec(loc.pathname);
+
+    var History_url = window.History.getState().url,
+        parts = new RegExp('(.*)\\/uid=([0-9]+)$').exec(History_url),
+        url = parts ? (parts[1] || History_url) : History_url;
+
+    var loc = urlParse(url),
+        match = re.exec(loc.pathname);
+
     if (match) {
-        var url = {pathname: match[1] || '/'};
-        if (window.location.search) {
-            url.search = window.location.search;
+        var newurl = {pathname: match[1] || '/'};
+        if (loc.search) {
+            newurl.search = loc.search;
         }
-        return urlFormat(url) || '/';
+        return urlFormat(newurl) || '/';
     }
-    return window.location.pathname || '/';
+    return loc.pathname || '/';
 };
 
 /**
@@ -542,7 +678,6 @@ exports.getURL = function () {
  * or strings as arguments.
  */
 
-// TODO: add unit tests for this function
 exports.sameOrigin = function (a, b) {
     var ap = (typeof a === 'string') ? urlParse(a): a;
     var bp = (typeof b === 'string') ? urlParse(b): b;
@@ -565,7 +700,6 @@ exports.sameOrigin = function (a, b) {
  * @returns {String}
  */
 
-// TODO: add unit tests for this function
 exports.appPath = function (p) {
     // hash links need current URL prepending
     if (p.charAt(0) === '#') {
@@ -577,7 +711,7 @@ exports.appPath = function (p) {
         // include protocol
         var origin = p.split('/').slice(0, 3).join('/');
         // coerce window.location to a real string so we can use split in IE
-        var loc = '' + window.location;
+        var loc = '' + window.History.getState().url;
         if (origin === loc.split('/').slice(0, 3).join('/')) {
             // remove origin, set p to pathname only
             // IE often adds this to a tags, hence why we strip it out now
@@ -589,10 +723,8 @@ exports.appPath = function (p) {
         }
     }
     var base = exports.getBaseURL();
-    // TODO: should this be substr not slice?
-    if (p.slice(0, base.length) === base) {
-        // TODO: should this be substr not slice?
-        return p.slice(base.length);
+    if (p.substr(0, base.length) === base) {
+        return p.substr(base.length);
     }
     return p;
 };
@@ -608,6 +740,6 @@ exports.appPath = function (p) {
 
 exports.isAppURL = function (url) {
     // coerce window.location to a real string in IE
-    return exports.sameOrigin(url, '' + window.location);
+    return exports.sameOrigin(url, '' + window.History.getState().url);
 };
 

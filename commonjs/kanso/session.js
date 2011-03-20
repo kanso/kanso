@@ -12,7 +12,6 @@ var db = require('./db'),
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 exports.logout = function (callback) {
     if (!utils.isBrowser) {
         throw new Error('logout cannot be called server-side');
@@ -21,7 +20,7 @@ exports.logout = function (callback) {
         type: "DELETE",
         url: "/_session", // don't need baseURL, /_session always available
         username: "_",
-        password : "_",
+        password : "_"
     }, callback);
 };
 
@@ -33,7 +32,6 @@ exports.logout = function (callback) {
  * @param {Function} callback
  */
 
-// TODO: add unit tests for this function
 exports.login = function (username, password, callback) {
     if (!utils.isBrowser) {
         throw new Error('login cannot be called server-side');
@@ -41,6 +39,6 @@ exports.login = function (username, password, callback) {
     db.request({
         type: "POST",
         url: "/_session",
-        data: {name: username, password: password},
+        data: {name: username, password: password}
     }, callback);
 };

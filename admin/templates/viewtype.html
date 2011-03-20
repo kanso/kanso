@@ -1,0 +1,34 @@
+<h1>
+  <a href="{baseURL}/">Apps</a>
+  <a href="{baseURL}/{app}">{app_heading}</a>
+  <a href="{baseURL}/{app}/{type}">{type_heading}</a>
+  <strong><a href="{baseURL}/{app}/{type}/view/{doc._id}">{doc._id}</a></strong>
+</h1>
+
+<div id="main">
+
+  {>"flashmessages.html"/}
+
+  <h2>{doc._id}</h2>
+
+  <table class="viewtype">
+    {#fields}
+    <tr>
+      <th>{field}</th>
+      <td>{value}</td>
+    </tr>
+    {/fields}
+  </table>
+
+  <div class="bottom_actions">
+    <a class="button" href="{baseURL}/{app}/{type}">
+      <span class="icon">.</span>
+      <span class="label">All {type_plural}</span>
+    </a>
+    <a class="button" href="{baseURL}/{app}/{type}/edit/{doc._id}">
+      <span class="icon">p</span>
+      <span class="label">Edit</span>
+    </a>
+  </div>
+
+</div>

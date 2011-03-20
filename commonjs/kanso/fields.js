@@ -1,14 +1,57 @@
-var validators = require('./validators');
+var validators = require('./validators'),
+    widgets = require('./widgets');
 
 
 var Field = exports.Field = function (options) {
     options = options || {};
 
+    this.omit_empty = options.omit_empty;
+    this.default_value = options.default_value;
+    this.label = options.label;
+    this.widget = options.widget || widgets.text();
     this.required = ('required' in options) ? options.required: true;
     this.validators = ('validators' in options) ? options.validators: [];
     this.parse = options.parse || function (raw) {
         return raw;
     };
+};
+
+Field.prototype.errorHTML = function (errors) {
+    if (errors && errors.length) {
+        var html = '<ul class="errors">';
+        for (var i = 0; i < errors.length; i++) {
+            html += '<li class="error_msg">' +
+                (errors[i].message || errors[i].toString()) +
+            '</li>';
+        }
+        html += '</ul>';
+        return html;
+    }
+    return '';
+};
+
+Field.prototype.labelText = function (name) {
+    if (this.label) {
+        return this.label;
+    }
+    return name.substr(0, 1).toUpperCase() + name.substr(1).replace('_', ' ');
+};
+
+Field.prototype.labelHTML = function (name, id) {
+    return '<label for="' + (id || 'id_' + name) + '">' +
+        this.labelText(name, id) +
+    '</label>';
+};
+
+Field.prototype.classes = function (errors) {
+    var r = ['field'];
+    if (errors && errors.length) {
+        r.push('error');
+    }
+    if (this.required) {
+        r.push('required');
+    }
+    return r;
 };
 
 Field.prototype.validate = function (doc, value) {
@@ -19,7 +62,7 @@ Field.prototype.validate = function (doc, value) {
         }
     }
     else {
-        for (var i = 0; i < this.validators.length; i += 1) {
+        for (var i = 0; i < this.validators.length; i++) {
             this.validators[i](doc, value);
         }
     }
@@ -41,7 +84,7 @@ exports.number = function (options) {
 
     options.parse = function (raw) {
         if (raw === null || raw === '') {
-            return NaN;
+            return '';
         }
         return Number(raw);
     };

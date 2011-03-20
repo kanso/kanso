@@ -93,7 +93,7 @@ exports.parse = function (url, parseQueryString, slashesDenoteHost) {
         // the first instance of /, ?, ;, or # ends the host.
         // don't enforce full RFC correctness, just be unstupid about it.
         var firstNonHost = -1;
-        for (var i = 0, l = nonHostChars.length; i < l; i += 1) {
+        for (var i = 0, l = nonHostChars.length; i < l; i++) {
             var index = rest.indexOf(nonHostChars[i]);
             if (index !== -1 && (firstNonHost < 0 || index < firstNonHost)) {
                 firstNonHost = index;
@@ -110,7 +110,7 @@ exports.parse = function (url, parseQueryString, slashesDenoteHost) {
         // pull out the auth and port.
         var p = parseHost(out.host);
         var keys = _keys(p);
-        for (var j = 0, l2 = keys.length; j < l2; j += 1) {
+        for (var j = 0, l2 = keys.length; j < l2; j++) {
             var key = keys[j];
             out[key] = p[key];
         }

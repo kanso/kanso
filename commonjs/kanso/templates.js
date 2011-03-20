@@ -1,4 +1,4 @@
-/*global dust: true */
+/*global dust: true, log: false */
 
 /**
  * CAUTION WHEN EDITING THIS FILE!
@@ -23,7 +23,8 @@
  * Module dependencies
  */
 
-var utils = require('./utils');
+var utils = require('./utils'),
+    flashmessages = require('./flashmessages');
 
 
 /**
@@ -38,10 +39,14 @@ var utils = require('./utils');
  * @api public
  */
 
-// TODO: add unit tests for this function
 exports.render = function (name, req, context) {
     context.baseURL = utils.getBaseURL(req);
     context.isBrowser = utils.isBrowser;
+    if (!context.flashMessages) {
+        context.flashMessages = flashmessages.getMessages(req);
+    }
+    log('flashMessages');
+    log(context.flashMessages);
     var r = '';
     dust.render(name, context, function (err, result) {
         if (err) {

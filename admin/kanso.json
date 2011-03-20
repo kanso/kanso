@@ -1,0 +1,7 @@
+{
+    "name": "admin",
+    "load": "lib/app",
+    "modules": "lib",
+    "templates": "templates",
+    "attachments": "static"
+}

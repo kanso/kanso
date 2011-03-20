@@ -1,0 +1,239 @@
+@font-face {
+    font-family: "Iconic Stroke";
+    src: url(../fonts/iconic_stroke.eot) !important;
+}
+
+.icon {
+    /*position: relative;*/
+    padding-right: 0.143em;
+    font-family: "Iconic Stroke";
+    color: #999;
+    font-size: 2em;
+    /*top: 0.143em;*/
+}
+
+a:hover .icon {
+    color: #666;
+    text-decoration: none;
+}
+
+body {
+    line-height: 1.618em;
+    font-size: 14px;
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
+    color: #292626;
+    margin: 0;
+}
+
+th {
+    text-align: left;
+}
+
+#main {
+    padding: 18px;
+}
+
+p {
+    margin: 2em 0;
+    padding: 0;
+}
+h1 {
+    font-size: 1.236em;
+    font-family: 'Helvetica Neue', 'Helvetica', Arial, FreeSans, sans-serif;
+    background: #000;
+    color: #999;
+    height: 2em;
+    line-height: 2em;
+    margin: 0;
+    padding: 0 0 0 .5em;
+    position: relative;
+    font-weight: normal;
+}
+h1 a {
+    text-decoration: none;
+}
+h1 :link, h1 :visited, h1 strong {
+    padding: .4em .5em;
+}
+h1 :link, h1 :visited {
+    background: url(./path.gif) 100% 50% no-repeat;
+    color: #bbb;
+    cursor: pointer;
+    padding-right: 2.2em;
+}
+h1 strong {
+    color: #fff;
+    font-weight: normal;
+    padding-right: 25px;
+}
+h1 strong a {
+    color:#fff !important;
+    background:none !important;
+}
+
+h2 {
+    margin: 18px 0;
+}
+
+table.typelist {
+    clear: left;
+    border-collapse: collapse;
+    border-spacing: 0;
+    margin: 0 0 18px 0;
+    /*width: 100%;*/
+}
+
+.typelist th {
+    text-align: left;
+    border-top: 1px solid #999;
+    border-bottom: 1px solid #999;
+}
+
+.typelist td.actions,
+.typelist th {
+    padding: 0 1em;
+}
+
+
+.typelist td {
+    vertical-align: top;
+    background-color: #fefefe;
+    padding: 0.326em 0;
+    margin: 0;
+    border: 0;
+}
+.typelist tr.odd td {
+    background-color: #f9f9f9;
+}
+
+.typelist td.data {
+    font-size: 0.9em;
+}
+
+.typelist tr:hover td {
+    background-color: #eee;
+}
+
+.typelist td.data a {
+    display: block;
+    width: 100%;
+    height: 100%;
+    background: none;
+    color: black;
+    text-decoration: none;
+    padding: 0 1em;
+}
+
+th.actions,
+td.actions {
+    min-width: 200px;
+    padding-left: 50px !important;
+}
+
+form.delete_form {
+    display: inline;
+}
+
+.form_table th {
+    text-align: left;
+    padding-right: 20px;
+}
+
+.form_table td.errors {
+    padding-left: 10px;
+}
+
+.form_table td.errors ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.form_table td.errors ul li {
+    padding: 0;
+    margin: 0;
+    color: red;
+}
+
+.button {
+    text-decoration: none;
+    color: #666;
+    font-size: 0.8em;
+    background: none;
+    display: inline;
+    cursor: pointer;
+}
+
+.button .label {
+    position: relative;
+    top: -0.286em;
+}
+
+.button input {
+    cursor: pointer;
+    text-decoration: none;
+    color: #666;
+    background: none;
+    display: inline;
+    padding: 0;
+    margin: 0;
+    margin-left: -0.5em;
+    border: 0;
+}
+.button input.icon {
+    margin: 0;
+    padding-right: 0.143em;
+    color: #999;
+}
+
+.button:hover {
+    color: #000;
+}
+
+.button:hover input {
+    color: #000;
+}
+.button:hover input.icon {
+    color: #666;
+}
+
+.top_actions {
+    margin: 2px 0 12px 0;
+}
+.bottom_actions {
+    margin: 12px 0;
+}
+
+.bottom_actions .button input.icon {
+    margin-right: 0.236em;
+}
+.top_actions .button,
+.bottom_actions .button {
+    margin-right: 12px;
+}
+
+td.actions .button {
+    margin-right: 18px;
+}
+
+.viewtype th {
+    padding-right: 20px;
+}
+
+#flashmessages {
+    list-style-type: none;
+    padding: 0;
+    margin: 0 0 1em 0;
+}
+
+#flashmessages li {
+    padding: 0.5em 1em;
+    background-color: #eee;
+    border-radius: 3px;
+}
+#flashmessages li.error {
+    background-color: #fdd;
+}
+#flashmessages li.success {
+    background-color: #dfd;
+}
