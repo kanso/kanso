@@ -37,3 +37,25 @@ exports.password = function (options) {
 exports.hidden = function (options) {
     return new Widget('hidden', options);
 };
+
+exports.textarea = function (options) {
+    var w = new Widget('textarea', options);
+    w.toHTML = function (name, value) {
+        if (value === null || value === undefined) {
+            value = '';
+        }
+        var html = '<textarea';
+        html += this._attrs(name);
+        if (options.hasOwnProperty('cols')) {
+            html += ' cols="' + options.cols + '"';
+        }
+        if (options.hasOwnProperty('rows')) {
+            html += ' rows="' + options.rows + '"';
+        }
+        html += '>';
+        html += value.replace('<','&lt;').replace('>','&gt');
+        html += '</textarea>';
+        return html;
+    };
+    return w;
+};
