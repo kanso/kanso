@@ -45,16 +45,20 @@ exports.initial_hit = true;
 
 
 
-if (typeof window !== 'undefined' && typeof console === 'undefined') {
-    // console.log is going to cause errors, just stub the functions
-    // for now. TODO: add logging utility for IE?
-    var console = window.console = {
-        log: function () {},
-        error: function () {},
-        info: function () {},
-        warn: function () {}
-    };
+if (typeof window !== 'undefined') {
+    if (!window.console) {
+        // console.log is going to cause errors, just stub the functions
+        // for now. TODO: add logging utility for IE?
+        window.console = {
+            log: function () {},
+            error: function () {},
+            info: function () {},
+            warn: function () {}
+        };
+    }
+    var console = window.console;
 }
+
 
 /**
  * Global functions required to match the CouchDB JavaScript environment.
@@ -133,32 +137,12 @@ exports.init = function () {
         }
     });
 
-    var onUserCtx;
-    var userCtx_loaded = false;
     window.History.Adapter.bind(window, 'statechange', function (ev) {
         var url = exports.getURL();
         var state_data = window.History.getState().data;
         var method = state_data.method || 'GET';
         var data = state_data.data;
-        if (!userCtx_loaded) {
-            onUserCtx = function () {
-                exports.handle(method, url, data);
-            };
-        }
-        else {
-            exports.handle(method, url, data);
-        }
-    });
-
-    session.info(function (err, userCtx) {
-        if (err) {
-            throw err;
-        }
-        else {
-            utils.userCtx = userCtx;
-        }
-        userCtx_loaded = true;
-        onUserCtx();
+        exports.handle(method, url, data);
     });
 
     // TODO: should this be after userCtx is available??
@@ -299,7 +283,7 @@ exports.replaceGroups = function (val, groups, splat) {
  * @returns {Object}
  */
 
-exports.createRequest = function (method, url, data, match) {
+exports.createRequest = function (method, url, data, match, callback) {
     var groups = exports.rewriteGroups(match.from, url);
     var query = urlParse(url, true).query || {};
     var k;
@@ -322,7 +306,6 @@ exports.createRequest = function (method, url, data, match) {
     // for now
     var splat = exports.rewriteSplat(match.from, url);
     var to = exports.replaceGroups(match.to, query, splat);
-
     var req = {
         uuid: uuid.generate(),
         method: method,
@@ -332,12 +315,24 @@ exports.createRequest = function (method, url, data, match) {
         client: true,
         initial_hit: exports.initial_hit,
         cookie: cookies.readBrowserCookies(),
-        userCtx: utils.userCtx
     };
     if (data) {
         req.form = data;
     }
-    return req;
+
+    if (utils.userCtx) {
+        req.userCtx = utils.userCtx;
+        return callback(null, req);
+    }
+    else {
+        session.info(function (err, userCtx) {
+            if (err) {
+                return callback(err);
+            }
+            req.userCtx = userCtx;
+            callback(null, req);
+        });
+    }
 };
 
 
@@ -574,64 +569,71 @@ exports.runList = function (fn, head, req) {
 exports.handle = function (method, url, data) {
     var match = exports.matchURL(method, url);
     if (match) {
-        var parsed = urlParse(url),
-            req = exports.createRequest(method, url, data, match);
-
-        var msg = method + ' ' + url + ' -> ' +
-            JSON.stringify(req.path.join('/')) + ' ' +
-            JSON.stringify(req.query);
-
-        if (data) {
-            msg += ' data: ' + JSON.stringify(data);
-        }
-
-        console.log(msg);
-
-        var after = function () {
-            if (parsed.hash) {
-                // we have to handle in-page anchors manually because we've
-                // hijacked the hash part of the url
-                // TODO: don't re-handle the page if only the hash has changed
-
-                // test if a valid element name or id
-                if (/#[A-Za-z_\-:\.]+/.test(parsed.hash)) {
-                    var el = $(parsed.hash);
-                    if (el.length) {
-                        window.scrollTo(0, el.offset().top);
-                    }
-                }
-                else if (parsed.hash === '#') {
-                    // scroll to top of page
-                    window.scrollTo(0, 0);
-                }
-                // TODO: handle invalid values?
+        var parsed = urlParse(url);
+        exports.createRequest(method, url, data, match, function (err, req) {
+            if (err) {
+                throw err;
             }
-        };
+            console.log(req);
 
-        var src, fn, name;
+            var msg = method + ' ' + url + ' -> ' +
+                JSON.stringify(req.path.join('/')) + ' ' +
+                JSON.stringify(req.query);
 
-        if (req.path[0] === '_show') {
-            exports.runShowBrowser(
-                req, req.path[1], req.path.slice(2).join('/'), after
-            );
-        }
-        else if (req.path[0] === '_list') {
-            exports.runListBrowser(
-                req, req.path[1], req.path.slice(2).join('/'), after
-            );
-        }
-        else if (req.path[0] === '_update') {
-            exports.runUpdateBrowser(
-                req, req.path[1], req.path.slice(2).join('/'), after
-            );
-        }
-        else {
-            console.log('Unknown rewrite target: ' + req.path.join('/'));
-            var newurl = exports.getBaseURL() + '/_db/_design/' +
-                settings.name + '/' + req.path.join('/');
-            console.log('redirecting to: ' + newurl);
-            window.location = newurl;
-        }
+            if (data) {
+                msg += ' data: ' + JSON.stringify(data);
+            }
+
+            console.log(msg);
+
+            var after = function () {
+                if (parsed.hash) {
+                    // we have to handle in-page anchors manually because we've
+                    // hijacked the hash part of the url
+                    // TODO: don't re-handle the page if only the hash has
+                    // changed
+
+                    // test if a valid element name or id
+                    if (/#[A-Za-z_\-:\.]+/.test(parsed.hash)) {
+                        var el = $(parsed.hash);
+                        if (el.length) {
+                            window.scrollTo(0, el.offset().top);
+                        }
+                    }
+                    else if (parsed.hash === '#') {
+                        // scroll to top of page
+                        window.scrollTo(0, 0);
+                    }
+                    // TODO: handle invalid values?
+                }
+            };
+
+            var src, fn, name;
+
+            if (req.path[0] === '_show') {
+                exports.runShowBrowser(
+                    req, req.path[1], req.path.slice(2).join('/'), after
+                );
+            }
+            else if (req.path[0] === '_list') {
+                exports.runListBrowser(
+                    req, req.path[1], req.path.slice(2).join('/'), after
+                );
+            }
+            else if (req.path[0] === '_update') {
+                exports.runUpdateBrowser(
+                    req, req.path[1], req.path.slice(2).join('/'), after
+                );
+            }
+            else {
+                console.log('Unknown rewrite target: ' + req.path.join('/'));
+                var newurl = exports.getBaseURL() + '/_db/_design/' +
+                    settings.name + '/' + req.path.join('/');
+                console.log('redirecting to: ' + newurl);
+                window.location = newurl;
+            }
+
+        });
     }
     else {
         console.log(method + ' ' + url + ' -> [404]');
