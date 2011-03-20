@@ -23,8 +23,12 @@ exports.logout = function (callback) {
         password : "_"
     },
     function (err, resp) {
-        utils.userCtx = (resp && resp.userCtx) || {name: null, roles: []};
-        callback(err, resp);
+        if (resp && resp.ok) {
+            utils.userCtx = {name: null, roles: []};
+        }
+        if (callback) {
+            callback(err, resp);
+        }
     });
 };
 
@@ -46,8 +50,12 @@ exports.login = function (username, password, callback) {
         data: {name: username, password: password}
     },
     function (err, resp) {
-        utils.userCtx = (resp && resp.userCtx) || {name: null, roles: []};
-        callback(err, resp);
+        if (resp && resp.ok) {
+            utils.userCtx = {name: resp.name, roles: resp.roles};
+        }
+        if (callback) {
+            callback(err, resp);
+        }
     });
 };
 
@@ -62,6 +70,8 @@ exports.info = function (callback) {
     },
     function (err, resp) {
         utils.userCtx = (resp && resp.userCtx) || {name: null, roles: []};
-        callback(err, utils.userCtx);
+        if (callback) {
+            callback(err, utils.userCtx);
+        }
     });
 };
