@@ -36,11 +36,11 @@ var adminList = function (fn) {
 };
 
 
-exports.fieldPairs = function (Field, fields, doc, path) {
+exports.fieldPairs = function (fields, doc, path) {
     var pairs = [];
     for (var k in fields) {
         if (fields.hasOwnProperty(k)) {
-            if (fields[k] instanceof Field) {
+            if (kanso_utils.constructorName(fields[k]) === 'Field') {
                 pairs.push({
                     field: path.concat([k]).join('.'),
                     value: kanso_utils.getPropertyPath(doc, path.concat([k]))
@@ -48,7 +48,7 @@ exports.fieldPairs = function (Field, fields, doc, path) {
             }
             else if (typeof fields[k] === 'object') {
                 pairs = pairs.concat(
-                    exports.fieldPairs(Field, fields[k], doc, path.concat([k]))
+                    exports.fieldPairs(fields[k], doc, path.concat([k]))
                 );
             }
         }
@@ -85,9 +85,7 @@ exports.typelist = adminList(function (rows, ddoc, req) {
 
     var f = [];
     for (var i = 0, len = rows.length; i < len; i++) {
-        var pairs = exports.fieldPairs(
-            fields.Field, type.fields, rows[i].doc, []
-        );
+        var pairs = exports.fieldPairs(type.fields, rows[i].doc, []);
         for (var j = 0; j < pairs.length; j++) {
             if (pairs[j].field === '_rev' || pairs[j].field === 'type') {
                 pairs.splice(j, 1);
@@ -120,14 +118,20 @@ exports.typelist = adminList(function (rows, ddoc, req) {
 
 
 exports.viewtype = function (head, req) {
-    start({code: 200, headers: {'Content-Type': 'text/html'}});
     if (!req.client) {
+        start({code: 200, headers: {'Content-Type': 'text/html'}});
         return templates.render('base.html', req, {
             title: req.query.app + ' - Types - ' + req.query.type,
             content: templates.render('noscript.html', req, {})
         });
     }
-    var doc = getRow().doc;
+    var row = getRow();
+    if (!row) {
+        start({code: 404, headers: {'Content-Type': 'text/html'}});
+        return '<h1>No such document</h1>'
+    }
+    start({code: 200, headers: {'Content-Type': 'text/html'}});
+    var doc = row.doc;
     utils.getDesignDoc(req.query.app, function (err, ddoc) {
         if (err) {
             return alert(err);
@@ -138,7 +142,7 @@ exports.viewtype = function (head, req) {
             type = app.types ? app.types[req.query.type]: undefined;
 
         var content = templates.render('viewtype.html', req, {
-            fields: exports.fieldPairs(fields.Field, type.fields, doc, []),
+            fields: exports.fieldPairs(type.fields, doc, []),
             doc: doc,
             app: req.query.app,
             app_heading: utils.capitalize(req.query.app),

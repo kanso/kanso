@@ -1,4 +1,4 @@
-var Widget = exports.Widget = function (type, options) {
+var Widget = exports.Widget = function Widget(type, options) {
     options = options || {};
     this.classes = options.classes || [];
     this.id = options.id;
