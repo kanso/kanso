@@ -2,9 +2,14 @@ var utils = require('./utils');
 
 
 exports.matchUsername = function () {
-    return function (newDoc, oldDoc, newValue, oldValue, userCtx) {
-        if (userCtx.name !== newValue) {
-            throw new Error('Field does not match your username');
+    return function (newDoc, oldDoc, newVal, oldVal, userCtx) {
+        var name = userCtx.name;
+        if (name !== newVal) {
+            // if both are empty-like, then consider them the same
+            if ((name !== null && name !== undefined && name !== '') ||
+                (newVal !== null && newVal !== undefined && newVal !== '')) {
+                throw new Error('Field does not match your username');
+            }
         }
     };
 };

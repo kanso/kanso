@@ -176,5 +176,6 @@ exports.creator = function (options) {
     options.default_value = options.default_value || function (req) {
         return (req.userCtx && req.userCtx.name) || '';
     };
+    options.required = options.required || false;
     return exports.string(options);
 };
