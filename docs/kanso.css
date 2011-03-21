@@ -1,7 +1,8 @@
 body {
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
+    background-image: url(bg.png);
     line-height: 1.618em;
     font-size: 14px;
-    font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
     color: #292626;
 }
 h1 {
@@ -11,6 +12,7 @@ h1 {
     font-weight: normal;
     color: black;
     margin: 0 0 -0.382em 0;
+    text-shadow: 0 1px 0 white;
 }
 p {
     margin: 2em 0;
@@ -49,7 +51,9 @@ ul {
     line-height: 2.618em;
 }
 h2, h3 {
+    color: black;
     margin: 2.618em 0 1em 0;
+    text-shadow: 0 1px 0 white;
 }
 /*h2 {
     font-size: 1.618em;
@@ -64,11 +68,15 @@ h3 {
     font-weight: bold;
 }
 pre {
+    font-family: 'Monospace', monospace;
+    color: black;
+    background: white;
     font-size: 12px;
     border: dashed 1px #D6CDA0;
     border-left: 0.382em solid #D6CDA0;
     padding: 1.618em 2.618em;
     margin: 2.618em 0;
+    box-shadow: 0 2px 10px #DFDFDF;
 }
 code {
     background-color: white !important;
@@ -162,4 +170,60 @@ code {
 
 #docs h1 {
     padding-bottom: 0.326em;
+}
+
+#sidenav {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    left: 160px;
+    top: 204px;
+    margin-top: 46px;
+    line-height: 1.5;
+    width: 160px;
+}
+
+#sidenav li {
+    padding: 0;
+    margin: 0;
+}
+
+#sidenav li a {
+    color: #666;
+    background: none;
+    padding: 0;
+    margin: 0;
+    padding: 0.618em;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+#sidenav li a:hover {
+    color: #222;
+}
+
+#sidenav li.active a {
+    color: #000;
+    font-weight: bold;
+}
+
+#sidenav li ul {
+    list-style-type: none;
+    margin: 0 0 1em 0;
+    padding: 0 1.618em;
+    font-size: 0.8em;
+    line-height: 1em;
+    display: none;
+}
+
+#sidenav li.active ul {
+    display: block;
+}
+
+#sidenav li.active ul li a {
+    font-weight: normal !important;
+}
+#sidenav li.active ul li.active a {
+    font-weight: bold !important;
 }

@@ -16,13 +16,16 @@
       <li><a href="https://github.com/caolan/kanso">Code &rArr;</a></li>
     </ul>
 
-    <a id="sitename" href="#">
+    <a id="sitename" href="index.html">
       <img src="kanso_ribbon.png" />
     </a>
 
+    <!-- populated by javascript -->
+    <ul id="sidenav"></ul>
+
     <h1>Getting started</h1>
 
-    <h2>Installation</h2>
+    <h2 id="installation">Installation</h2>
     <p>
       Install the most recent <em>stable</em> version of
       <a href="http://nodejs.org/#download">node</a>, then clone
@@ -34,7 +37,7 @@ git submodule update</pre>
     <p>You are then ready to install:</p>
     <pre>make &amp;&amp; sudo make install</pre>
 
-    <h2>Starting a project</h2>
+    <h2 id="starting_a_project">Starting a project</h2>
     <p>
       For this tutorial we'll be creating a basic app that displays albums by
       artist name. First, change to the location you wish to create the project
@@ -212,7 +215,7 @@ exports.shows = {
         section of the base.html template.
     </p>
 
-    <h2>The Recordstore</h2>
+    <h2 id="the_recordstore">The Recordstore</h2>
     <p>
       OK, now we've explored a skeleton Kanso project, let's start building our
       own web app on top of it. Open Futon and view the recordstore database at
@@ -249,7 +252,7 @@ exports.shows = {
       demonstrate something later.
     </p>
 
-    <h2>Creating views</h2>
+    <h2 id="creating_views">Creating views</h2>
     <p>
       To keep things clean and tidy, we're going to create a new module for
       storing views. Create a new file at lib/views.js with the following content:
@@ -281,7 +284,7 @@ exports.shows = {
       to see the results of the newly created view.
     </p>
 
-    <h2>Templates and list functions</h2>
+    <h2 id="templates_and_list_functions">Templates and list functions</h2>
     <p>
       Now we have a view and some data, let's replace the welcome page with a list
       of artists. Once again, we'll create a new module for this code. Add a file at
@@ -352,7 +355,7 @@ exports.lists = require('./lists');</code></pre>
       You should see a list of artist links (the linked pages don't exist yet).
     </p>
 
-    <h2>To be continued...</h2>
+    <h2 id="to_be_continued">To be continued...</h2>
     <p>
       This tutorial is a work in progress, if you have any additions then
       please fork the <a href="https://github.com/caolan/kanso">Kanso project</a>
@@ -367,6 +370,8 @@ exports.lists = require('./lists');</code></pre>
 
   <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+  <script src="docs.js"></script>
   <script type="text/javascript">
 
     var _gaq = _gaq || [];

@@ -16,40 +16,31 @@
       <li><a href="https://github.com/caolan/kanso">Code &rArr;</a></li>
     </ul>
 
-    <a id="sitename" href="#">
+    <a id="sitename" href="index.html">
       <img src="kanso_ribbon.png" />
     </a>
+
+    <!-- populated by javascript -->
+    <ul id="sidenav"></ul>
 
     <div id="docs">
       <h1>Documentation</h1>
 
-      <h3>Modules</h3>
-      <ol class="index">
-        <li><a href="#core">core</a></li>
-        <li><a href="#types">types</a></li>
-        <li><a href="#fields">fields</a></li>
-        <li><a href="#validators">validators</a></li>
-        <li><a href="#db">db</a></li>
-        <li><a href="#session">session</a></li>
-        <li><a href="#settings">settings</a></li>
-        <li><a href="#templates">templates</a></li>
-        <li><a href="#utils">utils</a></li>
-      </ol>
 
-      <h3>Commands</h3>
-      <ol class="index">
-        <li><a href="#push">push</a></li>
-        <li><a href="#pushdata">pushdata</a></li>
-        <li><a href="#create">create</a></li>
-        <li><a href="#help">help</a></li>
-        <li><a href="#show">show</a></li>
-        <li><a href="#uuids">uuids</a></li>
-      </ol>
+      <h2 id="kanso.json">Kanso.json</h2>
+      <h2 id="app_format">App format</h2>
 
+      <h2 id="modules">Modules</h2>
 
-      <h2 id="core">Core</h2>
+      <h3 id="core">Core</h3>
 
-      <h2 id="types">Types</h2>
+      <h3 id="flashmessages">Flashmessages</h3>
+      <h3 id="cookies">Cookies</h3>
+      <h3 id="forms">Forms</h3>
+      <h3 id="permissions">Permissions</h3>
+      <h3 id="widgets">Widgets</h3>
+
+      <h3 id="types">Types</h3>
       <p>
         Document types can be used to ease the validation of updates and check
         permissions when creating, updating or deleting documents.
@@ -84,7 +75,7 @@
       </p>
 
 
-      <h2 id="fields">Fields</h2>
+      <h3 id="fields">Fields</h3>
       <p>
         Fields are used when defining document types and tell Kanso how to parse
         and validate form data.
@@ -95,7 +86,7 @@
       <h3>fields.url(options)</h3>
       <h3>fields.email(options)</h3>
 
-      <h2 id="validators">Validators</h2>
+      <h3 id="validators">Validators</h3>
       <p>
         Used to validate the contents of a document type's field, and usually passed
         as an array of validation functions to a field type.
@@ -134,14 +125,16 @@
       <h3>validators.url()</h3>
 
 
-      <h2 id="db">DB</h2>
-      <h2 id="session">Session</h2>
-      <h2 id="settings">Settings</h2>
-      <h2 id="templates">Templates</h2>
-      <h2 id="utils">Utils</h2>
+      <h3 id="db">DB</h3>
+      <h3 id="session">Session</h3>
+      <h3 id="settings">Settings</h3>
+      <h3 id="templates">Templates</h3>
+      <h3 id="utils">Utils</h3>
+      <h3 id="url">URL</h3>
+      <h3 id="path">Path</h3>
 
 
-      <h2>Commands</h2>
+      <h2 id="commands">Commands</h2>
 
       <h3 id="push">Push</h3>
       <p>Upload a project to a CouchDB instance.</p>
@@ -169,6 +162,8 @@
   Options:
     -f, --force      Ignore document conflict errors and upload anyway
   </pre>
+
+      <h3 id="pushadmin">Pushadmin</h3>
 
       <h3 id="create">Create</h3>
       <p>Create a new project skeleton.</p>
@@ -212,6 +207,8 @@
 
   <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
+  <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
+  <script src="docs.js"></script>
   <script type="text/javascript">
 
     var _gaq = _gaq || [];
