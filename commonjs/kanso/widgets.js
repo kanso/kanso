@@ -53,7 +53,7 @@ exports.textarea = function (options) {
             html += ' rows="' + options.rows + '"';
         }
         html += '>';
-        html += value.replace(/</g,'&lt;').replace(/>/g,'&gt');
+        html += value.replace(/</g, '&lt;').replace(/>/g, '&gt');
         html += '</textarea>';
         return html;
     };

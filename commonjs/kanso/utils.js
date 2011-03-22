@@ -85,7 +85,7 @@ exports.isArray = Array.isArray || function (obj) {
  * http://documentcloud.github.com/underscore
  */
 
-exports.isFunction = function(obj) {
+exports.isFunction = function (obj) {
     return !!(obj && obj.constructor && obj.call && obj.apply);
 };
 
@@ -126,6 +126,6 @@ exports.constructorName = function (obj) {
     if (obj.constructor.name) {
         return obj.constructor.name;
     }
-    var match = /function (.+)\(/.exec(obj.constructor.toString());
+    var match = new RegExp('function (.+)\\(').exec(obj.constructor.toString());
     return (match && match.length > 1) ? match[1] : undefined;
 };

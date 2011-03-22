@@ -10,6 +10,7 @@
 
 var CHARS = '0123456789abcdefghijklmnopqrstuvwxyz'.split('');
 
+/*jslint bitwise: false*/
 exports.generate = function () {
     var uuid = new Array(32), rnd = 0, r;
     for (var i = 0; i < 32; i++) {
@@ -18,7 +19,8 @@ exports.generate = function () {
         }
         r = rnd & 0xf;
         rnd = rnd >> 4;
-        uuid[i] = CHARS[(i == 19) ? (r & 0x3) | 0x8 : r];
+        uuid[i] = CHARS[(i === 19) ? (r & 0x3) | 0x8 : r];
     }
     return uuid.join('');
 };
+/*jslint bitwise: true*/

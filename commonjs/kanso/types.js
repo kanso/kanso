@@ -258,12 +258,12 @@ exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
         }
         var permissions_errors = types[type].authorize(newDoc, oldDoc, userCtx);
         if (permissions_errors.length) {
-            var err = permissions_errors[0];
-            var msg = err.message || err.toString();
-            if (err.field && err.field.length) {
-                msg = err.field.join('.') + ': ' + msg;
+            var err2 = permissions_errors[0];
+            var msg2 = err2.message || err2.toString();
+            if (err2.field && err2.field.length) {
+                msg2 = err2.field.join('.') + ': ' + msg2;
             }
-            throw {unauthorized: msg};
+            throw {unauthorized: msg2};
         }
     }
 };

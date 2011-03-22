@@ -1,5 +1,5 @@
 /*global window: false, getRow: true, start: true, $: false, pageTracker: true,
-  kanso: true, log: true */
+  kanso: true, log: true, console: true */
 
 /**
  * Module dependencies
@@ -314,7 +314,7 @@ exports.createRequest = function (method, url, data, match, callback) {
         path: to.split('/'),
         client: true,
         initial_hit: exports.initial_hit,
-        cookie: cookies.readBrowserCookies(),
+        cookie: cookies.readBrowserCookies()
     };
     if (data) {
         req.form = data;

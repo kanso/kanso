@@ -32,8 +32,8 @@
 
     var eachSync = fallback('forEach', function (obj, iterator) {
         var isObj = obj instanceof Object;
-        var arr = isObj ? keys(obj): (obj || []), i;
-        for (i = 0, len = arr.length; i < len; i++) {
+        var arr = isObj ? keys(obj): (obj || []);
+        for (var i = 0, len = arr.length; i < len; i++) {
             var k = isObj ? arr[i]: i;
             iterator(obj[k], k, obj);
         }
@@ -106,7 +106,7 @@
             eachfn(obj, function (value, i, obj, callback) {
                 var args = [value, i, obj].slice(0, iterator.length - 1);
                 args[iterator.length - 1] = function (err, v) {
-                    results[results.length] = v
+                    results[results.length] = v;
                     callback(err);
                 };
                 iterator.apply(this, args);
@@ -119,7 +119,9 @@
     var filterSync = fallback('filter', function (obj, iterator, callback) {
         var results = [];
         eachSync(obj, function (v, k, obj) {
-            iterator(v, k, obj) && (results[results.length] = v);
+            if (iterator(v, k, obj)) {
+                results[results.length] = v;
+            }
         });
         return results;
     });
@@ -129,7 +131,9 @@
         eachParallel(obj, function (value, k, obj, callback) {
             var args = [value, k, obj].slice(0, iterator.length - 1);
             args[iterator.length - 1] = function (err, a) {
-                a && (results[results.length] = value);
+                if (a) {
+                    results[results.length] = value;
+                }
                 callback(err);
             };
             iterator.apply(this, args);
@@ -148,7 +152,7 @@
     var reduceSeries = function (obj, iterator, memo, callback) {
         eachSeries(obj, function (value, i, obj, callback) {
             var args = [memo, value, i, obj].slice(0, iterator.length - 1);
-            args[iterator.length- 1] = function (err, v) {
+            args[iterator.length - 1] = function (err, v) {
                 memo = v;
                 callback(err);
             };
@@ -197,4 +201,4 @@
         });
     };
 
-}(typeof exports == 'undefined' ? this._ = {}: exports));
+}(typeof exports === 'undefined' ? this._ = {}: exports));
