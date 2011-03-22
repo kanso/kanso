@@ -11,7 +11,6 @@ var settings = require('./settings'), // module auto-generated
     utils = require('./utils'),
     session = require('./session'),
     cookies = require('./cookies'),
-    uuid = require('./uuid'),
     flashmessages = require('./flashmessages'),
     urlParse = url.parse,
     urlFormat = url.format;
@@ -307,7 +306,7 @@ exports.createRequest = function (method, url, data, match, callback) {
     var splat = exports.rewriteSplat(match.from, url);
     var to = exports.replaceGroups(match.to, query, splat);
     var req = {
-        uuid: uuid.generate(),
+        uuid: utils.generateUUID(),
         method: method,
         query: query,
         headers: {},
