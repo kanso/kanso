@@ -162,7 +162,7 @@ exports.validateFields = function (fields, values, doc, path, allow_extra) {
             else if (utils.constructorName(f) === 'Field') {
                 // its a field, validate it
                 try {
-                    f.validate(doc, values[k], values[k]);
+                    f.validate(doc, f.parse(values[k]), values[k]);
                 }
                 catch (e) {
                     e.field = path.concat([k]);

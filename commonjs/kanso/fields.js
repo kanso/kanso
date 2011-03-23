@@ -57,7 +57,7 @@ Field.prototype.classes = function (errors) {
     return r;
 };
 
-Field.prototype.validate = function (doc, value) {
+Field.prototype.validate = function (doc, value, raw) {
     if (value === '' || value === null || value === undefined) {
         // don't validate empty fields, but check if required
         if (this.required) {
@@ -66,7 +66,7 @@ Field.prototype.validate = function (doc, value) {
     }
     else {
         for (var i = 0; i < this.validators.length; i++) {
-            this.validators[i](doc, value);
+            this.validators[i](doc, value, raw);
         }
     }
 };
@@ -104,16 +104,17 @@ exports.string = function (options) {
     return new Field(options);
 };
 
+exports.parseNumber = function (raw) {
+    if (raw === null || raw === '') {
+        return '';
+    }
+    return Number(raw);
+};
 
 exports.number = function (options) {
     options = options || {};
 
-    options.parse = function (raw) {
-        if (raw === null || raw === '') {
-            return '';
-        }
-        return Number(raw);
-    };
+    options.parse = exports.parseNumber;
     if (!options.validators) {
         options.validators = [];
     }
@@ -180,6 +181,7 @@ exports.creator = function (options) {
     return exports.string(options);
 };
 
+
 exports.timestamp = function (options) {
     options = options || {};
     if (!options.permissions) {
@@ -196,4 +198,35 @@ exports.timestamp = function (options) {
         return new Date().getTime();
     };
     return exports.number(options);
+};
+
+
+exports.choice = function (options) {
+    if (!options.validators) {
+        options.validators = [];
+    }
+    options.validators.unshift(function (doc, value) {
+        for (var i = 0; i < options.values.length; i++) {
+            if (value === options.values[i][0]) {
+                return;
+            }
+        }
+        throw new Error('Invalid choice');
+    });
+    options.widget = options.widget || widgets.select({values: options.values});
+    return new Field(options);
+};
+
+
+exports.numberChoice = function (options) {
+    options.parse = exports.parseNumber;
+    if (!options.validators) {
+        options.validators = [];
+    }
+    options.validators.unshift(function (doc, value) {
+        if (isNaN(value)) {
+            throw new Error('Not a number');
+        }
+    });
+    return exports.choice(options);
 };

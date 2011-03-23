@@ -70,3 +70,27 @@ exports.checkbox = function (options) {
     };
     return w;
 };
+
+exports.select = function (options) {
+    var w = new Widget('select', options);
+    w.values = options.values;
+    w.toHTML = function (name, value) {
+        if (value === null || value === undefined) {
+            value = '';
+        }
+        var html = '<select' + this._attrs(name) + '>';
+        for (var i = 0; i < this.values.length; i++) {
+            var opt = this.values[i];
+            html += '<option value="' + opt[0] + '"';
+            if (opt[0] === value) {
+                html += ' selected="selected"';
+            }
+            html += '>';
+            html += opt[1];
+            html += '</option>';
+        }
+        html += '</select>';
+        return html;
+    };
+    return w;
+};
