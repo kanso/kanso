@@ -179,3 +179,21 @@ exports.creator = function (options) {
     options.required = options.required || false;
     return exports.string(options);
 };
+
+exports.timestamp = function (options) {
+    options = options || {};
+    if (!options.permissions) {
+        options.permissions = [];
+    }
+    if (!utils.isArray(options.permissions)) {
+        options.permissions = [options.permissions];
+    }
+    options.permissions.unshift({
+        edit: permissions.uneditable()
+    });
+    options.widget = options.widget || widgets.hidden();
+    options.default_value = options.default_value || function (req) {
+        return new Date().getTime();
+    };
+    return exports.number(options);
+};
