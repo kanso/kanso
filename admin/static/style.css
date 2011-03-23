@@ -137,6 +137,7 @@ form.delete_form {
 .form_table th {
     text-align: left;
     padding-right: 20px;
+    vertical-align: top;
 }
 
 .form_table td.errors {
@@ -218,6 +219,7 @@ td.actions .button {
 
 .viewtype th {
     padding-right: 20px;
+    vertical-align: top;
 }
 
 #flashmessages {
