@@ -103,7 +103,7 @@ exports.typelist = adminList(function (rows, ddoc, req) {
 
     var content = templates.render('typelist.html', req, {
         rows: f,
-        field_names: field_names,
+        field_names: field_names.slice(0, 5),
         app: req.query.app,
         app_heading: utils.capitalize(req.query.app),
         type: req.query.type,
