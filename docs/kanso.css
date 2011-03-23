@@ -68,7 +68,7 @@ h3 {
     font-weight: bold;
 }
 pre {
-    font-family: 'Monospace', monospace;
+    font-family: 'Monospace', monospace !important;
     color: black;
     background: white;
     font-size: 12px;
@@ -110,7 +110,7 @@ code {
     left: 0;
 }
 #topbar_overlay {
-    opacity: 0.80;
+    opacity: 0.75;
     height: 46px;
     width: 100%;
     background: black;
