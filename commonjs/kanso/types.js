@@ -15,6 +15,7 @@ var Type = exports.Type = function Type(name, options) {
     }
     this.name = name;
     this.permissions = options.permissions || {};
+    this.validate_doc_update = options.validate_doc_update;
     this.allow_extra_fields = options.allow_extra_fields || false;
 
     this.fields = {
@@ -279,8 +280,9 @@ exports.authorizeFields = function (fields, newValues, oldValues, newDoc,
 exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
     var type = (oldDoc && oldDoc.type) || newDoc.type;
     if (type && types[type]) {
+        var t = types[type];
         if (!newDoc._deleted) {
-            var validation_errors = types[type].validate(newDoc);
+            var validation_errors = t.validate(newDoc);
             if (validation_errors.length) {
                 var err = validation_errors[0];
                 var msg = err.message || err.toString();
@@ -290,7 +292,7 @@ exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
                 throw {forbidden: msg};
             }
         }
-        var permissions_errors = types[type].authorize(newDoc, oldDoc, userCtx);
+        var permissions_errors = t.authorize(newDoc, oldDoc, userCtx);
         if (permissions_errors.length) {
             var err2 = permissions_errors[0];
             var msg2 = err2.message || err2.toString();
@@ -298,6 +300,9 @@ exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
                 msg2 = err2.field.join('.') + ': ' + msg2;
             }
             throw {unauthorized: msg2};
+        }
+        if (t.validate_doc_update) {
+            t.validate_doc_update(newDoc, oldDoc, userCtx);
         }
     }
 };
