@@ -14,7 +14,7 @@ exports.matchUsername = function () {
     };
 };
 
-exports.uneditable = function () {
+exports.fieldUneditable = function () {
     return function (newDoc, oldDoc, newValue, oldValue, userCtx) {
         if (oldDoc) {
             if (newValue !== oldValue) {
