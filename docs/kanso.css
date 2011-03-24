@@ -5,6 +5,12 @@ body {
     font-size: 14px;
     color: #292626;
 }
+
+/* remove dotted border in FF and IE */
+*:focus { outline: 0; }
+*:focus { outline: none; }
+*::-moz-focus-inner { border: none;}
+
 h1 {
     font-family: 'Helvetica Neue', 'Helvetica', Arial, FreeSans, sans-serif;
     line-height: 1.236em;
