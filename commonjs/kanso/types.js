@@ -5,6 +5,7 @@
 var fields = require('./fields'),
     widgets = require('./widgets'),
     utils = require('./utils'),
+    _ = require('./nimble'),
     Field = fields.Field;
 
 
@@ -66,15 +67,48 @@ Type.prototype.validate = function (doc) {
     return required_errors.concat(validation_errors);
 };
 
-Type.prototype.authorize = function (newDoc, oldDoc, userCtx) {
-    // TODO: handle created, edit, delete permisions for the Type object
-    // as a whole
-    if (!newDoc._deleted) {
-        return exports.authorizeFields(
-            this.fields, newDoc, oldDoc, newDoc, oldDoc, userCtx, []
-        );
+var testPerms = function (fns, newDoc, oldDoc, userCtx) {
+    var errors = [];
+    if (!utils.isArray(fns)) {
+        fns = [fns];
     }
-    return [];
+    _.each(fns, function (fn) {
+        try {
+            fn(newDoc, oldDoc, null, null, userCtx);
+        }
+        catch (err) {
+            errors.push(err);
+        }
+    });
+    return errors;
+};
+
+Type.prototype.authorize = function (newDoc, oldDoc, userCtx) {
+    var errors = [];
+    var perms = this.permissions
+    if (perms) {
+        if (newDoc._deleted && perms.delete) {
+            errors = errors.concat(
+                testPerms(perms.delete, newDoc, oldDoc, userCtx)
+            );
+        }
+        else if (!oldDoc && perms.create) {
+            errors = errors.concat(
+                testPerms(perms.create, newDoc, oldDoc, userCtx)
+            );
+        }
+        else if (oldDoc && perms.edit) {
+            errors = errors.concat(
+                testPerms(perms.edit, newDoc, oldDoc, userCtx)
+            );
+        }
+    }
+    if (!newDoc._deleted) {
+        errors = errors.concat(exports.authorizeFields(
+            this.fields, newDoc, oldDoc, newDoc, oldDoc, userCtx, []
+        ));
+    }
+    return errors;
 };
 
 
