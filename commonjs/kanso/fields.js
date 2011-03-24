@@ -171,7 +171,7 @@ exports.creator = function (options) {
     }
     options.permissions.unshift({
         create: permissions.matchUsername(),
-        edit: permissions.uneditable()
+        edit: permissions.fieldUneditable()
     });
     options.widget = options.widget || widgets.hidden();
     options.default_value = options.default_value || function (req) {
@@ -191,7 +191,7 @@ exports.timestamp = function (options) {
         options.permissions = [options.permissions];
     }
     options.permissions.unshift({
-        edit: permissions.uneditable()
+        edit: permissions.fieldUneditable()
     });
     options.widget = options.widget || widgets.hidden();
     options.default_value = options.default_value || function (req) {
