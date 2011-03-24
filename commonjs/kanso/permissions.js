@@ -31,7 +31,15 @@ exports.usernameMatchesField = function (path) {
     return function (newDoc, oldDoc, newValue, oldValue, userCtx) {
         var field = utils.getPropertyPath(newDoc, path);
         if (userCtx.name !== field) {
-            throw new Error('username does not match field: ' + path.join('.'));
+            throw new Error('Username does not match field: ' + path.join('.'));
+        }
+    };
+};
+
+exports.loggedIn = function () {
+    return function (newDoc, oldDoc, newValue, oldValue, userCtx) {
+        if (!userCtx.name) {
+            throw new Error('You must be logged in');
         }
     };
 };
