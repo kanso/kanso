@@ -132,7 +132,14 @@ exports.init = function () {
         if (exports.isAppURL(href)) {
             var url = exports.appPath(href);
             ev.preventDefault();
-            exports.setURL('GET', url);
+            var hash;
+            if (url.indexOf('#') !== -1) {
+                // work around History not supporting hashes in urls
+                var parts = url.split('#');
+                url = parts[0];
+                hash = parts[1];
+            }
+            exports.setURL('GET', url, {}, hash);
         }
     });
 
@@ -141,8 +148,13 @@ exports.init = function () {
         var state_data = window.History.getState().data;
         var method = state_data.method || 'GET';
         var data = state_data.data;
+        if (state_data.hash) {
+            // TODO: this is a work around until History can support hashes
+            url += '#' + state_data.hash;
+        }
         exports.handle(method, url, data);
     });
+    window.History.Adapter.trigger(window, 'statechange');
 
     // TODO: should this be after userCtx is available??
     // call init on app too
@@ -657,13 +669,17 @@ exports.handle = function (method, url, data) {
  * If pushState is supported, add an entry for the given url, prefixed with
  * the baseURL for the app.
  *
+ * @param {String} method
  * @param {String} url
+ * @param {Object} data (optional)
+ * @param {String} hash (optional)
  */
 
-exports.setURL = function (method, url, data) {
+exports.setURL = function (method, url, data, hash) {
     var fullurl = exports.getBaseURL() + url;
     window.History.pushState({
         method: method,
+        hash: hash,
         data: data
     }, document.title, fullurl);
 };
