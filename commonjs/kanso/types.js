@@ -86,7 +86,7 @@ var testPerms = function (fns, newDoc, oldDoc, userCtx) {
 
 Type.prototype.authorize = function (newDoc, oldDoc, userCtx) {
     var errors = [];
-    var perms = this.permissions
+    var perms = this.permissions;
     if (perms) {
         if (newDoc._deleted && perms.delete) {
             errors = errors.concat(
