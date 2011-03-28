@@ -88,9 +88,9 @@ Type.prototype.authorize = function (newDoc, oldDoc, userCtx) {
     var errors = [];
     var perms = this.permissions;
     if (perms) {
-        if (newDoc._deleted && perms.delete) {
+        if (newDoc._deleted && perms['delete']) {
             errors = errors.concat(
-                testPerms(perms.delete, newDoc, oldDoc, userCtx)
+                testPerms(perms['delete'], newDoc, oldDoc, userCtx)
             );
         }
         else if (!oldDoc && perms.create) {
