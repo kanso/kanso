@@ -740,7 +740,17 @@ exports.appPath = function (p) {
         newurl.hash = p;
         return exports.appPath(urlFormat(newurl));
     }
-    if (/\w+:/.test(p)) {
+    else if (p.charAt(0) === '?') {
+        // if the request is just a query, then prepend the current app path
+        // as a browser would
+        var newurl2 = urlParse(exports.getURL());
+        delete newurl2.query;
+        delete newurl2.search;
+        delete newurl2.href;
+        newurl2.search = p;
+        return exports.appPath(urlFormat(newurl2));
+    }
+    else if (/\w+:/.test(p)) {
         // include protocol
         var origin = p.split('/').slice(0, 3).join('/');
         // coerce window.location to a real string so we can use split in IE
