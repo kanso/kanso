@@ -102,9 +102,10 @@ exports.typelist = adminList(function (rows, ddoc, req) {
         f.push({fields: pairs.slice(0, 5), id: rows[i].id});
     }
     var field_names = [];
-    for (var k in type.fields) {
-        if (k !== '_rev' && k !== 'type') {
-            field_names.push(k);
+    for (var i = 0, len = pairs.length; i < len; i++) {
+        var name = pairs[i].field;
+        if (name !== '_rev' && name !== 'type') {
+            field_names.push(name);
         }
     }
 
