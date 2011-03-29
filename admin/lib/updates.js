@@ -17,6 +17,7 @@ exports.addtype = function (doc, req) {
     }
     utils.getDesignDoc(req.query.app, function (err, ddoc) {
         var settings = utils.appRequire(ddoc, 'kanso/settings'),
+            types = utils.appRequire(ddoc, 'kanso/types'),
             app = utils.appRequire(ddoc, settings.load),
             type = app.types ? app.types[req.query.type]: undefined;
 
@@ -26,6 +27,7 @@ exports.addtype = function (doc, req) {
         form.validate(req);
 
         if (form.isValid()) {
+            types.validate_doc_update(app.types, form.values, null, req.userCtx);
             db.saveDoc(form.values, function (err, resp) {
                 if (err) {
                     flashmessages.addMessage(req, {

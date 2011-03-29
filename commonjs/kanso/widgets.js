@@ -1,3 +1,6 @@
+var forms = require('./forms');
+
+
 var Widget = exports.Widget = function Widget(type, options) {
     options = options || {};
     this.classes = options.classes || [];
@@ -94,3 +97,13 @@ exports.select = function (options) {
     };
     return w;
 };
+
+/*
+exports.embeddedForm = function (options) {
+    var w = new Widget('form', options);
+    w.toHTML = function (name, value) {
+        return options.form.toHTML(null, forms.render.table, name + '.');
+    };
+    return w;
+};
+*/

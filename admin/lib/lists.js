@@ -46,6 +46,13 @@ exports.fieldPairs = function (fields, doc, path) {
                     value: kanso_utils.getPropertyPath(doc, path.concat([k]))
                 });
             }
+            else if (kanso_utils.constructorName(fields[k]) === 'Embedded') {
+                pairs = pairs.concat(
+                    exports.fieldPairs(
+                        fields[k].type.fields, doc, path.concat([k])
+                    )
+                );
+            }
             else if (typeof fields[k] === 'object') {
                 pairs = pairs.concat(
                     exports.fieldPairs(fields[k], doc, path.concat([k]))

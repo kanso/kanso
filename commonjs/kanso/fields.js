@@ -1,6 +1,7 @@
 var validators = require('./validators'),
     widgets = require('./widgets'),
     utils = require('./utils'),
+    forms = require('./forms'),
     permissions = require('./permissions');
 
 
@@ -242,6 +243,13 @@ exports.numberChoice = function (options) {
     return exports.choice(options);
 };
 
+function Embedded(options) {
+    var obj = new Field(options);
+    obj.constructor = Embedded;
+    obj.type = options.type;
+    return obj;
+};
+
 exports.embed = function (options) {
     var type = options.type;
     if (!options.permissions) {
@@ -251,6 +259,19 @@ exports.embed = function (options) {
     p.create = p.create || permissions.inherit(type);
     p.delete = p.delete || permissions.inherit(type);
     p.edit = p.edit || permissions.inherit(type);
+
+    if (!options.validators) {
+        options.validators = [];
+    }
+    options.validators.unshift(function (doc, value) {
+        type.validate(value);
+    });
+
+    /*options.widget = widgets.embeddedForm({
+        form: new forms.Form(options.type)
+    });*/
+
+    return new Embedded(options);
 };
 
 exports.embedList = function (options) {

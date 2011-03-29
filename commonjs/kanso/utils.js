@@ -98,7 +98,7 @@ exports.getPropertyPath = function (obj, path) {
     if (!path.length || !obj) {
         return obj;
     }
-    return exports.getPropertyPath(obj[path.shift()], path);
+    return exports.getPropertyPath(obj[path[0]], path.slice(1));
 };
 
 exports.setPropertyPath = function (obj, path, val) {
@@ -109,7 +109,8 @@ exports.setPropertyPath = function (obj, path, val) {
         obj[path[0]] = val;
         return;
     }
-    var next = path.shift();
+    var next = path[0];
+    path = path.slice(1);
     if (obj[next] === undefined) {
         obj[next] = {};
     }

@@ -154,7 +154,9 @@ exports.init = function () {
         }
         exports.handle(method, url, data);
     });
-    window.History.Adapter.trigger(window, 'statechange');
+    if (window.History.getState()) {
+        window.History.Adapter.trigger(window, 'statechange');
+    }
 
     // TODO: should this be after userCtx is available??
     // call init on app too
