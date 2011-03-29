@@ -43,3 +43,39 @@ exports.loggedIn = function () {
         }
     };
 };
+
+exports.all = function (perms) {
+    return function () {
+        for (var i = 0, len = perms.length; i < len; i++) {
+            perms[i].apply(this, arguments);
+        }
+    }
+};
+
+exports.any = function (perms) {
+    return function () {
+        var err;
+        for (var i = 0, len = perms.length; i < len; i++) {
+            try {
+                perms[i].apply(this, arguments);
+                return;
+            }
+            catch (e) {
+                // store the first error to re-throw if none pass
+                err = err || e;
+            }
+        }
+        if (err) {
+            throw err;
+        }
+    }
+};
+
+exports.inherit = function (type) {
+    return function (newDoc, oldDoc, newValue, oldValue, userCtx) {
+        var errors = type.authorize(newValue, oldValue, userCtx);
+        if (errors.length) {
+            throw errors[0];
+        }
+    };
+};

@@ -5,6 +5,7 @@
 var fields = require('./fields'),
     widgets = require('./widgets'),
     utils = require('./utils'),
+    permissions = require('./permissions'),
     _ = require('./nimble'),
     Field = fields.Field;
 
@@ -28,27 +29,21 @@ var Type = exports.Type = function Type(name, options) {
             required: false,
             omit_empty: true,
             widget: widgets.hidden(),
-            permissions: [
-                function (newDoc, oldDoc, newVal, oldVal, userCtx) {
-                    if (oldDoc) {
-                        if (newVal !== oldVal) {
-                            throw new Error(
-                                'Cannot change type field after document has ' +
-                                'been created'
-                            );
-                        }
-                    }
-                }
-            ]
+            permissions: {
+                edit: permissions.fieldUneditable()
+            }
         }),
         type: fields.string({
             default_value: name,
             widget: widgets.hidden(),
-            validators: [function (doc, value) {
-                if (value !== name) {
-                    throw new Error('Unexpected value for type');
-                }
-            }]
+            validators: {
+                create: function (newDoc, oldDoc, newVal, oldVal, userCtx) {
+                    if (newVal !== name) {
+                        throw new Error('Unexpected value for type');
+                    }
+                },
+                edit: permissions.fieldUneditable()
+            }
         })
     };
     if (options.fields) {
@@ -68,19 +63,14 @@ Type.prototype.validate = function (doc) {
     return required_errors.concat(validation_errors);
 };
 
-var testPerms = function (fns, newDoc, oldDoc, userCtx) {
+var testPerms = function (fn, newDoc, oldDoc, userCtx) {
     var errors = [];
-    if (!utils.isArray(fns)) {
-        fns = [fns];
+    try {
+        fn(newDoc, oldDoc, null, null, userCtx);
     }
-    _.each(fns, function (fn) {
-        try {
-            fn(newDoc, oldDoc, null, null, userCtx);
-        }
-        catch (err) {
-            errors.push(err);
-        }
-    });
+    catch (err) {
+        errors.push(err);
+    }
     return errors;
 };
 

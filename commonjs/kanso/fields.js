@@ -73,24 +73,19 @@ Field.prototype.validate = function (doc, value, raw) {
 
 Field.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, userCtx) {
     var perms = this.permissions;
-    perms = utils.isArray(perms) ? perms: [perms];
-
-    for (var i = 0; i < perms.length; i++) {
-        var fn = perms[i];
-        if (fn) {
-            if (oldDoc) {
-                if (fn.edit) {
-                    fn.edit(newDoc, oldDoc, newVal, oldVal, userCtx);
-                }
-            }
-            else {
-                if (fn.create) {
-                    fn.create(newDoc, oldDoc, newVal, oldVal, userCtx);
-                }
+    if (utils.isFunction(perms)) {
+        perms(newDoc, oldDoc, newVal, oldVal, userCtx);
+    }
+    else if (perms) {
+        if (oldDoc) {
+            if (perms.edit) {
+                perms.edit(newDoc, oldDoc, newVal, oldVal, userCtx);
             }
         }
-        if (utils.isFunction(fn)) {
-            fn(newDoc, oldDoc, newVal, oldVal, userCtx);
+        else {
+            if (perms.create) {
+                perms.create(newDoc, oldDoc, newVal, oldVal, userCtx);
+            }
         }
     }
 };
@@ -164,15 +159,27 @@ exports.email = function (options) {
 exports.creator = function (options) {
     options = options || {};
     if (!options.permissions) {
-        options.permissions = [];
+        options.permissions = {};
     }
-    if (!utils.isArray(options.permissions)) {
-        options.permissions = [options.permissions];
+    var p = options.permissions;
+    if (p.create) {
+        p.create = permissions.all([
+            permissions.matchUsername(),
+            p.create
+        ]);
     }
-    options.permissions.unshift({
-        create: permissions.matchUsername(),
-        edit: permissions.fieldUneditable()
-    });
+    else {
+        p.create = permissions.matchUsername();
+    }
+    if (p.edit) {
+        p.edit = permissions.edit([
+            permissions.fieldUneditable(),
+            p.edit
+        ]);
+    }
+    else {
+        p.edit = permissions.fieldUneditable();
+    }
     options.widget = options.widget || widgets.hidden();
     options.default_value = options.default_value || function (req) {
         return (req.userCtx && req.userCtx.name) || '';
@@ -185,14 +192,18 @@ exports.creator = function (options) {
 exports.timestamp = function (options) {
     options = options || {};
     if (!options.permissions) {
-        options.permissions = [];
+        options.permissions = {};
     }
-    if (!utils.isArray(options.permissions)) {
-        options.permissions = [options.permissions];
+    var p = options.permissions;
+    if (p.edit) {
+        p.edit = permissions.all([
+            permisions.fieldUneditable(),
+            p.edit
+        ]);
     }
-    options.permissions.unshift({
-        edit: permissions.fieldUneditable()
-    });
+    else {
+        p.edit = permissions.fieldUneditable();
+    }
     options.widget = options.widget || widgets.hidden();
     options.default_value = options.default_value || function (req) {
         return new Date().getTime();
@@ -229,4 +240,19 @@ exports.numberChoice = function (options) {
         }
     });
     return exports.choice(options);
+};
+
+exports.embed = function (options) {
+    var type = options.type;
+    if (!options.permissions) {
+        options.permissions = {};
+    }
+    var p = options.permissions;
+    p.create = p.create || permissions.inherit(type);
+    p.delete = p.delete || permissions.inherit(type);
+    p.edit = p.edit || permissions.inherit(type);
+};
+
+exports.embedList = function (options) {
+
 };
