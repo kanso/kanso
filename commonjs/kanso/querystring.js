@@ -1,35 +1,8 @@
+var _ = require('./underscore')._;
+
 /**
  * From node.js v0.2.6
  */
-
-// Browser-friendly version of Array.isArray
-var _isArray = Array.isArray || function (obj) {
-    return Object.prototype.toString.call(obj) === '[object Array]';
-};
-
-// cross-browser map implementation
-var _map = function (obj, iterator, context) {
-    if (obj.map) {
-        return obj.map(iterator, context);
-    }
-    var results = [];
-    var len = obj.length;
-    for (var i = 0; i < len; i++) {
-        results[results.length] = iterator.call(context, obj[i], i, obj);
-    }
-    return results;
-};
-
-// cross-browser Object.keys implementation
-var _keys = function (obj) {
-    var keys = [];
-    for (var k in obj) {
-        if (obj.hasOwnProperty(k)) {
-            keys.push(k);
-        }
-    }
-    return keys;
-};
 
 // Query String Utilities
 
@@ -68,7 +41,7 @@ QueryString.stringify = function (obj, sep, eq, munge, name) {
         return QueryString.escape(name) + eq + QueryString.escape(obj);
     case '[object Array]':
         name = name + (munge ? "[]" : "");
-        return _map(obj, function (item) {
+        return _.map(obj, function (item) {
             return QueryString.stringify(item, sep, eq, munge, name);
         }).join(sep);
     }
@@ -85,9 +58,9 @@ QueryString.stringify = function (obj, sep, eq, munge, name) {
 
     var begin = name ? name + "[" : "",
         end = name ? "]" : "",
-        keys = _keys(obj),
+        keys = _.keys(obj),
         n,
-        s = _map(_keys(obj), function (key) {
+        s = _.map(_.keys(obj), function (key) {
             n = begin + key + end;
             return QueryString.stringify(obj[key], sep, eq, munge, n);
         }).join(sep);
@@ -115,7 +88,7 @@ QueryString.parse = function (qs, sep, eq) {
     if (qs === undefined) {
         return {};
     }
-    _map(String(qs).split(sep || "&"), function (keyValue) {
+    _.map(String(qs).split(sep || "&"), function (keyValue) {
         var res = obj,
             next,
             kv = keyValue.split(eq || "="),
@@ -126,7 +99,7 @@ QueryString.parse = function (qs, sep, eq) {
             var end = offset + all.length === key.length;
             name = name || nameInBrackets || nameIn2Quotes || nameIn1Quotes;
             next = end ? value : {};
-            if (_isArray(res[name])) {
+            if (_.isArray(res[name])) {
                 res[name].push(next);
                 res = next;
             }

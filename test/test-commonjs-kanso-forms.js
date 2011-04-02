@@ -4,6 +4,8 @@ var testing = require('../lib/testing'),
 
 var context = {window: {}, kanso: {design_doc: {}}, console: console};
 var mcache = {};
+var mcache2 = {};
+var mcache3 = {};
 
 module.exports = nodeunit.testCase({
 
@@ -16,75 +18,80 @@ module.exports = nodeunit.testCase({
                 }
                 that.forms = forms;
                 testing.testRequire(
-                    'kanso/fields', mcache, context, {}, function (err, fields) {
+                    'kanso/types', mcache2, context, {}, function (err, types) {
                         if (err) {
                             return cb(err);
                         }
-                        that.fields = fields;
-                        cb();
+                        that.types = types;
+                        testing.testRequire(
+                            'kanso/fields', mcache3, context, {}, function (err, fields) {
+                                if (err) {
+                                    return cb(err);
+                                }
+                                that.fields = fields;
+                                cb();
+                            }
+                        );
                     }
                 );
             }
         );
     },
 
-    'parseRequest': function (test) {
+    'formValuesToTree': function (test) {
         var forms = this.forms;
-        var req = {
-            form: {
-                'one': '1',
-                'two': '2',
-                'three.four.one': '3.4.1',
-                'three.four.two': '3.4.2'
-            }
+        var query = {
+            'one': 'val1',
+            'two.three': 'val2',
+            'two.four': 'val3'
         };
-        test.same(forms.parseRequest(req), {
-            'one': '1',
-            'two': '2',
-            'three': {
-                'four': {
-                    'one': '3.4.1',
-                    'two': '3.4.2'
+        test.same(
+            forms.formValuesToTree(query),
+            {
+                one: 'val1',
+                two: {
+                    three: 'val2',
+                    four: 'val3'
                 }
             }
-        });
+        );
         test.done();
     },
 
-    'renderFields - with values': function (test) {
-        test.expect(5);
+    'parseRequest': function (test) {
         var forms = this.forms;
-        var fields = this.fields;
-        var f = {
-            one: fields.string(),
-            two: fields.string()
-        };
-        f.one.widget.toHTML = function (name, value) {
-            test.equal(name, 'one');
-            test.equal(value, '1');
-            return 'one';
-        };
-        f.two.widget.toHTML = function (name, value) {
-            test.equal(name, 'two');
-            test.equal(value, '2');
-            return 'two';
-        };
-        var values = {
-            one: '1',
-            two: '2'
-        };
-        var html = forms.renderFields(forms.render.div, f, values, {}, []);
-        test.equal(
-            html,
-            '<div class="field required">' +
-                '<label for="id_one">One</label>' +
-                'one' +
-            '</div>' +
-            '<div class="field required">' +
-                '<label for="id_two">Two</label>' +
-                'two' +
-            '</div>'
-        );
+        var Type = this.types.Type;
+        var Field = this.fields.Field;
+
+        var t = new Type({
+            fields: {
+                one: new Field({
+                    parse: function (raw) {
+                        test.equal(raw, 'raw1');
+                        return 'parsed1';
+                    }
+                }),
+                two: {
+                    three: new Field({
+                        parse: function (raw) {
+                            test.equal(raw, 'raw2');
+                            return 'parsed2';
+                        }
+                    })
+                }
+            }
+        });
+
+        var doc = forms.parseRaw(t.fields, {
+            one: 'raw1',
+            two: {three: 'raw2'}
+        });
+
+        test.same(doc, {
+            one: 'parsed1',
+            two: {three: 'parsed2'}
+        });
+
         test.done();
     }
 

@@ -1,5 +1,27 @@
-var utils = require('./utils');
+/**
+ * Permissions
+ * ===========
+ *
+ * Used on both Fields and Types to check a given user is authorized to make
+ * a change to a document.
+ *
+ */
 
+
+/**
+ * Module dependencies
+ */
+
+var utils = require('./utils'),
+    _ = require('./underscore')._;
+
+
+/**
+ * Field's new value should match current user's name
+ *
+ * @return {Function}
+ * @api public
+ */
 
 exports.matchUsername = function () {
     return function (newDoc, oldDoc, newVal, oldVal, userCtx) {
@@ -14,6 +36,14 @@ exports.matchUsername = function () {
     };
 };
 
+/**
+ * The value of this field should never change after the document has been
+ * created.
+ *
+ * @return {Function}
+ * @api public
+ */
+
 exports.fieldUneditable = function () {
     return function (newDoc, oldDoc, newValue, oldValue, userCtx) {
         if (oldDoc) {
@@ -24,8 +54,25 @@ exports.fieldUneditable = function () {
     };
 };
 
+/**
+ * User's name should match the *old* value of the given field. A field can be
+ * specified using a string or an array of strings (like a path).
+ *
+ * eg: usernameMatchesField('creator')
+ *     usernameMatchesField(['meta','creator'])
+ *
+ *     {
+ *         creator: 'name',
+ *         meta: {creator: 'name2'}
+ *     }
+ *
+ * @param path
+ * @return {Function}
+ * @api public
+ */
+
 exports.usernameMatchesField = function (path) {
-    if (!utils.isArray(path)) {
+    if (!_.isArray(path)) {
         path = [path];
     }
     return function (newDoc, oldDoc, newValue, oldValue, userCtx) {
@@ -36,46 +83,77 @@ exports.usernameMatchesField = function (path) {
     };
 };
 
+/**
+ * Checks that user's context has a username
+ *
+ * @return {Function}
+ * @api public
+ */
+
 exports.loggedIn = function () {
     return function (newDoc, oldDoc, newValue, oldValue, userCtx) {
-        if (!userCtx.name) {
+        if (!userCtx || !userCtx.name) {
             throw new Error('You must be logged in');
         }
     };
 };
 
+/**
+ * Runs an array of permissions functions and checks that all of them pass,
+ * returning all failures.
+ *
+ * @param {Array} perms
+ * @api public
+ */
+
 exports.all = function (perms) {
     return function () {
-        for (var i = 0, len = perms.length; i < len; i++) {
-            perms[i].apply(this, arguments);
-        }
+        var args = arguments;
+        return _.reduce(perms, function (errs, p) {
+            return errs.concat(utils.getErrors(p, args));
+        }, []);
     }
 };
+
+/**
+ * Tests to see if any one permission function passes, returning on the
+ * first success. If all permissions fail, then all errors are returned.
+ *
+ * @param {Array} perms
+ * @api public
+ */
 
 exports.any = function (perms) {
     return function () {
-        var err;
+        var errs = [];
         for (var i = 0, len = perms.length; i < len; i++) {
             try {
-                perms[i].apply(this, arguments);
-                return;
+                var p_errs = (perms[i].apply(this, arguments) || []);
+                errs = errs.concat(p_errs);
+                if (!p_errs.length) {
+                    // return as soon as one passes
+                    return [];
+                }
             }
             catch (e) {
                 // store the first error to re-throw if none pass
-                err = err || e;
+                errs.push(e);
             }
         }
-        if (err) {
-            throw err;
-        }
+        return errs;
     }
 };
 
+/**
+ * Treat new and old values like new documents of a given type, and attempt to
+ * authorize the value against the type's permissions.
+ *
+ * @param {Type} type
+ * @api public
+ */
+
 exports.inherit = function (type) {
     return function (newDoc, oldDoc, newValue, oldValue, userCtx) {
-        var errors = type.authorize(newValue, oldValue, userCtx);
-        if (errors.length) {
-            throw errors[0];
-        }
+        return type.authorize(newValue || {_deleted: true}, oldValue, userCtx);
     };
 };

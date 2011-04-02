@@ -72,25 +72,6 @@ exports.getBaseURL = function (req) {
 
 
 /**
- * isArray function from underscore.js
- * http://documentcloud.github.com/underscore
- */
-
-exports.isArray = Array.isArray || function (obj) {
-    return !!(obj && obj.concat && obj.unshift && !obj.callee);
-};
-
-/**
- * isFunction from underscore.js
- * http://documentcloud.github.com/underscore
- */
-
-exports.isFunction = function (obj) {
-    return !!(obj && obj.constructor && obj.call && obj.apply);
-};
-
-
-/**
  * Traverses an object and its sub-objects using an array of property names.
  */
 
@@ -158,3 +139,27 @@ exports.generateUUID = function () {
     return uuid.join('');
 };
 /*jslint bitwise: true*/
+
+
+/**
+ * Call function with arguments, catch any errors and add to an array,
+ * returning the modified array.
+ *
+ * @param {Array} arr
+ * @param {Function} fn
+ * @param {Array} args
+ * @return {Array}
+ * @api private
+ */
+
+exports.getErrors = function (fn, args) {
+    var arr = []
+    try {
+        arr = arr.concat(fn.apply(this, args) || []);
+    }
+    catch (e) {
+        arr.push(e);
+    }
+    return arr;
+};
+

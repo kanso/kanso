@@ -20,26 +20,6 @@ module.exports = nodeunit.testCase({
         );
     },
 
-    /*
-    exports['matchField'] = function(test){
-        var v = validators.matchField('field1');
-        var data = {
-            fields: {
-                field1: {data: 'one'},
-                field2: {data: 'two'}
-            }
-        };
-        v(data, data.fields.field2, function(err){
-            test.equals(err, 'Does not match field1');
-            data.fields.field2.data = 'one';
-            v(data, data.fields.field2, function(err){
-                test.equals(err, undefined);
-                test.done();
-            });
-        });
-    };
-    */
-
     'min': function (test) {
         test.expect(1);
         try {

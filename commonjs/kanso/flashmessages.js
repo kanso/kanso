@@ -8,7 +8,7 @@
 
 var utils = require('./utils'),
     cookies = require('./cookies'),
-    _ = require('./nimble');
+    _ = require('./underscore');
 
 
 exports.readRequestCookie = function (req) {

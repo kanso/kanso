@@ -1,202 +1,285 @@
 /**
- * Module dependencies
+ * Types
+ * =====
+ *
+ * Document types can be used to ease the validation of updates and check
+ * permissions when creating, editing or deleting documents.
+ *
  */
-
-var fields = require('./fields'),
-    widgets = require('./widgets'),
-    utils = require('./utils'),
-    forms = require('./forms'),
-    permissions = require('./permissions'),
-    _ = require('./nimble'),
-    Field = fields.Field;
-
-
-var Type = exports.Type = function Type(name, options) {
-    if (typeof name !== 'string') {
-        throw new Error('First argument must be the type name');
-    }
-    this.name = name;
-    this.permissions = options.permissions || {};
-    this.validate_doc_update = options.validate_doc_update;
-    this.allow_extra_fields = options.allow_extra_fields || false;
-
-    this.fields = {
-        _id: fields.string({
-            required: false,
-            omit_empty: true,
-            widget: widgets.hidden()
-        }),
-        _rev: fields.string({
-            required: false,
-            omit_empty: true,
-            widget: widgets.hidden(),
-            permissions: {
-                edit: permissions.fieldUneditable()
-            }
-        }),
-        type: fields.string({
-            default_value: name,
-            widget: widgets.hidden(),
-            validators: {
-                create: function (newDoc, oldDoc, newVal, oldVal, userCtx) {
-                    if (newVal !== name) {
-                        throw new Error('Unexpected value for type');
-                    }
-                },
-                edit: permissions.fieldUneditable()
-            }
-        })
-    };
-    if (options.fields) {
-        for (var k in options.fields) {
-            if (options.fields.hasOwnProperty(k)) {
-                this.fields[k] = options.fields[k];
-            }
-        }
-    }
-};
-
-Type.prototype.validate = function (doc) {
-    var validation_errors = forms.validateFields(
-        this.fields, doc, doc, [], this.allow_extra_fields
-    );
-    var required_errors = forms.checkRequired(this.fields, doc, []);
-    return required_errors.concat(validation_errors);
-};
-
-var testPerms = function (fn, newDoc, oldDoc, userCtx) {
-    var errors = [];
-    try {
-        fn(newDoc, oldDoc, null, null, userCtx);
-    }
-    catch (err) {
-        errors.push(err);
-    }
-    return errors;
-};
-
-Type.prototype.authorize = function (newDoc, oldDoc, userCtx) {
-    var errors = [];
-    var perms = this.permissions;
-    if (perms) {
-        if (newDoc._deleted && perms['delete']) {
-            errors = errors.concat(
-                testPerms(perms['delete'], newDoc, oldDoc, userCtx)
-            );
-        }
-        else if (!oldDoc && perms.create) {
-            errors = errors.concat(
-                testPerms(perms.create, newDoc, oldDoc, userCtx)
-            );
-        }
-        else if (oldDoc && perms.edit) {
-            errors = errors.concat(
-                testPerms(perms.edit, newDoc, oldDoc, userCtx)
-            );
-        }
-    }
-    if (!newDoc._deleted) {
-        errors = errors.concat(exports.authorizeFields(
-            this.fields, newDoc, oldDoc, newDoc, oldDoc, userCtx, []
-        ));
-    }
-    return errors;
-};
 
 
 /**
- * Iterates over values and checks against field permissions, recursing through
- * sub-objects. Returns an array of permission errors, or an empty array if
- * valid.
- *
- * @param {Object} fields
- * @param {Object} newValues
- * @param {Object} oldValues
- * @param {Object} newDoc
- * @param {Object} oldDoc
- * @param {Object} userCtx
- * @param {Array} path
- * @return {Array}
+ * Module dependencies
  */
 
-exports.authorizeFields = function (fields, newValues, oldValues, newDoc,
-                                    oldDoc, userCtx, path) {
-    var errors = [];
+var utils = require('./utils'),
+    fields = require('./fields'),
+    _ = require('./underscore')._;
 
-    for (var k in fields) {
-        if (fields.hasOwnProperty(k)) {
-            var f = fields[k];
-            // TODO: when a module cache is implemented in couchdb, we can
-            // change this to an instanceof check. until then instanceof
-            // checks are to be considered fragile
-            if (utils.constructorName(f) === 'Field' ||
-                utils.constructorName(f) === 'Embedded') {
-                // its a field, validate it
-                try {
-                    f.authorize(
-                        newDoc,
-                        oldDoc,
-                        newValues[k],
-                        oldValues ? oldValues[k]: null,
-                        userCtx
-                    );
-                }
-                catch (e) {
-                    e.field = path.concat([k]);
-                    errors.push(e);
-                }
-            }
-            else {
-                // recurse through sub-objects in the type's schema to find
-                // more fields
-                errors = errors.concat(exports.authorizeFields(
-                    fields[k],
-                    newValues[k],
-                    oldValues ? oldValues[k]: null,
-                    newDoc,
-                    oldDoc,
-                    userCtx,
-                    path.concat([k])
-                ));
-            }
-        }
-    }
-    return errors;
+
+/**
+ * Creates a new Type object
+ *
+ * Options:
+ *   fields      {Object}  - Field objects to use as the Types's schema
+ *   permissions {Object}  - a permissions check function or an object
+ *                           containing separate functions to run on create,
+ *                           edit and update operations.
+ *
+ * @param {Object} options
+ * @constructor
+ * @api public
+ */
+
+var Type = exports.Type = function Type(options) {
+    _.extend(this, _.defaults(options || {}, {
+        fields: {},
+        permissions: []
+    }));
+    this.fields._id = new fields.Field({
+        omit_empty: true,
+        required: false
+    });
+    this.fields._rev = new fields.Field({
+        omit_empty: true,
+        required: false
+    });
+    this.fields._deleted = new fields.Field({
+        omit_empty: true,
+        required: false
+    });
 };
 
+/**
+ * Run field validators against document and check for missing required
+ * fields or extra fields when the Types's allow_extra_fields property is
+ * set to false.
+ *
+ * @param {Object} doc
+ * @param {Object} rawDoc
+ * @return {Array}
+ * @api public
+ */
 
-// TODO: when circular requires are fixed in couchdb, remove types argument?
-exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
-    log('types.validate_doc_update');
-    var type = (oldDoc && oldDoc.type) || newDoc.type;
-    if (type && types[type]) {
-        var t = types[type];
-        if (!newDoc._deleted) {
-            log('t.validate');
-            var validation_errors = t.validate(newDoc);
-            if (validation_errors.length) {
-                var err = validation_errors[0];
-                var msg = err.message || err.toString();
-                if (err.field && err.field.length) {
-                    msg = err.field.join('.') + ': ' + msg;
-                }
-                throw {forbidden: msg};
-            }
-        }
-        log('t.authorize');
-        var permissions_errors = t.authorize(newDoc, oldDoc, userCtx);
-        if (permissions_errors.length) {
-            var err2 = permissions_errors[0];
-            var msg2 = err2.message || err2.toString();
-            if (err2.field && err2.field.length) {
-                msg2 = err2.field.join('.') + ': ' + msg2;
-            }
-            throw {unauthorized: msg2};
-        }
-        if (t.validate_doc_update) {
-            log('t.validate_doc_update');
-            t.validate_doc_update(newDoc, oldDoc, userCtx);
-        }
+Type.prototype.validate = function (doc, rawDoc) {
+    rawDoc = rawDoc || doc;
+    return this.validateFieldSet(this.fields, doc, doc, rawDoc, []);
+};
+
+/**
+ * Validate a specific field, returning all validation errors as an array with
+ * each error's field property prefixed by the current path.
+ *
+ * @param {Field} field
+ * @param {Object} doc
+ * @param value
+ * @param raw
+ * @param {Array} path
+ * @return {Array}
+ * @api public
+ */
+
+Type.prototype.validateField = function (field, doc, value, raw, path) {
+    //console.log('validateField: ' + path.join('.'));
+    return _.map(field.validate(doc, value, raw), function (err) {
+        err.field = path.concat(err.field || []);
+        err.has_field = true;
+        return err;
+    });
+};
+
+/**
+ * Validates an object containing fields or other sub-objects, iterating over
+ * each property and recursing through sub-objects to find all Fields.
+ *
+ * Returns an array of validation errors, each with a field property set to the
+ * path of the field which caused the error.
+ *
+ * @param {Object} fields
+ * @param {Object} doc
+ * @param {Object} values
+ * @param {Object} raw
+ * @param {Array} path
+ * @return {Array}
+ * @api public
+ */
+
+Type.prototype.validateFieldSet = function (fields, doc, values, raw, path) {
+    //console.log('validateFieldSet: ' + path.join('.'));
+    values = values || {};
+    fields = fields || {};
+    raw = raw || {};
+
+    // Expecting sub-object, not a value
+    if (typeof values !== 'object') {
+        var e = new Error('Unexpected property');
+        e.field = path;
+        e.has_field = false;
+        return [e];
     }
-    log('types.validate_doc_update done');
+
+    // Ensure we walk through all paths of both fields and values by combining
+    // the keys of both. Otherwise, we might miss out checking for missing
+    // required fields, or may not detect the presence of extra fields.
+
+    var keys = _.uniq(_.keys(fields).concat(_.keys(values)));
+    var that = this;
+
+    return _.reduce(keys, function (errs, k) {
+        var f = fields[k];
+        if (f === undefined) {
+            // Extra value with no associated field detected
+            if (!that.allow_extra_fields) {
+                var e = new Error('Unexpected property');
+                e.field = path.concat([k]);
+                e.has_field = false;
+                errs.push(e);
+            }
+            return errs;
+        }
+        var fn = that.validateFieldSet;
+        var cname = utils.constructorName(f);
+        if (cname === 'Field' ||
+            cname === 'Embedded' ||
+            cname === 'EmbeddedList') {
+            fn = that.validateField;
+        }
+        return errs.concat(
+            fn.call(that, f, doc, values[k], raw[k], path.concat([k]))
+        );
+    }, []);
+};
+
+/**
+ * Run field permissions checks against userCtx and document.
+ *
+ * @param {Object} nDoc - new document
+ * @param {Object} oDoc - old document
+ * @param {Object} userCtx - user context object
+ * @return {Array}
+ * @api public
+ */
+
+Type.prototype.authorize = function (nDoc, oDoc, user) {
+    var perms = this.permissions;
+    var errs = []
+    if (_.isFunction(perms)) {
+        errs = errs.concat(
+            utils.getErrors(perms, [nDoc, oDoc, null, null, user])
+        );
+    }
+    // on edit
+    var fn = perms.edit;
+    // on create
+    if (nDoc && !oDoc) {
+        fn = perms.create;
+    }
+    // on delete
+    else if (!nDoc || nDoc._deleted) {
+        fn = perms.delete;
+    }
+    if (fn) {
+        errs = errs.concat(
+            utils.getErrors(fn, [nDoc, oDoc, null, null, user])
+        );
+    }
+    return errs.concat(
+        this.authFieldSet(this.fields, nDoc, oDoc, nDoc, oDoc, user, [])
+    );
+};
+
+/**
+ * Authorize a specific field, returning all permissions errors as an array with
+ * each error's field property prefixed by the current path.
+ *
+ * @param {Field} f     - field object
+ * @param {Object} nDoc - new document
+ * @param {Object} oDoc - old document
+ * @param nVal          - new field value
+ * @param oVal          - old field value
+ * @param {Object} user - user context object
+ * @param {Array} path  - current path
+ * @return {Array}
+ * @api public
+ */
+
+Type.prototype.authField = function (f, nDoc, oDoc, nVal, oVal, user, path) {
+    //console.log('authField: ' + path.join('.'));
+    return _.map(f.authorize(nDoc, oDoc, nVal, oVal, user), function (err) {
+        err.field = path.concat(err.field || []);
+        err.has_field = true;
+        return err;
+    });
+};
+
+/**
+ * Authorizes an object containing fields or other sub-objects, iterating over
+ * each property and recursing through sub-objects to find all Fields.
+ *
+ * Returns an array of permissions errors, each with a field property set to the
+ * path of the field which caused the error.
+ *
+ * @param {Field} f     - field object
+ * @param {Object} nDoc - new document
+ * @param {Object} oDoc - old document
+ * @param nVal          - new field value
+ * @param oVal          - old field value
+ * @param {Object} user - user context object
+ * @param {Array} path  - current path
+ * @return {Array}
+ * @api public
+ */
+
+Type.prototype.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path) {
+    //console.log('authFieldSet: ' + path.join('.'));
+    nVal = nVal || {};
+    oVal = oVal || {};
+    f = f || {};
+
+    // Expecting sub-object, not a value
+    // This *should* be picked up by validation, and be raised as a validation
+    // error before it gets to the auth stage
+    if (typeof nVal !== 'object') {
+        var e = new Error('Unexpected property');
+        e.field = path;
+        e.has_field = false;
+        return [e];
+    }
+
+    // Ensure we walk through all paths of both fields and values by combining
+    // the keys of both. Otherwise, we might miss out checking for missing
+    // required fields, or may not detect the presence of extra fields.
+
+    var fKeys = _.keys(f);
+    var newKeys = _.keys(nVal);
+    var oldKeys = _.keys(oVal);
+    var keys = _.uniq(fKeys.concat(newKeys).concat(oldKeys));
+
+    var that = this;
+
+    return _.reduce(keys, function (errs, k) {
+        var field = f[k];
+        if (field === undefined) {
+            // Extra value with no associated field detected
+            // This *should* be picked up by validation, and be raised as a
+            // validation error before it gets to the auth stage
+            if (!that.allow_extra_fields) {
+                var e = new Error('Unexpected property');
+                e.field = path.concat([k]);
+                e.has_field = false;
+                errs.push(e);
+            }
+            return errs;
+        }
+        var fn = that.authFieldSet;
+        var cname = utils.constructorName(field);
+        if (cname === 'Field' ||
+            cname === 'Embedded' ||
+            cname === 'EmbeddedList') {
+            fn = that.authField;
+        }
+        return errs.concat(fn.call(
+            that, field, nDoc, oDoc, nVal[k], oVal[k], user, path.concat([k])
+        ));
+    }, []);
 };

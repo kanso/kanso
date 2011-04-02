@@ -4,23 +4,24 @@ var testing = require('../lib/testing'),
 
 var context = {window: {}, kanso: {design_doc: {}}, console: console};
 var mcache = {};
+var mcache2 = {};
 
 module.exports = nodeunit.testCase({
 
     setUp: function (cb) {
         var that = this;
         testing.testRequire(
-            'kanso/types', mcache, context, {}, function (err, types) {
+            'kanso/fields', mcache, context, {}, function (err, fields) {
                 if (err) {
                     return cb(err);
                 }
-                that.types = types;
+                that.fields = fields;
                 testing.testRequire(
-                    'kanso/fields', mcache, context, {}, function (err, fields) {
+                    'kanso/types', mcache2, context, {}, function (err, types) {
                         if (err) {
                             return cb(err);
                         }
-                        that.fields = fields;
+                        that.types = types;
                         cb();
                     }
                 );
@@ -28,300 +29,373 @@ module.exports = nodeunit.testCase({
         );
     },
 
+    'Type - defaults': function (test) {
+        var Type = this.types.Type;
+        var t = new Type();
+        test.same(Object.keys(t.fields), ['_id','_rev', '_deleted']);
+        test.same(t.permissions, {});
+        test.done();
+    },
+
     'validate': function (test) {
+        var Field = this.fields.Field;
         var Type = this.types.Type;
-        var fields = this.fields;
 
-        var doc = {
-            type: 'test_type',
-            one: 'one',
-            two: 2
+        var args = [];
+        var logArgs = function (doc, val, raw) {
+            args.push([doc, val, raw]);
         };
-        var t = new Type('test_type', {
+        var neverValid = function () {
+            throw new Error('never valid');
+        };
+
+        var t = new Type({
             fields: {
-                one: fields.string(),
-                two: fields.number()
-            }
-        });
-        var errs = t.validate(doc);
-        test.same(errs, []);
-        test.done();
-    },
-
-    'validate - error': function (test) {
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var doc = {
-            type: 'test_type',
-            one: 'one',
-            two: 'asdf'
-        };
-        var t = new Type('test_type', {
-            fields: {
-                one: fields.string(),
-                two: fields.number()
-            }
-        });
-        var errs = t.validate(doc);
-        test.same(errs.length, 1);
-        test.same(errs[0].message, 'Not a number');
-        test.same(errs[0].field, ['two']);
-        test.done();
-    },
-
-    'validate - nested': function (test) {
-        test.expect(4);
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var testdoc = {
-            type: 'test_type',
-            one: 'one',
-            sublevel: {
-                two: 2,
-                three: true
-            }
-        };
-        var type_fields = {
-            one: fields.string(),
-            sublevel: {
-                two: fields.number(),
-                three: fields.boolean()
-            }
-        }
-        type_fields.sublevel.three.validators.push(function (doc, value) {
-            test.ok(true, 'sublevel validators called');
-            test.same(doc, testdoc);
-            test.strictEqual(value, true);
-        });
-        var t = new Type('test_type', {fields: type_fields});
-        var errs = t.validate(testdoc);
-        test.same(errs, []);
-        test.done();
-    },
-
-    'validate - extra fields not allowed': function (test) {
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var testdoc = {
-            type: 'test_type',
-            sub: {
-                extra: 'blah'
-            }
-        };
-        var t = new Type('test_type', {fields: {sub: {}}});
-        var errs = t.validate(testdoc);
-
-        test.equals(errs.length, 1);
-        test.equals(errs[0].message, 'Field "sub.extra" not defined');
-        test.same(errs[0].field, ['sub', 'extra']);
-        test.done();
-    },
-
-    'validate - extra fields allowed': function (test) {
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var testdoc = {
-            type: 'test_type',
-            sub: {
-                extra: 'blah'
-            }
-        };
-        var t = new Type('test_type', {
-            fields: {sub: {}},
-            allow_extra_fields: true
-        });
-        var errs = t.validate(testdoc);
-
-        test.same(errs, []);
-        test.done();
-    },
-
-    'validate - array': function (test) {
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var testdoc = {
-            type: 'test_type',
-            one: 'one',
-            list: [1,2,3,4]
-        };
-        var t = new Type('test_type', {
-            fields: {
-                one: fields.string(),
-                list: [
-                    fields.number()
-                ]
-            }
-        });
-        var errs = t.validate(testdoc);
-
-        test.same(errs, []);
-        test.done();
-    },
-
-    'validate - array error': function (test) {
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var testdoc = {
-            type: 'test_type',
-            one: 'one',
-            list: ['test', 'asdf']
-        };
-        var t = new Type('test_type', {
-            fields: {
-                one: fields.string(),
-                list: [
-                    fields.number()
-                ]
-            }
-        });
-        var errs = t.validate(testdoc);
-
-        test.equals(errs.length, 2);
-        test.same(errs[0].field, ['list', '0']);
-        test.same(errs[1].field, ['list', '1']);
-        test.done();
-    },
-
-    'validate - array extra fields not allowed': function (test) {
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var testdoc = {
-            type: 'test_type',
-            list: [1,2,3,4]
-        };
-        var t = new Type('test_type', {
-            fields: {
-                list: []
-            }
-        });
-        var errs = t.validate(testdoc);
-
-        test.equal(errs.length, 1);
-        test.equal(errs[0].message, 'Field "list" should be empty');
-        test.same(errs[0].field, ['list']);
-        test.done();
-    },
-
-    'validate - array extra fields allowed': function (test) {
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var testdoc = {
-            type: 'test_type',
-            list: [1,2,3,4]
-        };
-        var t = new Type('test_type', {
-            fields: {
-                list: []
-            },
-            allow_extra_fields: true
-        });
-        var errs = t.validate(testdoc);
-
-        test.same(errs, []);
-        test.done();
-    },
-
-    'validate - missing required field': function (test) {
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var doc = {
-            type: 'test_type',
-            one: 'one'
-        };
-        var t = new Type('test_type', {
-            fields: {
-                one: fields.string({required: true}),
-                two: fields.string({required: true})
-            }
-        });
-        var errs = t.validate(doc);
-
-        test.equal(errs.length, 1);
-        test.same(errs[0].field, ['two']);
-        test.equal(errs[0].message, 'Required field');
-        test.done();
-    },
-
-    'validate - falsy required field': function (test) {
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var doc = {
-            type: 'test_type',
-            one: 'one',
-            two: false
-        };
-        var t = new Type('test_type', {
-            fields: {
-                one: fields.string({required: true}),
-                two: fields.string({required: true})
-            }
-        });
-        var errs = t.validate(doc);
-
-        test.same(errs, []);
-        test.done();
-    },
-
-    'validate - nested required field': function (test) {
-        var Type = this.types.Type;
-        var fields = this.fields;
-
-        var doc = {
-            type: 'test_type',
-            one: 'one',
-            sub: {
-                obj: {
-                    two: 'asdf'
+                one: new Field({
+                    validators: [logArgs]
+                }),
+                two: new Field({
+                    validators: [logArgs, neverValid]
+                }),
+                three: {
+                    four: {
+                        five: new Field({
+                            validators: [logArgs, neverValid]
+                        })
+                    }
                 }
             }
+        });
+
+        var doc = {
+            _id: 'someid',
+            one: 1,
+            two: 2,
+            three: {four: {five: 'asdf'}}
         };
-        var t = new Type('test_type', {
+
+        var raw = {
+            one: '1',
+            two: '2',
+            three: {four: {five: 'asdf'}}
+        };
+
+        var errs = t.validate(doc, raw);
+        test.equal(errs.length, 2);
+        test.same(errs[0].field, ['two']);
+        test.equal(errs[0].has_field, true);
+        test.same(errs[1].field, ['three', 'four', 'five']);
+        test.equal(errs[1].has_field, true);
+        test.done();
+    },
+
+    'validate - missing required fields': function (test) {
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var args = [];
+        var logArgs = function (doc, val, raw) {
+            args.push([doc, val, raw]);
+        };
+        var neverValid = function () {
+            throw new Error('never valid');
+        };
+
+        var t = new Type({
             fields: {
-                one: fields.string({required: true}),
-                sub: {obj: {two: fields.string({required: true})}}
+                one: new Field({
+                    validators: [logArgs]
+                })
             }
         });
-        var errs = t.validate(doc);
+
+        var doc = {_id: 'someid'};
+        var raw = {};
+
+        var errs = t.validate(doc, raw);
+        test.equal(errs.length, 1);
+        test.same(errs[0].field, ['one']);
+        test.equal(errs[0].message, 'Required field');
+        test.equal(errs[0].has_field, true);
+        test.done();
+    },
+
+    'validate - missing required fields - nested': function (test) {
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var args = [];
+        var logArgs = function (doc, val, raw) {
+            args.push([doc, val, raw]);
+        };
+        var neverValid = function () {
+            throw new Error('never valid');
+        };
+
+        var t = new Type({
+            fields: {
+                one: {
+                    two: new Field({
+                    validators: [logArgs]
+                    })
+                }
+            }
+        });
+
+        var doc = {_id: 'someid'};
+        var raw = {};
+
+        var errs = t.validate(doc, raw);
+        test.equal(errs.length, 1);
+        test.same(errs[0].field, ['one', 'two']);
+        test.equal(errs[0].message, 'Required field');
+        test.equal(errs[0].has_field, true);
+        test.done();
+    },
+
+    'validate - field in the wrong place': function (test) {
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var args = [];
+        var logArgs = function (doc, val, raw) {
+            args.push([doc, val, raw]);
+        };
+        var neverValid = function () {
+            throw new Error('never valid');
+        };
+
+        var t = new Type({
+            allow_extra_fields: true,
+            fields: {
+                one: {
+                    two: new Field({
+                        validators: [logArgs]
+                    })
+                }
+            }
+        });
+
+        var doc = {_id: 'someid', one: 'blah', asdf: {two: 123}};
+        var raw = {one: 'blah', asdf: {two: '123'}};
+
+        var errs = t.validate(doc, raw);
+        test.equal(errs.length, 1);
+        test.same(errs[0].field, ['one']);
+        test.equal(errs[0].message, 'Unexpected property');
+        test.equal(errs[0].has_field, false);
+        // asdf.two is not covered by the fieldset, so unexpected properties
+        // don't matter.
+        test.done();
+    },
+
+    'validate - extra values': function (test) {
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var args = [];
+        var logArgs = function (doc, val, raw) {
+            args.push([doc, val, raw]);
+        };
+        var neverValid = function () {
+            throw new Error('never valid');
+        };
+
+        var t = new Type({
+            fields: {
+                one: new Field({
+                    validators: [logArgs]
+                })
+            }
+        });
+
+        var doc = {_id: 'someid', one: 'blah', asdf: {two: 123}};
+        var raw = {one: 'blah', asdf: {two: '123'}};
+
+        var errs = t.validate(doc, raw);
+        test.equal(errs.length, 1);
+        test.same(errs[0].field, ['asdf']);
+        test.equal(errs[0].message, 'Unexpected property');
+        test.equal(errs[0].has_field, false);
+        // asdf.two is not covered by the fieldset, so unexpected properties
+        // don't matter.
+        test.done();
+    },
+
+    'validate Embedded': function (test) {
+        var Embedded = this.fields.Embedded;
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var t1 = new Type({
+            fields: {
+                one: new Field(),
+                two: new Field()
+            }
+        });
+
+        var t2 = new Type({
+            fields: {
+                embeddedT1: new Embedded({
+                    type: t1
+                })
+            }
+        });
+
+        var doc = {embeddedT1: {_id: 'id1', one: 'one', two: 'two'}};
+        var raw = {embeddedT1: {_id: 'id1', one: 'one', two: 'two'}};
+        var errs = t2.validate(doc, raw);
 
         test.same(errs, []);
         test.done();
     },
 
-    'validate - nested missing required field': function (test) {
+    'validate Embedded - missing fields': function (test) {
+        var Embedded = this.fields.Embedded;
+        var Field = this.fields.Field;
         var Type = this.types.Type;
-        var fields = this.fields;
 
-        var doc = {
-            type: 'test_type',
-            one: 'one'
-        };
-        var t = new Type('test_type', {
+        var t1 = new Type({
             fields: {
-                one: fields.string({required: true}),
-                sub: {obj: {two: fields.string({required: true})}}
+                one: new Field(),
+                two: new Field()
             }
         });
-        var errs = t.validate(doc);
+
+        var t2 = new Type({
+            fields: {
+                embeddedT1: new Embedded({
+                    type: t1
+                })
+            }
+        });
+
+        var doc = {embeddedT1: {_id: 'id1', one: 'one'}};
+        var raw = {embeddedT1: {_id: 'id1', one: 'one'}};
+        var errs = t2.validate(doc, raw);
 
         test.equal(errs.length, 1);
-        test.same(errs[0].field, ['sub','obj','two']);
         test.equal(errs[0].message, 'Required field');
+        test.same(errs[0].field, ['embeddedT1', 'two']);
+        test.done();
+    },
+
+    'validate EmbeddedList': function (test) {
+        var EmbeddedList = this.fields.EmbeddedList;
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var t1 = new Type({
+            fields: {
+                one: new Field(),
+                two: new Field()
+            }
+        });
+
+        var t2 = new Type({
+            fields: {
+                embeds: new EmbeddedList({
+                    type: t1
+                })
+            }
+        });
+
+        var doc = {embeds: [
+            {_id: 'id1', one: 'one', two: 'two'},
+            {_id: 'id2', one: 'one'},
+        ]};
+        var errs = t2.validate(doc, doc);
+
+        test.equal(errs.length, 1);
+        test.equal(errs[0].message, 'Required field');
+        test.same(errs[0].field, ['embeds', '1', 'two']);
+        test.done();
+    },
+
+    'authorize': function (test) {
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var type_perms_err = new Error('type-level permissions error');
+        var perms_err = new Error('test permissions error');
+
+        var oldDoc = {_id: 'someid', _rev: '1', one: 'oVal'};
+        var newDoc = {_id: 'someid', _rev: '2', one: 'nVal'};
+
+        var t = new Type({
+            permissions: function () {
+                throw type_perms_err;
+            },
+            fields: {
+                one: new Field({
+                    permissions: function (nDoc, oDoc, nVal, oVal, user) {
+                        test.same(nDoc, newDoc);
+                        test.same(oDoc, oldDoc);
+                        test.equal(nVal, 'nVal');
+                        test.equal(oVal, 'oVal');
+                        test.equal(user, 'user');
+                        throw perms_err;
+                    }
+                })
+            }
+        });
+        var errs = t.authorize(newDoc, oldDoc, 'user');
+
+        test.equal(errs.length, 2);
+        test.equal(errs[0].message, 'type-level permissions error');
+        test.ok(!errs[0].has_field);
+        test.same(errs[1].field, ['one']);
+        test.equal(errs[1].has_field, true);
+        test.done();
+    },
+
+    'authorize - type-level create, edit, delete': function (test) {
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var perms_err = new Error('test permissions error');
+
+        var calls = [];
+        var t = new Type({
+            permissions: {
+                create: function () {
+                    calls.push('create');
+                    throw perms_err;
+                },
+                edit: function () {
+                    calls.push('edit');
+                    throw perms_err;
+                },
+                delete: function () {
+                    calls.push('delete');
+                    throw perms_err;
+                }
+            },
+            fields: {}
+        });
+
+        var oldDoc = null;
+        var newDoc = {_id: 'id', _rev: '2'};
+        var errs = t.authorize(newDoc, oldDoc, 'user');
+
+        test.equal(errs.length, 1);
+        test.same(calls, ['create']);
+
+        oldDoc = {_id: 'id', _rev: '1'};
+        newDoc = {_id: 'id', _rev: '2'};
+        errs = t.authorize(newDoc, oldDoc, 'user');
+
+        test.equal(errs.length, 1);
+        test.same(calls, ['create', 'edit']);
+
+        oldDoc = {_id: 'id', _rev: '1'};
+        newDoc = {_deleted: true};
+        errs = t.authorize(newDoc, oldDoc, 'user');
+
+        test.equal(errs.length, 1);
+        test.same(calls, ['create', 'edit', 'delete']);
+
         test.done();
     }
-
-    // TODO: support multiple definitions inside an array?
-    // values can match any one of them?
-
-    // TODO: test validation of 'type' field
 
 });
