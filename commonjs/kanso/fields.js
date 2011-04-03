@@ -14,6 +14,7 @@
 
 var permissions = require('./permissions'),
     validators = require('./validators'),
+    widgets = require('./widgets'),
     utils = require('./utils'),
     _ = require('./underscore')._;
 
@@ -548,7 +549,7 @@ exports.creator = function (options) {
         p.edit = permissions.fieldUneditable();
     }
     return exports.string(_.defaults(options, {
-        required: false
+        required: false,
         widget: widgets.hidden(),
         default_value: function (req) {
             return (req.userCtx && req.userCtx.name) || '';

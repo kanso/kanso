@@ -31,8 +31,8 @@ module.exports = nodeunit.testCase({
 
     'Type - defaults': function (test) {
         var Type = this.types.Type;
-        var t = new Type();
-        test.same(Object.keys(t.fields), ['_id','_rev', '_deleted']);
+        var t = new Type('t');
+        test.same(Object.keys(t.fields), ['_id','_rev', '_deleted', 'type']);
         test.same(t.permissions, {});
         test.done();
     },
@@ -49,7 +49,7 @@ module.exports = nodeunit.testCase({
             throw new Error('never valid');
         };
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 one: new Field({
                     validators: [logArgs]
@@ -69,12 +69,14 @@ module.exports = nodeunit.testCase({
 
         var doc = {
             _id: 'someid',
+            type: 't',
             one: 1,
             two: 2,
             three: {four: {five: 'asdf'}}
         };
 
         var raw = {
+            type: 't',
             one: '1',
             two: '2',
             three: {four: {five: 'asdf'}}
@@ -101,7 +103,7 @@ module.exports = nodeunit.testCase({
             throw new Error('never valid');
         };
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 one: new Field({
                     validators: [logArgs]
@@ -109,7 +111,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var doc = {_id: 'someid'};
+        var doc = {_id: 'someid', type: 't'};
         var raw = {};
 
         var errs = t.validate(doc, raw);
@@ -132,7 +134,7 @@ module.exports = nodeunit.testCase({
             throw new Error('never valid');
         };
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 one: {
                     two: new Field({
@@ -142,7 +144,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var doc = {_id: 'someid'};
+        var doc = {_id: 'someid', type: 't'};
         var raw = {};
 
         var errs = t.validate(doc, raw);
@@ -165,7 +167,7 @@ module.exports = nodeunit.testCase({
             throw new Error('never valid');
         };
 
-        var t = new Type({
+        var t = new Type('t', {
             allow_extra_fields: true,
             fields: {
                 one: {
@@ -176,7 +178,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var doc = {_id: 'someid', one: 'blah', asdf: {two: 123}};
+        var doc = {_id: 'someid', type: 't', one: 'blah', asdf: {two: 123}};
         var raw = {one: 'blah', asdf: {two: '123'}};
 
         var errs = t.validate(doc, raw);
@@ -201,7 +203,7 @@ module.exports = nodeunit.testCase({
             throw new Error('never valid');
         };
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 one: new Field({
                     validators: [logArgs]
@@ -209,8 +211,8 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var doc = {_id: 'someid', one: 'blah', asdf: {two: 123}};
-        var raw = {one: 'blah', asdf: {two: '123'}};
+        var doc = {_id: 'someid', type: 't', one: 'blah', asdf: {two: 123}};
+        var raw = {type: 't', one: 'blah', asdf: {two: '123'}};
 
         var errs = t.validate(doc, raw);
         test.equal(errs.length, 1);
@@ -227,14 +229,14 @@ module.exports = nodeunit.testCase({
         var Field = this.fields.Field;
         var Type = this.types.Type;
 
-        var t1 = new Type({
+        var t1 = new Type('t1', {
             fields: {
                 one: new Field(),
                 two: new Field()
             }
         });
 
-        var t2 = new Type({
+        var t2 = new Type('t2', {
             fields: {
                 embeddedT1: new Embedded({
                     type: t1
@@ -242,8 +244,12 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var doc = {embeddedT1: {_id: 'id1', one: 'one', two: 'two'}};
-        var raw = {embeddedT1: {_id: 'id1', one: 'one', two: 'two'}};
+        var doc = {type: 't1', embeddedT1: {
+            _id: 'id1', type: 't2', one: 'one', two: 'two'
+        }};
+        var raw = {type: 't1', embeddedT1: {
+            _id: 'id1', type: 't2', one: 'one', two: 'two'
+        }};
         var errs = t2.validate(doc, raw);
 
         test.same(errs, []);
@@ -255,14 +261,14 @@ module.exports = nodeunit.testCase({
         var Field = this.fields.Field;
         var Type = this.types.Type;
 
-        var t1 = new Type({
+        var t1 = new Type('t1', {
             fields: {
                 one: new Field(),
                 two: new Field()
             }
         });
 
-        var t2 = new Type({
+        var t2 = new Type('t2', {
             fields: {
                 embeddedT1: new Embedded({
                     type: t1
@@ -270,8 +276,8 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var doc = {embeddedT1: {_id: 'id1', one: 'one'}};
-        var raw = {embeddedT1: {_id: 'id1', one: 'one'}};
+        var doc = {type: 't1', embeddedT1: {type: 't2', _id: 'id1', one: 'one'}};
+        var raw = {type: 't1', embeddedT1: {type: 't2', _id: 'id1', one: 'one'}};
         var errs = t2.validate(doc, raw);
 
         test.equal(errs.length, 1);
@@ -285,14 +291,14 @@ module.exports = nodeunit.testCase({
         var Field = this.fields.Field;
         var Type = this.types.Type;
 
-        var t1 = new Type({
+        var t1 = new Type('t1', {
             fields: {
                 one: new Field(),
                 two: new Field()
             }
         });
 
-        var t2 = new Type({
+        var t2 = new Type('t2', {
             fields: {
                 embeds: new EmbeddedList({
                     type: t1
@@ -300,9 +306,9 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var doc = {embeds: [
-            {_id: 'id1', one: 'one', two: 'two'},
-            {_id: 'id2', one: 'one'},
+        var doc = {type: 't1', embeds: [
+            {type: 't2', _id: 'id1', one: 'one', two: 'two'},
+            {type: 't2', _id: 'id2', one: 'one'},
         ]};
         var errs = t2.validate(doc, doc);
 
@@ -319,10 +325,10 @@ module.exports = nodeunit.testCase({
         var type_perms_err = new Error('type-level permissions error');
         var perms_err = new Error('test permissions error');
 
-        var oldDoc = {_id: 'someid', _rev: '1', one: 'oVal'};
-        var newDoc = {_id: 'someid', _rev: '2', one: 'nVal'};
+        var oldDoc = {type: 't', _id: 'someid', _rev: '1', one: 'oVal'};
+        var newDoc = {type: 't', _id: 'someid', _rev: '2', one: 'nVal'};
 
-        var t = new Type({
+        var t = new Type('t', {
             permissions: function () {
                 throw type_perms_err;
             },
@@ -356,7 +362,7 @@ module.exports = nodeunit.testCase({
         var perms_err = new Error('test permissions error');
 
         var calls = [];
-        var t = new Type({
+        var t = new Type('t', {
             permissions: {
                 create: function () {
                     calls.push('create');
@@ -375,20 +381,20 @@ module.exports = nodeunit.testCase({
         });
 
         var oldDoc = null;
-        var newDoc = {_id: 'id', _rev: '2'};
+        var newDoc = {type: 't', _id: 'id', _rev: '2'};
         var errs = t.authorize(newDoc, oldDoc, 'user');
 
         test.equal(errs.length, 1);
         test.same(calls, ['create']);
 
-        oldDoc = {_id: 'id', _rev: '1'};
-        newDoc = {_id: 'id', _rev: '2'};
+        oldDoc = {type: 't', _id: 'id', _rev: '1'};
+        newDoc = {type: 't', _id: 'id', _rev: '2'};
         errs = t.authorize(newDoc, oldDoc, 'user');
 
         test.equal(errs.length, 1);
         test.same(calls, ['create', 'edit']);
 
-        oldDoc = {_id: 'id', _rev: '1'};
+        oldDoc = {type: 't', _id: 'id', _rev: '1'};
         newDoc = {_deleted: true};
         errs = t.authorize(newDoc, oldDoc, 'user');
 

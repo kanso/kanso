@@ -233,7 +233,7 @@ module.exports = nodeunit.testCase({
         var Field = this.fields.Field;
         var Type = this.types.Type;
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 one: new Field(),
                 two: new Field()
@@ -241,7 +241,7 @@ module.exports = nodeunit.testCase({
         });
 
         var e = new Embedded({type: t});
-        var doc = {embeddedThing: {_id: 'id', one: 'asdf'}};
+        var doc = {embeddedThing: {type: 't', _id: 'id', one: 'asdf'}};
 
         var errs = e.validate(doc, doc.embeddedThing, doc.embeddedThing);
         test.equal(errs.length, 1);
@@ -255,7 +255,7 @@ module.exports = nodeunit.testCase({
         var Field = this.fields.Field;
         var Type = this.types.Type;
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 one: new Field(),
                 two: new Field()
@@ -263,7 +263,7 @@ module.exports = nodeunit.testCase({
         });
 
         var e = new Embedded({type: t});
-        var doc = {embeddedThing: {one: 'asdf', two: 'asdf'}};
+        var doc = {embeddedThing: {type: 't', one: 'asdf', two: 'asdf'}};
 
         var errs = e.validate(doc, doc.embeddedThing, doc.embeddedThing);
         test.equal(errs.length, 1);
@@ -281,8 +281,8 @@ module.exports = nodeunit.testCase({
         var err2 = new Error('test error 2');
         var err3 = new Error('test error 3');
 
-        var newDoc = {embed: {test: 'newVal'}};
-        var oldDoc = {embed: {test: 'oldVal'}};
+        var newDoc = {embed: {type: 't', test: 'newVal'}};
+        var oldDoc = {embed: {type: 't', test: 'oldVal'}};
 
         var f = new Field({
             permissions: {
@@ -316,7 +316,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 test: f
             }
@@ -377,7 +377,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 test: f
             }
@@ -424,7 +424,7 @@ module.exports = nodeunit.testCase({
         var Field = this.fields.Field;
         var Type = this.types.Type;
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 one: new Field(),
                 two: new Field()
@@ -433,8 +433,8 @@ module.exports = nodeunit.testCase({
 
         var e = new EmbeddedList({type: t});
         var doc = {embeddedThing: [
-            {_id: 'id1', one: 'asdf'},
-            {_id: 'id2', two: 'asdf'}
+            {_id: 'id1', type: 't', one: 'asdf'},
+            {_id: 'id2', type: 't', two: 'asdf'}
         ]};
 
         var errs = e.validate(doc, doc.embeddedThing, doc.embeddedThing);
@@ -451,7 +451,7 @@ module.exports = nodeunit.testCase({
         var Field = this.fields.Field;
         var Type = this.types.Type;
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 one: new Field(),
                 two: new Field()
@@ -460,8 +460,8 @@ module.exports = nodeunit.testCase({
 
         var e = new EmbeddedList({type: t});
         var doc = {embeddedThing: [
-            {one: 'asdf'},
-            {two: 'asdf'}
+            {type: 't', one: 'asdf'},
+            {type: 't', two: 'asdf'}
         ]};
 
         var errs = e.validate(doc, doc.embeddedThing, doc.embeddedThing);
@@ -478,7 +478,7 @@ module.exports = nodeunit.testCase({
         var Field = this.fields.Field;
         var Type = this.types.Type;
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 one: new Field(),
                 two: new Field()
@@ -487,8 +487,8 @@ module.exports = nodeunit.testCase({
 
         var e = new EmbeddedList({type: t});
         var doc = {embeddedThing: [
-            {_id: 'id', one: 'asdf'},
-            {_id: 'id', two: 'asdf'}
+            {_id: 'id', type: 't', one: 'asdf'},
+            {_id: 'id', type: 't', two: 'asdf'}
         ]};
 
         var errs = e.validate(doc, doc.embeddedThing, doc.embeddedThing);
@@ -504,7 +504,7 @@ module.exports = nodeunit.testCase({
         var Type = this.types.Type;
 
         var calls = [];
-        var t1 = new Type({
+        var t1 = new Type('t1', {
             permissions: function (nd, od, nv, ov, user) {
                 calls.push(Array.prototype.slice.call(arguments));
                 throw new Error('test error');
@@ -513,7 +513,7 @@ module.exports = nodeunit.testCase({
                 one: new Field()
             }
         });
-        var t2 = new Type({
+        var t2 = new Type('t2', {
             fields: {
                 embedded: new EmbeddedList({
                     type: t1
@@ -522,13 +522,13 @@ module.exports = nodeunit.testCase({
         });
 
         // Two edits
-        var oldDoc = {embedded: [
-            {_id: 'id1', one: 'asdf'},
-            {_id: 'id2', one: 'asdf'}
+        var oldDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf'},
+            {_id: 'id2', type: 't1', one: 'asdf'}
         ]};
-        var newDoc = {embedded: [
-            {_id: 'id1', one: 'asdf2'},
-            {_id: 'id2', one: 'asdf2'}
+        var newDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf2'},
+            {_id: 'id2', type: 't1', one: 'asdf2'}
         ]};
 
         var errs = t2.authorize(newDoc, oldDoc, 'user');
@@ -542,12 +542,12 @@ module.exports = nodeunit.testCase({
 
         // One delete
         var calls = [];
-        var oldDoc = {embedded: [
-            {_id: 'id1', one: 'asdf'},
-            {_id: 'id2', one: 'asdf'}
+        var oldDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf'},
+            {_id: 'id2', type: 't1', one: 'asdf'}
         ]};
-        var newDoc = {embedded: [
-            {_id: 'id1', one: 'asdf'}
+        var newDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf'}
         ]};
 
         var errs = t2.authorize(newDoc, oldDoc, 'user');
@@ -561,12 +561,12 @@ module.exports = nodeunit.testCase({
 
         // One add
         var calls = [];
-        var oldDoc = {embedded: [
-            {_id: 'id1', one: 'asdf'}
+        var oldDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf'}
         ]};
-        var newDoc = {embedded: [
-            {_id: 'id1', one: 'asdf'},
-            {_id: 'id2', one: 'asdf'}
+        var newDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf'},
+            {_id: 'id2', type: 't1', one: 'asdf'}
         ]};
 
         var errs = t2.authorize(newDoc, oldDoc, 'user');
@@ -587,7 +587,7 @@ module.exports = nodeunit.testCase({
         var Type = this.types.Type;
 
         var calls = [];
-        var t1 = new Type({
+        var t1 = new Type('t1', {
             permissions: {
                 create: function () {
                     calls.push('create');
@@ -603,7 +603,7 @@ module.exports = nodeunit.testCase({
                 one: new Field()
             }
         });
-        var t2 = new Type({
+        var t2 = new Type('t2', {
             fields: {
                 embedded: new EmbeddedList({
                     type: t1
@@ -612,13 +612,13 @@ module.exports = nodeunit.testCase({
         });
 
         // Two edits
-        var oldDoc = {embedded: [
-            {_id: 'id1', one: 'asdf'},
-            {_id: 'id2', one: 'asdf'}
+        var oldDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf'},
+            {_id: 'id2', type: 't1', one: 'asdf'}
         ]};
-        var newDoc = {embedded: [
-            {_id: 'id1', one: 'asdf2'},
-            {_id: 'id2', one: 'asdf2'}
+        var newDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf2'},
+            {_id: 'id2', type: 't1', one: 'asdf2'}
         ]};
 
         var errs = t2.authorize(newDoc, oldDoc, 'user');
@@ -626,12 +626,12 @@ module.exports = nodeunit.testCase({
 
         // One delete
         var calls = [];
-        var oldDoc = {embedded: [
-            {_id: 'id1', one: 'asdf'},
-            {_id: 'id2', one: 'asdf'}
+        var oldDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf'},
+            {_id: 'id2', type: 't1', one: 'asdf'}
         ]};
-        var newDoc = {embedded: [
-            {_id: 'id1', one: 'asdf'}
+        var newDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf'}
         ]};
 
         var errs = t2.authorize(newDoc, oldDoc, 'user');
@@ -639,12 +639,12 @@ module.exports = nodeunit.testCase({
 
         // One add
         var calls = [];
-        var oldDoc = {embedded: [
-            {_id: 'id1', one: 'asdf'}
+        var oldDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf'}
         ]};
-        var newDoc = {embedded: [
-            {_id: 'id1', one: 'asdf'},
-            {_id: 'id2', one: 'asdf'}
+        var newDoc = {type: 't2', embedded: [
+            {_id: 'id1', type: 't1', one: 'asdf'},
+            {_id: 'id2', type: 't1', one: 'asdf'}
         ]};
 
         var errs = t2.authorize(newDoc, oldDoc, 'user');
@@ -659,7 +659,7 @@ module.exports = nodeunit.testCase({
             permissions = this.permissions,
             Type = this.types.Type;
 
-        var comment = new Type({
+        var comment = new Type('comment', {
             permissions: {
                 create: permissions.loggedIn(),
                 edit: permissions.usernameMatchesField('creator'),
@@ -671,7 +671,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 creator: fields.creator(),
                 embedded: fields.embedList({
@@ -688,12 +688,24 @@ module.exports = nodeunit.testCase({
 
         // testuser should not be able to edit testuser2's comment
         var newDoc = {
+            type: 't',
             creator: 'testuser',
-            embedded: [{_id: 'id1', creator: 'testuser2', msg: 'test2'}]
+            embedded: [{
+                _id: 'id1',
+                type: 'comment',
+                creator: 'testuser2',
+                msg: 'test2'
+            }]
         };
         var oldDoc = {
+            type: 't',
             creator: 'testuser',
-            embedded: [{_id: 'id1', creator: 'testuser2', msg: 'test1'}]
+            embedded: [{
+                _id: 'id1',
+                type: 'comment',
+                creator: 'testuser2',
+                msg: 'test1'
+            }]
         };
         var userCtx = {name: 'testuser'};
 
@@ -711,7 +723,7 @@ module.exports = nodeunit.testCase({
             permissions = this.permissions,
             Type = this.types.Type;
 
-        var comment = new Type({
+        var comment = new Type('comment', {
             permissions: {
                 create: permissions.loggedIn(),
                 edit: permissions.usernameMatchesField('creator'),
@@ -723,7 +735,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 creator: fields.creator(),
                 embedded: fields.embedList({
@@ -740,12 +752,24 @@ module.exports = nodeunit.testCase({
 
         // testuser2 should be able to edit testuser2's content
         var newDoc = {
+            type: 't',
             creator: 'testuser',
-            embedded: [{_id: 'id1', creator: 'testuser2', msg: 'test2'}]
+            embedded: [{
+                _id: 'id1',
+                type: 'comment',
+                creator: 'testuser2',
+                msg: 'test2'
+            }]
         };
         var oldDoc = {
+            type: 't',
             creator: 'testuser',
-            embedded: [{_id: 'id1', creator: 'testuser2', msg: 'test1'}]
+            embedded: [{
+                _id: 'id1',
+                type: 'comment',
+                creator: 'testuser2',
+                msg: 'test1'
+            }]
         };
 
         var userCtx = {name: 'testuser2'};
@@ -761,7 +785,7 @@ module.exports = nodeunit.testCase({
             permissions = this.permissions,
             Type = this.types.Type;
 
-        var comment = new Type({
+        var comment = new Type('comment', {
             permissions: {
                 create: permissions.loggedIn(),
                 edit: permissions.usernameMatchesField('creator'),
@@ -773,7 +797,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 creator: fields.creator(),
                 embedded: fields.embedList({
@@ -789,10 +813,16 @@ module.exports = nodeunit.testCase({
         });
 
         // testuser2 should be able to delete own comment
-        var newDoc = {creator: 'testuser', embedded: []};
+        var newDoc = {type: 't', creator: 'testuser', embedded: []};
         var oldDoc = {
+            type: 't',
             creator: 'testuser',
-            embedded: [{_id: 'id1', creator: 'testuser2', msg: 'test1'}]
+            embedded: [{
+                _id: 'id1',
+                type: 'comment',
+                creator: 'testuser2',
+                msg: 'test1'
+            }]
         };
         var userCtx = {name: 'testuser2'};
         var errs = t.authorize(newDoc, oldDoc, userCtx);
@@ -807,7 +837,7 @@ module.exports = nodeunit.testCase({
             permissions = this.permissions,
             Type = this.types.Type;
 
-        var comment = new Type({
+        var comment = new Type('comment', {
             permissions: {
                 create: permissions.loggedIn(),
                 edit: permissions.usernameMatchesField('creator'),
@@ -819,7 +849,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 creator: fields.creator(),
                 embedded: fields.embedList({
@@ -835,10 +865,16 @@ module.exports = nodeunit.testCase({
         });
 
         // testuser should also be able to delete testuser2's content
-        var newDoc = {creator: 'testuser', embedded: []};
+        var newDoc = {type: 't', creator: 'testuser', embedded: []};
         var oldDoc = {
+            type: 't',
             creator: 'testuser',
-            embedded: [{_id: 'id1', creator: 'testuser2', msg: 'test1'}]
+            embedded: [{
+                _id: 'id1',
+                type: 'comment',
+                creator: 'testuser2',
+                msg: 'test1'
+            }]
         };
         var userCtx = {name: 'testuser'};
         var errs = t.authorize(newDoc, oldDoc, userCtx);

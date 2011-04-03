@@ -15,6 +15,8 @@
 var utils = require('./utils'),
     fields = require('./fields'),
     fieldset = require('./fieldset'),
+    widgets = require('./widgets'),
+    permissions = require('./permissions'),
     _ = require('./underscore')._;
 
 
@@ -32,22 +34,46 @@ var utils = require('./utils'),
  * @api public
  */
 
-var Type = exports.Type = function Type(options) {
+var Type = exports.Type = function Type(name, options) {
+    if (typeof name !== 'string') {
+        throw new Error('First argument must be the type name');
+    }
+    this.name = name;
+
     _.extend(this, _.defaults(options || {}, {
         fields: {},
         permissions: []
     }));
-    this.fields._id = new fields.Field({
+
+    this.fields._id = fields.string({
         omit_empty: true,
-        required: false
+        required: false,
+        widget: widgets.hidden(),
+        permissions: {
+            edit: permissions.fieldUneditable()
+        }
     });
-    this.fields._rev = new fields.Field({
+    this.fields._rev = fields.string({
         omit_empty: true,
-        required: false
+        required: false,
+        widget: widgets.hidden()
     });
-    this.fields._deleted = new fields.Field({
+    this.fields._deleted = fields.boolean({
         omit_empty: true,
-        required: false
+        required: false,
+        widget: widgets.hidden()
+    });
+    this.fields.type = fields.string({
+        default_value: name,
+        widget: widgets.hidden(),
+        permissions: {
+            create: function (newDoc, oldDoc, newVal, oldVal, userCtx) {
+                if (newVal !== name) {
+                    throw new Error('Unexpected value for type');
+                }
+            },
+            edit: permissions.fieldUneditable()
+        }
     });
 };
 

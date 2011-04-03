@@ -63,7 +63,7 @@ module.exports = nodeunit.testCase({
         var Type = this.types.Type;
         var Field = this.fields.Field;
 
-        var t = new Type({
+        var t = new Type('t', {
             fields: {
                 one: new Field({
                     parse: function (raw) {
@@ -83,11 +83,13 @@ module.exports = nodeunit.testCase({
         });
 
         var doc = forms.parseRaw(t.fields, {
+            type: 't',
             one: 'raw1',
             two: {three: 'raw2'}
         });
 
         test.same(doc, {
+            type: 't',
             one: 'parsed1',
             two: {three: 'parsed2'}
         });
@@ -236,7 +238,7 @@ module.exports = nodeunit.testCase({
         var err2 = {field: ['two','three'], msg: 'err2'};
         var err3 = {field: ['two','three'], msg: 'err3'};
 
-        var t = new this.types.Type({
+        var t = new this.types.Type('t', {
             fields: {
                 one: fields.string(),
                 two: fields.string()
@@ -284,6 +286,7 @@ module.exports = nodeunit.testCase({
             ['field', t.fields._id, 'embed._id', undefined, undefined, []],
             ['field', t.fields._rev, 'embed._rev', undefined, undefined, []],
             ['field', t.fields._deleted, 'embed._deleted', undefined, undefined, []],
+            ['field', t.fields.type, 'embed.type', undefined, undefined, []],
             'end2',
             'end'
         ]);
@@ -296,7 +299,7 @@ module.exports = nodeunit.testCase({
         var err2 = {field: ['two','three'], msg: 'err2'};
         var err3 = {field: ['two','three'], msg: 'err3'};
 
-        var t = new this.types.Type({
+        var t = new this.types.Type('t', {
             fields: {
                 one: fields.string(),
                 two: fields.string()
@@ -365,7 +368,7 @@ module.exports = nodeunit.testCase({
         var err2 = {field: ['two','three'], msg: 'err2'};
         var err3 = {field: ['two','three'], msg: 'err3'};
 
-        var t = new this.types.Type({
+        var t = new this.types.Type('t', {
             fields: {
                 one: fields.string(),
                 two: fields.string()
@@ -418,10 +421,10 @@ module.exports = nodeunit.testCase({
             };
         };
         f.values = {
-            embed: [{_id: '_id', one: '1', two: '2'}]
+            embed: [{type: 't', _id: '_id', one: '1', two: '2'}]
         };
         f.raw = {
-            embed: [{_id: '_idraw', one: '1raw', two: '2raw'}]
+            embed: [{type: 't', _id: '_idraw', one: '1raw', two: '2raw'}]
         };
         f.toHTML('req', renderer);
         test.same(calls, [
@@ -435,6 +438,7 @@ module.exports = nodeunit.testCase({
             ['field', t.fields._id, 'embed.0._id', '_id', '_idraw', []],
             ['field', t.fields._rev, 'embed.0._rev', undefined, undefined, []],
             ['field', t.fields._deleted, 'embed.0._deleted', undefined, undefined, []],
+            ['field', t.fields.type, 'embed.0.type', 't', 't', []],
             'end3',
             'end2',
             'end'
