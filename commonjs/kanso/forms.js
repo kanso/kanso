@@ -65,8 +65,9 @@ Form.prototype.toHTML = function (req, rendererClass) {
     );
     var renderer = new rendererClass();
     return renderer.start() +
-        this.renderFields(renderer, this.fields, values, this.errors, []) +
-        renderer.end();
+        this.renderFields(
+            renderer, this.fields, values, this.raw, this.errors, []
+        ) + renderer.end();
 };
 
 /**
@@ -105,9 +106,10 @@ var errsBelowPath = function (errs, path) {
  * @api public
  */
 
-Form.prototype.renderFields = function (renderer, fields, values, errs, path) {
+Form.prototype.renderFields = function (renderer, fields, values, raw, errs, path) {
     fields = fields || {};
     values = values || {};
+    raw = raw || {};
     errs = errs || [];
     path = path || [];
     var that = this;
@@ -122,6 +124,7 @@ Form.prototype.renderFields = function (renderer, fields, values, errs, path) {
                 fields[k],
                 f_path.join('.'),
                 values[k],
+                (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
             );
         }
@@ -130,11 +133,17 @@ Form.prototype.renderFields = function (renderer, fields, values, errs, path) {
                 fields[k].type,
                 f_path.join('.'),
                 values[k],
+                (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
             );
             html += new_renderer.start();
             html += that.renderFields(
-                new_renderer, fields[k].type.fields, values[k], f_errs, f_path
+                new_renderer,
+                fields[k].type.fields,
+                values[k],
+                (raw[k] === undefined) ? values[k]: raw[k],
+                f_errs,
+                f_path
             );
             html += new_renderer.end();
             return html;
@@ -145,6 +154,7 @@ Form.prototype.renderFields = function (renderer, fields, values, errs, path) {
                 type,
                 f_path.join('.'),
                 values[k],
+                (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
             );
             html += new_renderer.start();
@@ -152,11 +162,20 @@ Form.prototype.renderFields = function (renderer, fields, values, errs, path) {
                 var f_path2 = f_path.concat([i]);
                 var f_errs2 = errsBelowPath(f_errs, f_path2);
                 var v_renderer = new_renderer.each(
-                    type, f_path2.join('.'), v, f_errs2
+                    type,
+                    f_path2.join('.'),
+                    v,
+                    (raw[k][i] === undefined) ? v[i]: raw[k][i],
+                    f_errs2
                 );
                 html += v_renderer.start();
                 html += that.renderFields(
-                    v_renderer, type.fields, v, f_errs2, f_path2
+                    v_renderer,
+                    type.fields,
+                    v,
+                    (raw[k][i] === undefined) ? v[i]: raw[k][i],
+                    f_errs2,
+                    f_path2
                 );
                 html += v_renderer.end();
                 return html;
@@ -166,7 +185,12 @@ Form.prototype.renderFields = function (renderer, fields, values, errs, path) {
         }
         else {
             return html + that.renderFields(
-                renderer, fields[k], values[k], errs, f_path
+                renderer,
+                fields[k],
+                values[k],
+                (raw[k] === undefined) ? values[k]: raw[k],
+                errs,
+                f_path
             );
         }
     }, '');

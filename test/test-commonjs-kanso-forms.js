@@ -107,8 +107,8 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.field = function (field, name, value, errors) {
-                calls.push([field, name, value, errors]);
+            this.field = function (field, name, value, raw, errors) {
+                calls.push([field, name, value, raw, errors]);
             };
             this.end = function () {
                 calls.push('end');
@@ -118,8 +118,8 @@ module.exports = nodeunit.testCase({
         f.toHTML('req', renderer);
         test.same(calls, [
             'start',
-            [f.fields.one, 'one', undefined, []],
-            [f.fields.two, 'two', undefined, []],
+            [f.fields.one, 'one', undefined, undefined, []],
+            [f.fields.two, 'two', undefined, undefined, []],
             'end'
         ]);
         test.done();
@@ -139,8 +139,8 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.field = function (field, name, value, errors) {
-                calls.push([field, name, value, errors]);
+            this.field = function (field, name, value, raw, errors) {
+                calls.push([field, name, value, raw, errors]);
             };
             this.end = function () {
                 calls.push('end');
@@ -150,8 +150,8 @@ module.exports = nodeunit.testCase({
         f.toHTML('req', renderer);
         test.same(calls, [
             'start',
-            [f.fields.one, 'one', 'asdf', []],
-            [f.fields.two.three, 'two.three', 'qwerty', []],
+            [f.fields.one, 'one', 'asdf', 'asdf', []],
+            [f.fields.two.three, 'two.three', 'qwerty', 'qwerty', []],
             'end'
         ]);
         test.done();
@@ -166,14 +166,15 @@ module.exports = nodeunit.testCase({
             }
         });
         f.values = {one: 'one', two: {three: 'three'}};
+        f.raw = {one: 'oneraw', two: {three: 'threeraw'}};
         var calls = [];
         var renderer = function () {
             this.start = function () {
                 calls.push('start');
                 return '';
             };
-            this.field = function (field, name, value, errors) {
-                calls.push([field, name, value, errors]);
+            this.field = function (field, name, value, raw, errors) {
+                calls.push([field, name, value, raw, errors]);
             };
             this.end = function () {
                 calls.push('end');
@@ -183,8 +184,8 @@ module.exports = nodeunit.testCase({
         f.toHTML('req', renderer);
         test.same(calls, [
             'start',
-            [f.fields.one, 'one', 'one', []],
-            [f.fields.two.three, 'two.three', 'three', []],
+            [f.fields.one, 'one', 'one', 'oneraw', []],
+            [f.fields.two.three, 'two.three', 'three', 'threeraw', []],
             'end'
         ]);
         test.done();
@@ -203,6 +204,7 @@ module.exports = nodeunit.testCase({
             }
         });
         f.values = {one: 'one', two: {three: 'three'}};
+        f.raw = {one: 'oneraw', two: {three: 'threeraw'}};
         f.errors = [err1, err2, err3];
         var calls = [];
         var renderer = function () {
@@ -210,8 +212,8 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.field = function (field, name, value, errors) {
-                calls.push([field, name, value, errors]);
+            this.field = function (field, name, value, raw, errors) {
+                calls.push([field, name, value, raw, errors]);
             };
             this.end = function () {
                 calls.push('end');
@@ -221,8 +223,8 @@ module.exports = nodeunit.testCase({
         f.toHTML('req', renderer);
         test.same(calls, [
             'start',
-            [f.fields.one, 'one', 'one', [err1]],
-            [f.fields.two.three, 'two.three', 'three', [err2, err3]],
+            [f.fields.one, 'one', 'one', 'oneraw', [err1]],
+            [f.fields.two.three, 'two.three', 'three', 'threeraw', [err2, err3]],
             'end'
         ]);
         test.done();
@@ -251,15 +253,15 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.embed = function (type, name, value, errors) {
-                calls.push(['embed', type, name, value, errors]);
+            this.embed = function (type, name, value, raw, errors) {
+                calls.push(['embed', type, name, value, raw, errors]);
                 return {
                     start: function () {
                         calls.push('start2');
                         return '';
                     },
-                    field: function (field, name, value, errors) {
-                        calls.push(['field', field, name, value, errors]);
+                    field: function (field, name, value, raw, errors) {
+                        calls.push(['field', field, name, value, raw, errors]);
                     },
                     end: function () {
                         calls.push('end2');
@@ -275,13 +277,13 @@ module.exports = nodeunit.testCase({
         f.toHTML('req', renderer);
         test.same(calls, [
             'start',
-            ['embed', t, 'embed', undefined, []],
+            ['embed', t, 'embed', undefined, undefined, []],
             'start2',
-            ['field', t.fields.one, 'embed.one', undefined, []],
-            ['field', t.fields.two, 'embed.two', undefined, []],
-            ['field', t.fields._id, 'embed._id', undefined, []],
-            ['field', t.fields._rev, 'embed._rev', undefined, []],
-            ['field', t.fields._deleted, 'embed._deleted', undefined, []],
+            ['field', t.fields.one, 'embed.one', undefined, undefined, []],
+            ['field', t.fields.two, 'embed.two', undefined, undefined, []],
+            ['field', t.fields._id, 'embed._id', undefined, undefined, []],
+            ['field', t.fields._rev, 'embed._rev', undefined, undefined, []],
+            ['field', t.fields._deleted, 'embed._deleted', undefined, undefined, []],
             'end2',
             'end'
         ]);
@@ -312,22 +314,22 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.embedList = function (type, name, value, errors) {
-                calls.push(['embedList', type, name, value, errors]);
+            this.embedList = function (type, name, value, raw, errors) {
+                calls.push(['embedList', type, name, value, raw, errors]);
                 return {
                     start: function () {
                         calls.push('start2');
                         return '';
                     },
-                    each: function (type, name, value, errors) {
-                        calls.push(['each', type, name, value, errors]);
+                    each: function (type, name, value, raw, errors) {
+                        calls.push(['each', type, name, value, raw, errors]);
                         return {
                             start: function () {
                                 calls.push('start3');
                                 return '';
                             },
-                            field: function (field, name, value, errors) {
-                                calls.push(['field', field, name, value, errors]);
+                            field: function (field, name, value, raw, errors) {
+                                calls.push(['field', field, name, value, raw, errors]);
                             },
                             end: function () {
                                 calls.push('end3');
@@ -349,7 +351,7 @@ module.exports = nodeunit.testCase({
         f.toHTML('req', renderer);
         test.same(calls, [
             'start',
-            ['embedList', t, 'embed', undefined, []],
+            ['embedList', t, 'embed', undefined, undefined, []],
             'start2',
             'end2',
             'end'
@@ -381,22 +383,22 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.embedList = function (type, name, value, errors) {
-                calls.push(['embedList', type, name, value, errors]);
+            this.embedList = function (type, name, value, raw, errors) {
+                calls.push(['embedList', type, name, value, raw, errors]);
                 return {
                     start: function () {
                         calls.push('start2');
                         return '';
                     },
-                    each: function (type, name, value, errors) {
-                        calls.push(['each', type, name, value, errors]);
+                    each: function (type, name, value, raw, errors) {
+                        calls.push(['each', type, name, value, raw, errors]);
                         return {
                             start: function () {
                                 calls.push('start3');
                                 return '';
                             },
-                            field: function (field, name, value, errors) {
-                                calls.push(['field', field, name, value, errors]);
+                            field: function (field, name, value, raw, errors) {
+                                calls.push(['field', field, name, value, raw, errors]);
                             },
                             end: function () {
                                 calls.push('end3');
@@ -418,18 +420,21 @@ module.exports = nodeunit.testCase({
         f.values = {
             embed: [{_id: '_id', one: '1', two: '2'}]
         };
+        f.raw = {
+            embed: [{_id: '_idraw', one: '1raw', two: '2raw'}]
+        };
         f.toHTML('req', renderer);
         test.same(calls, [
             'start',
-            ['embedList', t, 'embed', f.values.embed, []],
+            ['embedList', t, 'embed', f.values.embed, f.raw.embed, []],
             'start2',
-            ['each', t, 'embed.0', f.values.embed[0], []],
+            ['each', t, 'embed.0', f.values.embed[0], f.raw.embed[0], []],
             'start3',
-            ['field', t.fields.one, 'embed.0.one', '1', []],
-            ['field', t.fields.two, 'embed.0.two', '2', []],
-            ['field', t.fields._id, 'embed.0._id', '_id', []],
-            ['field', t.fields._rev, 'embed.0._rev', undefined, []],
-            ['field', t.fields._deleted, 'embed.0._deleted', undefined, []],
+            ['field', t.fields.one, 'embed.0.one', '1', '1raw', []],
+            ['field', t.fields.two, 'embed.0.two', '2', '2raw', []],
+            ['field', t.fields._id, 'embed.0._id', '_id', '_idraw', []],
+            ['field', t.fields._rev, 'embed.0._rev', undefined, undefined, []],
+            ['field', t.fields._deleted, 'embed.0._deleted', undefined, undefined, []],
             'end3',
             'end2',
             'end'
