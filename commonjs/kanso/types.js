@@ -234,3 +234,33 @@ Type.prototype.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path) {
         ));
     }, []);
 };
+
+exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
+    var type = (oldDoc && oldDoc.type) || newDoc.type;
+    if (type && types[type]) {
+        var t = types[type];
+        if (!newDoc._deleted) {
+            var validation_errors = t.validate(newDoc);
+            if (validation_errors.length) {
+                var err = validation_errors[0];
+                var msg = err.message || err.toString();
+                if (err.field && err.field.length) {
+                    msg = err.field.join('.') + ': ' + msg;
+                }
+                throw {forbidden: msg};
+            }
+        }
+        var permissions_errors = t.authorize(newDoc, oldDoc, userCtx);
+        if (permissions_errors.length) {
+            var err2 = permissions_errors[0];
+            var msg2 = err2.message || err2.toString();
+            if (err2.field && err2.field.length) {
+                msg2 = err2.field.join('.') + ': ' + msg2;
+            }
+            throw {unauthorized: msg2};
+        }
+        if (t.validate_doc_update) {
+            t.validate_doc_update(newDoc, oldDoc, userCtx);
+        }
+    }
+};

@@ -402,6 +402,144 @@ module.exports = nodeunit.testCase({
         test.same(calls, ['create', 'edit', 'delete']);
 
         test.done();
+    },
+
+    'validate_doc_update': function (test) {
+        test.expect(4);
+        var newDoc = {type: 'type1', test: 'test'};
+        var oldDoc = {type: 'type1', test: 'test'};
+        var userCtx = {name: 'testuser'};
+        var types = {
+            'type1': {
+                validate: function (nDoc) {
+                    test.same(nDoc, newDoc);
+                    return [];
+                },
+                authorize: function (nDoc, oDoc, uCtx) {
+                    test.same(nDoc, newDoc);
+                    test.same(oDoc, oldDoc);
+                    test.same(uCtx, userCtx);
+                    return [];
+                }
+            }
+        };
+        this.types.validate_doc_update(types, newDoc, oldDoc, userCtx);
+        test.done();
+    },
+
+    'validate_doc_update - validate error': function (test) {
+        var newDoc = {type: 'type1', test: 'test'};
+        var oldDoc = {type: 'type1', test: 'test'};
+        var userCtx = {name: 'testuser'};
+        var types = {
+            'type1': {
+                validate: function (newDoc) {
+                    return ['test error'];
+                },
+                authorize: function (newDoc, oldDoc, userCtx) {
+                    return [];
+                }
+            }
+        };
+        test.throws(function () {
+            this.types.validate_doc_update(types, newDoc, oldDoc, userCtx);
+        });
+        test.done();
+    },
+
+    'validate_doc_update - validate error': function (test) {
+        var newDoc = {type: 'type1', test: 'test'};
+        var oldDoc = {type: 'type1', test: 'test'};
+        var userCtx = {name: 'testuser'};
+        var types = {
+            'type1': {
+                validate: function (newDoc) {
+                    return [];
+                },
+                authorize: function (newDoc, oldDoc, userCtx) {
+                    return ['test error'];
+                }
+            }
+        };
+        test.throws(function () {
+            this.types.validate_doc_update(types, newDoc, oldDoc, userCtx);
+        });
+        test.done();
+    },
+
+    'validate_doc_update - delete doc': function (test) {
+        test.expect(1);
+        var newDoc = {_deleted: true};
+        var oldDoc = {type: 'type1', test: 'test'};
+        var userCtx = {name: 'testuser'};
+        var types = {
+            'type1': {
+                validate: function (newDoc) {
+                    test.ok(false, 'validate should not be called');
+                    return [];
+                },
+                authorize: function (newDoc, oldDoc, userCtx) {
+                    test.ok(true, 'authorize should be called');
+                    return [];
+                }
+            }
+        };
+        this.types.validate_doc_update(types, newDoc, oldDoc, userCtx);
+        test.done();
+    },
+
+    'validate_doc_update - create doc': function (test) {
+        test.expect(2);
+        var newDoc = {type: 'type1', test: 'test'};
+        var oldDoc = null;
+        var userCtx = {name: 'testuser'};
+        var types = {
+            'type1': {
+                validate: function (newDoc) {
+                    test.ok(true, 'validate should be called');
+                    return [];
+                },
+                authorize: function (newDoc, oldDoc, userCtx) {
+                    test.ok(true, 'authorize should be called');
+                    return [];
+                }
+            }
+        };
+        this.types.validate_doc_update(types, newDoc, oldDoc, userCtx);
+        test.done();
+    },
+
+    'validate_doc_update on type': function (test) {
+        test.expect(6);
+        var newDoc = {type: 'type1', test: 'test'};
+        var oldDoc = {type: 'type1', test: 'test'};
+        var userCtx = {name: 'testuser'};
+        var err = new Error('test error');
+        var types = {
+            'type1': {
+                validate: function (newDoc) {
+                    test.ok(true, 'validate should be called');
+                    return [];
+                },
+                authorize: function (newDoc, oldDoc, userCtx) {
+                    test.ok(true, 'authorize should be called');
+                    return [];
+                },
+                validate_doc_update: function (nDoc, oDoc, uCtx) {
+                    test.same(nDoc, newDoc);
+                    test.same(oDoc, oldDoc);
+                    test.same(uCtx, userCtx);
+                    throw err;
+                }
+            }
+        };
+        try {
+            this.types.validate_doc_update(types, newDoc, oldDoc, userCtx);
+        }
+        catch (e) {
+            test.equal(err, e);
+        }
+        test.done();
     }
 
 });
