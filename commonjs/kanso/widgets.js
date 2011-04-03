@@ -18,13 +18,16 @@ Widget.prototype._attrs = function (name) {
     return html;
 };
 
-Widget.prototype.toHTML = function (name, value) {
-    if (value === null || value === undefined) {
-        value = '';
+Widget.prototype.toHTML = function (name, value, raw) {
+    if (raw === undefined) {
+        raw = (value === undefined) ? '': '' + value;
+    }
+    if (raw === null || raw === undefined) {
+        raw = '';
     }
     var html = '<input';
     html += this.type ? ' type="' + this.type + '"': '';
-    html += ' value="' + value + '"';
+    html += ' value="' + raw + '"';
     html += this._attrs(name);
     return html + ' />';
 };
@@ -43,9 +46,12 @@ exports.hidden = function (options) {
 
 exports.textarea = function (options) {
     var w = new Widget('textarea', options);
-    w.toHTML = function (name, value) {
-        if (value === null || value === undefined) {
-            value = '';
+    w.toHTML = function (name, value, raw) {
+        if (raw === undefined) {
+            raw = (value === undefined) ? '': '' + value;
+        }
+        if (raw === null || raw === undefined) {
+            raw = '';
         }
         var html = '<textarea';
         html += this._attrs(name);
@@ -56,7 +62,7 @@ exports.textarea = function (options) {
             html += ' rows="' + options.rows + '"';
         }
         html += '>';
-        html += value.replace(/</g, '&lt;').replace(/>/g, '&gt');
+        html += raw.replace(/</g, '&lt;').replace(/>/g, '&gt');
         html += '</textarea>';
         return html;
     };
@@ -65,7 +71,7 @@ exports.textarea = function (options) {
 
 exports.checkbox = function (options) {
     var w = new Widget('checkbox', options);
-    w.toHTML = function (name, value) {
+    w.toHTML = function (name, value, raw) {
         var html = '<input type="checkbox"';
         html += this._attrs(name);
         html += value ? ' checked="checked"': '';
@@ -77,7 +83,7 @@ exports.checkbox = function (options) {
 exports.select = function (options) {
     var w = new Widget('select', options);
     w.values = options.values;
-    w.toHTML = function (name, value) {
+    w.toHTML = function (name, value, raw) {
         if (value === null || value === undefined) {
             value = '';
         }

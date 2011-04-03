@@ -15,8 +15,20 @@ var utils = require('./utils'),
  * @api public
  */
 
-var Form = exports.Form = function Form(fields) {
-    this.fields = fields;
+var Form = exports.Form = function Form(fields, doc) {
+    this.fields = (fields && fields.fields) ? fields.fields: fields;
+    /*
+    if (utils.constructorName(fields) === 'Type') {
+        this.type = fields;
+        this.fields = fields.field;
+    }
+    else {
+        this.fields = fields;
+    }
+    */
+    if (doc) {
+        this.values = doc;
+    }
 };
 
 /**
@@ -228,20 +240,36 @@ exports.formValuesToTree = function (form) {
 
 exports.parseRaw = function (fields, raw) {
     var doc = {};
+    raw = raw || {};
+
     for (var k in fields) {
         var f = fields[k];
         var cname = utils.constructorName(f);
-        if (cname === 'Field' ||
-            cname === 'Embedded' ||
-            cname === 'EmbeddedList') {
-
-            if (!f.isEmpty(raw[k]) || !f.omit_empty) {
+        if (cname === 'Field') {
+            if (!f.isEmpty(raw[k])) {
                 doc[k] = f.parse(raw[k]);
+            }
+        }
+        else if (cname === 'Embedded') {
+            if (!f.isEmpty(raw[k])) {
+                doc[k] = exports.parseRaw(f.type.fields, raw[k]);
+            }
+        }
+        else if (cname === 'EmbeddedList') {
+            doc[k] = [];
+            for (var i = 0, len = raw[k].length; i < len; i++) {
+                if (!f.isEmpty(raw[k][i])) {
+                    doc[k][i] = exports.parseRaw(f.type.fields, raw[k][i]);
+                }
             }
         }
         else {
             doc[k] = exports.parseRaw(f, raw[k]);
         }
     }
+    log('parseRaw');
+    log(doc);
     return doc;
 };
+
+exports.render = require('./render');

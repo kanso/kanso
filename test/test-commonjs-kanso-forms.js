@@ -58,7 +58,7 @@ module.exports = nodeunit.testCase({
         test.done();
     },
 
-    'parseRequest': function (test) {
+    'parseRaw': function (test) {
         var forms = this.forms;
         var Type = this.types.Type;
         var Field = this.fields.Field;
@@ -92,6 +92,76 @@ module.exports = nodeunit.testCase({
             type: 't',
             one: 'parsed1',
             two: {three: 'parsed2'}
+        });
+
+        test.done();
+    },
+
+    'parseRaw - embedded': function (test) {
+        var forms = this.forms;
+        var Type = this.types.Type;
+        var Field = this.fields.Field;
+
+        var t1 = new Type('t1', {
+            fields: {
+                one: this.fields.string()
+            }
+        });
+
+        var t2 = new Type('t2', {
+            fields: {
+                embed: new this.fields.Embedded({
+                    type: t1
+                })
+            }
+        });
+
+        var doc = forms.parseRaw(t2.fields, {
+            type: 't1',
+            embed: {
+                type: 't2',
+                one: 'one'
+            }
+        });
+
+        test.same(doc, {
+            type: 't1',
+            embed: {
+                type: 't2',
+                one: 'one'
+            }
+        });
+
+        test.done();
+    },
+
+    'parseRaw - embeddedList': function (test) {
+        var forms = this.forms;
+        var Type = this.types.Type;
+        var Field = this.fields.Field;
+
+        var t1 = new Type('t1', {
+            fields: {
+                one: this.fields.string()
+            }
+        });
+
+        var t2 = new Type('t2', {
+            fields: {
+                embed: new this.fields.EmbeddedList({
+                    type: t1
+                })
+            }
+        });
+
+        var doc = forms.parseRaw(t2.fields, {
+            type: 't1',
+            embed: [{type: 't2', one: 'one'}, {type: 't2', one: 'one'}]
+        });
+
+        test.same(doc, {
+            type: 't1',
+            embed: [{type: 't2', one: 'one'}, {type: 't2', one: 'one'}]
         });
 
         test.done();

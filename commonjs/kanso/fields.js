@@ -38,6 +38,7 @@ var permissions = require('./permissions'),
 
 var Field = exports.Field = function Field(options) {
     _.extend(this, _.defaults(options || {}, {
+        widget: widgets.text(),
         omit_empty: false,
         permissions: {},
         validators: [],
