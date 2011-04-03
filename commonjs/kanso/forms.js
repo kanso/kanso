@@ -42,7 +42,8 @@ var Form = exports.Form = function Form(fields, doc) {
 
 Form.prototype.validate = function (req) {
     this.raw = req.form || {};
-    this.values = exports.parseRaw(this.fields, this.raw);
+    var tree = exports.formValuesToTree(this.raw);
+    this.values = exports.parseRaw(this.fields, tree);
     this.errors = fieldset.validate(
         this.fields, this.values, this.values, this.raw, [], false
     );
@@ -239,6 +240,8 @@ exports.formValuesToTree = function (form) {
  */
 
 exports.parseRaw = function (fields, raw) {
+    log('raw:');
+    log(raw);
     var doc = {};
     raw = raw || {};
 
@@ -246,19 +249,19 @@ exports.parseRaw = function (fields, raw) {
         var f = fields[k];
         var cname = utils.constructorName(f);
         if (cname === 'Field') {
-            if (!f.isEmpty(raw[k])) {
+            if (!f.isEmpty(raw[k]) || !f.omit_empty) {
                 doc[k] = f.parse(raw[k]);
             }
         }
         else if (cname === 'Embedded') {
-            if (!f.isEmpty(raw[k])) {
+            if (!f.isEmpty(raw[k]) || !f.omit_empty) {
                 doc[k] = exports.parseRaw(f.type.fields, raw[k]);
             }
         }
         else if (cname === 'EmbeddedList') {
             doc[k] = [];
             for (var i = 0, len = raw[k].length; i < len; i++) {
-                if (!f.isEmpty(raw[k][i])) {
+                if (!f.isEmpty(raw[k][i]) || !f.omit_empty) {
                     doc[k][i] = exports.parseRaw(f.type.fields, raw[k][i]);
                 }
             }
