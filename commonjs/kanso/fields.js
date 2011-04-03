@@ -483,7 +483,7 @@ exports.number = function (options) {
 
 exports.boolean = function (options) {
     return new Field(_.defaults((options || {}), {
-        //widget: widgets.checkbox(),
+        widget: widgets.checkbox(),
         required: false,
         parse: Boolean
     }));
@@ -549,7 +549,7 @@ exports.creator = function (options) {
     }
     return exports.string(_.defaults(options, {
         required: false
-        //widget: widgets.hidden(),
+        widget: widgets.hidden(),
         default_value: function (req) {
             return (req.userCtx && req.userCtx.name) || '';
         }
@@ -580,7 +580,7 @@ exports.timestamp = function (options) {
         p.edit = permissions.fieldUneditable();
     }
     return exports.number(_.defaults(options, {
-        //widget: widgets.hidden(),
+        widget: widgets.hidden(),
         default_value: function (req) {
             return new Date().getTime();
         }
@@ -615,7 +615,7 @@ exports.choice = function (options) {
         return _.isArray(v) ? v: [v,v];
     });
     return new Field(_.defaults(options, {
-        //widget: widgets.select({values: options.values})
+        widget: widgets.select({values: options.values})
     }));
 };
 
