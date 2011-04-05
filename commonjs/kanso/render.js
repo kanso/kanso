@@ -59,26 +59,22 @@ exports.table = function () {
         //var parent_name = name;
         var renderer = new exports.table();
         renderer.start = function () {
-            return '<tr><th>' + exports.labelHTML(type, name) + '</th><td><table>';
-        };
-        renderer.field = function (field, name, value, raw, errors) {
-            //name = name.substr(parent_name.length + 1);
-            // TODO: handle multipleCheckbox and multipleRadio fields
-            if (field.widget.type === 'hidden') {
-                return field.widget.toHTML(name, value, raw);
-            }
-            return '<tr class="' + exports.classes(field, errors).join(' ') + '">' +
-                '<th>' + exports.labelHTML(field, name) + '</th>' +
-                '<td>' +
-                    field.widget.toHTML(name, value, raw) +
+            var fval = value ? JSON.stringify(value).replace(/"/g, '&#34;'): '';
+            return '<tr>' +
+                '<th>' + exports.labelHTML(type, name) + '</th>' +
+                '<td class="embed">' +
+                '<input type="hidden" value="' + fval + '" name="' + name + '" />' +
                 '</td>' +
                 '<td class="errors">' +
                     exports.errorHTML(errors) +
                 '</td>' +
             '</tr>';
         };
+        renderer.field = function (field, name, value, raw, errors) {
+            return '';
+        };
         renderer.end = function () {
-            return '</table></td></tr>';
+            return '';
         };
         return renderer;
     };

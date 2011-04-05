@@ -247,27 +247,38 @@ exports.parseRaw = function (fields, raw) {
 
     for (var k in fields) {
         var f = fields[k];
+        var r = raw[k];
         var cname = utils.constructorName(f);
         if (cname === 'Field') {
-            if (!f.isEmpty(raw[k]) || !f.omit_empty) {
-                doc[k] = f.parse(raw[k]);
+            if (!f.isEmpty(r) || !f.omit_empty) {
+                doc[k] = f.parse(r);
             }
         }
         else if (cname === 'Embedded') {
-            if (!f.isEmpty(raw[k]) || !f.omit_empty) {
-                doc[k] = exports.parseRaw(f.type.fields, raw[k]);
+            if (!f.isEmpty(r) || !f.omit_empty) {
+                if (typeof r === 'string') {
+                    doc[k] = JSON.parse(r);
+                }
+                else {
+                    doc[k] = exports.parseRaw(f.type.fields, r);
+                }
             }
         }
         else if (cname === 'EmbeddedList') {
             doc[k] = [];
-            for (var i = 0, len = raw[k].length; i < len; i++) {
-                if (!f.isEmpty(raw[k][i]) || !f.omit_empty) {
-                    doc[k][i] = exports.parseRaw(f.type.fields, raw[k][i]);
+            for (var i = 0, len = r.length; i < len; i++) {
+                if (!f.isEmpty(r[i]) || !f.omit_empty) {
+                    if (typeof r === 'string') {
+                        doc[k][i] = JSON.parse(r[i]);
+                    }
+                    else {
+                        doc[k][i] = exports.parseRaw(f.type.fields, r[i]);
+                    }
                 }
             }
         }
         else {
-            doc[k] = exports.parseRaw(f, raw[k]);
+            doc[k] = exports.parseRaw(f, r);
         }
     }
     log('parseRaw');
