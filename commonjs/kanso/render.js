@@ -60,10 +60,11 @@ exports.table = function () {
         var renderer = new exports.table();
         renderer.start = function () {
             var fval = value ? JSON.stringify(value).replace(/"/g, '&#34;'): '';
-            return '<tr>' +
+            return '<tr class="embedded">' +
                 '<th>' + exports.labelHTML(type, name) + '</th>' +
-                '<td class="embed">' +
+                '<td class="embedded" rel="' + type.name + '">' +
                 '<input type="hidden" value="' + fval + '" name="' + name + '" />' +
+                '<span class="value">' + (value ? value._id: '') + '</span>' +
                 '</td>' +
                 '<td class="errors">' +
                     exports.errorHTML(errors) +

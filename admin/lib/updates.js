@@ -73,6 +73,7 @@ exports.addtype = function (doc, req) {
             $('#content').html(content);
             document.title = settings.name + ' - Types - ' + req.query.type;
         }
+        $('form').bindKansoForm(req);
     });
 };
 
@@ -141,6 +142,7 @@ exports.updatetype = function (doc, req) {
             $('#content').html(content);
             document.title = settings.name + ' - Types - ' + req.query.type;
         }
+        $('form').bindKansoForm(req);
     });
 };
 

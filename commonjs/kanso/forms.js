@@ -257,7 +257,9 @@ exports.parseRaw = function (fields, raw) {
         else if (cname === 'Embedded') {
             if (!f.isEmpty(r) || !f.omit_empty) {
                 if (typeof r === 'string') {
-                    doc[k] = JSON.parse(r);
+                    if (r !== '') {
+                        doc[k] = JSON.parse(r);
+                    }
                 }
                 else {
                     doc[k] = exports.parseRaw(f.type.fields, r);
@@ -269,7 +271,9 @@ exports.parseRaw = function (fields, raw) {
             for (var i = 0, len = r.length; i < len; i++) {
                 if (!f.isEmpty(r[i]) || !f.omit_empty) {
                     if (typeof r === 'string') {
-                        doc[k][i] = JSON.parse(r[i]);
+                        if (r !== '') {
+                            doc[k][i] = JSON.parse(r[i]);
+                        }
                     }
                     else {
                         doc[k][i] = exports.parseRaw(f.type.fields, r[i]);

@@ -77,6 +77,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
     });
     $('#content').html(content);
     document.title = settings.name + ' - Types - ' + req.query.type;
+    $('form').bindKansoForm(req);
 });
 
 exports.edittype = adminShow(function (doc, ddoc, req) {
@@ -98,4 +99,5 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
 
     $('#content').html(content);
     document.title = settings.name + ' - Types - ' + req.query.type;
+    $('form').bindKansoForm(req);
 });
