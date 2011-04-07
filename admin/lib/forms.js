@@ -74,11 +74,14 @@ exports.getModules = function (req, callback) {
     });
 };
 
-exports.showModal = function (field_td, row, req, typename, val, rawval) {
+exports.showModal = function (div, field_td, row, req, typename, val, rawval) {
     exports.getModules(req, function (settings, app, forms) {
         var type = app.types[typename];
         var form = new forms.Form(type, val);
-        var div = $('<div/>');
+
+        if (rawval) {
+            form.validate({form: rawval});
+        }
 
         div.html('<h2>' + (val ? 'Edit ': 'Add ') + typename + '</h2>');
         var divform = $('<form><table class="form_table"><tbody>' +
@@ -105,7 +108,7 @@ exports.showModal = function (field_td, row, req, typename, val, rawval) {
                 $.modal.close();
             }
             else {
-                exports.showModal(field_td, row, req, typename, val, rawval);
+                exports.showModal(div, field_td, row, req, typename, val, rawval);
             }
         });
         div.append(okbtn);
@@ -129,6 +132,7 @@ exports.showModal = function (field_td, row, req, typename, val, rawval) {
         }
 
         div.modal();
+        utils.resizeModal(div);
     });
 };
 
@@ -164,7 +168,8 @@ exports.addbtnHandler = function (req) {
     return function (ev) {
         var field_td = $(this).parent();
         var typename = field_td.attr('rel');
-        exports.showModal(field_td, null, req, typename);
+        var div = $('<div/>');
+        exports.showModal(div, field_td, null, req, typename);
     };
 };
 
@@ -179,7 +184,8 @@ exports.editbtnHandler = function (req) {
         var field_td = row.parent().parent().parent();
         var val = exports.getRowValue(row);
         var typename = exports.getRowType(row);
-        exports.showModal(field_td, row, req, typename, val);
+        var div = $('<div/>');
+        exports.showModal(div, field_td, row, req, typename, val);
     };
 };
 

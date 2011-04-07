@@ -186,3 +186,12 @@ exports.getDesignDoc = function (name, callback) {
         return callback(null, exports.design_docs[name]);
     });
 };
+
+exports.resizeModal = function (div) {
+    $('#simplemodal-container').css({height: 'none', width: 'none'});
+    $('#simplemodal-container').css({
+        height: (div.height() + 20) + 'px',
+        width: (div.width() + 40) + 'px'
+    });
+    $.modal.setPosition();
+};

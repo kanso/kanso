@@ -1,4 +1,5 @@
-var session = require('kanso/session');
+var session = require('kanso/session'),
+    utils = require('./utils');
 
 
 exports.options = {
@@ -67,9 +68,11 @@ exports.init = function () {
             $('.password .errors', div).text(
                 password ? '': 'Please enter a password'
             );
+            utils.resizeModal(div);
             if (username && password) {
                 session.login(username, password, function (err) {
                     $('.general_errors', div).text(err ? err.toString(): '');
+                    utils.resizeModal(div);
                     if (!err) {
                         $(div).fadeOut('slow', function () {
                             $.modal.close();
@@ -79,6 +82,6 @@ exports.init = function () {
             }
             return false;
         });
-        div.modal();
+        div.modal({autoResize: true});
     });
 };
