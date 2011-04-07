@@ -94,9 +94,10 @@ exports.fieldPairsList = function (fields, doc, path) {
                 });
             }
             else if (kanso_utils.constructorName(fields[k]) === 'Embedded') {
+                var val = kanso_utils.getPropertyPath(doc, path.concat([k]));
                 pairs.push({
                     field: path.concat([k]).join('.'),
-                    value: kanso_utils.getPropertyPath(doc, path.concat([k]))._id
+                    value: val ? val._id: ''
                 });
             }
             else if (kanso_utils.constructorName(fields[k]) === 'EmbeddedList') {
@@ -162,6 +163,7 @@ exports.typelist = adminList(function (rows, ddoc, req) {
         f.push({fields: pairs.slice(0, 5), id: rows[i].id});
     }
     var field_names = [];
+    var pairs = exports.fieldPairsList(type.fields, {}, []);
     for (var i = 0, len = pairs.length; i < len; i++) {
         var name = pairs[i].field;
         if (name !== '_rev' && name !== 'type' && name !== '_deleted') {
