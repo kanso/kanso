@@ -114,7 +114,8 @@ exports.init = function () {
         var action = $(this).attr('action') || exports.getURL();
         var method = $(this).attr('method').toUpperCase();
 
-        if (exports.isAppURL(action)) {
+        // _session is a special case always available at the root url
+        if (action !== '/_session' && exports.isAppURL(action)) {
             var url = exports.appPath(action);
             ev.preventDefault();
             var fields = $(this).serializeArray();
