@@ -1,3 +1,6 @@
+var _ = require('./underscore')._;
+
+
 exports.errorHTML = function (errors) {
     if (errors && errors.length) {
         var html = '<ul class="errors">';
@@ -56,28 +59,41 @@ exports.table = function () {
         '</tr>';
     };
     this.embed = function (type, name, value, raw, errors) {
-        //var parent_name = name;
-        var renderer = new exports.table();
-        renderer.start = function () {
-            var fval = value ? JSON.stringify(value).replace(/"/g, '&#34;'): '';
-            return '<tr class="embedded">' +
-                '<th>' + exports.labelHTML(type, name) + '</th>' +
-                '<td class="embedded" rel="' + type.name + '">' +
-                '<input type="hidden" value="' + fval + '" name="' + name + '" />' +
-                '<span class="value">' + (value ? value._id: '') + '</span>' +
-                '</td>' +
-                '<td class="errors">' +
-                    exports.errorHTML(errors) +
-                '</td>' +
-            '</tr>';
-        };
-        renderer.field = function (field, name, value, raw, errors) {
-            return '';
-        };
-        renderer.end = function () {
-            return '';
-        };
-        return renderer;
+        var fval = value ? JSON.stringify(value).replace(/"/g, '&#34;'): '';
+        return '<tr class="embedded">' +
+            '<th>' + exports.labelHTML(type, name) + '</th>' +
+            '<td class="field" rel="' + type.name + '">' +
+            '<table rel="' + name + '"><tbody><tr><td>' +
+            '<input type="hidden" value="' + fval + '" name="' + name + '" />' +
+            '<span class="value">' + (value ? value._id: '') + '</span>' +
+            '</td>' +
+            '<td class="actions"></td>' +
+            '</tr></tbody></table>' +
+            '<td class="errors">' +
+                exports.errorHTML(errors) +
+            '</td>' +
+        '</tr>';
+    };
+    this.embedList = function (type, name, value, raw, errors) {
+        var html = '<tr class="embeddedlist">' +
+            '<th>' + exports.labelHTML(type, name) + '</th>' +
+            '<td class="field" rel="' + type.name + '">' +
+            '<table rel="' + name + '"><tbody>';
+        _.each(value, function (v, i) {
+            var fval = v ? JSON.stringify(v).replace(/"/g, '&#34;'): '';
+            html += '<tr><td>' +
+                '<input type="hidden" value="' + fval + '" ' +
+                       'name="' + name + '.' + i + '" />' +
+                '<span class="value">' + (v ? v._id: '') + '</span>' +
+                '</td><td class="actions">' +
+                '</td></tr>';
+        });
+        html += '</tbody></table></td>' +
+            '<td class="errors">' +
+                exports.errorHTML(errors) +
+            '</td>' +
+        '</tr>';
+        return html;
     };
     this.end = function () {
         return '';

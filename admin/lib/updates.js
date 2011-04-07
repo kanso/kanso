@@ -2,6 +2,7 @@
   $: false*/
 
 var utils = require('./utils'),
+    admin_forms = require('./forms'),
     core = require('kanso/core'),
     templates = require('kanso/templates'),
     db = require('kanso/db'),
@@ -73,7 +74,7 @@ exports.addtype = function (doc, req) {
             $('#content').html(content);
             document.title = settings.name + ' - Types - ' + req.query.type;
         }
-        $('form').bindKansoForm(req);
+        admin_forms.bind(req);
     });
 };
 
@@ -142,7 +143,7 @@ exports.updatetype = function (doc, req) {
             $('#content').html(content);
             document.title = settings.name + ' - Types - ' + req.query.type;
         }
-        $('form').bindKansoForm(req);
+        admin_forms.bind(req);
     });
 };
 

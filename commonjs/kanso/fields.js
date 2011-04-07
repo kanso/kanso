@@ -360,8 +360,9 @@ EmbeddedList.prototype.validate = function (doc, value, raw) {
 
     // run type validation against each embedded document
     return _.reduce(value, function (errs, v, i) {
+        var r = raw ? raw[i]: undefined;
         return errs.concat(
-            _.map(type.validate(v, raw[i]), function (err) {
+            _.map(type.validate(v, r), function (err) {
                 err.field = [i].concat(err.field || []);
                 return err;
             })

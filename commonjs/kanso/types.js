@@ -39,13 +39,10 @@ var Type = exports.Type = function Type(name, options) {
         throw new Error('First argument must be the type name');
     }
     this.name = name;
+    options = options || {};
 
-    _.extend(this, _.defaults(options || {}, {
-        fields: {},
-        permissions: []
-    }));
-
-    this.fields._id = fields.string({
+    var f = {};
+    f._id = fields.string({
         omit_empty: true,
         required: false,
         widget: widgets.hidden(),
@@ -53,17 +50,17 @@ var Type = exports.Type = function Type(name, options) {
             edit: permissions.fieldUneditable()
         }
     });
-    this.fields._rev = fields.string({
+    f._rev = fields.string({
         omit_empty: true,
         required: false,
         widget: widgets.hidden()
     });
-    this.fields._deleted = fields.boolean({
+    f._deleted = fields.boolean({
         omit_empty: true,
         required: false,
         widget: widgets.hidden()
     });
-    this.fields.type = fields.string({
+    f.type = fields.string({
         default_value: name,
         widget: widgets.hidden(),
         permissions: {
@@ -75,6 +72,16 @@ var Type = exports.Type = function Type(name, options) {
             edit: permissions.fieldUneditable()
         }
     });
+    for (var k in options.fields) {
+        if (options.fields.hasOwnProperty(k)) {
+            f[k] = options.fields[k];
+        }
+    }
+    options.fields = f;
+    _.extend(this, _.defaults(options, {
+        permissions: []
+    }));
+
 };
 
 /**

@@ -41,10 +41,13 @@ exports.fieldPairs = function (fields, doc, path) {
     for (var k in fields) {
         if (fields.hasOwnProperty(k)) {
             if (kanso_utils.constructorName(fields[k]) === 'Field') {
-                pairs.push({
+                var val = kanso_utils.getPropertyPath(doc, path.concat([k]));
+                if (!fields[k].isEmpty(val) || !fields[k].omit_empty) {
+                    pairs.push({
                     field: path.concat([k]).join('.'),
-                    value: kanso_utils.getPropertyPath(doc, path.concat([k]))
-                });
+                        value: val
+                    });
+                }
             }
             else if (kanso_utils.constructorName(fields[k]) === 'Embedded') {
                 pairs = pairs.concat(
@@ -53,9 +56,65 @@ exports.fieldPairs = function (fields, doc, path) {
                     )
                 );
             }
+            else if (kanso_utils.constructorName(fields[k]) === 'EmbeddedList') {
+                var items = kanso_utils.getPropertyPath(doc, path.concat([k]));
+                if (items) {
+                    for (var i = 0; i < items.length; i++) {
+                        pairs = pairs.concat(
+                            exports.fieldPairs(
+                                fields[k].type.fields, doc, path.concat([k,i])
+                            )
+                        );
+                    }
+                }
+                else {
+                    if (!fields[k].omit_empty) {
+                        pairs.push({field: path.concat([k]).join('.'), value: ''});
+                    }
+                }
+            }
             else if (typeof fields[k] === 'object') {
                 pairs = pairs.concat(
                     exports.fieldPairs(fields[k], doc, path.concat([k]))
+                );
+            }
+        }
+    }
+    return pairs;
+};
+
+exports.fieldPairsList = function (fields, doc, path) {
+    var pairs = [];
+    for (var k in fields) {
+        if (fields.hasOwnProperty(k)) {
+            if (kanso_utils.constructorName(fields[k]) === 'Field') {
+                pairs.push({
+                    field: path.concat([k]).join('.'),
+                    value: kanso_utils.getPropertyPath(doc, path.concat([k]))
+                });
+            }
+            else if (kanso_utils.constructorName(fields[k]) === 'Embedded') {
+                pairs.push({
+                    field: path.concat([k]).join('.'),
+                    value: kanso_utils.getPropertyPath(doc, path.concat([k]))._id
+                });
+            }
+            else if (kanso_utils.constructorName(fields[k]) === 'EmbeddedList') {
+                var items = kanso_utils.getPropertyPath(doc, path.concat([k]));
+                var val = [];
+                if (items) {
+                    for (var i = 0; i < items.length; i++) {
+                        val.push(items[i]._id);
+                    }
+                }
+                pairs.push({
+                    field: path.concat([k]).join('.'),
+                    value: val.join(', \n')
+                });
+            }
+            else if (typeof fields[k] === 'object') {
+                pairs = pairs.concat(
+                    exports.fieldPairsList(fields[k], doc, path.concat([k]))
                 );
             }
         }
@@ -92,9 +151,10 @@ exports.typelist = adminList(function (rows, ddoc, req) {
 
     var f = [];
     for (var i = 0, len = rows.length; i < len; i++) {
-        var pairs = exports.fieldPairs(type.fields, rows[i].doc, []);
+        var pairs = exports.fieldPairsList(type.fields, rows[i].doc, []);
         for (var j = 0; j < pairs.length; j++) {
-            if (pairs[j].field === '_rev' || pairs[j].field === 'type') {
+            if (pairs[j].field === '_rev' || pairs[j].field === 'type' ||
+                pairs[j].field === '_deleted') {
                 pairs.splice(j, 1);
                 j = -1;
             }
@@ -104,7 +164,7 @@ exports.typelist = adminList(function (rows, ddoc, req) {
     var field_names = [];
     for (var i = 0, len = pairs.length; i < len; i++) {
         var name = pairs[i].field;
-        if (name !== '_rev' && name !== 'type') {
+        if (name !== '_rev' && name !== 'type' && name !== '_deleted') {
             field_names.push(name);
         }
     }

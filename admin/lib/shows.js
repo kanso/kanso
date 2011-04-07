@@ -2,6 +2,7 @@
   $: false*/
 
 var utils = require('./utils'),
+    admin_forms = require('./forms'),
     templates = require('kanso/templates');
 
 
@@ -77,7 +78,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
     });
     $('#content').html(content);
     document.title = settings.name + ' - Types - ' + req.query.type;
-    $('form').bindKansoForm(req);
+    admin_forms.bind(req);
 });
 
 exports.edittype = adminShow(function (doc, ddoc, req) {
@@ -99,5 +100,5 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
 
     $('#content').html(content);
     document.title = settings.name + ' - Types - ' + req.query.type;
-    $('form').bindKansoForm(req);
+    admin_forms.bind(req);
 });

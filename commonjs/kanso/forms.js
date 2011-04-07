@@ -149,16 +149,21 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
                 (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
             );
-            html += new_renderer.start();
-            html += that.renderFields(
-                new_renderer,
-                fields[k].type.fields,
-                values[k],
-                (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs,
-                f_path
-            );
-            html += new_renderer.end();
+            if (typeof new_renderer === 'string') {
+                html += new_renderer;
+            }
+            else {
+                html += new_renderer.start();
+                html += that.renderFields(
+                    new_renderer,
+                    fields[k].type.fields,
+                    values[k],
+                    (raw[k] === undefined) ? values[k]: raw[k],
+                    f_errs,
+                    f_path
+                );
+                html += new_renderer.end();
+            }
             return html;
         }
         else if (cname === 'EmbeddedList') {
@@ -170,30 +175,37 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
                 (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
             );
-            html += new_renderer.start();
-            html += _.reduce(values[k], function (html, v, i) {
-                var f_path2 = f_path.concat([i]);
-                var f_errs2 = errsBelowPath(f_errs, f_path2);
-                var v_renderer = new_renderer.each(
-                    type,
-                    f_path2.join('.'),
-                    v,
-                    (raw[k][i] === undefined) ? v[i]: raw[k][i],
-                    f_errs2
-                );
-                html += v_renderer.start();
-                html += that.renderFields(
-                    v_renderer,
-                    type.fields,
-                    v,
-                    (raw[k][i] === undefined) ? v[i]: raw[k][i],
-                    f_errs2,
-                    f_path2
-                );
-                html += v_renderer.end();
-                return html;
-            }, '');
-            html += new_renderer.end();
+            if (typeof new_renderer === 'string') {
+                html += new_renderer;
+            }
+            else {
+                html += new_renderer.start();
+                if (new_renderer.each) {
+                    html += _.reduce(values[k], function (html, v, i) {
+                        var f_path2 = f_path.concat([i]);
+                        var f_errs2 = errsBelowPath(f_errs, f_path2);
+                        var v_renderer = new_renderer.each(
+                            type,
+                            f_path2.join('.'),
+                            v,
+                            (raw[k] === undefined || raw[k][i] === undefined) ? v[i]: raw[k][i],
+                            f_errs2
+                        );
+                        html += v_renderer.start();
+                        html += that.renderFields(
+                            v_renderer,
+                            type.fields,
+                            v,
+                            (raw[k] === undefined || raw[k][i] === undefined) ? v[i]: raw[k][i],
+                            f_errs2,
+                            f_path2
+                        );
+                        html += v_renderer.end();
+                        return html;
+                    }, '');
+                }
+                html += new_renderer.end();
+            }
             return html;
         }
         else {
@@ -255,7 +267,7 @@ exports.parseRaw = function (fields, raw) {
             }
         }
         else if (cname === 'Embedded') {
-            if (!f.isEmpty(r) || !f.omit_empty) {
+            if (!f.isEmpty(r)) {
                 if (typeof r === 'string') {
                     if (r !== '') {
                         doc[k] = JSON.parse(r);
@@ -268,17 +280,22 @@ exports.parseRaw = function (fields, raw) {
         }
         else if (cname === 'EmbeddedList') {
             doc[k] = [];
-            for (var i = 0, len = r.length; i < len; i++) {
-                if (!f.isEmpty(r[i]) || !f.omit_empty) {
-                    if (typeof r === 'string') {
-                        if (r !== '') {
-                            doc[k][i] = JSON.parse(r[i]);
-                        }
-                    }
-                    else {
-                        doc[k][i] = exports.parseRaw(f.type.fields, r[i]);
+            for (var i in r) {
+                var val;
+                if (typeof r[i] === 'string') {
+                    if (r[i] !== '') {
+                        val = JSON.parse(r[i]);
                     }
                 }
+                else {
+                    val = exports.parseRaw(f.type.fields, r[i]);
+                }
+                if (!f.isEmpty(val)) {
+                    doc[k][i] = val;
+                }
+            }
+            if (!doc[k].length && f.omit_empty) {
+                delete doc[k];
             }
         }
         else {
