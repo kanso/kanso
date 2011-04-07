@@ -388,6 +388,8 @@ EmbeddedList.prototype.authorize = function (nDoc, oDoc, nVal, oVal, user) {
     var type = this.type;
     var perms = this.permissions;
 
+    nVal = nVal || [];
+    oVal = oVal || [];
     var maxlen = Math.max(nVal.length, oVal.length);
     return _.reduce(_.range(maxlen), function (errs, i) {
 

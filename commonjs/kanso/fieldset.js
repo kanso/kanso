@@ -101,10 +101,13 @@ exports.validate = function (fields, doc, values, raw, path, extra) {
         if (f === undefined) {
             // Extra value with no associated field detected
             if (!extra) {
-                var e = new Error('Unexpected property');
-                e.field = path.concat([k]);
-                e.has_field = false;
-                errs.push(e);
+                // ignore system properties
+                if (path.length !== 0 || k.charAt(0) !== '_') {
+                    var e = new Error('Unexpected property');
+                    e.field = path.concat([k]);
+                    e.has_field = false;
+                    errs.push(e);
+                }
             }
             return errs;
         }

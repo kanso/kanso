@@ -222,10 +222,13 @@ Type.prototype.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path) {
             // This *should* be picked up by validation, and be raised as a
             // validation error before it gets to the auth stage
             if (!that.allow_extra_fields) {
-                var e = new Error('Unexpected property');
-                e.field = path.concat([k]);
-                e.has_field = false;
-                errs.push(e);
+                // ignore system properties
+                if (path.length !== 0 || k.charAt(0) !== '_') {
+                    var e = new Error('Unexpected property');
+                    e.field = path.concat([k]);
+                    e.has_field = false;
+                    errs.push(e);
+                }
             }
             return errs;
         }
