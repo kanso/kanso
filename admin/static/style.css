@@ -52,6 +52,9 @@ h1 {
 h1 a {
     text-decoration: none;
 }
+h1 a:hover {
+    color: #ccc;
+}
 h1 :link, h1 :visited, h1 strong {
     padding: .4em .5em;
 }
@@ -241,3 +244,76 @@ td.actions .button {
 }
 #simplemodal-overlay {background-color:#000;}
 #simplemodal-container {background-color:#fff; border:8px solid #444; padding:12px;}
+
+#session {
+    font-size: 0.95em;
+    color: #ccc;
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 9999;
+    height: 2em;
+    line-height: 2em;
+    margin: 0.2em 1em;
+    padding: 0 0 0 .5em;
+}
+
+#session .username {
+    color: white;
+    margin-right: 1em;
+}
+
+#session ul.actions,
+#session ul.actions li {
+    list-style-type: none;
+    display: inline;
+    height: 2em;
+    line-height: 2em;
+    margin: 0;
+    padding: 0;
+}
+
+#session ul.actions li a {
+    color: #999;
+    text-decoration: none;
+}
+
+#session ul.actions li a:hover {
+    color: #eee;
+}
+
+#session ul.actions {
+    border-left: 1px solid #666;
+}
+
+#session ul.actions li {
+    padding: 0 0 0 1em;
+}
+
+.loggedout .logout { display: none !important; }
+.loggedout .login { display: inline !important; }
+.loggedout .signup { display: inline !important; }
+.loggedin .logout { display: inline !important; }
+.loggedin .login { display: none !important; }
+.loggedin .signup { display: none !important; }
+
+#login_form .actions {
+    text-align: right;
+}
+
+#login_form label {
+    display: inline-block;
+    width: 90px;
+}
+
+#login_form .errors {
+    font-size: 0.8em;
+    color: red;
+    padding-left: 90px;
+}
+
+#login_form .general_errors {
+    font-size: 0.8em;
+    color: red;
+    font-weight: bold;
+}

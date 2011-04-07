@@ -4,6 +4,7 @@
 
 var utils = require('./utils'),
     fieldset = require('./fieldset'),
+    render = require('./render'),
     _ = require('./underscore')._;
 
 
@@ -76,6 +77,7 @@ Form.prototype.toHTML = function (req, rendererClass) {
         this.fields,
         req.userCtx
     );
+    rendererClass = rendererClass || render.table;
     var renderer = new rendererClass();
     return renderer.start() +
         this.renderFields(

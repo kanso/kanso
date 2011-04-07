@@ -1,4 +1,4 @@
-var db = require('kanso/db');
+var session = require('kanso/session');
 
 
 exports.options = {
@@ -29,3 +29,56 @@ exports.views = require('./views');
 exports.lists = require('./lists');
 exports.shows = require('./shows');
 exports.updates = require('./updates');
+
+exports.init = function () {
+    $('#session .logout a').click(function () {
+        session.logout();
+    });
+    $('#session .login a').click(function () {
+        var div = $('<div><h2>Login</h2></div>');
+        div.append('<form id="login_form" action="/_session" method="POST">' +
+            '<div class="general_errors"></div>' +
+            '<div class="username field">' +
+                '<label for="id_name">Username</label>' +
+                '<input id="id_name" name="name" type="text" />' +
+                '<div class="errors"></div>' +
+            '</div>' +
+            '<div class="password field">' +
+                '<label for="id_password">Password</label>' +
+                '<input id="id_password" name="password" type="password" />' +
+                '<div class="errors"></div>' +
+            '</div>' +
+            '<div class="actions">' +
+                '<input type="submit" id="id_login" value="Login" />' +
+                '<input type="button" id="id_cancel" value="Cancel" />' +
+            '</div>' +
+        '</form>');
+        $('#id_cancel', div).click(function () {
+            $.modal.close();
+        });
+        $('form', div).submit(function (ev) {
+            ev.preventDefault();
+            var username = $('input[name="name"]', div).val();
+            var password = $('input[name="password"]', div).val();
+            console.log($('.username .errors', div));
+            $('.username .errors', div).text(
+                username ? '': 'Please enter a username'
+            );
+            $('.password .errors', div).text(
+                password ? '': 'Please enter a password'
+            );
+            if (username && password) {
+                session.login(username, password, function (err) {
+                    $('.general_errors', div).text(err ? err.toString(): '');
+                    if (!err) {
+                        $(div).fadeOut('slow', function () {
+                            $.modal.close();
+                        });
+                    }
+                });
+            }
+            return false;
+        });
+        div.modal();
+    });
+};
