@@ -93,7 +93,7 @@ exports.showModal = function (div, field_td, row, req, typename, val, rawval) {
         var action = (val ? 'Update': 'Add');
         var okbtn = $('<input type="button" value="' + action  + '" />"');
         okbtn.click(function () {
-            var qs = $('form', div).serialize();
+            var qs = $('form', div).serialize().replace(/\+/g, '%20');
             var rawval = querystring.parse(qs);
             form.validate({form: rawval});
             if (form.isValid()) {
