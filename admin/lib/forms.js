@@ -1,4 +1,5 @@
 var utils = require('./utils'),
+    db = require('kanso/db'),
     kanso_utils = require('kanso/utils'),
     querystring = require('kanso/querystring');
 
@@ -125,9 +126,14 @@ exports.showModal = function (div, field_td, row, req, typename, val, rawval) {
         div.append(cancelbtn);
 
         // generate ids when adding documents
-        if(!val) {
-            $('input[name="_id"]', div).attr({
-                value: kanso_utils.generateUUID()
+        if (!val) {
+            db.newUUID(100, function (err, uuid) {
+                if (err) {
+                    throw err;
+                }
+                $('input[name="_id"]', div).attr({
+                    value: uuid
+                });
             });
         }
 

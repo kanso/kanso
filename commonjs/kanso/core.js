@@ -321,7 +321,6 @@ exports.createRequest = function (method, url, data, match, callback) {
     var splat = exports.rewriteSplat(match.from, url);
     var to = exports.replaceGroups(match.to, query, splat);
     var req = {
-        uuid: utils.generateUUID(),
         method: method,
         query: query,
         headers: {},
@@ -334,19 +333,26 @@ exports.createRequest = function (method, url, data, match, callback) {
         req.form = data;
     }
 
-    if (utils.userCtx) {
-        req.userCtx = utils.userCtx;
-        return callback(null, req);
-    }
-    else {
-        session.info(function (err, session) {
-            if (err) {
-                return callback(err);
-            }
-            req.userCtx = session.userCtx;
-            callback(null, req);
-        });
-    }
+    db.newUUID(100, function (err, uuid) {
+        if (err) {
+            return callback(err);
+        }
+        req.uuid = uuid;
+
+        if (utils.userCtx) {
+            req.userCtx = utils.userCtx;
+            return callback(null, req);
+        }
+        else {
+            session.info(function (err, session) {
+                if (err) {
+                    return callback(err);
+                }
+                req.userCtx = session.userCtx;
+                callback(null, req);
+            });
+        }
+    });
 };
 
 

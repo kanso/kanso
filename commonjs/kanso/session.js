@@ -13,30 +13,43 @@ var db = require('./db'),
  * when using functions such as templates.render
  */
 
-exports.fakeRequest = function (userCtx) {
-    return {
-        userCtx: userCtx,
-        uuid: utils.generateUUID(),
-        method: 'GEt',
-        query: {},
-        headers: {},
-        path: ['_session'],
-        client: true,
-        initial_hit: utils.initial_hit,
-        cookie: cookies.readBrowserCookies()
-    };
+exports.fakeRequest = function (userCtx, callback) {
+    db.newUUID(100, function (err, uuid) {
+        if (err) {
+            return callback(err);
+        }
+        callback(null, {
+            userCtx: userCtx,
+            uuid: uuid,
+            method: 'GEt',
+            query: {},
+            headers: {},
+            path: ['_session'],
+            client: true,
+            initial_hit: utils.initial_hit,
+            cookie: cookies.readBrowserCookies()
+        });
+    });
 };
 
 /**
  * Calls sessionChange if exported from the currently loaded app
  */
 
-exports.sessionChange = function (userCtx) {
+exports.sessionChange = function (userCtx, callback) {
     if (kanso.app.sessionChange) {
-        var req = exports.fakeRequest(userCtx);
-        // they should match, but make sure they're the same
-        req.userCtx = userCtx;
-        kanso.app.sessionChange(userCtx, req);
+        var req = exports.fakeRequest(userCtx, function (err, req) {
+            if (err) {
+                if (callback) {
+                    return callback(err);
+                }
+                throw err;
+            }
+            kanso.app.sessionChange(userCtx, req);
+            if (callback) {
+                callback();
+            }
+        });
     }
 };
 
