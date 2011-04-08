@@ -40,7 +40,7 @@ exports.isBrowser = utils.isBrowser;
  * by them.
  */
 
-exports.initial_hit = true;
+exports.initial_hit = utils.initial_hit;
 
 
 
@@ -339,11 +339,11 @@ exports.createRequest = function (method, url, data, match, callback) {
         return callback(null, req);
     }
     else {
-        session.info(function (err, userCtx) {
+        session.info(function (err, session) {
             if (err) {
                 return callback(err);
             }
-            req.userCtx = userCtx;
+            req.userCtx = session.userCtx;
             callback(null, req);
         });
     }
@@ -661,10 +661,10 @@ exports.handle = function (method, url, data) {
      * track a page view. This is done consistently for hash-based
      * and pushState urls
      */
-    if (window.pageTracker && !exports.initial_hit) {
+    if (window.pageTracker && !utils.initial_hit) {
         pageTracker._trackPageview(url);
     }
-    exports.initial_hit = false;
+    utils.initial_hit = false;
 };
 
 

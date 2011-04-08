@@ -25,6 +25,19 @@ if (typeof window !== 'undefined') {
     exports.isBrowser = true;
 }
 
+/**
+ * This is because the first page hit also triggers kanso to handle the url
+ * client-side. Knowing it is the first page being loaded means we can stop
+ * the pageTracker code from submitting the URL twice. Exported because this
+ * might be useful information to other modules, it should not be modified
+ * by them.
+ */
+
+// TODO: this was moved to this module from core.js to avoid a circular
+// dependency between core.js and session.js
+exports.initial_hit = true;
+
+
 
 /**
  * Used to store userCtx, periodically updated like on session.login and
@@ -33,6 +46,12 @@ if (typeof window !== 'undefined') {
 
 // TODO: added to utils to avoid circular dependency bug in couchdb
 exports.userCtx = null;
+
+/**
+ * Caches extended session info (like the current authentication db) after
+ * a call to session.info
+ */
+exports.session = null;
 
 
 /**

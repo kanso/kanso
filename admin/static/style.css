@@ -297,22 +297,26 @@ td.actions .button {
 .loggedin .login { display: none !important; }
 .loggedin .signup { display: none !important; }
 
-#login_form .actions {
+#login_form .actions,
+#signup_form .actions {
     text-align: right;
 }
 
-#login_form label {
+#login_form label,
+#signup_form label {
     display: inline-block;
     width: 90px;
 }
 
-#login_form .errors {
+#login_form .errors,
+#signup_form .errors {
     font-size: 0.8em;
     color: red;
     padding-left: 90px;
 }
 
-#login_form .general_errors {
+#login_form .general_errors,
+#signup_form .general_errors {
     font-size: 0.8em;
     color: red;
     font-weight: bold;
