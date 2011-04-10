@@ -73,7 +73,10 @@ Field.prototype.parse = function (raw) {
  */
 
 Field.prototype.isEmpty = function (value, raw) {
-    return (value === '' || value === null || value === undefined);
+    if (raw === undefined) {
+        raw = value;
+    }
+    return (raw === '' || raw === null || raw === undefined);
 };
 
 /**
