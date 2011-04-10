@@ -2,9 +2,11 @@
   $: false*/
 
 var utils = require('./utils'),
+    db = require('kanso/db'),
     kanso_utils = require('kanso/utils'),
     templates = require('kanso/templates'),
-    flashmessages = require('kanso/flashmessages');
+    flashmessages = require('kanso/flashmessages'),
+    _ = require('kanso/underscore');
 
 
 /**
@@ -182,6 +184,49 @@ exports.typelist = adminList(function (rows, ddoc, req) {
 
     $('#content').html(content);
     document.title = req.query.app + ' - ' + req.query.type;
+
+    if (rows.length === 10) {
+        var more_link = $('<a href="#">Show more...</a>');
+        more_link.data('last_id', rows[rows.length-1].id);
+        more_link.click(function (ev) {
+            ev.preventDefault();
+            var q = {
+                startkey: [req.query.type, $(this).data('last_id')],
+                endkey: [req.query.type, {}],
+                include_docs: true,
+                skip: 1,
+                limit: 10
+            };
+            db.getView('types', q, function (err, result) {
+                if (result.rows.length < 10) {
+                    more_link.remove();
+                }
+                if (!result.rows.length) {
+                    return;
+                }
+                var rows = result.rows;
+                var f = [];
+                for (var i = 0, len = rows.length; i < len; i++) {
+                    var pairs = exports.fieldPairsList(type.fields, rows[i].doc, []);
+                    for (var j = 0; j < pairs.length; j++) {
+                        if (pairs[j].field === '_rev' || pairs[j].field === 'type' ||
+                            pairs[j].field === '_deleted') {
+                            pairs.splice(j, 1);
+                            j = -1;
+                        }
+                    }
+                    f.push({fields: pairs.slice(0, 5), id: rows[i].id});
+                }
+                var html = templates.render('typelist_rows.html', req, {
+                    rows: f
+                });
+                more_link.data('last_id', rows[rows.length-1].id);
+                $('table.typelist tbody').append(html);
+            });
+            return false;
+        });
+        $('#main').append(more_link);
+    }
 
     $('#content table.typelist tr:odd').addClass('odd');
 });

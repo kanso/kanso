@@ -16,11 +16,13 @@ exports.rewrites = [
     {from: '/:app/:type', to: '_list/typelist/types', query: {
         startkey: [':type'],
         endkey: [':type', {}],
-        include_docs: true
+        include_docs: true,
+        limit: 10
     }},
     {from: '/:app/:type/view/:id', to: '_list/viewtype/types', query: {
         key: [':type', ':id'],
-        include_docs: true
+        include_docs: true,
+        limit: 1
     }},
     {from: '/:app/:type/edit/:id', to: '_show/edittype/:id', method: 'GET'},
     {from: '/:app/:type/edit/:id', to: '_update/updatetype/:id', method: 'POST'},

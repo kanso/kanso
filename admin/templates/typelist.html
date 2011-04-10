@@ -31,27 +31,7 @@
       </tr>
     </thead>
     <tbody>
-    {#rows}
-      <tr>
-        {#fields}
-          <td class="data"><a href="{baseURL}/{app}/{type}/view/{id}">{value}</a></td>
-        {/fields}
-        <td class="actions">
-          <a class="button" href="{baseURL}/{app}/{type}/view/{id}">
-            <span class="icon">4</span><span class="label">View</span>
-          </a>
-          <a class="button" href="{baseURL}/{app}/{type}/edit/{id}">
-            <span class="icon">p</span><span class="label">Edit</span>
-          </a>
-          <form class="delete_form" action="{baseURL}/{app}/{type}/delete/{id}" method="POST">
-            <div class="button">
-              <input class="icon" type="submit" value="X" />
-              <input class="label" type="submit" value="Delete" />
-            </div>
-          </form>
-        </td>
-      </tr>
-    {/rows}
+    {>"typelist_rows.html"/}
     </tbody>
   </table>
 
