@@ -254,8 +254,6 @@ exports.formValuesToTree = function (form) {
  */
 
 exports.parseRaw = function (fields, raw) {
-    log('raw:');
-    log(raw);
     var doc = {};
     raw = raw || {};
 
@@ -304,8 +302,6 @@ exports.parseRaw = function (fields, raw) {
             doc[k] = exports.parseRaw(f, r);
         }
     }
-    log('parseRaw');
-    log(doc);
     return doc;
 };
 
