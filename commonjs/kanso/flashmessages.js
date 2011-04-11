@@ -80,10 +80,15 @@ exports.updateResponse = function (req, res) {
     });
     console.log('flashmessages.updateResponse');
     console.log(messages);
-    cookies.setResponseCookie(req, res, {
-        name: '_kanso_flash',
-        value: JSON.stringify(messages)
-    });
+    if (req.response_received) {
+        exports.setBrowserCookie(req, messages);
+    }
+    else {
+        cookies.setResponseCookie(req, res, {
+            name: '_kanso_flash',
+            value: JSON.stringify(messages)
+        });
+    }
     return res;
 };
 
