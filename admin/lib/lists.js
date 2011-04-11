@@ -38,53 +38,6 @@ var adminList = function (fn) {
 };
 
 
-exports.fieldPairs = function (fields, doc, path) {
-    var pairs = [];
-    for (var k in fields) {
-        if (fields.hasOwnProperty(k)) {
-            if (kanso_utils.constructorName(fields[k]) === 'Field') {
-                var val = kanso_utils.getPropertyPath(doc, path.concat([k]));
-                if (!fields[k].isEmpty(val) || !fields[k].omit_empty) {
-                    pairs.push({
-                    field: path.concat([k]).join('.'),
-                        value: val
-                    });
-                }
-            }
-            else if (kanso_utils.constructorName(fields[k]) === 'Embedded') {
-                pairs = pairs.concat(
-                    exports.fieldPairs(
-                        fields[k].type.fields, doc, path.concat([k])
-                    )
-                );
-            }
-            else if (kanso_utils.constructorName(fields[k]) === 'EmbeddedList') {
-                var items = kanso_utils.getPropertyPath(doc, path.concat([k]));
-                if (items) {
-                    for (var i = 0; i < items.length; i++) {
-                        pairs = pairs.concat(
-                            exports.fieldPairs(
-                                fields[k].type.fields, doc, path.concat([k,i])
-                            )
-                        );
-                    }
-                }
-                else {
-                    if (!fields[k].omit_empty) {
-                        pairs.push({field: path.concat([k]).join('.'), value: ''});
-                    }
-                }
-            }
-            else if (typeof fields[k] === 'object') {
-                pairs = pairs.concat(
-                    exports.fieldPairs(fields[k], doc, path.concat([k]))
-                );
-            }
-        }
-    }
-    return pairs;
-};
-
 exports.fieldPairsList = function (fields, doc, path) {
     var pairs = [];
     for (var k in fields) {
@@ -230,51 +183,3 @@ exports.typelist = adminList(function (rows, ddoc, req) {
 
     $('#content table.typelist tr:odd').addClass('odd');
 });
-
-
-exports.viewtype = function (head, req) {
-    if (!req.client) {
-        start({code: 200, headers: {'Content-Type': 'text/html'}});
-        return templates.render('base.html', req, {
-            title: req.query.app + ' - Types - ' + req.query.type,
-            content: templates.render('noscript.html', req, {})
-        });
-    }
-    var row = getRow();
-    if (!row) {
-        start({code: 404, headers: {'Content-Type': 'text/html'}});
-        return '<h1>No such document</h1>'
-    }
-    start({code: 200, headers: {'Content-Type': 'text/html'}});
-    var doc = row.doc;
-    utils.getDesignDoc(req.query.app, function (err, ddoc) {
-        if (err) {
-            return alert(err);
-        }
-        var settings = utils.appRequire(ddoc, 'kanso/settings'),
-            fields = utils.appRequire(ddoc, 'kanso/fields'),
-            app = utils.appRequire(ddoc, settings.load),
-            type = app.types ? app.types[req.query.type]: undefined;
-
-        var content = templates.render('viewtype.html', req, {
-            fields: exports.fieldPairs(type.fields, doc, []),
-            doc: doc,
-            app: req.query.app,
-            app_heading: utils.capitalize(req.query.app),
-            type: req.query.type,
-            type_plural: utils.typePlural(req.query.type),
-            type_heading: utils.typeHeading(req.query.type)
-        });
-        var title = req.query.app + ' - ' + req.query.type + ' - ' + req.query.id;
-        if (req.client) {
-            $('#content').html(content);
-            document.title = title;
-        }
-        else {
-            return templates.render('base.html', req, {
-                title: title,
-                content: content
-            });
-        }
-    });
-};

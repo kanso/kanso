@@ -51,8 +51,7 @@ exports.addtype = function (doc, req) {
                         type: 'success',
                         message: 'Added ' + resp.id
                     });
-                    core.setURL('GET', '/' + req.query.app + '/' +
-                        req.query.type + '/view/' + resp.id);
+                    core.setURL('GET', '/' + req.query.app + '/view/' + resp.id);
                 }
             });
         }
@@ -80,14 +79,14 @@ exports.addtype = function (doc, req) {
 exports.updatetype = function (doc, req) {
     if (!req.client) {
         return [null, templates.render('base.html', req, {
-            title: req.query.app + ' - Types - ' + req.query.type,
+            title: req.query.app + ' - Types - ' + doc.type,
             content: templates.render('noscript.html', req, {})
         })];
     }
     utils.getDesignDoc(req.query.app, function (err, ddoc) {
         var settings = utils.appRequire(ddoc, 'kanso/settings'),
             app = utils.appRequire(ddoc, settings.load),
-            type = app.types ? app.types[req.query.type]: undefined;
+            type = app.types ? app.types[doc.type]: undefined;
 
         var forms = utils.appRequire(ddoc, 'kanso/forms'),
             form = new forms.Form(type);
@@ -106,21 +105,20 @@ exports.updatetype = function (doc, req) {
                         id: req.query.id,
                         app: req.query.app,
                         app_heading: utils.capitalize(req.query.app),
-                        type: req.query.type,
-                        type_heading: utils.typeHeading(req.query.type),
+                        type: doc.type,
+                        type_heading: utils.typeHeading(doc.type),
                         form: form.toHTML(req, forms.render.table)
                     });
 
                     $('#content').html(content);
-                    document.title = settings.name + ' - Types - ' + req.query.type;
+                    document.title = settings.name + ' - Types - ' + doc.type;
                 }
                 else {
                     flashmessages.addMessage(req, {
                         type: 'success',
                         message: 'Saved changes to ' + doc._id
                     });
-                    core.setURL('GET', '/' + req.query.app + '/' +
-                        req.query.type + '/view/' + resp.id);
+                    core.setURL('GET', '/' + req.query.app + '/view/' + resp.id);
                 }
             });
         }
@@ -134,13 +132,13 @@ exports.updatetype = function (doc, req) {
                 id: req.query.id,
                 app: req.query.app,
                 app_heading: utils.capitalize(req.query.app),
-                type: req.query.type,
-                type_heading: utils.typeHeading(req.query.type),
+                type: doc.type,
+                type_heading: utils.typeHeading(doc.type),
                 form: form.toHTML(req, forms.render.table)
             });
 
             $('#content').html(content);
-            document.title = settings.name + ' - Types - ' + req.query.type;
+            document.title = settings.name + ' - Types - ' + doc.type;
         }
         admin_forms.bind(req);
     });
@@ -150,7 +148,7 @@ exports.deletetype = function (doc, req) {
     var baseURL = require('kanso/utils').getBaseURL();
 
     if (!req.client) {
-        var loc = baseURL + '/' + req.query.app + '/' + req.query.type;
+        var loc = baseURL + '/' + req.query.app + '/' + doc.type;
         doc._deleted = true;
         flashmessages.addMessage(req, {
             type: 'success',
@@ -171,6 +169,6 @@ exports.deletetype = function (doc, req) {
                 message: 'Deleted ' + doc._id
             });
         }
-        core.setURL('GET',  '/' + req.query.app + '/' + req.query.type);
+        core.setURL('GET',  '/' + req.query.app + '/' + doc.type);
     });
 };

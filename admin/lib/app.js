@@ -19,14 +19,10 @@ exports.rewrites = [
         include_docs: true,
         limit: 10
     }},
-    {from: '/:app/:type/view/:id', to: '_list/viewtype/types', query: {
-        key: [':type', ':id'],
-        include_docs: true,
-        limit: 1
-    }},
-    {from: '/:app/:type/edit/:id', to: '_show/edittype/:id', method: 'GET'},
-    {from: '/:app/:type/edit/:id', to: '_update/updatetype/:id', method: 'POST'},
-    {from: '/:app/:type/delete/:id', to: '_update/deletetype/:id', method: 'POST'}
+    {from: '/:app/view/:id', to: '_show/viewtype/:id', method: 'GET'},
+    {from: '/:app/edit/:id', to: '_show/edittype/:id', method: 'GET'},
+    {from: '/:app/edit/:id', to: '_update/updatetype/:id', method: 'POST'},
+    {from: '/:app/delete/:id', to: '_update/deletetype/:id', method: 'POST'}
 ];
 
 exports.views = require('./views');
