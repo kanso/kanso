@@ -22,7 +22,11 @@ exports.rewrites = [
     {from: '/:app/view/:id', to: '_show/viewtype/:id', method: 'GET'},
     {from: '/:app/edit/:id', to: '_show/edittype/:id', method: 'GET'},
     {from: '/:app/edit/:id', to: '_update/updatetype/:id', method: 'POST'},
-    {from: '/:app/delete/:id', to: '_update/deletetype/:id', method: 'POST'}
+    {from: '/:app/delete/:id', to: '_update/deletetype/:id', method: 'POST'},
+    {from: '/:app/views/:view', to: '_show/viewlist', query: {
+        include_docs: true,
+        limit: 10
+    }}
 ];
 
 exports.views = require('./views');

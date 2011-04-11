@@ -1,0 +1,53 @@
+<h1>
+  <a href="{baseURL}/">Apps</a>
+  <a href="{baseURL}/{app}">{app_heading}</a>
+  <strong><a href="{baseURL}/{app}/views/{view}">{view_heading}</a></strong>
+</h1>
+
+<div id="main">
+
+  {>"flashmessages.html"/}
+
+  <h2>{view_heading}</h2>
+
+  <div class="top_actions">
+    <a class="button" href="{baseURL}/{app}">
+      <span class="icon">.</span>
+      <span class="label">All views</span>
+    </a>
+  </div>
+
+  <table class="viewlist">
+    <thead>
+      <tr>
+        <th>Key</th>
+        <th>Value</th>
+        <th class="actions">Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {#rows}
+      <tr>
+        <td class="data"><a href="{baseURL}/{app}/view/{id}">{key}</a></td>
+        <td class="data"><a href="{baseURL}/{app}/view/{id}">{value}</a></td>
+        <td class="actions">
+          <a class="button" href="{baseURL}/{app}/view/{id}">
+            <span class="icon">4</span><span class="label">View</span>
+          </a>
+          <a class="button" href="{baseURL}/{app}/edit/{id}">
+            <span class="icon">p</span><span class="label">Edit</span>
+          </a>
+          <form class="delete_form" action="{baseURL}/{app}/delete/{id}" method="POST">
+            <input type="hidden" name="next" value="{baseURL}/{app}/views/{view}" />
+            <div class="button">
+              <input class="icon" type="submit" value="X" />
+              <input class="label" type="submit" value="Delete" />
+            </div>
+          </form>
+        </td>
+      </tr>
+      {/rows}
+    </tbody>
+  </table>
+
+</div>

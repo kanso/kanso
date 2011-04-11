@@ -78,7 +78,8 @@ h2 {
     margin: 18px 0;
 }
 
-table.typelist {
+table.typelist,
+table.viewlist {
     clear: left;
     border-collapse: collapse;
     border-spacing: 0;
@@ -86,38 +87,46 @@ table.typelist {
     /*width: 100%;*/
 }
 
-.typelist th {
+.typelist th,
+.viewlist th {
     text-align: left;
     border-top: 1px solid #999;
     border-bottom: 1px solid #999;
 }
 
 .typelist td.actions,
-.typelist th {
+.viewlist td.actions,
+.typelist th,
+.viewlist th {
     padding: 0 1em;
 }
 
 
-.typelist td {
+.typelist td,
+.viewlist td {
     vertical-align: top;
     background-color: #fefefe;
     padding: 0.326em 0;
     margin: 0;
     border: 0;
 }
-.typelist tr.odd td {
+.typelist tr.odd td,
+.viewlist tr.odd td {
     background-color: #f9f9f9;
 }
 
-.typelist td.data {
+.typelist td.data,
+.viewlist td.data {
     font-size: 0.9em;
 }
 
-.typelist tr:hover td {
+.typelist tr:hover td,
+.viewlist tr:hover td {
     background-color: #eee;
 }
 
-.typelist td.data a {
+.typelist td.data a,
+.viewlist td.data a {
     display: block;
     width: 100%;
     height: 100%;

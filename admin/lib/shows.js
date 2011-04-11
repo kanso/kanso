@@ -3,6 +3,7 @@
 
 var utils = require('./utils'),
     kanso_utils = require('kanso/utils'),
+    db = require('kanso/db'),
     admin_forms = require('./forms'),
     templates = require('kanso/templates');
 
@@ -37,10 +38,20 @@ exports.types = adminShow(function (doc, ddoc, req) {
         }
     }
 
+    var views = [];
+    if (app.views) {
+        for (var k in app.views) {
+            if (app.views.hasOwnProperty(k)) {
+                views.push(k);
+            }
+        }
+    }
+
     var res = {code: 200, headers: {'Content-Type': 'text/html'}};
 
-    var content = templates.render('types.html', req, {
+    var content = templates.render('app.html', req, {
         types: types,
+        views: views,
         app: settings.name,
         app_heading: utils.capitalize(settings.name)
     });
@@ -51,7 +62,7 @@ exports.types = adminShow(function (doc, ddoc, req) {
     }
     else {
         res.body = templates.render('base.html', req, {
-            title: settings.name + ' - Types',
+            title: settings.name,
             content: content
         });
     }
@@ -152,14 +163,54 @@ exports.fieldPairs = function (fields, doc, path) {
 };
 
 
+exports.viewlist = adminShow(function (doc, ddoc, req) {
+    var base = kanso_utils.getBaseURL();
+    var view_req = {
+        url: base + '/_db/_design/' + req.query.app + '/_view/' + req.query.view,
+        data: db.stringifyQuery(req.query)
+    };
+    db.request(view_req, function (err, res) {
+        if (err) {
+            // TODO: what's best to do here?
+            alert(err);
+            return;
+        }
+        console.log('viewlist');
+        console.log(res);
+        var rows = res.rows.map(function (r) {
+            r.value = JSON.stringify(r.value);
+            r.key = JSON.stringify(r.key);
+            return r;
+        });
+        var content = templates.render('view.html', req, {
+            rows: res.rows,
+            view_heading: utils.viewHeading(req.query.view),
+            view: req.query.view,
+            app: req.query.app,
+            app_heading: utils.capitalize(req.query.app)
+        });
+        var title = req.query.app + ' - ' + req.query.view;
+        $('#content').html(content);
+        document.title = title;
+    });
+});
+
+
 exports.viewtype = adminShow(function (doc, ddoc, req) {
     var settings = utils.appRequire(ddoc, 'kanso/settings'),
         fields = utils.appRequire(ddoc, 'kanso/fields'),
         app = utils.appRequire(ddoc, settings.load),
         type = app.types ? app.types[doc.type]: undefined;
 
+    if (!doc) {
+        $('#content').html('<h1>No such document</h1>');
+        alert('No such document');
+        return;
+    }
+
+    var tfields = type ? type.fields: {};
     var content = templates.render('viewtype.html', req, {
-        fields: exports.fieldPairs(type.fields, doc, []),
+        fields: exports.fieldPairs(tfields, doc, []),
         doc: doc,
         app: req.query.app,
         app_heading: utils.capitalize(req.query.app),

@@ -19,4 +19,16 @@
     <p>There are no types defined for this app.</p>
   {/types}
 
+  <h2>Views</h2>
+
+  {?views}
+    <ul>
+    {#views}
+      <li><a href="{baseURL}/{app}/views/{.}">{.}</a></li>
+    {/views}
+    </ul>
+  {:else}
+    <p>There are no views defined for this app.</p>
+  {/views}
+
 </div>

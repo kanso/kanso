@@ -14,6 +14,10 @@ exports.typeHeading = function (type) {
     return exports.capitalize(exports.typePlural(type));
 };
 
+exports.viewHeading = function (view) {
+    return exports.capitalize(view);
+};
+
 
 /**
  * This code is adapted (brutally hacked apart) from share/server/util.js from

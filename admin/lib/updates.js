@@ -148,7 +148,7 @@ exports.deletetype = function (doc, req) {
     var baseURL = require('kanso/utils').getBaseURL();
 
     if (!req.client) {
-        var loc = baseURL + '/' + req.query.app + '/' + doc.type;
+        var loc = baseURL + '/' + req.query.app + '/types/' + doc.type;
         doc._deleted = true;
         flashmessages.addMessage(req, {
             type: 'success',
@@ -169,6 +169,9 @@ exports.deletetype = function (doc, req) {
                 message: 'Deleted ' + doc._id
             });
         }
-        core.setURL('GET',  '/' + req.query.app + '/types/' + doc.type);
+        core.setURL('GET', core.appPath(
+            (req.form && req.form.next) ||
+            ('/' + req.query.app + '/types/' + doc.type)
+        ));
     });
 };
