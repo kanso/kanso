@@ -182,12 +182,70 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
             r.key = JSON.stringify(r.key);
             return r;
         });
+
+        if (req.query.descending === 'true') {
+            rows = rows.reverse();
+        }
+
+        var last_row = rows[rows.length - 1];
+        var last_key = last_row ? last_row.key: null;
+        var last_id = last_row ? last_row.id: null;
+        var next_link = '' +
+            '?startkey=' + encodeURIComponent(last_key) +
+            '&startkey_docid=' + encodeURIComponent(last_id) +
+            '&skip=1';
+
+        var show_next_link = true;
+        if (req.query.descending === 'true') {
+            show_next_link = !!(res.offset);
+        }
+        else {
+            show_next_link = (res.offset + rows.length < res.total_rows);
+        }
+
+        var first_row = rows[0];
+        var first_key = first_row ? first_row.key: null;
+        var first_id = first_row ? first_row.id: null;
+        var prev_link = '' +
+            '?startkey=' + encodeURIComponent(first_key) +
+            '&startkey_docid=' + encodeURIComponent(first_id) +
+            '&descending=true' +
+            '&skip=1';
+
+        var show_prev_link = true;
+        if (req.query.descending === 'true') {
+            show_prev_link = (res.offset + rows.length < res.total_rows);
+        }
+        else {
+            show_prev_link = !!(res.offset);
+        }
+
+        var range;
+        if (req.query.descending === 'true') {
+            range = (res.total_rows - (res.offset + res.rows.length)) + '-' +
+                (res.total_rows - res.offset) + ' of ' +
+                res.total_rows;
+        }
+        else {
+            range = res.offset + '-' +
+                (res.offset + res.rows.length) + ' of ' +
+                res.total_rows;
+        }
+
+
         var content = templates.render('view.html', req, {
-            rows: res.rows,
+            rows: rows,
             view_heading: utils.viewHeading(req.query.view),
             view: req.query.view,
             app: req.query.app,
-            app_heading: utils.capitalize(req.query.app)
+            app_heading: utils.capitalize(req.query.app),
+            offset: res.offset,
+            total_rows: res.total_rows,
+            next_link: next_link,
+            show_next_link: show_next_link,
+            prev_link: prev_link,
+            show_prev_link: show_prev_link,
+            range: range
         });
         var title = req.query.app + ' - ' + req.query.view;
         $('#content').html(content);

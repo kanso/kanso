@@ -26,28 +26,18 @@
       </tr>
     </thead>
     <tbody>
-      {#rows}
-      <tr>
-        <td class="data"><a href="{baseURL}/{app}/view/{id}">{key}</a></td>
-        <td class="data"><a href="{baseURL}/{app}/view/{id}">{value}</a></td>
-        <td class="actions">
-          <a class="button" href="{baseURL}/{app}/view/{id}">
-            <span class="icon">4</span><span class="label">View</span>
-          </a>
-          <a class="button" href="{baseURL}/{app}/edit/{id}">
-            <span class="icon">p</span><span class="label">Edit</span>
-          </a>
-          <form class="delete_form" action="{baseURL}/{app}/delete/{id}" method="POST">
-            <input type="hidden" name="next" value="{baseURL}/{app}/views/{view}" />
-            <div class="button">
-              <input class="icon" type="submit" value="X" />
-              <input class="label" type="submit" value="Delete" />
-            </div>
-          </form>
-        </td>
-      </tr>
-      {/rows}
+    {>"view_rows.html"/}
     </tbody>
   </table>
+
+  <div class="pagination">
+    {?show_prev_link}
+      <a href="{prev_link|s}">Prev</a>
+    {/show_prev_link}
+      <span class="range">{range}</span>
+    {?show_next_link}
+      <a href="{next_link|s}">Next</a>
+    {/show_next_link}
+  </div>
 
 </div>
