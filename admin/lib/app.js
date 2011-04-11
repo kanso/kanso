@@ -11,9 +11,9 @@ exports.rewrites = [
     {from: '/static/*', to: 'static/*'},
     {from: '/', to: '_list/applist/apps'},
     {from: '/:app', to: '_show/types'},
-    {from: '/:app/:type/add', to: '_show/addtype', method: 'GET'},
-    {from: '/:app/:type/add', to: '_update/addtype', method: 'POST'},
-    {from: '/:app/:type', to: '_list/typelist/types', query: {
+    {from: '/:app/types/:type/add', to: '_show/addtype', method: 'GET'},
+    {from: '/:app/types/:type/add', to: '_update/addtype', method: 'POST'},
+    {from: '/:app/types/:type', to: '_list/typelist/types', query: {
         startkey: [':type'],
         endkey: [':type', {}],
         include_docs: true,

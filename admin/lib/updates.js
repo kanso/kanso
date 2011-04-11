@@ -169,6 +169,6 @@ exports.deletetype = function (doc, req) {
                 message: 'Deleted ' + doc._id
             });
         }
-        core.setURL('GET',  '/' + req.query.app + '/' + doc.type);
+        core.setURL('GET',  '/' + req.query.app + '/types/' + doc.type);
     });
 };
