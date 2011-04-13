@@ -123,27 +123,49 @@ exports.fieldPairs = function (fields, doc, path) {
                 var val = kanso_utils.getPropertyPath(doc, path.concat([k]));
                 if (!fields[k].isEmpty(val) || !fields[k].omit_empty) {
                     pairs.push({
-                    field: path.concat([k]).join('.'),
+                        field: path.concat([k]).join('.'),
                         value: val
                     });
                 }
             }
             else if (kanso_utils.constructorName(fields[k]) === 'Embedded') {
-                pairs = pairs.concat(
+                /*pairs = pairs.concat(
                     exports.fieldPairs(
                         fields[k].type.fields, doc, path.concat([k])
                     )
-                );
+                );*/
+                var val = kanso_utils.getPropertyPath(doc, path.concat([k]));
+                var type = fields[k].type;
+                var display_name = val ? val._id: '';
+                if (type.display_name) {
+                    display_name = type.display_name(val);
+                }
+                pairs.push({
+                    field: path.concat([k]).join('.'),
+                    value: display_name
+                });
             }
             else if (kanso_utils.constructorName(fields[k]) === 'EmbeddedList') {
                 var items = kanso_utils.getPropertyPath(doc, path.concat([k]));
                 if (items) {
                     for (var i = 0; i < items.length; i++) {
+                        /*
                         pairs = pairs.concat(
                             exports.fieldPairs(
                                 fields[k].type.fields, doc, path.concat([k,i])
                             )
                         );
+                        */
+                        var val = kanso_utils.getPropertyPath(doc, path.concat([k,i]));
+                        var type = fields[k].type;
+                        var display_name = val ? val._id: '';
+                        if (type.display_name) {
+                            display_name = type.display_name(val);
+                        }
+                        pairs.push({
+                            field: path.concat([k,i]).join('.'),
+                            value: display_name
+                        });
                     }
                 }
                 else {
