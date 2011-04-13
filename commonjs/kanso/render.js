@@ -60,12 +60,16 @@ exports.table = function () {
     };
     this.embed = function (type, name, value, raw, errors) {
         var fval = value ? JSON.stringify(value).replace(/"/g, '&#34;'): '';
+        var display_name = value ? value._id: '';
+        if (type.display_name && value) {
+            display_name = type.display_name(value);
+        }
         return '<tr class="embedded">' +
             '<th>' + exports.labelHTML(type, name) + '</th>' +
             '<td class="field" rel="' + type.name + '">' +
             '<table rel="' + name + '"><tbody><tr><td>' +
             '<input type="hidden" value="' + fval + '" name="' + name + '" />' +
-            '<span class="value">' + (value ? value._id: '') + '</span>' +
+            '<span class="value">' + display_name + '</span>' +
             '</td>' +
             '<td class="actions"></td>' +
             '</tr></tbody></table>' +
@@ -81,10 +85,14 @@ exports.table = function () {
             '<table rel="' + name + '"><tbody>';
         _.each(value, function (v, i) {
             var fval = v ? JSON.stringify(v).replace(/"/g, '&#34;'): '';
+            var display_name = v ? v._id: '';
+            if (type.display_name && v) {
+                display_name = type.display_name(v);
+            }
             html += '<tr><td>' +
                 '<input type="hidden" value="' + fval + '" ' +
                        'name="' + name + '.' + i + '" />' +
-                '<span class="value">' + (v ? v._id: '') + '</span>' +
+                '<span class="value">' + display_name + '</span>' +
                 '</td><td class="actions">' +
                 '</td></tr>';
         });
