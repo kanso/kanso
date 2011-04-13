@@ -39,7 +39,7 @@ exports.setBrowserCookie = function (req, opt) {
         throw new Error('setBrowserCookie cannot be called server-side');
     }
     var str = (typeof opt === 'string') ? opt: exports.cookieString(req, opt);
-    console.log('document.cookie = ' + str);
+    //console.log('document.cookie = ' + str);
     document.cookie = str;
 };
 

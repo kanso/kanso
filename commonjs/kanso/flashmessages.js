@@ -49,8 +49,8 @@ exports.getMessages = function (req) {
             return val.req !== req.uuid;
         });
         if (bmessages.length !== cookie_messages.length) {
-            console.log('removing cookies for this request:');
-            console.log(bmessages);
+            //console.log('removing cookies for this request:');
+            //console.log(bmessages);
             exports.setBrowserCookie(req, bmessages);
         }
     }
@@ -78,8 +78,8 @@ exports.updateResponse = function (req, res) {
         delete val.incoming;
         return val;
     });
-    console.log('flashmessages.updateResponse');
-    console.log(messages);
+    //console.log('flashmessages.updateResponse');
+    //console.log(messages);
     if (req.response_received) {
         exports.setBrowserCookie(req, messages);
     }
@@ -100,8 +100,8 @@ exports.createMessage = function (req, msg) {
 };
 
 exports.setBrowserCookie = function (req, messages) {
-    console.log('flashmessages.setBrowserCookie');
-    console.log(messages);
+    //console.log('flashmessages.setBrowserCookie');
+    //console.log(messages);
     cookies.setBrowserCookie(req, {
         name: '_kanso_flash',
         value: JSON.stringify(messages)

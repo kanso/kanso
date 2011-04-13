@@ -70,8 +70,8 @@ if (typeof getRow === 'undefined' && typeof window !== 'undefined') {
 }
 if (typeof start === 'undefined' && typeof window !== 'undefined') {
     window.start = function (options) {
-        console.log('start');
-        console.log(options);
+        //console.log('start');
+        //console.log(options);
     };
 }
 if (typeof log === 'undefined' && typeof window !== 'undefined') {
@@ -361,8 +361,8 @@ exports.createRequest = function (method, url, data, match, callback) {
  */
 
 exports.handleResponse = function (res) {
-    console.log('response');
-    console.log(res);
+    //console.log('response');
+    //console.log(res);
     if (typeof res === 'object') {
         if (res.headers) {
             exports.handleResponseHeaders(res.headers);
@@ -371,8 +371,8 @@ exports.handleResponse = function (res) {
 };
 
 exports.handleResponseHeaders = function (headers) {
-    console.log('headers');
-    console.log(headers);
+    //console.log('headers');
+    //console.log(headers);
     if (headers['Set-Cookie']) {
         document.cookie = headers['Set-Cookie'];
     }
@@ -529,8 +529,8 @@ exports.runListBrowser = function (req, name, view, callback) {
                 return data.rows.shift();
             };
             start = function (res) {
-                console.log('start');
-                console.log(res);
+                //console.log('start');
+                //console.log(res);
                 if (res && res.headers) {
                     exports.handleResponseHeaders(res.headers);
                 }
@@ -594,7 +594,7 @@ exports.handle = function (method, url, data) {
             if (err) {
                 throw err;
             }
-            console.log(req);
+            //console.log(req);
 
             var msg = method + ' ' + url + ' -> ' +
                 JSON.stringify(req.path.join('/')) + ' ' +
