@@ -33,7 +33,11 @@
     </thead>
     -->
     <tbody>
-    {>"typelist_rows.html"/}
+    {?rows}
+      {>"typelist_rows.html"/}
+    {:else}
+      <p>No {type_heading} found<p>
+    {/rows}
     </tbody>
   </table>
 
