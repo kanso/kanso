@@ -13,6 +13,7 @@
  */
 
 var utils = require('./utils'),
+    db = require('./db'),
     fields = require('./fields'),
     fieldset = require('./fieldset'),
     widgets = require('./widgets'),
@@ -243,6 +244,18 @@ Type.prototype.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path) {
             that, field, nDoc, oDoc, nVal[k], oVal[k], user, path.concat([k])
         ));
     }, []);
+};
+
+
+Type.prototype.create = function (userCtx, callback) {
+    var doc = fieldset.createDefaults(this.fields, userCtx);
+    db.newUUID(100, function (err, uuid) {
+        if (err) {
+            return callback(err);
+        }
+        doc._id = uuid;
+        callback(null, doc);
+    });
 };
 
 exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {

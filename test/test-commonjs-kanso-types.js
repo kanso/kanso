@@ -540,6 +540,33 @@ module.exports = nodeunit.testCase({
             test.equal(err, e);
         }
         test.done();
+    },
+
+    'Type.create': function (test) {
+        var t = new this.types.Type('t', {
+            fields: {
+                text: this.fields.string({
+                    default_value: 'asdf'
+                }),
+                text2: this.fields.string(),
+                num: this.fields.number({
+                    default_value: 123
+                })
+            }
+        });
+        mcache2['/kanso/db'].newUUID = function (count, cb) {
+            cb(null, 'uuid');
+        };
+        var userCtx = {};
+        t.create(userCtx, function (err, doc) {
+            test.same(doc, {
+                _id: 'uuid',
+                type: 't',
+                text: 'asdf',
+                num: 123
+            });
+            test.done();
+        });
     }
 
 });
