@@ -1,8 +1,8 @@
 <html>
 <head>
-  <title>Kanso</title>
+  <title>Kanso - Tutorial</title>
   <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
-  <link rel="stylesheet" href="kanso.css" />
+  <link rel="stylesheet" href="stylesheets/kanso.css" />
 </head>
 <body>
   <div id="topbar"></div>
@@ -17,7 +17,7 @@
     </ul>
 
     <a id="sitename" href="index.html">
-      <img src="kanso_ribbon.png" />
+      <img src="images/kanso_ribbon.png" />
     </a>
 
     <!-- populated by javascript -->
@@ -29,7 +29,7 @@
     <p>
       Install the most recent <em>stable</em> version of
       <a href="http://nodejs.org/#download">node</a>, then clone
-      <a href="https://github.com/caolan/kanso">Kanso</a> from GitHub.
+      <a href="https://github.com/caolan/kanso">kanso</a> from GitHub.
       Fetch the relevant submodules by doing the following in the cloned directory:
     </p>
     <pre>git submodule init
@@ -37,341 +37,182 @@ git submodule update</pre>
     <p>You are then ready to install:</p>
     <pre>make &amp;&amp; sudo make install</pre>
 
+    <h3>Using NPM</h3>
+    <p>
+    If you already have node.js installed, and you're using npm
+    (Node Package Manager), then you can install by simply doing the following:
+    </p>
+    <pre>npm install kanso</pre>
+
     <h2 id="starting_a_project">Starting a project</h2>
     <p>
-      For this tutorial we'll be creating a basic app that displays albums by
-      artist name. First, change to the location you wish to create the project
-      directory in, then start a new project by doing:
+      For this tutorial we'll be making a fairly typical blog, with posts,
+      comments and users. Some familiarity with CouchDB is expected, but I'll
+      try to explain the concepts as we go.
     </p>
-    <pre>kanso create recordstore</pre>
     <p>
-      This will create a new directory called 'recordstore' containing a project
-      skeleton to get you started. The contents of this directory should look
-      something like the following:
+      To create a new project skeleton, enter the following command:
     </p>
-    <pre>recordstore
-  |- lib                        commonjs modules relevant to the app
-     |- app.js                  the module loaded as a design doc
-  |- static                     static files to be attached to design doc
-     |- jquery-1.4.2.min.js     some dependencies
-     |- jquery.history.js
-     |- json2.js
-  |- templates                  templates used by the app
-     |- base.html
-     |- welcome.html
-  |- kanso.json                 kanso settings
+    <pre>kanso create myblog</pre>
+    <p>
+      This creates a number of files and directories representing a basic
+      project structure. We'll look more closely at the generated files later,
+      but for a brief overview, the directories fall into the following categories:
+    </p>
+    <pre>myblog
+  |- lib             CommonJS modules which define your app
+  |- static          Static files such as jQuery and CSS
+  |- templates       HTML templates used by the app
+  |- kanso.json      Project configuration
     </pre>
     <p>
-      Before exploring these files in more detail, lets push the app to a couchdb
-      database and check that everything works. For this tutorial, I'll assume you
-      have a local couchdb database running at localhost:5984 (the default settings).
-      In your project directory, do the following:
+      This structure is a merely a guide and you are free to place files
+      wherever it makes sense, provided you update the configuration settings in
+      kanso.json.
     </p>
-    <pre>kanso push http://localhost:5984/recordstore</pre>
+
+    <h2 id="deployment">Deployment</h2>
     <p>
-      If you now visit
-      <a href="http://localhost:5984/recordstore/_design/recordstore/_rewrite/">http://localhost:5984/recordstore/_design/recordstore/_rewrite/</a>
-      you should see a basic welcome page. Don't worry about the long and ugly URL
-      for now, this can be fixed later using
+      It might seem early in the tutorial to start talking about deployment, but
+      since your app needs to be hosted by CouchDB to run, we're going to cover it
+      now.
+    </p>
+    <p>
+      The first thing to mention is that <em>Kanso apps are just CouchApps</em>. This means
+      they can be hosted directly from your CouchDB instance, without any additional
+      tier or services.
+    </p>
+    <p>
+      For the rest of this tutorial we're going to assume you have CouchDB running
+      on <a href="http://localhost:5984">http://localhost:5984</a>
+      (the default settings). If you haven't got a local copy of CouchDB running,
+      go do that now.
+    </p>
+
+    <h3>Pushing</h3>
+    <p>
+      The <code>push</code> command uploads your app to a CouchDB database. You can find help
+      on any of the commands used in this tutorial by typing <code>kanso help</code>.
+    </p>
+    <p>
+      Let's push the new project to your CouchDB instance, and check that everthing
+      works. To do this, enter the following command from your project directory:
+    </p>
+    <pre>kanso push http://localhost:5984/myblog</pre>
+    <img src="images/deployment1.png" alt="pushing myblog" />
+    <p>
+      This creates a new database called 'myblog' and uploads your app to it.
+      If you now visit <a href="http://localhost:5984/myblog/_design/myblog/_rewrite/">http://localhost:5984/myblog/_design/myblog/_rewrite/</a>,
+      you should see the following welcome page:
+    </p>
+    <img src="images/deployment2.png" alt="pushing myblog" />
+    <p>
+      This is the location to use when testing your app. Don't worry about the
+      ugly URL, we can fix this later using
       <a href="http://wiki.apache.org/couchdb/Virtual_Hosts">virtual hosts</a>.
     </p>
 
-    <h3>kanso.json</h3>
+    <h2 id="describing_the_data">Describing the data</h2>
     <p>
-      Let's take a look at the kanso.json file first. This file contains the
-      settings for the app, and tells kanso which files and directories to load
-      and how to load them.
+      Now we've got our new project up and running, let's think about the data
+      structures this project requires. Because CouchDB is schemaless, we can make
+      lots of changes as we go without having to worry about doing ALTER TABLE.
     </p>
-    <pre><code class="javascript">{
-    "name": "recordstore",        // the name of the design document
-    "load": "lib/app",            // module to load design doc from
-    "modules": "lib",             // path to load as commonjs modules
-    "templates": "templates",     // templates directory
-    "attachments": "static"       // path to load as attachments
-}</code></pre>
     <p>
-      The name determines the id of the design doc, in this case it would be
-      "_design/recordstore". Perhaps the most important part is the 'load' property.
-      This tells kanso which module to require and use for the design doc. This
-      means any exported values in this module will be used in the resulting design
-      doc.
+      The only problem is, it can quickly get complicated when manually validating
+      documents and checking permissions. Thankfully, kanso provides a powerful
+      document validation and permissions tool in the form of Type definitions.
     </p>
-
-    <h3>lib/app.js</h3>
+    <h3>Creating types</h3>
     <p>
-      This file contains some exported properties which are used in the resulting
-      design doc, this is where the action happens and you get to define the
-      behaviour of your app:
+      In the skeleton project we created earlier, there's a file called
+      <code>lib/types.js</code>. This is the conventional place to export types.
+      Remember, the files in the <code>lib</code> directory are 
+      <a href="http://wiki.commonjs.org/wiki/Modules/1.1.1">CommonJS modules</a>.
+      This means anything added to the <code>exports</code> object in this file is
+      made visible to other modules.
     </p>
-    <pre><code class="javascript">var templates = require('kanso/templates');
+    <p>
+      Let's create a type for describing blog posts. Add the following to
+      <code>lib/types.js</code>.
+    </p>
+    <pre><code class="javascript">var Type = require('kanso/types').Type,
+    fields = require('kanso/fields'),
+    widgets = require('kanso/widgets');
 
 
-exports.rewrites = [
-    {from: '/static/*', to: 'static/*'},
-    {from: '/', to: '_show/welcome'}
-];
-
-exports.shows = {
-    welcome: function (doc, req) {
-        var content = templates.render('welcome.html', req, {});
-
-        if (req.client) {
-            $('#content').html(content);
-            document.title = 'It worked!';
-        }
-        else {
-            return templates.render('base.html', req, {
-                title: 'It worked!',
-                content: content
-            });
-        }
+exports.blogpost = new Type('blogpost', {
+    fields: {
+        created: fields.timestamp(),
+        title: fields.string(),
+        text: fields.string({
+            widget: widgets.textarea({cols: 40, rows: 10})
+        })
     }
-};</code></pre>
+});
+</code></pre>
     <p>
-      You'll notice the skeleton project we generated comes with some rewrites
-      already set up. The first exposes the static directory, the second
-      rewrites the root url to a show function called 'welcome'. The welcome
-      function then shows the welcome template (the page you've already
-      seen after pushing the app). If this function is run client-side,
-      it replaces the contents of the current page with the welcome message,
-      otherwise it returns a new page.
+      That should be fairly self-explanatory.
+      The first argument to the <code>Type</code> constructor is the type name
+      which must be unique, the second argument is an object describing fields
+      and other options.
     </p>
     <p>
-      There are a couple of interesting things here. Firstly, we've required a
-      'kanso/templates' module which doesn't exist in our project directory. This is
-      one of the kanso modules automatically added to your app when you push
-      to couchdb, and provides access to templates.
+      Now we've added a basic type, let's push these changes to the server:
     </p>
-    <p>
-      Secondly, we're actually using the context of the module inside the
-      welcome function. With a normal CouchApp these functions are just
-      converted to strings and inserted into the design doc, but kanso will
-      try to proxy the function using a require call (remember I said CouchDB
-      supports CommonJS?). This means we have access to the normal scope of
-      the surrounding code, allowing us to use the kanso module we required at
-      the top of the module inside the welcome function.
-    </p>
-    <p>
-      <strong>Note:</strong> The one important exception to this is view
-      functions, CouchDB views do not support CommonJS modules in the same way
-      and must be self contained.
-    </p>
+    <img src="images/deployment1.png" alt="pushing myblog" />
 
-    <h3>templates/base.html</h3>
+    <h3>The Admin App</h3>
     <p>
-      Kanso uses <a href="http://akdubya.github.com/dustjs/#about">Dust</a>
-      templates. These templates look similar to
-      <a href="http://mustache.github.com">Mustache</a>, but provide some
-      powerful additions such as filters, path lookups, blocks and better 
-      partials support. Dust templates can also be pre-compiled, meaning your
-      templates are compiled when you 'kanso push', not each time a page is
-      rendered.
+      As a useful way to play with data types, kanso provides a basic admin app.
+      You can push this app to the same database you pushed the 'myblog' project to
+      by using the following command:
     </p>
-    <pre><code class="html">
-&lt;html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"&gt; 
-  &lt;head&gt; 
-    &lt;meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /&gt; 
-    &lt;title&gt;{title}&lt;/title&gt; 
-  &lt;/head&gt; 
-  &lt;body&gt; 
-    &lt;div id="content"&gt;
-      {content|s}
-    &lt;/div&gt;
-    &lt;script src="{baseURL}/static/jquery-1.4.2.min.js"&gt;&lt;/script&gt;
-    &lt;script src="{baseURL}/static/jquery.history.js"&gt;&lt;/script&gt;
-    &lt;script src="{baseURL}/static/json2.js"&gt;&lt;/script&gt;
-    &lt;script src="{baseURL}/kanso.js"&gt;&lt;/script&gt;
-  &lt;/body&gt;
-&lt;/html&gt;</code></pre>
+    <pre>kanso pushadmin http://localhost:5984/myblog</pre>
+    <img src="images/describing_the_data1.png" alt="push the admin app" />
     <p>
-      <a href="http://akdubya.github.com/dustjs">Learn more about the dust syntax</a>
+      If you now visit
+      <a href="http://localhost:5984/myblog/_design/admin/_rewrite/">http://localhost:5984/myblog/_design/admin/_rewrite/</a>
+      you should see the following page:
     </p>
+    <img src="images/describing_the_data2.png" alt="admin app - apps list" />
     <p>
-      This template should be fairly self-explanatory. We describe a basic
-      html document and render some variables: 'title', 'content' and
-      'baseURL'.
+      Because you can have multiple apps running on a single database you will be
+      presented with a list of available applications. Click the 'myblog' app.
     </p>
+    <img src="images/describing_the_data3.png" alt="admin app - app overview" />
     <p>
-      The 'content' variable passes through a filter 's'. This just means the
-      value isn't escaped (we're going to be putting html in there!).
+      Here, we are presented with a list of types. Currently, we just have the one
+      'blogpost' type. Clicking on this will show you a list of existing blog posts:
+    </p>
+    <img src="images/describing_the_data4.png" alt="admin app - type list" />
+    <p>
+      Of course, we haven't added any yet. Let's try adding one now. Click the
+      'Add blogpost' link.
+    </p>
+    <img src="images/describing_the_data5.png" alt="admin app - adding a type" />
+    <p>
+      As you can see, the admin app has read the field settings we defined earlier
+      and presented us with a sensible form for adding blog posts. You'll notice the
+      <code>timestamp</code> field is missing. This is because it's automatically
+      populated with the current time.
     </p>
     <p>
-        The variable 'baseURL' also deserves a mention. This is automatically
-        made available in templates, and changes depending on whether the
-        request uses a virtual host or not. If you've used CouchApps with
-        virtual hosts before, you may be familiar with the problem of
-        including stylesheets and javascript without knowing the current
-        full path. Using baseURL fixes that, meaning you can run your CouchApp
-        either behind a virtual host or access it directly in the
-        /db/_design/doc/_rewrite/ style.
+      Create a blog post by filling out the form with some test data and clicking
+      the create button.
     </p>
+    <img src="images/describing_the_data6.png" alt="admin app - type added" />
+    
 
-    <h3>templates/welcome.html</h3>
-    <pre><code class="html">&lt;h1&gt;It worked!&lt;/h1&gt;
-&lt;p&gt;Welcome to your new Kanso-powered app.&lt;p&gt;</code></pre>
-
-    <p>
-        Not much to see here, just some HTML we put into the 'content'
-        section of the base.html template.
-    </p>
-
-    <h2 id="the_recordstore">The Recordstore</h2>
-    <p>
-      OK, now we've explored a skeleton Kanso project, let's start building our
-      own web app on top of it. Open Futon and view the recordstore database at
-      <a href="http://localhost:5984/_utils/database.html?recordstore">http://localhost:5984/_utils/database.html?recordstore</a>.
-      You should have already created this when we pushed the new project to
-      localhost in the 'Getting started' section above.
-    </p>
-    <p>Add the following documents:</p>
-    <pre><code class="javascript">{
-  "type": "album",
-  "title": "Blue Lines",
-  "artist": "Massive Attack",
-  "cover": "http://userserve-ak.last.fm/serve/174s/47527219.png"
-},
-{
-  "type": "album",
-  "title": "Mezzanine",
-  "artist": "Massive Attack",
-  "cover": "http://userserve-ak.last.fm/serve/174s/38150483.png"
-},
-{
-  "type": "album",
-  "artist": "Underworld",
-  "title": "Beaucoup Fish",
-  "cover": "http://userserve-ak.last.fm/serve/174s/41665159.png"
-}</code></pre>
-    <p>
-      This can be done with the fairly ugly curl command below:
-    </p>
-    <pre style="white-space: pre-wrap;">curl -X POST -H "Content-Type: application/json" --data '{"docs": [{"type": "album", "title": "Blue Lines", "artist": "Massive Attack", "cover": "http://userserve-ak.last.fm/serve/174s/47527219.png"}, {"type": "album", "title": "Mezzanine", "artist": "Massive Attack", "cover": "http://userserve-ak.last.fm/serve/174s/38150483.png"}, {"type": "album", "artist": "Underworld", "title": "Beaucoup Fish", "cover": "http://userserve-ak.last.fm/serve/174s/41665159.png"}]}' http://127.0.0.1:5984/recordstore/_bulk_docs</pre>
-    <p>
-      Feel free to use your own selection of great albums if you wish, just
-      make sure you add more than one by the same artist so we can
-      demonstrate something later.
-    </p>
-
-    <h2 id="creating_views">Creating views</h2>
-    <p>
-      To keep things clean and tidy, we're going to create a new module for
-      storing views. Create a new file at lib/views.js with the following content:
-    <p>
-    <pre><code class="javascript">exports.artist_names = {
-    map: function (doc) {
-        if (doc.type === 'album') {
-            emit(doc.artist, null);
-        }
-    },
-    reduce: function (keys, values, rereduce) {
-        return true;
-    }
-};</code></pre>
-    <p>
-      Next, we need to export these views from the lib/app.js file so they are
-      included in the design document. To include code from another file we can
-      use require. Add the following to the end of lib/app.js.
-    </p>
-    <pre><code class="javascript">exports.views = require('./views');</code></pre>
-    <p>
-      Now, if we push the app again we should see the new view available in futon.
-      Push the app using the following command:
-    </p>
-    <pre>kanso push http://localhost:5984/recordstore</pre>
-    <p>
-      Then, visit
-      <a href="http://localhost:5984/_utils/database.html?recordstore/_design/recordstore/_view/artist_names">http://localhost:5984/_utils/database.html?recordstore/_design/recordstore/_view/artist_names</a>
-      to see the results of the newly created view.
-    </p>
-
-    <h2 id="templates_and_list_functions">Templates and list functions</h2>
-    <p>
-      Now we have a view and some data, let's replace the welcome page with a list
-      of artists. Once again, we'll create a new module for this code. Add a file at
-      lib/lists.js with the following content:
-    </p>
-    <pre><code class="javascript">var templates = require('kanso/templates');
-
-
-exports.artists = function (head, req) {
-    start({headers: {'Content-Type': 'text/html'}});
-    var row, rows = [];
-    while (row = getRow()) {
-        rows.push(row);
-    }
-    // create a html list of artists
-    var content = templates.render('artists.html', req, {rows: rows});
-
-    if (req.client) {
-        // if client-side, replace the HTML of the content div with the list
-        $('#content').html(content);
-        // update the page title
-        document.title = 'Artists';
-    }
-    else {
-        // if server-side, return a full page using the base template
-        return templates.render('base.html', req, {
-            title: 'Artists',
-            content: content
-        });
-    }
-};</code></pre>
-    <p>
-      This list function will be used with the artist_names view we created earlier.
-      When run server-side it will render a complete HTML page, and when run
-      client-side it will update the current page's content and title instead.
-    </p>
-    <p>
-      Again, we need to export this from lib/app.js too.
-    </p>
-    <pre><code class="javascript">exports.lists = require('./lists');</code></pre>
-    <p>
-      You may have noticed we used a template 'artists.html' in our list function.
-      This template doesn't exist, so we need to create it. Add a file at
-      templates/artists.html with the following content:
-    </p>
-    <pre><code class="html">&lt;h1&gt;Artists&lt;/h1&gt;
-
-&lt;ul&gt;
-  {#rows}
-    &lt;li&gt;&lt;a href="{baseURL}/{key|uc}"&gt;{key}&lt;/a&gt;&lt;/li&gt;
-  {/rows}
-&lt;/ul&gt;</code></pre>
-    <p>
-      Finally, let's replace the welcome page with our new list function.
-      Update lib/app.js to the following:
-    </p>
-    <pre><code class="javascript">exports.rewrites = [
-    {from: '/static/*', to: 'static/*'},
-    {from: '/', to: '_list/artists/artist_names', query: {group: true}}
-];
-
-exports.views = require('./views');
-exports.lists = require('./lists');</code></pre>
-    <p>
-      We've removed the old welcome show function and added a rewrite from the
-      root URL to the new artists list function. Push the app again, then visit
-      <a href="http://localhost:5984/recordstore/_design/recordstore/_rewrite/">http://localhost:5984/recordstore/_design/recordstore/_rewrite/</a>.
-      You should see a list of artist links (the linked pages don't exist yet).
-    </p>
-
-    <h2 id="to_be_continued">To be continued...</h2>
-    <p>
-      This tutorial is a work in progress, if you have any additions then
-      please fork the <a href="https://github.com/caolan/kanso">Kanso project</a>
-      on GitHub and explore the docs directory. Any questions or comments can be
-      sent to <a href="https://github.com/caolan">caolan</a> on GitHub.
-    </p>
-    <p>
-      To be kept informed, <a href="https://github.com/kanso">Watch the Kanso project on GitHub</a>
-      or follow <a href="http://twitter.com/caolan">@caolan</a> on Twitter.
-    </p>
+    <h2 id="querying_the_data">Querying the data</h2>
+    <h2 id="rendering_pages">Rendering pages</h2>
+    <h2 id="users_and_permissions">Users and permissions</h2>
   </div>
 
   <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
   <script>hljs.initHighlightingOnLoad();</script>
   <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.5.1/jquery.min.js"></script>
-  <script src="docs.js"></script>
+  <script src="javascript/docs.js"></script>
   <script type="text/javascript">
 
     var _gaq = _gaq || [];

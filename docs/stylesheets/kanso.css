@@ -1,6 +1,6 @@
 body {
     font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
-    background-image: url(bg.png);
+    background-image: url(../images/bg.png);
     line-height: 1.618em;
     font-size: 14px;
     color: #292626;
@@ -90,6 +90,10 @@ code {
     margin: 0 !important;
 }
 
+img {
+    box-shadow: 0 2px 10px #DFDFDF;
+}
+
 
 
 
@@ -99,6 +103,9 @@ code {
     position: absolute;
     left: 148px;
     top: 0;
+}
+#sitename img {
+    box-shadow: none;
 }
 #container {
     padding: 0;
