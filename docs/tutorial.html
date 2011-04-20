@@ -242,7 +242,180 @@ exports.blogpost = new Type('blogpost', {
     </p>
 
     <h2 id="rendering_pages">Rendering pages</h2>
+    <p>
+      In CouchDB, rendering custom representations of your data is achieved using
+      <a href="http://wiki.apache.org/couchdb/Formatting_with_Show_and_List">List and Show functions</a>.
+      Kanso is no different, although it will also run these functions client-side
+      wherever possible, giving users a more responsive interface while also
+      providing a fallback for search-engines.
+    </p>
+    <p>
+      Writing code in this way can be very efficient and shows where you might be
+      missing non-js support. However, at first it might seem a little odd. Work
+      through the examples and bear in mind that all list and show functions could
+      be run client-side or server-side at any time!
+    </p>
+    <h3>List functions</h3>
+    <p>
+      List functions format the results of a view. We're going to use a list
+      function to show a list of blog posts on the homepage, ordered by the
+      date they were created. Add the following to <code>lib/lists.js</code>:
+    </p>
+    <pre><code class="javascript">var templates = require('kanso/templates');
+
+
+exports.homepage = function (head, req) {
+
+    start({code: 200, headers: {'Content-Type': 'text/html'}});
+
+    // fetch all the rows
+    var row, rows = [];
+    while (row = getRow()) {
+        rows.push(row);
+    }
+
+    // generate the markup for a list of blog posts
+    var content = templates.render('blogposts.html', req, {
+        rows: rows
+    });
+
+    if (req.client) {
+        // being run client-side, update the current page
+        $('#content').html(content);
+        document.title = 'MyBlog';
+    }
+    else {
+        // being run server-side, return a complete rendered page
+        return templates.render('base.html', req, {
+            content: content,
+            title: 'MyBlog'
+        });
+    }
+
+};</code></pre>
+    <p>
+      For simplicity, we're pre-fetching all the rows at once, on large views
+      you'll want to return content for each row before fetching the next.
+    </p>
+    <p>
+      You'll notice this list function detects if its running client-side by
+      checking the client property on the request object. When run client-side,
+      it will update the DOM instead of returning a new HTML document.
+    </p>
+    <p>
+      We also reference two templates: 'base.html' and 'blogposts.html'. The first
+      was created as part of the project skeleton, but the second we need to create
+      ourselves. Create a new template at <code>templates/blogposts.html</code> with
+      the following content:
+    </p>
+    <pre><code>&lt;h1&gt;My Blog&lt;/h1&gt;
+
+{?rows}
+  &lt;ul&gt;
+    {#rows}
+      &lt;li&gt;{value}&lt;/li&gt;
+      &lt;li&gt;&lt;a href="{baseURL}/{id}"&gt;{value}&lt;/a&gt;&lt;/li&gt;
+    {/rows}
+  &lt;/ul&gt;
+{:else}
+  &lt;p&gt;No blog posts&lt;/p&gt;
+{/rows}</code></pre>
+    <p>
+      For more information on the template format used by kanso, see the
+      <a href="http://akdubya.github.com/dustjs/">Dust website</a>. Basically,
+      this will render a list of blog post titles.
+    </p>
+    <h3>Rewrites</h3>
+    <p>
+      Next, we need to hook this view up to a URL. CouchDB uses
+      <a href="http://wiki.apache.org/couchdb/Rewriting_urls">rewrites</a>
+      to point arbitrary URLs at CouchDB functions and again, kanso is no exception.
+      Let's change the root URL from the welcome page to our new list of blog posts.
+      Edit <code>lib/rewrites.js</code> to look like the following:
+    </p>
+    <pre><code class="javascript">module.exports = [
+    {from: '/static/*', to: 'static/*'},
+    {from: '/', to: '_list/homepage/blogposts_by_created'}
+];</code></pre>
+    <p>
+      This uses our new list function in combination with the view query we created
+      earlier. <strong>Push the app</strong>, then open it in your browser:
+      <a href="http://localhost:5984/myblog/_design/myblog/_rewrite/">http://localhost:5984/myblog/_design/myblog/_rewrite/</a>.
+    </p>
+    <img src="images/rendering_pages1.png" alt="The new homepage" />
+    <p>
+      Of course, clicking on the blog post will give a 404 Not Found error, since
+      we've not implemented the view for a single blog post yet. Let's do that now.
+    </p>
+    <h3>Show functions</h3>
+    <p>
+      Show functions are like list functions, only they display a single document
+      rather than the results of a view. We're going to create a show function
+      for our blog posts, open up <code>lib/shows.js</code> and take a look.
+      Currently, it will contain the welcome page we recently unhooked from our
+      rewrite rules. You can now remove that, and replace it with the following:
+    </p>
+    <pre><code class="javascript">var templates = require('kanso/templates');
+
+
+exports.blogpost = function (doc, req) {
+
+    // render the markup for a single blog post
+    var content = templates.render('blogpost.html', req, doc);
+
+    if (req.client) {
+        // being run client-side
+        $('#content').html(content);
+        document.title = doc.title;
+    }
+    else {
+        return templates.render('base.html', req, {
+            content: content,
+            title: doc.title
+        });
+    }
+
+};</code></pre>
+    <p>
+      Then we need to add the <code>blogpost.html</code> template:
+    </p>
+    <pre><code>&lt;h1&gt;{title}&lt;/h1&gt;
+
+&lt;p&gt;{text}&lt;/p&gt;</code></pre>
+    <p>
+      And update the rewrite rules:
+    </p>
+    <pre><code class="javascript">module.exports = [
+    {from: '/static/*', to: 'static/*'},
+    {from: '/', to: '_list/homepage/blogposts_by_created'},
+    {from: '/:id', to: '_show/blogpost/:id'}
+];</code></pre>
+    <p>
+      <strong>Push the app</strong> and try clicking the blog post link now.
+      You should see a page similar to the following:
+    </p>
+    <img src="images/rendering_pages2.png" alt="Single blog post page" />
+    <p>
+      If you check your JavaScript console in Chrome or Firebug, you should notice
+      that clicking on the blog post link on the homepage causes the next request to
+      be handled client-side:
+    </p>
+    <img src="images/rendering_pages3.png" alt="Single blog post page" />
+    <p>
+      However, turning off JavaScript should provide you with the same experience.
+      Just with your CouchDB server doing the work of rending pages.
+    </p>
+    <p>
+      As your sites become more complex you may want to make additional requests
+      to the server when a list or show function is run client-side. This means
+      we could show all blogposts with the same tag in a side-bar, or perhaps show
+      links to related posts. These features would then be available only to people
+      with JavaScript turned on, and browsers without JavaScript will fall-back to
+      the core content you see now.
+    </p>
+
     <h2 id="users_and_permissions">Users and permissions</h2>
+    <h2 id="going_it_alone">Going it alone</h2>
   </div>
 
   <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
