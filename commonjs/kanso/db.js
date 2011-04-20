@@ -9,6 +9,33 @@ var utils = require('./utils'),
 
 
 /**
+ * Taken from jQuery 1.4.4 so we can support more recent versions of jQuery.
+ */
+
+var httpData = function (xhr, type, s) {
+    var ct = xhr.getResponseHeader("content-type") || "",
+        xml = type === "xml" || !type && ct.indexOf("xml") >= 0,
+        data = xml ? xhr.responseXML : xhr.responseText;
+
+    if (xml && data.documentElement.nodeName === "parsererror") {
+        $.error( "parsererror" );
+    }
+    if (s && s.dataFilter) {
+        data = s.dataFilter(data, type);
+    }
+    if (typeof data === "string" ) {
+        if (type === "json" || !type && ct.indexOf("json") >= 0) {
+            data = $.parseJSON(data);
+        }
+        else if (type === "script" || !type && ct.indexOf("javascript") >= 0) {
+            $.globalEval(data);
+        }
+    }
+    return data;
+};
+
+
+/**
  * Returns a function for handling ajax responsed from jquery and calls
  * the callback with the data or appropriate error.
  *
@@ -18,7 +45,7 @@ var utils = require('./utils'),
 
 function onComplete(callback) {
     return function (req) {
-        var resp = $.httpData(req, "json");
+        var resp = httpData(req, "json");
         if (req.status === 200 || req.status === 201 || req.status === 202) {
             callback(null, resp);
         }
