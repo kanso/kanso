@@ -1,71 +1,77 @@
 /**
  * History.js jQuery Adapter
- * @author Benjamin Arthur Lupton
- * @copyright 2010-2011 Benjamin Arthur Lupton
- * @license New BSD License - http://creativecommons.org/licenses/BSD/
+ * @author Benjamin Arthur Lupton <contact@balupton.com>
+ * @copyright 2010-2011 Benjamin Arthur Lupton <contact@balupton.com>
+ * @license New BSD License <http://creativecommons.org/licenses/BSD/>
  */
 
-(function($,window,undefined){
-
-	// --------------------------------------------------------------------------
-	// Initialise
-
-	// History Object
-	window.History = window.History||{};
+// Closure
+(function(window,undefined){
+	"use strict";
 
 	// Localise Globals
 	var
-		History = window.History||{},
-		history = window.history;
+		History = window.History = window.History||{},
+		jQuery = window.jQuery;
 
-	// Check Existence of Adapter
+	// Check Existence
 	if ( typeof History.Adapter !== 'undefined' ) {
 		throw new Error('History.js Adapter has already been loaded...');
 	}
 
 	// Add the Adapter
 	History.Adapter = {
-
 		/**
 		 * History.Adapter.bind(el,event,callback)
-		 * @param {element} el
-		 * @param {string} event
-		 * @param {Function} callback
-		 * @return {element}
+		 * @param {Element|string} el
+		 * @param {string} event - custom and standard events
+		 * @param {function} callback
+		 * @return {void}
 		 */
 		bind: function(el,event,callback){
-			return $(el).bind(event,callback);
+			jQuery(el).bind(event,callback);
 		},
 
 		/**
 		 * History.Adapter.trigger(el,event)
-		 * @param {element} el
-		 * @param {string} event
-		 * @return {element}
+		 * @param {Element|string} el
+		 * @param {string} event - custom and standard events
+		 * @param {Object=} extra - a object of extra event data (optional)
+		 * @return {void}
 		 */
-		trigger: function(el,event){
-			return $(el).trigger(event);
+		trigger: function(el,event,extra){
+			jQuery(el).trigger(event,extra);
+		},
+
+		/**
+		 * History.Adapter.extractEventData(key,event,extra)
+		 * @param {string} key - key for the event data to extract
+		 * @param {string} event - custom and standard events
+		 * @param {Object=} extra - a object of extra event data (optional)
+		 * @return {mixed}
+		 */
+		extractEventData: function(key,event,extra){
+			// jQuery Native then jQuery Custom
+			var result = (event && event.originalEvent && event.originalEvent[key]) || (extra && extra[key]) || undefined;
+
+			// Return
+			return result;
 		},
 
 		/**
 		 * History.Adapter.trigger(el,event,data)
-		 * @param {Function} callback
-		 * @return {true}
+		 * @param {function} callback
+		 * @return {void}
 		 */
 		onDomLoad: function(callback) {
 			jQuery(callback);
 		}
-
 	};
 
-	// Check Load Status of HTML5 Support
-	if ( typeof History.initHtml5 !== 'undefined' ) {
-		History.initHtml5();
+	// Try and Initialise History
+	if ( typeof History.init !== 'undefined' ) {
+		History.init();
 	}
 
-	// Check Load Status of HTML4 Support
-	if ( typeof History.initHtml4 !== 'undefined' ) {
-		History.initHtml4();
-	}
+})(window);
 
-})(jQuery,window);
