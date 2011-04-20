@@ -202,9 +202,45 @@ exports.blogpost = new Type('blogpost', {
       the create button.
     </p>
     <img src="images/describing_the_data6.png" alt="admin app - type added" />
+    <p>
+      As you can see, kanso has automatically populated the 'type' and 'created'
+      fields. The 'type' field is automatically added, and reserved for use by
+      kanso so we can identify the definition to validate against.
+    </p>
     
 
     <h2 id="querying_the_data">Querying the data</h2>
+    <p>
+      In CouchDB, you query your documents using map / reduce functions called
+      'views'. If you've never written a CouchDB view before, you can read up on
+      it in the <a href="http://guide.couchdb.org/draft/views.html">Definitive Guide</a>.
+    </p>
+    <p>
+      Adding a view to a kanso app couldn't be simpler. Just open up the
+      <code>lib/views.js</code> file and add the following example view:
+    </p>
+    <pre><code class="javascript">exports.blogposts_by_created = {
+    map: function (doc) {
+        if (doc.type === 'blogpost') {
+            emit(doc.created, doc.title);
+        }
+    }
+};</code></pre>
+    <p>
+      <strong>Push the app</strong>, then revisit the admin interface at
+      <a href="http://localhost:5984/myblog/_design/admin/_rewrite/myblog">http://localhost:5984/myblog/_design/admin/_rewrite/myblog</a>
+      you'll see the view we created now appears:
+    </p>
+    <img src="images/querying_the_data1.png" alt="admin app - now showing a view" />
+    <p>
+      Clicking on the view shows the current results. You should see the document
+      we created earlier keyed by its created at timestamp:
+    </p>
+    <img src="images/querying_the_data2.png" alt="admin app - view results" />
+    <p>
+      Clicking on a row will take you to its corresponding document.
+    </p>
+
     <h2 id="rendering_pages">Rendering pages</h2>
     <h2 id="users_and_permissions">Users and permissions</h2>
   </div>
