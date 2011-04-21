@@ -325,6 +325,14 @@ exports.homepage = function (head, req) {
       <a href="http://akdubya.github.com/dustjs/">Dust website</a>. Basically,
       this will render a list of blog post titles.
     </p>
+    <p>
+      One thing worth noting is the use of {baseURL} in the template. This variable
+      is automatically made available to templates by kanso, and refers to the
+      current 'root' level URL. That would currently mean
+      '/myblog/_design/myblog/_rewrite', but that may change if you use
+      a virtual host in the future. For now, be sure to prefix all
+      <strong>application</strong> URLs with the base URL.
+    </p>
     <h3>Rewrites</h3>
     <p>
       Next, we need to hook this view up to a URL. CouchDB uses
