@@ -37,6 +37,22 @@ exports.matchUsername = function () {
 };
 
 /**
+ * Checks if the user has a specific role
+ *
+ * @return {Function}
+ * @api public
+ */
+
+exports.hasRole = function (role) {
+    return function (newDoc, oldDoc, newVal, oldVal, userCtx) {
+        var roles = userCtx ? (userCtx.roles || []): [];
+        if (!_.include(roles, role)) {
+            throw new Error('User must have "' + role + '" role.');
+        }
+    };
+};
+
+/**
  * The value of this field should never change after the document has been
  * created.
  *

@@ -167,6 +167,34 @@ module.exports = nodeunit.testCase({
         });
         test.equal(fn({}, {}, undefined, od, user), 'error list');
         test.done();
-    }
+    },
+
+    'hasRole': function (test) {
+        var fn = this.permissions.hasRole('admin');
+
+        fn({}, {}, 'newVal', 'oldVal', {name: 'testuser', roles: ['admin']});
+        fn({}, {}, 'newVal', 'oldVal', {name: 'testuser', roles: [
+            'test',
+            'admin'
+        ]});
+
+        test.throws(function () {
+            fn({}, {}, 'newVal', 'oldVal', {name: 'testuser', roles: []});
+        });
+        test.throws(function () {
+            fn({}, {}, 'newVal', 'oldVal', {name: 'testuser', roles: [
+                'test',
+                'test2'
+            ]});
+        });
+        test.throws(function () {
+            fn({}, {}, 'newVal', 'oldVal', {});
+        });
+        test.throws(function () {
+            fn({}, {}, 'newVal', 'oldVal', undefined);
+        });
+
+        test.done();
+    },
 
 });
