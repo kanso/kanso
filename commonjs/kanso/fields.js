@@ -131,15 +131,15 @@ Field.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, userCtx) {
             utils.getErrors(perms, arguments)
         );
     }
-    // on edit
-    var fn = perms.edit;
-    // on create
+    // on update
+    var fn = perms.update;
+    // on add
     if (newDoc && !oldDoc) {
-        fn = perms.create;
+        fn = perms.add;
     }
-    // on delete
+    // on remove
     else if (newDoc._deleted) {
-        fn = perms.delete;
+        fn = perms.remove;
     }
     if (fn) {
         errors = errors.concat(
@@ -167,9 +167,9 @@ var Embedded = exports.Embedded = function Embedded(options) {
         throw new Error('No type specified');
     }
     options.permissions = _.defaults((options.permissions || {}), {
-        create: permissions.inherit(type),
-        delete: permissions.inherit(type),
-        edit:   permissions.inherit(type)
+        add: permissions.inherit(type),
+        remove: permissions.inherit(type),
+        update:   permissions.inherit(type)
     });
     _.extend(this, _.defaults(options, {
         required: true
@@ -254,9 +254,9 @@ var EmbeddedList = exports.EmbeddedList = function EmbeddedList(options) {
         throw new Error('No type specified');
     }
     options.permissions = _.defaults((options.permissions || {}), {
-        create: permissions.inherit(type),
-        delete: permissions.inherit(type),
-        edit:   permissions.inherit(type)
+        add: permissions.inherit(type),
+        remove: permissions.inherit(type),
+        update:   permissions.inherit(type)
     });
     _.extend(this, _.defaults(options, {
         required: true
@@ -404,15 +404,15 @@ EmbeddedList.prototype.authorize = function (nDoc, oDoc, nVal, oVal, user) {
         if (_.isFunction(perms)) {
             curr_errs = utils.getErrors(perms, args)
         }
-        // on edit
-        var fn = perms.edit;
-        // on create
+        // on update
+        var fn = perms.update;
+        // on add
         if (nd && !od) {
-            fn = perms.create;
+            fn = perms.add;
         }
-        // on delete
+        // on remove
         else if (nd._deleted) {
-            fn = perms.delete;
+            fn = perms.remove;
         }
         if (fn) {
             curr_errs = curr_errs.concat(utils.getErrors(fn, args));
@@ -537,23 +537,23 @@ exports.creator = function (options) {
         options.permissions = {};
     }
     var p = options.permissions;
-    if (p.create) {
-        p.create = permissions.all([
+    if (p.add) {
+        p.add = permissions.all([
             permissions.matchUsername(),
-            p.create
+            p.add
         ]);
     }
     else {
-        p.create = permissions.matchUsername();
+        p.add = permissions.matchUsername();
     }
-    if (p.edit) {
-        p.edit = permissions.all([
+    if (p.update) {
+        p.update = permissions.all([
             permissions.fieldUneditable(),
-            p.edit
+            p.update
         ]);
     }
     else {
-        p.edit = permissions.fieldUneditable();
+        p.update = permissions.fieldUneditable();
     }
     return exports.string(_.defaults(options, {
         required: false,
@@ -578,14 +578,14 @@ exports.timestamp = function (options) {
         options.permissions = {};
     }
     var p = options.permissions;
-    if (p.edit) {
-        p.edit = permissions.all([
+    if (p.update) {
+        p.update = permissions.all([
             permissions.fieldUneditable(),
-            p.edit
+            p.update
         ]);
     }
     else {
-        p.edit = permissions.fieldUneditable();
+        p.update = permissions.fieldUneditable();
     }
     return exports.number(_.defaults(options, {
         widget: widgets.hidden(),

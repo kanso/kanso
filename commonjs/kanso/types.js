@@ -48,7 +48,7 @@ var Type = exports.Type = function Type(name, options) {
         required: false,
         widget: widgets.hidden(),
         permissions: {
-            edit: permissions.fieldUneditable()
+            update: permissions.fieldUneditable()
         }
     });
     f._rev = fields.string({
@@ -65,12 +65,12 @@ var Type = exports.Type = function Type(name, options) {
         default_value: name,
         widget: widgets.hidden(),
         permissions: {
-            create: function (newDoc, oldDoc, newVal, oldVal, userCtx) {
+            add: function (newDoc, oldDoc, newVal, oldVal, userCtx) {
                 if (newVal !== name) {
                     throw new Error('Unexpected value for type');
                 }
             },
-            edit: permissions.fieldUneditable()
+            update: permissions.fieldUneditable()
         }
     });
     for (var k in options.fields) {
@@ -127,15 +127,15 @@ Type.prototype.authorize = function (nDoc, oDoc, user) {
             utils.getErrors(perms, [nDoc, oDoc, null, null, user])
         );
     }
-    // on edit
-    var fn = perms.edit;
-    // on create
+    // on update
+    var fn = perms.update;
+    // on add
     if (nDoc && !oDoc) {
-        fn = perms.create;
+        fn = perms.add;
     }
-    // on delete
+    // on remove
     else if (!nDoc || nDoc._deleted) {
-        fn = perms.delete;
+        fn = perms.remove;
     }
     if (fn) {
         errs = errs.concat(

@@ -355,7 +355,7 @@ module.exports = nodeunit.testCase({
         test.done();
     },
 
-    'authorize - type-level create, edit, delete': function (test) {
+    'authorize - type-level add, update, remove': function (test) {
         var Field = this.fields.Field;
         var Type = this.types.Type;
 
@@ -364,16 +364,16 @@ module.exports = nodeunit.testCase({
         var calls = [];
         var t = new Type('t', {
             permissions: {
-                create: function () {
-                    calls.push('create');
+                add: function () {
+                    calls.push('add');
                     throw perms_err;
                 },
-                edit: function () {
-                    calls.push('edit');
+                update: function () {
+                    calls.push('update');
                     throw perms_err;
                 },
-                delete: function () {
-                    calls.push('delete');
+                remove: function () {
+                    calls.push('remove');
                     throw perms_err;
                 }
             },
@@ -385,21 +385,21 @@ module.exports = nodeunit.testCase({
         var errs = t.authorize(newDoc, oldDoc, 'user');
 
         test.equal(errs.length, 1);
-        test.same(calls, ['create']);
+        test.same(calls, ['add']);
 
         oldDoc = {type: 't', _id: 'id', _rev: '1'};
         newDoc = {type: 't', _id: 'id', _rev: '2'};
         errs = t.authorize(newDoc, oldDoc, 'user');
 
         test.equal(errs.length, 1);
-        test.same(calls, ['create', 'edit']);
+        test.same(calls, ['add', 'update']);
 
         oldDoc = {type: 't', _id: 'id', _rev: '1'};
         newDoc = {_deleted: true};
         errs = t.authorize(newDoc, oldDoc, 'user');
 
         test.equal(errs.length, 1);
-        test.same(calls, ['create', 'edit', 'delete']);
+        test.same(calls, ['add', 'update', 'remove']);
 
         test.done();
     },
@@ -467,7 +467,7 @@ module.exports = nodeunit.testCase({
         test.done();
     },
 
-    'validate_doc_update - delete doc': function (test) {
+    'validate_doc_update - remove doc': function (test) {
         test.expect(1);
         var newDoc = {_deleted: true};
         var oldDoc = {type: 'type1', test: 'test'};
@@ -488,7 +488,7 @@ module.exports = nodeunit.testCase({
         test.done();
     },
 
-    'validate_doc_update - create doc': function (test) {
+    'validate_doc_update - add doc': function (test) {
         test.expect(2);
         var newDoc = {type: 'type1', test: 'test'};
         var oldDoc = null;

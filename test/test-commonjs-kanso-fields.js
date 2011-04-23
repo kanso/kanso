@@ -163,31 +163,31 @@ module.exports = nodeunit.testCase({
         var err3 = new Error('test error 3');
         var f = new Field({
             permissions: {
-                create: function (newDoc, oldDoc, newVal, oldVal, user) {
+                add: function (newDoc, oldDoc, newVal, oldVal, user) {
                     test.equal(newDoc, 'newDoc');
                     test.equal(oldDoc, null);
                     test.equal(newVal, 'newVal');
                     test.equal(oldVal, null);
                     test.equal(user, 'user');
-                    calls.push('create');
+                    calls.push('add');
                     throw err1;
                 },
-                edit: function (newDoc, oldDoc, newVal, oldVal, user) {
+                update: function (newDoc, oldDoc, newVal, oldVal, user) {
                     test.equal(newDoc, 'newDoc');
                     test.equal(oldDoc, 'oldDoc');
                     test.equal(newVal, 'newVal');
                     test.equal(oldVal, 'oldVal');
                     test.equal(user, 'user');
-                    calls.push('edit');
+                    calls.push('update');
                     throw err2;
                 },
-                delete: function (newDoc, oldDoc, newVal, oldVal, user) {
+                remove: function (newDoc, oldDoc, newVal, oldVal, user) {
                     test.same(newDoc, {_deleted: true});
                     test.equal(oldDoc, 'oldDoc');
                     test.equal(newVal, null);
                     test.equal(oldVal, 'oldVal');
                     test.equal(user, 'user');
-                    calls.push('delete');
+                    calls.push('remove');
                     throw err3;
                 }
             }
@@ -204,7 +204,7 @@ module.exports = nodeunit.testCase({
             f.authorize({_deleted: true}, 'oldDoc', null, 'oldVal', 'user'),
             [err3]
         );
-        test.same(calls, ['create', 'edit', 'delete']);
+        test.same(calls, ['add', 'update', 'remove']);
         test.done();
     },
 
@@ -286,31 +286,31 @@ module.exports = nodeunit.testCase({
 
         var f = new Field({
             permissions: {
-                create: function (nDoc, oDoc, newVal, oldVal, user) {
+                add: function (nDoc, oDoc, newVal, oldVal, user) {
                     test.same(nDoc, newDoc.embed);
                     test.equal(oDoc, null);
                     test.equal(newVal, 'newVal');
                     test.equal(oldVal, null);
                     test.equal(user, 'user');
-                    calls.push('create');
+                    calls.push('add');
                     throw err1;
                 },
-                edit: function (nDoc, oDoc, newVal, oldVal, user) {
+                update: function (nDoc, oDoc, newVal, oldVal, user) {
                     test.same(nDoc, newDoc.embed);
                     test.same(oDoc, oldDoc.embed);
                     test.equal(newVal, 'newVal');
                     test.equal(oldVal, 'oldVal');
                     test.equal(user, 'user');
-                    calls.push('edit');
+                    calls.push('update');
                     throw err2;
                 },
-                delete: function (nDoc, oDoc, newVal, oldVal, user) {
+                remove: function (nDoc, oDoc, newVal, oldVal, user) {
                     test.same(nDoc, {_deleted: true});
                     test.equal(oDoc, oldDoc.embed);
                     test.equal(newVal, null);
                     test.equal(oldVal, 'oldVal');
                     test.equal(user, 'user');
-                    calls.push('delete');
+                    calls.push('remove');
                     throw err3;
                 }
             }
@@ -332,7 +332,7 @@ module.exports = nodeunit.testCase({
         test.equal(errs.length, 1);
         test.equal(errs[0].message, 'test error 1');
         test.same(errs[0].field, ['test']);
-        test.same(calls, ['create']);
+        test.same(calls, ['add']);
 
         var errs = e.authorize(
             newDoc, oldDoc, newDoc.embed, oldDoc.embed, 'user'
@@ -340,7 +340,7 @@ module.exports = nodeunit.testCase({
         test.equal(errs.length, 1);
         test.equal(errs[0].message, 'test error 2');
         test.same(errs[0].field, ['test']);
-        test.same(calls, ['create', 'edit']);
+        test.same(calls, ['add', 'update']);
 
         newDoc = {embed: {_deleted: true}};
         var errs = e.authorize(
@@ -349,12 +349,12 @@ module.exports = nodeunit.testCase({
         test.equal(errs.length, 1);
         test.equal(errs[0].message, 'test error 3');
         test.same(errs[0].field, ['test']);
-        test.same(calls, ['create', 'edit', 'delete']);
+        test.same(calls, ['add', 'update', 'remove']);
 
         test.done();
     },
 
-    'Embedded.authorize - delete without _delete property': function (test) {
+    'Embedded.authorize - remove without _delete property': function (test) {
         var Field = this.fields.Field;
         var Embedded = this.fields.Embedded;
         var Type = this.types.Type;
@@ -366,7 +366,7 @@ module.exports = nodeunit.testCase({
 
         var f = new Field({
             permissions: {
-                delete: function (nDoc, oDoc, newVal, oldVal, user) {
+                remove: function (nDoc, oDoc, newVal, oldVal, user) {
                     test.same(nDoc, {_deleted: true});
                     test.equal(oDoc, oldDoc.embed);
                     test.equal(newVal, null);
@@ -521,7 +521,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        // Two edits
+        // Two updates
         var oldDoc = {type: 't2', embedded: [
             {_id: 'id1', type: 't1', one: 'asdf'},
             {_id: 'id2', type: 't1', one: 'asdf'}
@@ -540,7 +540,7 @@ module.exports = nodeunit.testCase({
         test.same(errs[0].field, ['embedded','0']);
         test.same(errs[1].field, ['embedded','1']);
 
-        // One delete
+        // One remove
         var calls = [];
         var oldDoc = {type: 't2', embedded: [
             {_id: 'id1', type: 't1', one: 'asdf'},
@@ -589,14 +589,14 @@ module.exports = nodeunit.testCase({
         var calls = [];
         var t1 = new Type('t1', {
             permissions: {
-                create: function () {
-                    calls.push('create');
+                add: function () {
+                    calls.push('add');
                 },
-                edit: function () {
-                    calls.push('edit');
+                update: function () {
+                    calls.push('update');
                 },
-                delete: function () {
-                    calls.push('delete');
+                remove: function () {
+                    calls.push('remove');
                 }
             },
             fields: {
@@ -611,7 +611,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        // Two edits
+        // Two updates
         var oldDoc = {type: 't2', embedded: [
             {_id: 'id1', type: 't1', one: 'asdf'},
             {_id: 'id2', type: 't1', one: 'asdf'}
@@ -622,9 +622,9 @@ module.exports = nodeunit.testCase({
         ]};
 
         var errs = t2.authorize(newDoc, oldDoc, 'user');
-        test.same(calls, ['edit', 'edit']);
+        test.same(calls, ['update', 'update']);
 
-        // One delete
+        // One remove
         var calls = [];
         var oldDoc = {type: 't2', embedded: [
             {_id: 'id1', type: 't1', one: 'asdf'},
@@ -635,7 +635,7 @@ module.exports = nodeunit.testCase({
         ]};
 
         var errs = t2.authorize(newDoc, oldDoc, 'user');
-        test.same(calls, ['edit', 'delete']);
+        test.same(calls, ['update', 'remove']);
 
         // One add
         var calls = [];
@@ -648,12 +648,12 @@ module.exports = nodeunit.testCase({
         ]};
 
         var errs = t2.authorize(newDoc, oldDoc, 'user');
-        test.same(calls, ['edit', 'create']);
+        test.same(calls, ['update', 'add']);
 
         test.done();
     },
 
-    'EmbeddedList.authorize - parent-level - testuser edit': function (test) {
+    'EmbeddedList.authorize - parent-level - testuser update': function (test) {
         var types = this.types,
             fields = this.fields,
             permissions = this.permissions,
@@ -661,9 +661,9 @@ module.exports = nodeunit.testCase({
 
         var comment = new Type('comment', {
             permissions: {
-                create: permissions.loggedIn(),
-                edit: permissions.usernameMatchesField('creator'),
-                delete: permissions.usernameMatchesField('creator')
+                add: permissions.loggedIn(),
+                update: permissions.usernameMatchesField('creator'),
+                remove: permissions.usernameMatchesField('creator')
             },
             fields: {
                 creator: fields.creator(),
@@ -676,7 +676,7 @@ module.exports = nodeunit.testCase({
                 creator: fields.creator(),
                 embedded: fields.embedList({
                     permissions: {
-                        delete: permissions.any([
+                        remove: permissions.any([
                             permissions.usernameMatchesField('creator'),
                             permissions.inherit(comment)
                         ])
@@ -686,7 +686,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        // testuser should not be able to edit testuser2's comment
+        // testuser should not be able to update testuser2's comment
         var newDoc = {
             type: 't',
             creator: 'testuser',
@@ -717,7 +717,7 @@ module.exports = nodeunit.testCase({
         test.done();
     },
 
-    'EmbeddedList.authorize - parent-level - testuser2 edit': function (test) {
+    'EmbeddedList.authorize - parent-level - testuser2 update': function (test) {
         var types = this.types,
             fields = this.fields,
             permissions = this.permissions,
@@ -725,9 +725,9 @@ module.exports = nodeunit.testCase({
 
         var comment = new Type('comment', {
             permissions: {
-                create: permissions.loggedIn(),
-                edit: permissions.usernameMatchesField('creator'),
-                delete: permissions.usernameMatchesField('creator')
+                add: permissions.loggedIn(),
+                update: permissions.usernameMatchesField('creator'),
+                remove: permissions.usernameMatchesField('creator')
             },
             fields: {
                 creator: fields.creator(),
@@ -740,7 +740,7 @@ module.exports = nodeunit.testCase({
                 creator: fields.creator(),
                 embedded: fields.embedList({
                     permissions: {
-                        delete: permissions.any([
+                        remove: permissions.any([
                             permissions.usernameMatchesField('creator'),
                             permissions.inherit(comment)
                         ])
@@ -750,7 +750,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        // testuser2 should be able to edit testuser2's content
+        // testuser2 should be able to update testuser2's content
         var newDoc = {
             type: 't',
             creator: 'testuser',
@@ -779,7 +779,7 @@ module.exports = nodeunit.testCase({
         test.done();
     },
 
-    'EmbeddedList.authorize - parent-level - testuser2 delete': function (test) {
+    'EmbeddedList.authorize - parent-level - testuser2 remove': function (test) {
         var types = this.types,
             fields = this.fields,
             permissions = this.permissions,
@@ -787,9 +787,9 @@ module.exports = nodeunit.testCase({
 
         var comment = new Type('comment', {
             permissions: {
-                create: permissions.loggedIn(),
-                edit: permissions.usernameMatchesField('creator'),
-                delete: permissions.usernameMatchesField('creator')
+                add: permissions.loggedIn(),
+                update: permissions.usernameMatchesField('creator'),
+                remove: permissions.usernameMatchesField('creator')
             },
             fields: {
                 creator: fields.creator(),
@@ -802,7 +802,7 @@ module.exports = nodeunit.testCase({
                 creator: fields.creator(),
                 embedded: fields.embedList({
                     permissions: {
-                        delete: permissions.any([
+                        remove: permissions.any([
                             permissions.usernameMatchesField('creator'),
                             permissions.inherit(comment)
                         ])
@@ -812,7 +812,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        // testuser2 should be able to delete own comment
+        // testuser2 should be able to remove own comment
         var newDoc = {type: 't', creator: 'testuser', embedded: []};
         var oldDoc = {
             type: 't',
@@ -831,7 +831,7 @@ module.exports = nodeunit.testCase({
         test.done();
     },
 
-    'EmbeddedList.authorize - parent-level - testuser delete': function (test) {
+    'EmbeddedList.authorize - parent-level - testuser remove': function (test) {
         var types = this.types,
             fields = this.fields,
             permissions = this.permissions,
@@ -839,9 +839,9 @@ module.exports = nodeunit.testCase({
 
         var comment = new Type('comment', {
             permissions: {
-                create: permissions.loggedIn(),
-                edit: permissions.usernameMatchesField('creator'),
-                delete: permissions.usernameMatchesField('creator')
+                add: permissions.loggedIn(),
+                update: permissions.usernameMatchesField('creator'),
+                remove: permissions.usernameMatchesField('creator')
             },
             fields: {
                 creator: fields.creator(),
@@ -854,7 +854,7 @@ module.exports = nodeunit.testCase({
                 creator: fields.creator(),
                 embedded: fields.embedList({
                     permissions: {
-                        delete: permissions.any([
+                        remove: permissions.any([
                             permissions.usernameMatchesField('creator'),
                             permissions.inherit(comment)
                         ])
@@ -864,7 +864,7 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        // testuser should also be able to delete testuser2's content
+        // testuser should also be able to remove testuser2's content
         var newDoc = {type: 't', creator: 'testuser', embedded: []};
         var oldDoc = {
             type: 't',
@@ -940,17 +940,17 @@ module.exports = nodeunit.testCase({
         var f = this.fields.creator();
         var userCtx = {name: 'testuser'};
         // does not throw
-        f.permissions.create({}, {}, 'testuser', null, userCtx);
+        f.permissions.add({}, {}, 'testuser', null, userCtx);
         test.throws(function () {
-            f.permissions.create({}, {}, 'testuser2', null, userCtx);
+            f.permissions.add({}, {}, 'testuser2', null, userCtx);
         });
         test.throws(function () {
-            f.permissions.edit({}, {}, 'testuser', null, userCtx);
+            f.permissions.update({}, {}, 'testuser', null, userCtx);
         });
         test.throws(function () {
-            f.permissions.edit({}, {}, 'testuser2', null, userCtx);
+            f.permissions.update({}, {}, 'testuser2', null, userCtx);
         });
-        test.strictEqual(f.permissions.delete, undefined);
+        test.strictEqual(f.permissions.remove, undefined);
         // required should be false by default because anonymous users will
         // set to empty
         test.strictEqual(f.required, false);
@@ -961,25 +961,25 @@ module.exports = nodeunit.testCase({
         var calls = [];
         var f = this.fields.creator({
             permissions: {
-                create: function () { calls.push('create'); },
-                edit:   function () { calls.push('edit'); },
-                delete: function () { calls.push('delete'); }
+                add: function () { calls.push('add'); },
+                update:   function () { calls.push('update'); },
+                remove: function () { calls.push('remove'); }
             }
         });
         var userCtx = {name: 'testuser'};
         // does not throw
-        f.permissions.create({}, {}, 'testuser', null, userCtx);
+        f.permissions.add({}, {}, 'testuser', null, userCtx);
         test.equal(
-            f.permissions.create({}, {}, 'testuser2', null, userCtx).length, 1
+            f.permissions.add({}, {}, 'testuser2', null, userCtx).length, 1
         );
         test.equal(
-            f.permissions.edit({}, {}, 'testuser', null, userCtx).length, 1
+            f.permissions.update({}, {}, 'testuser', null, userCtx).length, 1
         );
         test.equal(
-            f.permissions.edit({}, {}, 'testuser2', null, userCtx).length, 1
+            f.permissions.update({}, {}, 'testuser2', null, userCtx).length, 1
         );
-        f.permissions.delete();
-        test.same(calls, ['create','create','edit','edit','delete']);
+        f.permissions.remove();
+        test.same(calls, ['add','add','update','update','remove']);
         // required should be false by default because anonymous users will
         // set to empty
         test.strictEqual(f.required, false);
@@ -989,23 +989,23 @@ module.exports = nodeunit.testCase({
     'timestamp': function (test) {
         var f = this.fields.timestamp();
         // should be uneditable
-        f.permissions.edit({}, {}, 'val', 'val', 'user');
+        f.permissions.update({}, {}, 'val', 'val', 'user');
         test.throws(function () {
-            f.permissions.edit({}, {}, 'val', 'val2', 'user');
+            f.permissions.update({}, {}, 'val', 'val2', 'user');
         });
         // should keep any previous permissions
         var calls = [];
         f = this.fields.timestamp({
             permissions: {
-                create: function () { calls.push('create'); },
-                edit:   function () { calls.push('edit'); },
-                delete: function () { calls.push('delete'); }
+                add: function () { calls.push('add'); },
+                update:   function () { calls.push('update'); },
+                remove: function () { calls.push('remove'); }
             }
         });
-        f.permissions.create({}, {}, 'val', 'val', 'user');
-        f.permissions.edit({}, {}, 'val', 'val', 'user');
-        f.permissions.delete({}, {}, 'val', 'val', 'user');
-        test.same(calls, ['create','edit','delete']);
+        f.permissions.add({}, {}, 'val', 'val', 'user');
+        f.permissions.update({}, {}, 'val', 'val', 'user');
+        f.permissions.remove({}, {}, 'val', 'val', 'user');
+        test.same(calls, ['add','update','remove']);
         test.done();
     },
 
