@@ -423,7 +423,128 @@ exports.blogpost = function (doc, req) {
     </p>
 
     <h2 id="users_and_permissions">Users and permissions</h2>
+    <p>
+      Currently, anyone can add a blog post to the site, even if they're not
+      logged-in. This probably isn't ideal, so let's look at protecting the ability
+      to add blog posts.
+    </p>
+    <p>
+      CouchDB provides its own users and roles system, which defines who has
+      access to which database. Kanso can also use this to authorize or
+      reject changes to the database on a document-level. The great thing about
+      this is that our authentication system is already set-up and ready to go!
+    </p>
+    <h3>validate_doc_update</h3>
+    <p>
+      CouchDB authorizes changes to a document using the
+      <a href="http://guide.couchdb.org/draft/validation.html">validate_doc_update</a>
+      function defined in your app. Of course, Kanso also supports this system as
+      the underlying way to authorize changes. However, this method is quite
+      low-level, simply accepting a new document, an old document and throwing
+      an exception if the changes should be denied.
+    </p>
+    <p>
+      The simplicity of this approach is both its attraction and its downfall. With
+      complex applications comprising of many types, each with it's own
+      validation and authorization requirements, your validate_doc_update function
+      quickly becomes unwieldy.
+      Kanso allows you to mix-and-match, by providing powerful tools
+      on a type or even field-level, while still
+      supporting the simplicity of the validate_doc_update approach.
+    </p>
+    <p>
+      If you look at <code>lib/validate.js</code> in the project skeleton we
+      generated, you'll notice kanso has already added a
+      validate_doc_update function which just calls the kanso function
+      <code>types.validate_doc_update</code>. This runs the permissions
+      defined in your app's type and field definitions, so it's
+      important not to remove this line if you're using this feature.
+    </p>
+    <pre><code class="javascript">var types = require('kanso/types'),
+    app_types = require('./types');
+
+
+module.exports = function (newDoc, oldDoc, userCtx) {
+    types.validate_doc_update(app_types, newDoc, oldDoc, userCtx);
+};</code></pre>
+
+    <h3>End of the admin-party</h3>
+    <p>
+      By default, CouchDB has no users and everyone has the special "_admin" role.
+      This makes playing around with CouchDB (and Kanso!) easy when you first
+      install but obviously isn't very secure. If you haven't done so already,
+      put an end to the <a href="http://guide.couchdb.org/draft/security.html#party">admin party</a>
+      by visiting the <a href="http://localhost:5984/_utils/">Futon admin interface</a>
+      and adding a new admin user:
+    </p>
+    <img src="images/users_and_permissions2.png" alt="fixing admin party" />
+
+    <h3>Type-level permissions</h3>
+    <p>
+      Currently, we want to protect the ability to add, remove and update the
+      blogpost type. To do this we simply update our type definition to include a
+      permissions section:
+    </p>
+    <pre><code class="javascript">var Type = require('kanso/types').Type,
+    fields = require('kanso/fields'),
+    widgets = require('kanso/widgets'),
+    permissions = require('kanso/permissions');
+
+
+exports.blogpost = new Type('blogpost', {
+    permissions: {
+        add:    permissions.hasRole('_admin'),
+        update: permissions.hasRole('_admin'),
+        remove: permissions.hasRole('_admin')
+    },
+    fields: {
+        created: fields.timestamp(),
+        title: fields.string(),
+        text: fields.string({
+            widget: widgets.textarea({cols: 40, rows: 10})
+        })
+    }
+});</code></pre>
+    <p>
+      <strong>Push the app</strong> (you may now be prompted for a username and
+      password), if you then <strong>logout</strong> and go to the blogposts page
+      in the admin app
+      <a href="http://localhost:5984/myblog/_design/admin/_rewrite/myblog/types/blogpost">http://localhost:5984/myblog/_design/admin/_rewrite/myblog/types/blogpost</a>
+      then try to delete a blogpost, you should see the following:
+    </p>
+    <img src="images/users_and_permissions1.png" alt="admin app - role required" />
+    <p>
+      The same should happen when editing or adding new blog posts. Logging back in
+      as an admin user should allow you to complete all of these operations again.
+    </p>
+    <p>
+      A short note on pushing as a user: if you include a username or both a username
+      and password in the database URL, these credentials will be used to push the app.
+    </p>
+    <pre>kanso push http://user:password@localhost:5984/dbname
+kanso push http://user@localhost:5984/dbname</pre>
+    <p>
+      You may not want to expose the password in your shell history so I'd
+      recommend just putting the username in the URL, and kanso will know to
+      prompt you for a password before attempting to push.
+    </p>
+
+    <h2 id="embedded_types">Embedded types</h2>
+
     <h2 id="going_it_alone">Going it alone</h2>
+    <p>
+      Congratulations on finishing your first (basic) Kanso app! It's time for you
+      to strike out on your own, and explore the possibilities of a whole new way
+      to write web-apps. If you create something cool, please share it on the
+      <a href="https://github.com/caolan/kanso/wiki/Sites-using-Kanso">Kanso wiki</a>.
+    </p>
+    <p>
+      You can <strong>report issues</strong> using the
+      <a href="https://github.com/caolan/kanso/issues">GitHub issues page</a>.
+    </p>
+    <p>
+      Don't forget to check out the <a href="docs.html">Docs</a>.
+    </p>
   </div>
 
   <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
