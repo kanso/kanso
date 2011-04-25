@@ -530,6 +530,143 @@ kanso push http://user@localhost:5984/dbname</pre>
     </p>
 
     <h2 id="embedded_types">Embedded types</h2>
+    <p>
+      Now we move on to one of Kanso's more advanced features: Embedded types.
+    </p>
+    <p>
+      Beacuse it often makes sense to 'de-normalize' your data in CouchDB you'll
+      often find yourself embedding one document directly into another.
+      Any Type system that's going to work properly will also need to support this
+      technique.
+    </p>
+    <p>
+      This can get quite tricky once you consider the permissions and validation
+      requirements involved. Consider a situation where you'd like to embed
+      comments on a blog post document. One user may be allowed to edit a blogpost,
+      while another may only be allowed to comment on it. However, both users need to be able to
+      update the document itself, since the comments are embedded within the blogpost.
+    </p>
+    <p>
+      Using embedded types, Kanso helps you handle these situations much more easily
+      and define exactly which parts of a document can be edited by a user.
+    </p>
+    <p>
+      Whether or not embedding one type within another document is a good idea
+      often depends on the specific circumstances. Comments on blog posts for
+      example, may be best added separately to the blog post document if you
+      expect there to be a lot of commenting activity, otherwise you run the
+      risk of conflicts, and CouchDB will have to write the whole list of
+      comments every time you add a new one.
+    </p>
+    <p>
+      For the sake of this example however, we're going to assume comments are
+      very infrequent and that we prefer to make them available on the blog post
+      document itself.
+    </p>
+
+    <h3>Creating the comment type</h3>
+    <p>
+      Before we can embed comments within the blogpost type, we need to define
+      the comment type itself. Add the following to <code>lib/types.js</code>,
+      <strong>BEFORE</strong> the blogpost type:
+    </p>
+    <pre><code class="javascript">exports.comment = new Type('comment', {
+    permissions: {
+        add: permissions.loggedIn(),
+        update: permissions.usernameMatchesField('creator'),
+        remove: permissions.usernameMatchesField('creator')
+    },
+    fields: {
+        creator: fields.creator(),
+        text: fields.string({
+            widget: widgets.textarea({cols: 40, rows: 10})
+        })
+    }
+});</code></pre>
+    <p>
+      You'll notice we're using some new permissions for this type,
+      first <code>loggedIn</code> simply checks the user is logged in (not
+      anonymous) before being allowed to add a comment. Then,
+      <code>usernameMatchesField</code> checks that the current user is the same
+      as the user defined in the creator field. This stops users from editing or
+      deleting other users comments.
+    </p>
+    <p>
+      The <code>creator</code> field is also new, and set's itself to the current
+      user's name when a new comment is added. After creation, this field becomes
+      uneditable.
+    </p>
+
+    <h3>Embedding a type</h3>
+    <p>
+      To embed a list of comments in a blogpost, update the blogpost type definition
+      to include the following comments field:
+    </p>
+    <pre><code type="javascript">exports.blogpost = new Type('blogpost', {
+    permissions: {
+        add:    permissions.hasRole('_admin'),
+        update: permissions.hasRole('_admin'),
+        remove: permissions.hasRole('_admin')
+    },
+    fields: {
+        created: fields.timestamp(),
+        title: fields.string(),
+        text: fields.string({
+            widget: widgets.textarea({cols: 40, rows: 10})
+        }),
+        comments: fields.embedList({
+            type: exports.comment
+        })
+    }
+});</code></pre>
+    <p>
+      <strong>Push the app</strong>, and visit the admin page for adding blogposts:
+      <a href="http://localhost:5984/myblog/_design/admin/_rewrite/myblog/types/blogpost/add">http://localhost:5984/myblog/_design/admin/_rewrite/myblog/types/blogpost/add</a>
+    </p>
+    <img src="images/embedded_types1.png" alt="new comments button" />
+    <p>
+      There is now an add a comment button, clicking on this will open a modal
+      dialog for embedding a comment.
+    </p>
+    <img src="images/embedded_types2.png" alt="adding comments" />
+    <p>
+      Continue to add a new blog post with some example comments, rembering that
+      you'll need to be logged in as an admin user to add new blog posts.
+    </p>
+    <img src="images/embedded_types3.png" alt="adding new blog post with comments" />
+
+    <h3>Updating templates</h3>
+    <p>
+      Let's update the templates to handle the newly embedded comments.
+      Edit <code>templates/blogpost.html</code> to look like the following:
+    </p>
+    <pre><code>&lt;h1&gt;{title}&lt;/h1&gt;
+
+&lt;p&gt;{text}&lt;/p&gt;
+
+{?comments}
+  &lt;h2&gt;Comments&lt;/h2&gt;
+
+  &lt;ul&gt;
+    {#comments}
+      &lt;li&gt;
+        &lt;strong&gt;{creator} says: &lt;/strong&gt;
+        {text}
+      &lt;/li&gt;
+    {/comments}
+  &lt;/ul&gt;
+{/comments}</code></pre>
+    <p>
+      <strong>Push the app</strong>, and visit it's home page:
+      <a href="http://localhost:5984/myblog/_design/myblog/_rewrite/">http://localhost:5984/myblog/_design/myblog/_rewrite/</a>
+    </p>
+    <img src="images/embedded_types4.png" alt="app homepage" />
+    <p>
+      You should see the new blog post you created listed on the homepage.
+      Clicking on it should show it using the new template, complete with the
+      comments you added earlier:
+    </p>
+    <img src="images/embedded_types5.png" alt="showing blog post with comments" />
 
     <h2 id="going_it_alone">Going it alone</h2>
     <p>
