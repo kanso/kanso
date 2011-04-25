@@ -135,6 +135,11 @@
 
 
       <h2 id="commands">Commands</h2>
+      <p>
+        Typing 'kanso' with no arguments will present you with a list of available
+        commands. More information can be found by typing 'kanso help' optionally
+        followed by the name of the command you need help with.
+      </p>
 
       <h3 id="push">Push</h3>
       <p>Upload a project to a CouchDB instance.</p>
@@ -164,6 +169,18 @@
   </pre>
 
       <h3 id="pushadmin">Pushadmin</h3>
+      <p>Upload the kanso admin app to a CouchDB instance.</p>
+      <pre>kanso pushadmin [OPTIONS] DB
+
+Parameters:
+  DB     The CouchDB instance to upload the app to
+
+Options:
+  --minify               Compress CommonJS modules using UglifyJS
+  --minify-attachments   Compress .js attachments
+  --baseURL PATH         Force the baseURL to a specific value.
+                         (allows vhosts on CouchDB < v1.1.x)
+</pre>
 
       <h3 id="create">Create</h3>
       <p>Create a new project skeleton.</p>
