@@ -73,6 +73,13 @@ h3 {
     font-size: 1em;
     font-weight: bold;
 }
+h2, h3 {
+    position: relative;
+    top: -4.236em;
+    padding-top: 4.236em;
+    margin-bottom: -4.236em;
+    z-index: -1;
+}
 pre {
     font-family: 'Monospace', monospace !important;
     color: black;

@@ -14,10 +14,10 @@ $(function () {
         if (this.id) {
             var a = $('<a href="#' + this.id + '"></a>');
             a.text(h.text());
-            a.click(function (ev) {
-                ev.preventDefault();
+            /*a.click(function (ev) {
+                //ev.preventDefault();
                 $(document).scrollTop(h_top - topbar_height * 1.618);
-            });
+            });*/
             var li = $('<li></li>');
             li.append(a);
             li.data('h_offset', h_top);
