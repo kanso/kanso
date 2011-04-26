@@ -92,6 +92,13 @@ exports.getBaseURL = function (req) {
 
 /**
  * Traverses an object and its sub-objects using an array of property names.
+ * Returns the value of the matched path, or undefined if the property does not
+ * exist.
+ *
+ * getPropertyPath({a: {b: 'foo'}}, ['a','b']) -> 'foo'
+ *
+ * @param {Object} obj
+ * @param {Array} path
  */
 
 exports.getPropertyPath = function (obj, path) {
@@ -100,6 +107,17 @@ exports.getPropertyPath = function (obj, path) {
     }
     return exports.getPropertyPath(obj[path[0]], path.slice(1));
 };
+
+/**
+ * Traverses an object and its sub-objects using an array of property names.
+ * Sets the value of the matched property.
+ *
+ * setPropertyPath({}, ['a','b'], 'foo') -> {a: {b: 'foo'}}
+ *
+ * @param {Object} obj
+ * @param {Array} path
+ * @returns undefined
+ */
 
 exports.setPropertyPath = function (obj, path, val) {
     if (!path.length) {
@@ -119,6 +137,15 @@ exports.setPropertyPath = function (obj, path, val) {
     }
     exports.setPropertyPath(obj[next], path, val);
 };
+
+/**
+ * Returns the name of the constructor function for an object. This is used
+ * as a workaround for CouchDB's lack of a module cache, where instanceof checks
+ * can break if a module is re-eval'd.
+ *
+ * @param {Object} obj
+ * @returns {String}
+ */
 
 exports.constructorName = function (obj) {
     if (obj === null || obj === undefined) {
