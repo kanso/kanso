@@ -1306,6 +1306,208 @@
       <div class="returns"><strong>Returns:</strong> EmbeddedList Object</div>
 
 
+      <h3 id="flashmessages">Flashmessages</h3>
+      <p>
+        Flash messages help you store state between requests, such as reporting a
+        successful or failed operation after a redirect.
+      </p>
+      <p>
+        The flash message implementation in this module handles both fallback couchdb
+        mode, using cookies to persist state between requests, as well as supporting
+        client-side operation, correctly handling new messages even inside the
+        callbacks of async functions.
+      </p>
+      <p>
+        Flash messages only persist for the next request or the next template render!
+        That means 2 redirects without explicitly currying the flash messages will
+        cause the messages to be lost.
+      </p>
+
+      <h4 id="flashmessages_readRequestCookie">
+        flashmessages.readRequestCookie(req)
+      </h4>
+      <p>
+        Reads the flash messages cookie from a request object, returning an
+        array of incoming messages.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="flashmessages_readBrowserCookie">
+        flashmessages.readBrowserCookie()
+      </h4>
+      <p>
+        Reads the flash messages cookie from the browser, returning an
+        array of incoming messages.
+      </p>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="flashmessages_updateRequest">
+        flashmessages.updateRequest(req)
+      </h4>
+      <p>
+        Adds a flash_messages property to a request containing all incoming
+        messages.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Request Object</div>
+
+      <h4 id="flashmessages_getMessages">
+        flashmessages.getMessages(req)
+      </h4>
+      <p>
+        Get's all current flash messages, stopping them from being outgoing on the
+        next request so they're not repeated.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="flashmessages_getOutgoingMessages">
+        flashmessage.getOutgoingMessages(req)
+      </h4>
+      <p>
+        Filters all available messages on a request object, returning only those
+        flagged as outgoing (sending in the response to be made available to the next
+        request).
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="flashmessages_updateResponse">
+        flashmessage.updateResponse(req, res)
+      </h4>
+      <p>
+        Updates a response object after a list, show or update function has returned,
+        setting the flash messages cookie to include the outgoing messages.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>res</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Response Object</div>
+
+      <h4 id="flashmessages_createMessage">
+        flashmessages.createMessage(req, msg)
+      </h4>
+      <p>
+        Creates a new flash message object, associating it with the given request.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>msg</th>
+            <td class="type">String</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Object</div>
+
+      <h4 id="flashmessages_setBrowserCookie">
+        flashmessages.setBrowserCookie(req, messages)
+      </h4>
+      <p>
+        Stores a list of messages in the flash messages cookie. This function is for
+        client-side use.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>messages</th>
+            <td class="type">Array</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="flashmessages_addMessage">
+        flashmessages.addMessage(req, msg)
+      </h4>
+      <p>
+        Adds a new flash message for the current request. If the list, show or update
+        function has not returned, it's added to the response Set-Cookie header,
+        otherwise (if its the result of a client-side async operation) it's added
+        directly to the browsers cookies.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>msg</th>
+            <td class="type">String</td>
+          </tr>
+        </tbody>
+      </table>
+
+
       <h2 id="commands">Commands</h2>
       <p>
         Typing 'kanso' with no arguments will present you with a list of available

@@ -1,7 +1,7 @@
 /*global unescape: false */
 
 /**
- * Flash messages help you store state between requests, perhaps to report a
+ * Flash messages help you store state between requests, such as reporting a
  * successful or failed operation after a redirect.
  *
  * The flash message implementation in this module handles both fallback couchdb
