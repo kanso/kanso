@@ -95,106 +95,233 @@
       <h2 id="modules">Modules</h2>
 
       <h3 id="core">Core</h3>
-
-      <h3 id="flashmessages">Flashmessages</h3>
-      <h3 id="cookies">Cookies</h3>
-      <h3 id="forms">Forms</h3>
-      <h3 id="permissions">Permissions</h3>
-      <h3 id="widgets">Widgets</h3>
-
-      <h3 id="types">Types</h3>
       <p>
-        Document types can be used to ease the validation of updates and check
-        permissions when creating, updating or deleting documents.
-      </p>
-      <p>
-        Type definitions are just objects which expose some pre-defined properties.
-        Its usually convenient to use a module for each document type, and this is
-        the pattern used in the examples below.
-      </p>
-      <h3>Example</h3>
-      <pre><code class="javascript">var fields = require('kanso/fields');
-
-  exports.fields = {
-      title: fields.string(),
-      link: fields.url()
-  };</code></pre>
-      <p>
-        A document's type is stored as a string in the 'type' property of the document.
-        This is a commonly used pattern to make querying documents easier, and also
-        allows Kanso to validate a document without having to explicitly say which
-        document type to validate against.
-      </p>
-      <h3>types.validate(types, doc)</h3>
-      <p>
-        Validates a JSON document against its document type. <code>types</code> is
-        an object containing all types to validate against, keyed by name.
-        <code>doc</code> is the document you wish to validate.
-      </p>
-      <p>
-        Returns a list of validation errors, or an empty list if its a valid document.
-        Documents of an unknown type return undefined.
+        The core module contains functions used by kanso to facilitate the running
+        of your app. You shouldn't need to use any of the functions here directly
+        unless you're messing with the internals of Kanso.
       </p>
 
-
-      <h3 id="fields">Fields</h3>
+      <h4 id="core_init">
+        <a href="#core_init">core.init()</a>
+      </h4>
       <p>
-        Fields are used when defining document types and tell Kanso how to parse
-        and validate form data.
+        Called by kanso.js once the design doc has been loaded.
+        You should not need to call this directly.
       </p>
-      <h3>fields.string(options)</h3>
-      <h3>fields.number(options)</h3>
-      <h3>fields.boolean(options)</h3>
-      <h3>fields.url(options)</h3>
-      <h3>fields.email(options)</h3>
 
-      <h3 id="validators">Validators</h3>
+      <h4 id="core_rewriteGroups">
+        <a href="#core_rewriteGroups">core.rewriteGroups(pattern, url)</a>
+      </h4>
+      <p>Extracts groups from a url, eg:</p>
+      <pre>'/some/path' with pattern '/some/:name' -&gt; {name: 'path'}</pre>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>pattern (String)</li>
+          <li>url (String)</li>
+        </ul>
+      </div>
+      <div class="returns">Returns: Object</div>
+
+    <h4 id="core_rewriteSplat">core.rewriteSplat(pattern, url)</h4>
+      <p>Extracts a splat value from a rewrite pattern and matching URL.</p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>pattern (String)</li>
+          <li>url (String)</li>
+        </ul>
+      </div>
+      <div class="returns">Returns: String</div>
+
+      <h4 id="core_matchURL">core.matchURL(method, url)</h4>
       <p>
-        Used to validate the contents of a document type's field, and usually passed
-        as an array of validation functions to a field type.
+        Attempts to match rewrite from patterns to a URL, returning the
+        matching rewrite object if successful.
       </p>
-      <h3>Example</h3>
-      <pre><code class="javascript">var fields = require('kanso/fields'),
-      validators = require('kanso/validators');
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>method (String)</li>
+          <li>url (String)</li>
+        </ul>
+      </div>
+      <div class="returns">Returns: Object</div>
 
-
-  exports.fields = {
-      count: fields.number({
-          validators: [ validators.max(10) ]
-      })
-  };</code></pre>
+      <h4 id="core_replaceGroups">core.replaceGroups(val, groups, splat)</h4>
       <p>
-        Custom validators can be easily created by writing a function which
-        accepts the following arguments, and throws an Error if validation fails:
+        Replace group names and splats in a string with the value of that group
+        or splat, eg:
       </p>
-      <pre><code class="javascript">exports.myValidator = function (doc, value) {
-      if (value === 'incorrect value') {
-          throw new Error('Validation failed');
-      }
-  }</code></pre>
+      <pre>"/:name" with groups {name: 'test'} -&gt; "/test"</pre>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>val (String)</li>
+          <li>groups (Object)</li>
+          <li>splat (String)</li>
+        </ul>
+      </div>
+      <div class="returns">Returns: String</div>
+
+      <h4 id="core_createRequest">
+        core.createRequest(method, url, data, match, callback)
+      </h4>
       <p>
-        Here, <code>doc</code> is the document being validated, and
-        <code>value</code> is the value of the field.
+        Creates a new request object from a url and matching rewrite object.
+        Query parameters are automatically populated from rewrite pattern.
       </p>
-      <h3>validators.min(val)</h3>
-      <h3>validators.max(val)</h3>
-      <h3>validators.range(min, max)</h3>
-      <h3>validators.minlength(val)</h3>
-      <h3>validators.maxlength(val)</h3>
-      <h3>validators.rangelength(min, max)</h3>
-      <h3>validators.regexp(expression, [message])</h3>
-      <h3>validators.email()</h3>
-      <h3>validators.url()</h3>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>method (String)</li>
+          <li>url (String)</li>
+          <li>data (Object)</li>
+          <li>match (Object)</li>
+          <li>callback (Function)</li>
+        </ul>
+      </div>
+      <div class="returns">Returns via callback: Request Object</div>
 
+      <h4 id="core_runShowBrowser">
+        core.runShowBrowser(req, name, docid, callback)
+      </h4>
+      <p>
+        Fetches the relevant document and calls the named show function.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>req (Object)</li>
+          <li>name (String)</li>
+          <li>docid (String)</li>
+          <li>callback (Function)</li>
+        </ul>
+      </div>
 
-      <h3 id="db">DB</h3>
-      <h3 id="session">Session</h3>
-      <h3 id="settings">Settings</h3>
-      <h3 id="templates">Templates</h3>
-      <h3 id="utils">Utils</h3>
-      <h3 id="url">URL</h3>
-      <h3 id="path">Path</h3>
+      <h4 id="core_runUpdateBrowser">
+        core.runUpdateBrowser(req, name, docid, callback)
+      </h4>
+      <p>
+        Fetches the relevant document and calls the named update function.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>req (Object)</li>
+          <li>name (String)</li>
+          <li>docid (String)</li>
+          <li>callback (Function)</li>
+        </ul>
+      </div>
 
+      <h4 id="core_createHead">core.createHead(data)</h4>
+      <p>
+        Creates a fake head object from view results for passing to a list function
+        being run client-side.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>data (Object)</li>
+        </ul>
+      </div>
+      <div class="returns">Returns: Object</div>
+
+      <h4 id="core_runListBrowser">
+        core.runListBrowser(req, name, view, callback)
+      </h4>
+      <p>
+        Fetches the relevant view and calls the named list function with the results.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>req (Object)</li>
+          <li>name (String)</li>
+          <li>view (String)</li>
+          <li>callback (Function)</li>
+        </ul>
+      </div>
+
+      <h4 id="core_handle">
+        core.handle(method, url, data)
+      </h4>
+      <p>
+        Creates a request object for the url and runs appropriate show, list or
+        update functions.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>method (String)</li>
+          <li>url (String)</li>
+          <li>data (Object)</li>
+        </ul>
+      </div>
+
+      <h4 id="core_setURL">
+        core.setURL(method, url, data, hash)
+      </h4>
+      <p>
+        Add a history entry for the given url, prefixed with the baseURL for the app.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>method (String)</li>
+          <li>url (String)</li>
+          <li>data (optional) (Object)</li>
+          <li>hash (optional) (String)</li>
+        </ul>
+      </div>
+
+      <h4 id="core_getURL">
+        core.getURL()
+      </h4>
+      <p>
+        Gets the current app-level URL (without baseURL prefix).
+      </p>
+      <div class="returns">Returns: String</div>
+
+      <h4 id="core_sameOrigin">
+        core.sameOrigin(a, b)
+      </h4>
+      <p>
+        Tests is two urls are of the same origin. Accepts parsed url objects
+        or strings as arguments.
+      </p>
+      <div class="returns">Returns: Boolean</div>
+
+      <h4 id="core_appPath">
+        core.appPath(p)
+      </h4>
+      <p>
+        Converts a full url to an app-level url (without baseURL prefix).
+        example: {baseURL}/some/path -&gt; /some/path
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>p (String)</li>
+        </ul>
+      </div>
+      <div class="returns">Returns: String</div>
+
+      <h4 id="core_isAppURL">
+        core.isAppURL(url)
+      </h4>
+      <p>
+        Used to decide whether to handle a link or not. Should detect app vs.
+        external urls.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>url (String)</li>
+        </ul>
+      </div>
+      <div class="returns">Returns: Boolean</div>
 
       <h2 id="commands">Commands</h2>
       <p>

@@ -220,6 +220,7 @@ exports.rewriteSplat = function (pattern, url) {
  * Attempts to match rewrite from patterns to a URL, returning the
  * matching rewrite object if successful.
  *
+ * @param {String} method
  * @param {String} url
  * @return {Object}
  */
@@ -247,6 +248,7 @@ exports.matchURL = function (method, url) {
  *
  * @param {String} val
  * @param {Object} groups
+ * @param {String} splat
  * @returns {String}
  */
 
@@ -292,9 +294,11 @@ exports.replaceGroups = function (val, groups, splat) {
  * Creates a new request object from a url and matching rewrite object.
  * Query parameters are automatically populated from rewrite pattern.
  *
+ * @param {String} method
  * @param {String} url
+ * @param {Object} data
  * @param {Object} match
- * @returns {Object}
+ * @param {Function} callback
  */
 
 exports.createRequest = function (method, url, data, match, callback) {
@@ -380,8 +384,7 @@ exports.handleResponseHeaders = function (headers) {
 
 
 /**
- * Evaluates a show function, then fetches the relevant document and calls
- * the show function with the result.
+ * Fetches the relevant document and calls the named show function.
  *
  * @param {Object} req
  * @param {String} name
@@ -438,6 +441,15 @@ exports.runShow = function (fn, doc, req) {
     return flashmessages.updateResponse(req, res);
 };
 
+/**
+ * Fetches the relevant document and calls the named update function.
+ *
+ * @param {Object} req
+ * @param {String} name
+ * @param {String} docid
+ * @param {Function} callback
+ */
+
 exports.runUpdateBrowser = function (req, name, docid, callback) {
     var result;
     var fn = kanso.app.updates[name];
@@ -491,8 +503,11 @@ exports.runUpdate = function (fn, doc, req) {
 
 
 /**
- * Creates a head object for passing to a list function from the results
- * of a view.
+ * Creates a fake head object from view results for passing to a list function
+ * being run client-side.
+ *
+ * @param {Object} data
+ * @returns {Object}
  */
 
 exports.createHead = function (data) {
@@ -507,8 +522,7 @@ exports.createHead = function (data) {
 
 
 /**
- * Evaluates a list function, then fetches the relevant view and calls
- * the list function with the result.
+ * Fetches the relevant view and calls the named list function with the results.
  *
  * @param {Object} req
  * @param {String} name
@@ -580,10 +594,12 @@ exports.runList = function (fn, head, req) {
 
 
 /**
- * Creates a request object for the url and runs appropriate show or list
- * functions.
+ * Creates a request object for the url and runs appropriate show, list or
+ * update functions.
  *
+ * @param {String} method
  * @param {String} url
+ * @param {Object} data
  */
 
 exports.handle = function (method, url, data) {
@@ -675,8 +691,7 @@ exports.handle = function (method, url, data) {
 
 
 /**
- * If pushState is supported, add an entry for the given url, prefixed with
- * the baseURL for the app.
+ * Add a history entry for the given url, prefixed with the baseURL for the app.
  *
  * @param {String} method
  * @param {String} url
@@ -734,6 +749,10 @@ exports.getURL = function () {
 /**
  * Tests is two urls are of the same origin. Accepts parsed url objects
  * or strings as arguments.
+ *
+ * @param a
+ * @param b
+ * @returns Boolean
  */
 
 exports.sameOrigin = function (a, b) {

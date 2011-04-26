@@ -73,12 +73,22 @@ h3 {
     font-size: 1em;
     font-weight: bold;
 }
-h2, h3 {
+h2, h3, h4 {
     position: relative;
     top: -4.236em;
     padding-top: 4.236em;
     margin-bottom: -4.236em;
-    z-index: -1;
+}
+h2 a,
+h2 a:hover,
+h3 a,
+h3 a:hover,
+h4 a,
+h4 a:hover {
+    text-decoration: none;
+    padding: 0;
+    color: black;
+    background: none;
 }
 pre {
     font-family: 'Monospace', monospace !important;
@@ -105,6 +115,7 @@ img {
 
 
 #sitename {
+    z-index: 3;
     padding: 0;
     background: none;
     position: absolute;
@@ -139,8 +150,10 @@ img {
     position: fixed;
     top: 0;
     left: 0;
+    z-index: 1;
 }
 #navigation {
+    z-index: 2;
     position: fixed;
     top: 6px;
     right: 148px;
@@ -246,4 +259,9 @@ img {
 }
 #sidenav li.active ul li.active a {
     font-weight: bold !important;
+}
+
+.params, .returns {
+    font-size: 0.8em;
+    margin-bottom: 2.618em;
 }
