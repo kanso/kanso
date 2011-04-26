@@ -1,5 +1,23 @@
+/**
+ * Widgets define the way a Field object is displayed when rendered as part of a
+ * Form. Changing a Field's widget will be reflected in the admin app.
+ */
+
+/**
+ * Module dependencies
+ */
+
 var forms = require('./forms');
 
+
+/**
+ * Widget constructor, creates a new Widget object.
+ *
+ * @param {String} type
+ * @param {Object} options
+ * @constructor
+ * @returns {Widget Object}
+ */
 
 var Widget = exports.Widget = function Widget(type, options) {
     options = options || {};
@@ -8,7 +26,13 @@ var Widget = exports.Widget = function Widget(type, options) {
     this.type = type;
 };
 
-// generates a string for common widget attributes
+/**
+ * Generates a string for common widget attributes.
+ *
+ * @param {String} name - field name on the HTML form
+ * @returns {String}
+ */
+
 Widget.prototype._attrs = function (name) {
     var html = ' name="' + name + '"';
     html += ' id=' + (this.id ? '"' + this.id + '"': '"id_' + name + '"');
@@ -17,6 +41,15 @@ Widget.prototype._attrs = function (name) {
     }
     return html;
 };
+
+/**
+ * Converts a widget to HTML using the provided name and parsed and raw values
+ *
+ * @param {String} name
+ * @param value
+ * @param raw
+ * @returns {String}
+ */
 
 Widget.prototype.toHTML = function (name, value, raw) {
     if (raw === undefined) {
@@ -32,17 +65,45 @@ Widget.prototype.toHTML = function (name, value, raw) {
     return html + ' />';
 };
 
+/**
+ * Creates a new text input widget.
+ *
+ * @param options
+ * @returns {Widget Object}
+ */
+
 exports.text = function (options) {
     return new Widget('text', options);
 };
+
+/**
+ * Creates a new password input widget.
+ *
+ * @param options
+ * @returns {Widget Object}
+ */
 
 exports.password = function (options) {
     return new Widget('password', options);
 };
 
+/**
+ * Creates a new hidden input widget.
+ *
+ * @param options
+ * @returns {Widget Object}
+ */
+
 exports.hidden = function (options) {
     return new Widget('hidden', options);
 };
+
+/**
+ * Creates a new textarea widget.
+ *
+ * @param options
+ * @returns {Widget Object}
+ */
 
 exports.textarea = function (options) {
     var w = new Widget('textarea', options);
@@ -69,6 +130,13 @@ exports.textarea = function (options) {
     return w;
 };
 
+/**
+ * Creates a new checkbox widget.
+ *
+ * @param options
+ * @returns {Widget Object}
+ */
+
 exports.checkbox = function (options) {
     var w = new Widget('checkbox', options);
     w.toHTML = function (name, value, raw) {
@@ -79,6 +147,13 @@ exports.checkbox = function (options) {
     };
     return w;
 };
+
+/**
+ * Creates a new select widget.
+ *
+ * @param options
+ * @returns {Widget Object}
+ */
 
 exports.select = function (options) {
     var w = new Widget('select', options);
