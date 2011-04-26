@@ -1,4 +1,8 @@
 /**
+ * Functions related to the management of user sessions and account information.
+ */
+
+/**
  * Module dependencies
  */
 
@@ -11,6 +15,9 @@ var db = require('./db'),
 /**
  * Creates a fake request to /_session to pass to sessionChange, useful
  * when using functions such as templates.render
+ *
+ * @param {Object} userCtx
+ * @param {Function} callback
  */
 
 exports.fakeRequest = function (userCtx, callback) {
@@ -33,7 +40,10 @@ exports.fakeRequest = function (userCtx, callback) {
 };
 
 /**
- * Calls sessionChange if exported from the currently loaded app
+ * Calls sessionChange if exported from the currently loaded app.
+ *
+ * @param {Object} userCtx
+ * @param {Function} callback
  */
 
 exports.sessionChange = function (userCtx, callback) {
@@ -118,6 +128,12 @@ exports.login = function (username, password, callback) {
 };
 
 
+/**
+ * Returns the current user's session information.
+ *
+ * @param {Function} callback
+ */
+
 exports.info = function (callback) {
     if (!utils.isBrowser) {
         throw new Error('info cannot be called server-side');
@@ -142,6 +158,8 @@ exports.info = function (callback) {
 
 /**
  * Returns the authentication database for the current user's session.
+ *
+ * @param {Function} callback
  */
 
 exports.userDb = function (callback) {
@@ -155,6 +173,10 @@ exports.userDb = function (callback) {
 
 /**
  * Creates a new user document with given username and password.
+ *
+ * @param {String} username
+ * @param {String} password
+ * @param {Function} callback
  */
 
 exports.signup = function (username, password, callback) {
