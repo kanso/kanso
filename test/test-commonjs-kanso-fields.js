@@ -883,6 +883,44 @@ module.exports = nodeunit.testCase({
         test.done();
     },
 
+    'EmbeddedList - remove item from list': function (test) {
+        // this should ensure that items are compared according to their _id
+        // and not their index in the list
+
+        var EmbeddedList = this.fields.EmbeddedList;
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var t = new Type('t', {
+            fields: {
+                test: new Field()
+            }
+        });
+        var t2 = new Type('t2', {
+            fields: {
+                embeddedThing: new EmbeddedList({type: t})
+            }
+        });
+        var types = {t: t, t2: t2};
+
+        var oldDoc = {_id: 't2id', type: 't2', embeddedThing: [
+            {_id: 'id1', type: 't', test: 'asdf'},
+            {_id: 'id2', type: 't', test: 'asdf'}
+        ]};
+        var newDoc = {_id: 't2id', type: 't2', embeddedThing: [
+            {_id: 'id2', type: 't', test: 'asdf'},
+        ]};
+
+        // this should not throw
+        try {
+            this.types.validate_doc_update(types, newDoc, oldDoc, {});
+        }
+        catch (e) {
+            throw new Error(e.unauthorized);
+        }
+        test.done();
+    },
+
     'string': function (test) {
         var f = this.fields.string();
         test.strictEqual(f.parse(123), '123');

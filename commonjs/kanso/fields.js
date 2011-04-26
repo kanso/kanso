@@ -418,12 +418,20 @@ EmbeddedList.prototype.authorize = function (nDoc, oDoc, nVal, oVal, user) {
 
     nVal = nVal || [];
     oVal = oVal || [];
-    var maxlen = Math.max(nVal.length, oVal.length);
-    return _.reduce(_.range(maxlen), function (errs, i) {
+
+    // a unique list of embedded ids from both the old and new document
+    var ids = _.uniq(_.pluck(nVal, '_id').concat(_.pluck(oVal, '_id')));
+
+    return _.reduce(ids, function (errs, id, i) {
 
         var curr_errs = [];
-        var nd = nVal[i] || {_deleted: true};
-        var od = oVal[i];
+        var nd = _.detect(nVal, function (v) {
+            return v && v._id === id;
+        });
+        nd = nd || {_deleted: true};
+        var od = _.detect(oVal, function (v) {
+            return v && v._id === id;
+        });
         var args = [nDoc, oDoc, nd, od, user];
 
         if (_.isFunction(perms)) {
