@@ -2475,6 +2475,193 @@ usernameMatchesField(['meta','creator'])
       <div class="returns"><strong>Returns:</strong> Function</div>
 
 
+      <h3 id="widgets">Widgets</h3>
+      <p>
+        Widgets define the way a Field object is displayed when rendered as part of a
+        Form. Changing a Field's widget will be reflected in the admin app.
+      </p>
+
+      <h4 id="widgets_Widget">
+        widgets.Widget(type, options)
+      </h4>
+      <p>
+        Widget constructor, creates a new Widget object.
+      </p>
+
+      <div class="constructor">constructor</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>type</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h5>Options:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>classes</th>
+            <td class="type">Array</td>
+            <td class="description">classes to add to the HTML element</td>
+          </tr>
+          <tr>
+            <th>id</th>
+            <td class="type">String</td>
+            <td class="description">id to use for the HTML element</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Widget Object</div>
+
+      <h4 id="widgets_Widget_toHTML">
+        Widget.toHTML(name, value, raw)
+      </h4>
+      <p>
+        Converts a widget to HTML using the provided name and parsed and raw values
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>name</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>value</th>
+          </tr>
+          <tr>
+            <th>raw</th>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> String</div>
+
+      <h4 id="widgets_text">
+        widgets.text(options)
+      </h4>
+      <p>
+        Creates a new text input widget.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Widget Object</div>
+
+      <h4 id="widgets_password">
+        widgets.password(options)
+      </h4>
+      <p>
+        Creates a new password input widget.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Widget Object</div>
+
+      <h4 id="widgets_hidden">
+        widgets.hidden(options)
+      </h4>
+      <p>
+        Creates a new hidden input widget.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Widget Object</div>
+
+      <h4 id="widgets_textarea">
+        widgets.textarea(options)
+      </h4>
+      <p>
+        Creates a new textarea input widget.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Widget Object</div>
+
+      <h4 id="widgets_checkbox">
+        widgets.checkbox(options)
+      </h4>
+      <p>
+        Creates a new checkboxinput widget.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Widget Object</div>
+
+      <h4 id="widgets_select">
+        widgets.select(options)
+      </h4>
+      <p>
+        Creates a new select input widget.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Widget Object</div>
+
+
       <h2 id="commands">Commands</h2>
       <p>
         Typing 'kanso' with no arguments will present you with a list of available
