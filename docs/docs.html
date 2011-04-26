@@ -1818,6 +1818,49 @@ usernameMatchesField(['meta','creator'])
         </tbody>
       </table>
 
+      <h3 id="templates">Templates</h3>
+      <p>
+        Kanso uses Dust templates for rendering pages.
+        To learn more about the syntax, see the
+        <a href="http://akdubya.github.com/dustjs/">Dust site</a>.
+      </p>
+      <p>
+        Since Dust stores compiled templates on the module itself, the
+        templates module does some interesting things to work around the lack
+        of a module cache in CouchDB. Because of this, compiled templates are
+        automatically added to this module from your templates folder each time
+        your app is pushed to CouchDB. You can see a list of the loaded template
+        names on the 'loaded' property of this module.
+      </p>
+
+      <h4 id="templates_render">
+        templates.render(name, req, context)
+      </h4>
+      <p>
+        Synchronously render dust template and return result, automatically adding
+        baseURL to the template's context. The request object is required so we
+        can determine the value of baseURL.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>name</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>req</th>
+            <td class="type">Request Object</td>
+          </tr>
+          <tr>
+            <th>context</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> String</div>
 
       <h2 id="commands">Commands</h2>
       <p>

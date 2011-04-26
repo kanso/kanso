@@ -18,6 +18,19 @@
  * For the code that generates the rest of this file, see: lib/templates.js
  */
 
+/**
+ * Kanso uses Dust templates for rendering pages.
+ * To learn more about the syntax, see the
+ * <a href="http://akdubya.github.com/dustjs/">Dust site</a>.
+ *
+ * Since Dust stores compiled templates on the module itself, the
+ * templates module does some interesting things to work around the lack
+ * of a module cache in CouchDB. Because of this, compiled templates are
+ * automatically added to this module from your templates folder each time
+ * your app is pushed to CouchDB. You can see a list of the loaded template
+ * names on the 'loaded' property of this module.
+ */
+
 
 /**
  * Module dependencies
