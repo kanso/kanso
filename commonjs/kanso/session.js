@@ -28,7 +28,7 @@ exports.fakeRequest = function (userCtx, callback) {
         callback(null, {
             userCtx: userCtx,
             uuid: uuid,
-            method: 'GEt',
+            method: 'GET',
             query: {},
             headers: {},
             path: ['_session'],

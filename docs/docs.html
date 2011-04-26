@@ -99,6 +99,11 @@
       </p>
 
       <h2 id="modules">Modules</h2>
+      <p>
+        Documentation for the builtin CommonJS modules distributed as part of
+        Kanso. All modules in this section can be used in your own code by doing:
+        <code>require('kanso/&lt;name&gt;')</code>.
+      </p>
 
       <h3 id="cookies">Cookies</h3>
       <p>Functions related to the reading and manipulation of cookies.</p>
@@ -1662,6 +1667,156 @@ usernameMatchesField(['meta','creator'])
       </table>
 
       <div class="returns"><strong>Returns:</strong> Function</div>
+
+
+      <h3 id="session">Session</h3>
+      <p>
+        Functions related to the management of user sessions and account information.
+      </p>
+
+      <h4 id="session_fakeRequest">
+        session.fakeRequest(userCtx, callback)
+      </h4>
+      <p>
+        Creates a fake request to /_session to pass to sessionChange, useful
+        when using functions such as templates.render
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>userCtx</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="session_sessionChange">
+        session.sessionChange(userCtx, callback)
+      </h4>
+      <p>
+        Calls sessionChange if exported from the currently loaded app.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>userCtx</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="session_logout">
+        session.logout(callback)
+      </h4>
+      <p>
+        Logs out the current user.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="session_login">
+        session.login(username, password, callback)
+      </h4>
+      <p>
+        Attempt to login using the username and password provided.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>username</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>password</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="session_info">
+        session.info(callback)
+      </h4>
+      <p>
+        Returns the current user's session information.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="session_userDb">
+        session.userDb(callback)
+      </h4>
+      <p>
+        Returns the authentication database for the current user's session.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="session_signup">
+        session.signup(username, password, callback)
+      </h4>
+      <p>
+        Creates a new user document with given username and password.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>username</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>password</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
 
 
       <h2 id="commands">Commands</h2>
