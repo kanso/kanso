@@ -1,15 +1,35 @@
 /*global unescape: false */
 
 /**
+ * Flash messages help you store state between requests, perhaps to report a
+ * successful or failed operation after a redirect.
+ *
+ * The flash message implementation in this module handles both fallback couchdb
+ * mode, using cookies to persist state between requests, as well as supporting
+ * client-side operation, correctly handling new messages even inside the
+ * callbacks of async functions.
+ *
  * Flash messages only persist for the next request or the next template render!
  * That means 2 redirects without explicitly currying the flash messages will
  * cause the messages to be lost.
+ */
+
+/**
+ * Module dependencies
  */
 
 var utils = require('./utils'),
     cookies = require('./cookies'),
     _ = require('./underscore');
 
+
+/**
+ * Reads the flash messages cookie from a request object, returning an
+ * array of incoming messages.
+ *
+ * @param {Object} req
+ * @returns {Array}
+ */
 
 exports.readRequestCookie = function (req) {
     var cookie = req.cookie._kanso_flash;
@@ -21,6 +41,13 @@ exports.readRequestCookie = function (req) {
     });
 };
 
+/**
+ * Reads the flash messages cookie from the browser, returning an
+ * array of incoming messages.
+ *
+ * @returns {Array}
+ */
+
 exports.readBrowserCookie = function () {
     var cookie = cookies.readBrowserCookie('_kanso_flash');
     var messages = cookie ? JSON.parse(unescape(cookie)): [];
@@ -30,6 +57,14 @@ exports.readBrowserCookie = function () {
         return val;
     });
 };
+
+/**
+ * Adds a flash_messages property to a request containing all incoming
+ * messages.
+ *
+ * @param {Object} req
+ * @returns {Request Object}
+ */
 
 exports.updateRequest = function (req) {
     var messages = exports.readRequestCookie(req);
@@ -41,6 +76,14 @@ exports.updateRequest = function (req) {
     return req;
 };
 
+/**
+ * Get's all current flash messages, stopping them from being outgoing on the
+ * next request so they're not repeated.
+ *
+ * @param {Object} req
+ * @returns {Array}
+ */
+
 exports.getMessages = function (req) {
     if (utils.isBrowser) {
         // also remove any messages from this request already set in the cookie
@@ -49,8 +92,6 @@ exports.getMessages = function (req) {
             return val.req !== req.uuid;
         });
         if (bmessages.length !== cookie_messages.length) {
-            //console.log('removing cookies for this request:');
-            //console.log(bmessages);
             exports.setBrowserCookie(req, bmessages);
         }
     }
@@ -66,11 +107,29 @@ exports.getMessages = function (req) {
     });
 };
 
+/**
+ * Filters all available messages on a request object, returning only those
+ * flagged as outgoing (sending in the response to be made available to the next
+ * request).
+ *
+ * @param {Object} req
+ * @returns {Array}
+ */
+
 exports.getOutgoingMessages = function (req) {
     return _.filter(req.flash_messages, function (val) {
         return val.outgoing;
     });
 };
+
+/**
+ * Updates a response object after a list, show or update function has returned,
+ * setting the flash messages cookie to include the outgoing messages.
+ *
+ * @param {Object} req
+ * @param {Object} res
+ * @returns {Response Object}
+ */
 
 exports.updateResponse = function (req, res) {
     var messages = _.map(exports.getOutgoingMessages(req), function (val) {
@@ -78,8 +137,6 @@ exports.updateResponse = function (req, res) {
         delete val.incoming;
         return val;
     });
-    //console.log('flashmessages.updateResponse');
-    //console.log(messages);
     if (req.response_received) {
         exports.setBrowserCookie(req, messages);
     }
@@ -92,6 +149,14 @@ exports.updateResponse = function (req, res) {
     return res;
 };
 
+/**
+ * Creates a new flash message object, associating it with the given request.
+ *
+ * @param {Object} req
+ * @param {String} msg
+ * @returns {Object}
+ */
+
 exports.createMessage = function (req, msg) {
     return {
         req: req.uuid,
@@ -99,18 +164,30 @@ exports.createMessage = function (req, msg) {
     };
 };
 
+/**
+ * Stores a list of messages in the flash messages cookie. This function is for
+ * client-side use.
+ *
+ * @param {Object} req
+ * @param {Array} messages
+ */
+
 exports.setBrowserCookie = function (req, messages) {
-    //console.log('flashmessages.setBrowserCookie');
-    //console.log(messages);
     cookies.setBrowserCookie(req, {
         name: '_kanso_flash',
         value: JSON.stringify(messages)
     });
 };
 
-// store new messages on the request until the response is sent later,
-// since we don't know the response object until the list / show / update
-// function has returned.
+/**
+ * Adds a new flash message for the current request. If the list, show or update
+ * function has not returned, it's added to the response Set-Cookie header,
+ * otherwise (if its the result of a client-side async operation) it's added
+ * directly to the browsers cookies.
+ *
+ * @param {Object} req
+ * @param {String} msg
+ */
 
 exports.addMessage = function (req, msg) {
     if (!req.flash_messages) {
