@@ -28,7 +28,69 @@
 
 
       <h2 id="configuration">Configuration</h2>
+      <p>
+        Project configuration options can be added to the <code>kanso.json</code>
+        file in your project directory.
+      </p>
+      <ul>
+        <li><strong>name</strong> (String) - the name of the design document</li>
+        <li><strong>load</strong> (String) - the module to get design doc properties from</li>
+        <li><strong>modules</strong> (String/Array) - files and directories to load as commonjs modules</li>
+        <li><strong>templates</strong> (String) - templates directory to load templates from</li>
+        <li><strong>attachments</strong> (String/Array) - files and directories to load as attachments</li>
+      </ul>
+      <h3>Example config</h3>
+    <pre><code class="javascript">{
+    "name": "myblog",
+    "load": "lib/app",
+    "modules": "lib",
+    "templates": "templates",
+    "attachments": "static"
+}</code></pre>
+
       <h2 id="app_format">App format</h2>
+      <p>
+        The format of the loaded module (usually lib/app.js, depending on the "load"
+        setting in kanso.json) follows the format of a CouchDB design doc. Any
+        exported property of this module will be added to the design doc generated
+        for your app.
+      </p>
+      <p>
+        Kanso will occasionally extend the default design doc API by adding some
+        additional properties which have a special meaning.
+      </p>
+      <h3 id="app_format_init">Init</h3>
+      <p>
+        The 'init' property is expected to be a function, and will be called on the
+        initial page load, once the document is ready and the commonjs environment is
+        available.
+      </p>
+      <p>
+        This property is optional and can be safely omitted. If you want to
+        progressively enhance a fallback page returned by CouchDB on the first hit,
+        or initialize some application state, this is the place to do it.
+      </p>
+      <pre><code class="javascript">exports.init = function () {
+    alert('initializing app');
+};</code></pre>
+      <h3 id="app_format_types">Types</h3>
+      <p>
+        The 'types' property is used by the admin app to find types to show in the
+        applications types list. It is also assumed to be the location of any
+        custom types by the skeleton app's validation function.
+      </p>
+      <p>
+        It's a good idea to export your type definitions on this property to make
+        them easy to re-use and compatible with the admin app.
+      </p>
+      <pre><code class="javascript">exports.types = {
+    example: new Type('example', {
+        fields: {
+            title: fields.string(),
+            message: fields.string()
+        }
+    })
+};</code></pre>
 
       <h2 id="modules">Modules</h2>
 
