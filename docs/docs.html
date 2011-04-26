@@ -104,7 +104,7 @@
         Read cookies currently stored in the browser, returning an object
         keyed by cookie name.
       </p>
-      <div class="returns">Returns: Object</div>
+      <div class="returns"><strong>Returns:</strong> Object</div>
 
       <h4 id="cookies_readBrowserCookie">
         cookies.readBrowserCookie(name)
@@ -112,13 +112,18 @@
       <p>
         Reads browser cookies and returned the value of the named cookie.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>name (String)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns: String</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>name</th>
+            <td class="type">String</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> String</div>
 
       <h4 id="cookies_cookieString">
         cookies.cookieString(req, opt)
@@ -126,14 +131,22 @@
       <p>
         Creates a string for storing a cookie on the browser.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>req (Request Object)</li>
-          <li>opt (Object)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns: String</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Request Object</td>
+          </tr>
+          <tr>
+            <th>opt</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> String</div>
 
       <h4 id="cookies_setBrowserCookie">
         cookies.setBrowserCookie(req, opt)
@@ -141,13 +154,20 @@
       <p>
         Sets a cookie on the browser, for use client-side only.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>req (Request Object)</li>
-          <li>opt (Object)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Request Object</td>
+          </tr>
+          <tr>
+            <th>opt</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="cookies_setResponseCookie">
         cookies.setResponseCookie(req, res, opt)
@@ -155,14 +175,24 @@
       <p>
         Creates a Set-Cookie header on a response object.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>req (Request Object)</li>
-          <li>res (Response Object)</li>
-          <li>opt (Object)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Request Object</td>
+          </tr>
+          <tr>
+            <th>res</th>
+            <td class="type">Response Object</td>
+          </tr>
+          <tr>
+            <th>opt</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
 
 
       <h3 id="core">Core</h3>
@@ -185,39 +215,63 @@
       </h4>
       <p>Extracts groups from a url, eg:</p>
       <pre>'/some/path' with pattern '/some/:name' -&gt; {name: 'path'}</pre>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>pattern (String)</li>
-          <li>url (String)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns: Object</div>
 
-    <h4 id="core_rewriteSplat">core.rewriteSplat(pattern, url)</h4>
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>pattern</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>url</th>
+            <td class="type">String</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Object</div>
+
+      <h4 id="core_rewriteSplat">core.rewriteSplat(pattern, url)</h4>
       <p>Extracts a splat value from a rewrite pattern and matching URL.</p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>pattern (String)</li>
-          <li>url (String)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns: String</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>pattern</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>url</th>
+            <td class="type">String</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> String</div>
 
       <h4 id="core_matchURL">core.matchURL(method, url)</h4>
       <p>
         Attempts to match rewrite from patterns to a URL, returning the
         matching rewrite object if successful.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>method (String)</li>
-          <li>url (String)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns: Object</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>method</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>url</th>
+            <td class="type">String</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Object</div>
 
       <h4 id="core_replaceGroups">core.replaceGroups(val, groups, splat)</h4>
       <p>
@@ -225,15 +279,26 @@
         or splat, eg:
       </p>
       <pre>"/:name" with groups {name: 'test'} -&gt; "/test"</pre>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>val (String)</li>
-          <li>groups (Object)</li>
-          <li>splat (String)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns: String</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>val</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>groups</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>splat</th>
+            <td class="type">String</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> String</div>
 
       <h4 id="core_createRequest">
         core.createRequest(method, url, data, match, callback)
@@ -242,17 +307,34 @@
         Creates a new request object from a url and matching rewrite object.
         Query parameters are automatically populated from rewrite pattern.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>method (String)</li>
-          <li>url (String)</li>
-          <li>data (Object)</li>
-          <li>match (Object)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns via callback: Request Object</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>method</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>url</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>data</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>match</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns via callback:</strong> Request Object</div>
 
       <h4 id="core_runShowBrowser">
         core.runShowBrowser(req, name, docid, callback)
@@ -260,15 +342,28 @@
       <p>
         Fetches the relevant document and calls the named show function.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>req (Object)</li>
-          <li>name (String)</li>
-          <li>docid (String)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>name</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>docid</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="core_runUpdateBrowser">
         core.runUpdateBrowser(req, name, docid, callback)
@@ -276,28 +371,46 @@
       <p>
         Fetches the relevant document and calls the named update function.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>req (Object)</li>
-          <li>name (String)</li>
-          <li>docid (String)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>name</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>docid</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="core_createHead">core.createHead(data)</h4>
       <p>
         Creates a fake head object from view results for passing to a list function
         being run client-side.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>data (Object)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns: Object</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>data</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Object</div>
 
       <h4 id="core_runListBrowser">
         core.runListBrowser(req, name, view, callback)
@@ -305,15 +418,28 @@
       <p>
         Fetches the relevant view and calls the named list function with the results.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>req (Object)</li>
-          <li>name (String)</li>
-          <li>view (String)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>name</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>view</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="core_handle">
         core.handle(method, url, data)
@@ -322,14 +448,24 @@
         Creates a request object for the url and runs appropriate show, list or
         update functions.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>method (String)</li>
-          <li>url (String)</li>
-          <li>data (Object)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>method</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>url</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>data</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="core_setURL">
         core.setURL(method, url, data, hash)
@@ -337,15 +473,30 @@
       <p>
         Add a history entry for the given url, prefixed with the baseURL for the app.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>method (String)</li>
-          <li>url (String)</li>
-          <li>data (optional) (Object)</li>
-          <li>hash (optional) (String)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>method</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>url</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>data</th>
+            <td class="type">Object</td>
+            <td class="description">(Optional)</td>
+          </tr>
+          <tr>
+            <th>hash</th>
+            <td class="type">String</td>
+            <td class="description">(Optional)</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="core_getURL">
         core.getURL()
@@ -353,7 +504,7 @@
       <p>
         Gets the current app-level URL (without baseURL prefix).
       </p>
-      <div class="returns">Returns: String</div>
+      <div class="returns"><strong>Returns:</strong> String</div>
 
       <h4 id="core_sameOrigin">
         core.sameOrigin(a, b)
@@ -362,7 +513,7 @@
         Tests is two urls are of the same origin. Accepts parsed url objects
         or strings as arguments.
       </p>
-      <div class="returns">Returns: Boolean</div>
+      <div class="returns"><strong>Returns:</strong> Boolean</div>
 
       <h4 id="core_appPath">
         core.appPath(p)
@@ -371,13 +522,17 @@
         Converts a full url to an app-level url (without baseURL prefix).
         example: {baseURL}/some/path -&gt; /some/path
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>p (String)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns: String</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>p</th>
+            <td class="type">String</td>
+          </tr>
+        </tbody>
+      </table>
+      <div class="returns"><strong>Returns:</strong> String</div>
 
       <h4 id="core_isAppURL">
         core.isAppURL(url)
@@ -386,13 +541,18 @@
         Used to decide whether to handle a link or not. Should detect app vs.
         external urls.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>url (String)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns: Boolean</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>url</th>
+            <td class="type">String</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Boolean</div>
 
 
 
@@ -406,13 +566,20 @@
         Make a request, with some default settings and proper callback
         handling. Used behind-the-scenes by most other DB module functions.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>options (Object)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="db_getDoc">
         db.getDoc(id, q, callback)
@@ -422,14 +589,24 @@
         passed to the callback, with the first argument of the callback reserved
         for any exceptions that occurred (node.js style).
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>id (String)</li>
-          <li>q (Object)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>id</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>q</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="db_saveDoc">
         db.saveDoc(doc, callback)
@@ -439,13 +616,20 @@
         passed to the callback, with the first argument of the callback reserved
         for any exceptions that occurred (node.js style).
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>doc (Object)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>doc</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="db_removeDoc">
         db.removeDoc(doc, callback)
@@ -455,13 +639,20 @@
         passed to the callback, with the first argument of the callback reserved
         for any exceptions that occurred (node.js style).
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>doc (Object)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>doc</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="db_getView">
         db.getView(view, q, callback)
@@ -471,14 +662,24 @@
         passed to the callback, with the first argument of the callback reserved
         for any exceptions that occurred (node.js style).
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>view (String)</li>
-          <li>q (Object)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>view</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>q</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="db_all">
         db.all(q, callback)
@@ -486,13 +687,21 @@
       <p>
         Get all documents (including design docs).
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>q (optional) (Object)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>q</th>
+            <td class="type">Object</td>
+            <td class="description">(Optional</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h4 id="db_stringifyQuery">
         db.stringifyQuery(query)
@@ -503,13 +712,18 @@
         Returns a shallow-copied clone of the original query after complex values
         have been stringified.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>query (Object)</li>
-        </ul>
-      </div>
-      <div class="returns">Returns: Object</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>query</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Object</div>
 
       <h4 id="db_newUUID">
         db.newUUID(cacheNum, callback)
@@ -518,13 +732,572 @@
         Returns a new UUID generated by CouchDB. Its possible to cache
         multiple UUIDs for later use, to avoid making too many requests.
       </p>
-      <div class="params">
-        Parameters:
-        <ul>
-          <li>cacheNum (optional, default: 1) (Number)</li>
-          <li>callback (Function)</li>
-        </ul>
-      </div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>cacheNum</th>
+            <td class="type">Number</td>
+            <td class="description">(Optional) Default: 1</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h3 id="fields">Fields</h3>
+      <p>
+        The building blocks of Types and Forms, Fields help to validate and authorize
+        changes to docuemnt values.
+      </p>
+
+      <h4 id="fields_Field">
+        forms.Field(options)
+      </h4>
+      <p>
+        Field objects are used when constructing content types and forms.
+      </p>
+      <div class="constructor">Constructor</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">see below for available properties</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h5>Options:</h5>
+      <table class="options">
+        <tbody>
+          <tr>
+            <th>omit_empty</th>
+            <td class="type">Boolean</td>
+            <td class="description">Whether to omit the field from a document when the field is empty</td>
+          </tr>
+          <tr>
+            <th>permissions</th>
+            <td class="type">Object</td>
+            <td class="description">A permissions check function or an object containing separate functions to run on create, edit and update operations.</td>
+          </tr>
+          <tr>
+            <th>validators</th>
+            <td class="type">Array</td>
+            <td class="description">An array of validation functions (default: [])</td>
+          </tr>
+          <tr>
+            <th>required</th>
+            <td class="type">Boolean</td>
+            <td class="description">Whether the field is required (default: true)</td>
+          </td>
+        </tbody>
+      </table>
+      <div class="returns"><strong>Returns:</strong> Field Object</div>
+
+      <h4 id="fields_Field">
+        Field.parse(raw)
+      </h4>
+      <p>
+        Parses a raw value returning the correct JavaScript type for this field.
+        This will usually be overridden by other field types.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>raw</th>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="fields_Field_isEmpty">
+        Field.isEmpty(value, raw)
+      </h4>
+      <p>
+        Test values to see if field is considered empty.
+      </p>
+      <p>
+        This function accepts the raw value even though by default it only
+        checks the parsed value, so that other field types overridding this method
+        have the raw data available.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>value</th>
+            <td class="description">The parsed value for the field</td>
+          </tr>
+          <tr>
+            <th>raw</th>
+            <td class="description">The raw value for the field</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Boolean</div>
+
+      <h4 id="fields_Field_validate">
+        Field.validate(doc, value, raw)
+      </h4>
+      <p>
+        Run the field's validation functions against a value. Returns an
+        array of validation errors, or an empty array if valid.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>doc</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>value</th>
+          </tr>
+          <tr>
+            <th>raw</th>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="fields_Field_authorize">
+        Field.authorize(newDoc, oldDoc, newVal, oldVal, userCtx)
+      </h4>
+      <p>
+        Check relevant field permissions to see if user is authorised to make
+        changes. Returns an array of permissions errors, or an empty array if the
+        changes are permissible.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>newDoc</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>oldDoc</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>newVal</th>
+          </tr>
+          <tr>
+            <th>oldVal</th>
+          </tr>
+          <tr>
+            <th>userCtx</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="fields_Embedded">
+        fields.Embedded(options)
+      </h4>
+      <p>
+        Embedded objects represent a Type embedded within another Type or set of
+        Fields. Its not a true field, but like the Field constructor it acts as a
+        marker when walking through the sub-objects that make up a schema.
+      </p>
+      <p>
+        Exposes the same methods as Field objects.
+      </p>
+
+      <div class="constructor">Constructor</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See below for available properties</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h5>Options:</h5>
+      <table class="options">
+        <tbody>
+          <tr>
+            <th>type</th>
+            <td class="type">Type Object</td>
+            <td class="description"><strong>Required</strong>, the Type definition to embed</td>
+          </tr>
+          <tr>
+            <th>omit_empty</th>
+            <td class="type">Boolean</td>
+            <td class="description">Whether to omit the field from a document when the field is empty</td>
+          </tr>
+          <tr>
+            <th>permissions</th>
+            <td class="type">Object</td>
+            <td class="description">A permissions check function or an object containing separate functions to run on create, edit and update operations.</td>
+          </tr>
+          <tr>
+            <th>validators</th>
+            <td class="type">Array</td>
+            <td class="description">An array of validation functions (default: [])</td>
+          </tr>
+          <tr>
+            <th>required</th>
+            <td class="type">Boolean</td>
+            <td class="description">Whether the field is required (default: true)</td>
+          </td>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Embedded Object</div>
+
+      <h4 id="fields_EmbeddedList">
+        fields.EmbeddedList(options)
+      </h4>
+      <p>
+        EmbeddedList objects represent multiple instances of a Type embedded within
+        another Type or set of Fields. Its not a true field, but like the Field
+        constructor it acts as a marker when walking through the sub-objects that
+        make up a schema.
+      </p>
+      <p>
+        Exposes the same methods as Field objects.
+      </p>
+
+      <div class="constructor">Constructor</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See below for available properties</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h5>Options:</h5>
+      <table class="options">
+        <tbody>
+          <tr>
+            <th>type</th>
+            <td class="type">Type Object</td>
+            <td class="description"><strong>Required</strong>, the Type definition to embed</td>
+          </tr>
+          <tr>
+            <th>omit_empty</th>
+            <td class="type">Boolean</td>
+            <td class="description">Whether to omit the field from a document when the field is empty</td>
+          </tr>
+          <tr>
+            <th>permissions</th>
+            <td class="type">Object</td>
+            <td class="description">A permissions check function or an object containing separate functions to run on create, edit and update operations.</td>
+          </tr>
+          <tr>
+            <th>validators</th>
+            <td class="type">Array</td>
+            <td class="description">An array of validation functions (default: [])</td>
+          </tr>
+          <tr>
+            <th>required</th>
+            <td class="type">Boolean</td>
+            <td class="description">Whether the field is required (default: true)</td>
+          </td>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> EmbeddedList Object</div>
+
+      <h4 id="fields_EmbeddedList_missingIDs">
+        EmbeddedList.missingIDs(list)
+      </h4>
+      <p>
+        Detects embedded documents with missing _id properties and returns an
+        array of Error objects for each occurence. Returns an empty array if
+        all documents have a populated _id property.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>list</th>
+            <td class="type">Array</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="fields_EmbeddedList_duplicateIDs">
+        EmbeddedList.duplicateIDs(list)
+      </h4>
+      <p>
+        Detects embedded documents with duplicate _id properties and returns an
+        array of Error objects for each occurence. Returns an empty array if
+        all documents have a unique _id property.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>list</th>
+            <td class="type">Array</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="fields_string">
+        fields.string(options)
+      </h4>
+      <p>
+        Creates a new string Field
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Field Object</div>
+
+      <h4 id="fields_number">
+        fields.number(options)
+      </h4>
+      <p>
+        Creates a new number Field
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Field Object</div>
+
+      <h4 id="fields_boolean">
+        fields.boolean(options)
+      </h4>
+      <p>
+        Creates a new boolean Field
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Field Object</div>
+
+      <h4 id="fields_url">
+        fields.url(options)
+      </h4>
+      <p>
+        Creates a new URL Field
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Field Object</div>
+
+      <h4 id="fields_email">
+        fields.email(options)
+      </h4>
+      <p>
+        Creates a new email Field
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Field Object</div>
+
+      <h4 id="fields_creator">
+        fields.creator(options)
+      </h4>
+      <p>
+        Creates a new creator Field
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Field Object</div>
+
+      <h4 id="fields_timestamp">
+        fields.timestamp(options)
+      </h4>
+      <p>
+        Creates a new timestamp Field
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Field Object</div>
+
+      <h4 id="fields_choice">
+        fields.choice(options)
+      </h4>
+      <p>
+        Creates a new choice Field
+      </p>
+      <p>
+        <strong>Required option:</strong> values - an array of possible choices, each an array
+        with the first item as the value and the second as its label.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Field Object</div>
+
+      <h4 id="fields_numberChoice">
+        fields.numberChoice(options)
+      </h4>
+      <p>
+        Creates a new numberChoice Field
+      </p>
+      <p>
+        <strong>Required option:</strong> values - an array of possible choices, each an array
+        with the first item as the value and the second as its label.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Field Object</div>
+
+      <h4 id="fields_embed">
+        fields.embed(options)
+      </h4>
+      <p>
+        Creates a new Embedded Field
+      </p>
+      <p>
+        <strong>Required option:</strong> type - the Type definition to embed
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Embedded Object</div>
+
+      <h4 id="fields_embedList">
+        fields.embedList(options)
+      </h4>
+      <p>
+        Creates a new EmbeddedList Field
+      </p>
+      <p>
+        <strong>Required option:</strong> type - the Type definition to embed
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">See the Field constructor for available options</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> EmbeddedList Object</div>
 
 
       <h2 id="commands">Commands</h2>

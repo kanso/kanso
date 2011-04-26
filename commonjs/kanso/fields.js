@@ -69,6 +69,7 @@ Field.prototype.parse = function (raw) {
  *
  * @param value - the parsed value for the field
  * @param raw - the raw value for this field
+ * @returns {Boolean}
  * @api public
  */
 
@@ -154,6 +155,18 @@ Field.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, userCtx) {
  * Embedded objects represent a Type embedded within another Type or set of
  * Fields. Its not a true field, but like the Field constructor it acts as a
  * marker when walking through the sub-objects that make up a schema.
+ *
+ * Exposes the same methods as Field objects.
+ *
+ * Options:
+ *   type        {Type Object}  - Required, the Type definition to embed
+ *   omit_empty  {Boolean} - whether to omit the field from a document when
+ *                           the field is empty
+ *   permissions {Object}  - a permissions check function or an object
+ *                           containing separate functions to run on create,
+ *                           edit and update operations.
+ *   validators  {Array}   - an array of validation functions (default: [])
+ *   required    {Boolean} - whether the field is required (default: true)
  *
  * @param {Object} options
  * @constructor
@@ -241,6 +254,18 @@ Embedded.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, user) {
  * another Type or set of Fields. Its not a true field, but like the Field
  * constructor it acts as a marker when walking through the sub-objects that
  * make up a schema.
+ *
+ * Exposes the same methods as Field objects.
+ *
+ * Options:
+ *   type        {Type Object}  - Required, the Type definition to embed
+ *   omit_empty  {Boolean} - whether to omit the field from a document when
+ *                           the field is empty
+ *   permissions {Object}  - a permissions check function or an object
+ *                           containing separate functions to run on create,
+ *                           edit and update operations.
+ *   validators  {Array}   - an array of validation functions (default: [])
+ *   required    {Boolean} - whether the field is required (default: true)
  *
  * @param {Object} options
  * @constructor
@@ -654,7 +679,9 @@ exports.numberChoice = function (options) {
 
 
 /**
- * Creates an Embed Field
+ * Creates an Embedded Field
+ *
+ * Required option: type - the Type definition to embed
  *
  * @param {Object} options
  * @api public
@@ -666,7 +693,9 @@ exports.embed = function (options) {
 
 
 /**
- * Creates an EmbedList Field
+ * Creates an EmbeddedList Field
+ *
+ * Required option: type - the Type definition to embed
  *
  * @param {Object} options
  * @api public
