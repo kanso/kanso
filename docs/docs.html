@@ -1508,6 +1508,162 @@
       </table>
 
 
+      <h3 id="permissions">Permissions</h3>
+      <p>
+        Used on both Fields and Types to check a given user is authorized to make
+        a change to a document.
+      </p>
+
+      <h4 id="permissions_matchUsername">
+        permissions.matchUsername()
+      </h4>
+      <p>
+        Field's new value should match current user's name
+      </p>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="permissions_hasRole">
+        permissions.hasRole(role)
+      </h4>
+      <p>
+        Checks if the user has a specific role
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>role</th>
+            <td class="type">String</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="permissions_fieldUneditable">
+        permissions.fieldUneditable()
+      </h4>
+      <p>
+        The value of this field should never change after the document has been
+        created.
+      </p>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="permissions_usernameMatchesField">
+        permissions.usernameMatchesField(path)
+      </h4>
+      <p>
+        User's name should match the *old* value of the given field. A field can be
+        specified using a string or an array of strings (like a path), eg:
+      </p>
+      <pre>usernameMatchesField('creator')
+usernameMatchesField(['meta','creator'])
+ 
+{
+    creator: 'name',
+    meta: {creator: 'name2'}
+}</pre>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>path</th>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="permissions_loggedIn">
+        permissions.loggedIn()
+      </h4>
+      <p>
+        Checks that user's context has a username
+      </p>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="permissions_all">
+        permissions.all(perms)
+      </h4>
+      <p>
+        Runs an array of permissions functions and checks that all of them pass,
+        returning all failures.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>perms</th>
+            <td class="type">Array</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="permissions_any">
+        permissions.any(perms)
+      </h4>
+      <p>
+        Tests to see if any one permission function passes, returning on the
+        first success. If all permissions fail, then all errors are returned.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>perms</th>
+            <td class="type">Array</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="permissions_inherit">
+        permissions.inherit(type)
+      </h4>
+      <p>
+        Treat new and old values like new documents of a given type, and attempt to
+        authorize the value against the type's permissions. Useful when handling 
+        permissions for an embedded type.
+      </p>
+      <p>
+        Can be combined with permissions.any or permissions.all to extend the
+        permissions for an embedded type field. For example, the following might
+        allow both the owner of the parent document and the owner of the comment
+        itself to remove it.
+      </p>
+      <pre><code class="javascript">comment: fields.embed({
+    type: types.comment,
+    permissions: {
+        remove: permissions.any([
+            permissions.usernameMatchesField('creator'),
+            permissions.inherit(types.comment)
+        ])
+    }
+});</code></pre>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>type</th>
+            <td class="type">Type Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+
       <h2 id="commands">Commands</h2>
       <p>
         Typing 'kanso' with no arguments will present you with a list of available

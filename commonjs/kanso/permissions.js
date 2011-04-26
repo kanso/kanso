@@ -119,6 +119,7 @@ exports.loggedIn = function () {
  * returning all failures.
  *
  * @param {Array} perms
+ * @return {Function}
  * @api public
  */
 
@@ -162,7 +163,23 @@ exports.any = function (perms) {
 
 /**
  * Treat new and old values like new documents of a given type, and attempt to
- * authorize the value against the type's permissions.
+ * authorize the value against the type's permissions. Useful when handling
+ * permissions for an embedded type.
+ *
+ * Can be combined with permissions.any or permissions.all to extend the
+ * permissions for an embedded type field. For example, the following might
+ * allow both the owner of the parent document and the owner of the comment
+ * itself to remove it.
+ *
+ *     comment: fields.embed({
+ *         type: types.comment,
+ *         permissions: {
+ *             remove: permissions.any([
+ *                 permissions.usernameMatchesField('creator'),
+ *                 permissions.inherit(types.comment)
+ *             ])
+ *         }
+ *     });
  *
  * @param {Type} type
  * @api public
