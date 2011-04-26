@@ -1,6 +1,11 @@
 /*global $: false, kanso: true */
 
 /**
+ * Contains functions for querying and storing data in CouchDB.
+ */
+
+
+/**
  * Module dependencies
  */
 
@@ -66,7 +71,7 @@ function onComplete(callback) {
 
 /**
  * Make a request, with some default settings and proper callback
- * handling.
+ * handling. Used behind-the-scenes by most other DB module functions.
  *
  * @param {Object} options
  * @param {Function} callback
