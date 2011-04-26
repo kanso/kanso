@@ -1,0 +1,295 @@
+body {
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
+    background-image: url(../images/bg.png);
+    line-height: 1.618em;
+    font-size: 14px;
+    color: #292626;
+}
+
+/* remove dotted border in FF and IE */
+*:focus { outline: 0; }
+*:focus { outline: none; }
+*::-moz-focus-inner { border: none;}
+
+h1 {
+    font-family: 'Helvetica Neue', 'Helvetica', Arial, FreeSans, sans-serif;
+    line-height: 1.236em;
+    font-size: 2.618em;
+    font-weight: normal;
+    color: black;
+    margin: 0 0 -0.382em 0;
+    text-shadow: 0 1px 0 white;
+}
+p {
+    margin: 2em 0;
+    padding: 0;
+}
+a {
+    text-decoration: none;
+    background-color: #D6CDA0;
+    padding: 0.263em;
+    color: black;
+}
+a:hover {
+    background-color: #96896F;
+    color: white;
+}
+a img {
+    border: none;
+}
+a.call {
+    background: red;
+    padding: 0.618em 2.618em;
+    color: white;
+    text-decoration: none;
+    font-weight: bold;
+    border-bottom: 1px solid #B40406;
+    border-right: 1px solid #B40406;
+    text-shadow: 0px -1px -1px #B40406;
+}
+a.call:hover {
+    background: #DD0003;
+}
+div.next {
+    margin: 4.236em 0;
+}
+ul {
+    line-height: 2.618em;
+}
+h2, h3 {
+    color: black;
+    margin: 2.618em 0 1em 0;
+    text-shadow: 0 1px 0 white;
+}
+/*h2 {
+    font-size: 1.618em;
+    font-weight: bold;
+}*/
+h2 {
+    font-size: 1.236em;
+    font-weight: bold;
+}
+h3 {
+    font-size: 1em;
+    font-weight: bold;
+}
+h2, h3, h4 {
+    position: relative;
+    top: -4.236em;
+    padding-top: 4.236em;
+    margin-bottom: -4.236em;
+}
+h2 a,
+h2 a:hover,
+h3 a,
+h3 a:hover,
+h4 a,
+h4 a:hover {
+    text-decoration: none;
+    padding: 0;
+    color: black;
+    background: none;
+}
+pre {
+    font-family: 'Monospace', monospace !important;
+    color: black;
+    background: white;
+    font-size: 12px;
+    border: dashed 1px #D6CDA0;
+    border-left: 0.382em solid #D6CDA0;
+    padding: 1.618em 2.618em;
+    margin: 2.618em 0;
+    box-shadow: 0 2px 10px #DFDFDF;
+}
+code {
+    background-color: white !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+img {
+    box-shadow: 0 2px 10px #DFDFDF;
+}
+
+
+
+
+#sitename {
+    z-index: 3;
+    padding: 0;
+    background: none;
+    position: absolute;
+    left: 148px;
+    top: 0;
+}
+#sitename img {
+    box-shadow: none;
+}
+#container {
+    padding: 0;
+    margin: 91px 25px 0 388px;
+    width: 587px;
+}
+#topbar {
+    height: 46px;
+    width: 100%;
+    background: black;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+#topbar_overlay {
+    opacity: 0.75;
+    height: 46px;
+    width: 100%;
+    background: black;
+    margin: 0;
+    padding: 0;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 1;
+}
+#navigation {
+    z-index: 2;
+    position: fixed;
+    top: 6px;
+    right: 148px;
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}
+#navigation li {
+    display: inline;
+    margin: 0;
+    padding: 0;
+    color: white;
+}
+#navigation li a {
+    padding: 0.618em 1.618em;
+    background: none;
+    text-decoration: none;
+    font-weight: normal;
+    color: white;
+}
+#navigation li a.selected {
+    padding: 0.618em 1.618em;
+    text-decoration: none;
+    font-weight: bold;
+    color: white;
+}
+#navigation li a:visited {
+    color: white;
+}
+#navigation li a:hover {
+    text-decoration: underline;
+}
+#navigation li a.selected:hover {
+    text-decoration: none;
+}
+.index {
+    margin: 1.618em 0;
+    padding: 0 0 0 1.618em;
+    list-style-type: none;
+    padding: 0;
+}
+.index li {
+    margin: 0.146em 0;
+    padding: 0;
+    display: inline;
+}
+
+#docs h1 {
+    padding-bottom: 0.326em;
+}
+
+#sidenav {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+    position: absolute;
+    left: 160px;
+    top: 204px;
+    margin-top: 46px;
+    line-height: 1.5;
+    width: 155px;
+}
+
+#sidenav li {
+    padding: 0;
+    margin: 0;
+}
+
+#sidenav li a {
+    color: #666;
+    background: none;
+    padding: 0;
+    margin: 0;
+    padding: 0.618em;
+    width: 100%;
+    height: 100%;
+    display: block;
+}
+#sidenav li a:hover {
+    color: #222;
+}
+
+#sidenav li.active a {
+    color: #000;
+    font-weight: bold;
+}
+
+#sidenav li ul {
+    list-style-type: none;
+    margin: 0 0 1em 0;
+    padding: 0 1.618em;
+    font-size: 0.8em;
+    line-height: 1em;
+    display: none;
+}
+
+#sidenav li.active ul {
+    display: block;
+}
+
+#sidenav li.active ul li a {
+    font-weight: normal !important;
+}
+#sidenav li.active ul li.active a {
+    font-weight: bold !important;
+}
+
+.params, .returns, .options, .constructor, h5 {
+    font-size: 0.8em;
+    margin-bottom: 2.618em;
+}
+
+h5 {
+    font-weight: bold;
+    padding: 0;
+    margin: 0 0 1em 0;
+}
+
+.constructor {
+    font-weight: bold;
+}
+
+table.params,
+table.options {
+    text-align: left;
+}
+
+table.params th,
+table.params td,
+table.options th,
+table.options td {
+    vertical-align: top;
+    padding: 0.5em 1em;
+}
+
+table.params .type,
+table.options .type {
+    font-style: italic;
+}

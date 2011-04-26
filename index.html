@@ -1,0 +1,63 @@
+<html>
+<head>
+  <title>Kanso</title>
+  <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+  <link rel="stylesheet" href="stylesheets/kanso.css" />
+</head>
+<body>
+  <div id="topbar"></div>
+  <div id="topbar_overlay"></div>
+  <div id="container">
+
+    <ul id="navigation">
+      <li><a class="selected" href="index.html">Intro</a></li>
+      <li><a href="tutorial.html">Tutorial</a></li>
+      <li><a href="docs.html">Docs</a></li>
+      <li><a href="https://github.com/caolan/kanso">Code &rArr;</a></li>
+    </ul>
+
+    <a id="sitename" href="index.html">
+      <img src="images/kanso_ribbon.png" />
+    </a>
+
+    <h1>What is Kanso?</h1>
+
+    <h2>Future of web-apps</h2>
+    <p>
+      Modern web development increasingly means pushing more logic onto the client.
+      This provides us with fast and responsive interfaces, but not without cost.
+      When grafted onto traditional web-frameworks, rich interfaces require the
+      complete re-implementation of features on both the server and client-side.
+      Form validation, Templating and URL routing must either be handled at both
+      ends or become fragile and insecure.
+    </p>
+    <p>
+      What's needed is a harmonious environment which shares code between the
+      browser and server, without 'breaking the web'. Search engines and
+      other users should still have access to key content, even if we accept a
+      less featureful experience. This is the problem Kanso was designed to
+      solve, by implementing CouchDB's design doc API in the browser.
+    </p>
+
+    <div class="next">
+      <a class="call" href="tutorial.html">Start the tutorial</a>
+      or <a href="https://github.com/caolan/kanso">watch on GitHub</a>
+    </div>
+
+  <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+  <script>hljs.initHighlightingOnLoad();</script>
+  <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-20477836-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+</body>
+</html>
