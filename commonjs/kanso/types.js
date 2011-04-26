@@ -246,6 +246,14 @@ Type.prototype.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path) {
     }, []);
 };
 
+/**
+ * Create's a new object for this Type. Pre-filling any default values and
+ * providing a new _id value. This is a convenient funciton to use when creating
+ * a type to embed within another.
+ *
+ * @param {Object} userCtx
+ * @param {Function} callback
+ */
 
 Type.prototype.create = function (userCtx, callback) {
     var doc = fieldset.createDefaults(this.fields, userCtx);
@@ -257,6 +265,19 @@ Type.prototype.create = function (userCtx, callback) {
         callback(null, doc);
     });
 };
+
+/**
+ * Calls validation and permissions functions relevant to a document update.
+ * This should be called from your app's exported validate_doc_update function
+ * if you wish to use kanso Types in you project.
+ *
+ * Throws on error.
+ *
+ * @param {Object} types
+ * @param {Object} newDoc
+ * @param {Object} oldDoc
+ * @param {Object} userCtx
+ */
 
 exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
     var type = (oldDoc && oldDoc.type) || newDoc.type;
