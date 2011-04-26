@@ -1,6 +1,11 @@
 /*global window: false */
 
 /**
+ * General utility functions used by Kanso. Some functions were moved here from
+ * other modules (such as core), to avoid a circular dependency bug in CouchDB.
+ */
+
+/**
  * Module dependencies
  */
 

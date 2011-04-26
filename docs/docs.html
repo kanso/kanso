@@ -2128,6 +2128,167 @@ usernameMatchesField(['meta','creator'])
         </tbody>
       </table>
 
+      <h3 id="utils">Utils</h3>
+      <p>
+        General utility functions used by Kanso. Some functions were moved here from
+        other modules (such as core), to avoid a circular dependency bug in CouchDB.
+      </p>
+
+      <h4 id="utils_properties">Utils properties</h4>
+      <p>
+        The utils module exports some useful properties you may want to use inside
+        your own functions:
+      </p>
+
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>isBrowser</th>
+            <td class="type">Boolean</td>
+            <td class="description">whether or not the current code is running in the browser (not in CouchDB)</td>
+          </tr>
+          <tr>
+            <th>initial_hit</th>
+            <td class="type">Boolean</td>
+            <td class="description">set to true when the page is first loaded from CouchDB</td>
+          </tr>
+          <tr>
+            <th>userCtx</th>
+            <td class="type">Object</td>
+            <td class="description">stores cached user context information (username etc)</td>
+          </tr>
+          <tr>
+            <th>session</th>
+            <td class="type">Object</td>
+            <td class="description">stores cached extended user session info</td>
+          </tr>
+        </tbody>
+      </table>
+
+
+      <h4 id="utils_getBaseURL">
+        utils.getBaseURL(req)
+      </h4>
+      <p>
+        Returns the path to prefix to any URLs. When running behind a
+        virtual host, there is nothing to prefix URLs with. When accessing the
+        app directly, URLs need to be prefixed with /db/_design/appname/_rewrite.
+      </p>
+      <p>
+        The request object argument is only required when run server-side.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>req</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> String</div>
+
+      <h4 id="utils_getPropertyPath">
+        utils.getPropertyPath(obj, path)
+      </h4>
+      <p>
+        Traverses an object and its sub-objects using an array of property names.
+        Returns the value of the matched path, or undefined if the property does not
+        exist.
+      </p>
+      <pre>getPropertyPath({a: {b: 'foo'}}, ['a','b']) -&gt; 'foo'</pre>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>obj</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>path</th>
+            <td class="type">Array</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="utils_setPropertyPath">
+        utils.setPropertyPath(obj, path, val)
+      </h4>
+      <p>
+        Traverses an object and its sub-objects using an array of property names.
+        Sets the value of the matched property.
+      </p>
+      <pre>setPropertyPath({}, ['a','b'], 'foo') -&gt; {a: {b: 'foo'}}</pre>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>obj</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>path</th>
+            <td class="type">Array</td>
+          </tr>
+          <tr>
+            <th>val</th>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="utils_constructorName">
+        utils.constructorName(obj)
+      </h4>
+      <p>
+        Returns the name of the constructor function for an object. This is used
+        as a workaround for CouchDB's lack of a module cache, where instanceof checks
+        can break if a module is re-eval'd.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>obj</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> String</div>
+
+      <h4 id="utils_getErrors">
+        utils.getErrors(fn, args)
+      </h4>
+      <p>
+        Call function with arguments, catch any errors and add to an array,
+        returning the modified array.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>arr</th>
+            <td class="type">Array</td>
+          </tr>
+          <tr>
+            <th>fn</th>
+            <td class="type">Function</td>
+          </tr>
+          <tr>
+            <th>args</th>
+            <td class="type">Array</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+      
 
       <h2 id="commands">Commands</h2>
       <p>
