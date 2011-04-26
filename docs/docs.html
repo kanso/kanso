@@ -2288,7 +2288,192 @@ usernameMatchesField(['meta','creator'])
       </table>
 
       <div class="returns"><strong>Returns:</strong> Array</div>
+
+
+      <h3 id="validators">Validators</h3>
+      <p>
+        Validation functions used to validate Field contents.
+      </p>
       
+      <h4 id="validators_min">
+        validators.min(min)
+      </h4>
+      <p>
+        Tests that the field's value is greater than 'min'.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>min</th>
+            <td class="type">Number</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="validators_max">
+        validators.max(max)
+      </h4>
+      <p>
+        Tests that the field's value is less than 'max'
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>max</th>
+            <td class="type">Number</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="validators_range">
+        validators.range(min, max)
+      </h4>
+      <p>
+        Tests that the field's value is greater than 'min' AND less than 'max'
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>min</th>
+            <td class="type">Number</td>
+          </tr>
+          <tr>
+            <th>max</th>
+            <td class="type">Number</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="validators_minlength">
+        validators.minlength(val)
+      </h4>
+      <p>
+        Tests that the field's value length is greater than 'val'
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>val</th>
+            <td class="type">Number</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="validators_maxlength">
+        validators.maxlength(val)
+      </h4>
+      <p>
+        Tests that the field's value length is less than 'val'
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>val</th>
+            <td class="type">Number</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="validators_rangelength">
+        validators.rangelength(min, max)
+      </h4>
+      <p>
+        Tests that the field's value length is greater than 'min' AND less than 'max'
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>min</th>
+            <td class="type">Number</td>
+          </tr>
+          <tr>
+            <th>max</th>
+            <td class="type">Number</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="validators_regexp">
+        validators.regexp(re, message)
+      </h4>
+      <p>
+        Tests field's value against a regular expression
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>re</th>
+            <td class="type">RegExp</td>
+            <td class="description">can be a string or a RegExp object</td>
+          </tr>
+          <tr>
+            <th>message</th>
+            <td class="type">String</td>
+            <td class="description">(Optional) a custom error message to throw</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="validators_email">
+        validators.email()
+      </h4>
+      <p>
+        Tests that field's value is a valid email address using a regular expression.
+      </p>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="validators_url">
+        validators.url()
+      </h4>
+      <p>
+        Tests that field's value is a valid URL using a regular expression.
+      </p>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
+      <h4 id="validators_missingIDs">
+        validators.missingIDs()
+      </h4>
+      <p>
+        Detects embedded documents with missing _id properties and returns an
+        array of Error objects for each occurence. Returns an empty array if
+        all documents have a populated _id property.
+      </p>
+      <p>
+        Used by the EmbeddedList field type.
+      </p>
+
+      <div class="returns"><strong>Returns:</strong> Function</div>
+
 
       <h2 id="commands">Commands</h2>
       <p>
