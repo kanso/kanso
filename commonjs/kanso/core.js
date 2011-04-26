@@ -2,6 +2,13 @@
   kanso: true, log: true, console: true */
 
 /**
+ * The core module contains functions used by kanso to facilitate the running
+ * of your app. You shouldn't need to use any of the functions here directly
+ * unless you're messing with the internals of Kanso.
+ */
+
+
+/**
  * Module dependencies
  */
 

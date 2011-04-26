@@ -1,8 +1,18 @@
 /*global escape: false */
 
+/**
+ * Functions related to the manipulation and reading of cookies.
+ */
+
 var utils = require('./utils');
 
 
+/**
+ * Read cookies currently stored in the browser, returning an object
+ * keyed by cookie name.
+ *
+ * @returns Object
+ */
 
 exports.readBrowserCookies = function () {
     if (!utils.isBrowser) {
@@ -18,9 +28,23 @@ exports.readBrowserCookies = function () {
     return cookies;
 };
 
+/**
+ * Reads browser cookies and returned the value of the named cookie.
+ *
+ * @returns {String}
+ */
+
 exports.readBrowserCookie = function (name) {
     return exports.readBrowserCookies()[name];
 };
+
+/**
+ * Creates a string for storing a cookie on the browser.
+ *
+ * @param {Request Object} req
+ * @param {Object} opt
+ * @returns {String}
+ */
 
 exports.cookieString = function (req, opt) {
     var path = opt.path || utils.getBaseURL(req) + '/';
@@ -34,6 +58,13 @@ exports.cookieString = function (req, opt) {
     return str;
 };
 
+/**
+ * Sets a cookie on the browser, for use client-side only.
+ *
+ * @param {Request Object} req
+ * @param {Object} opt
+ */
+
 exports.setBrowserCookie = function (req, opt) {
     if (!utils.isBrowser) {
         throw new Error('setBrowserCookie cannot be called server-side');
@@ -42,6 +73,14 @@ exports.setBrowserCookie = function (req, opt) {
     //console.log('document.cookie = ' + str);
     document.cookie = str;
 };
+
+/**
+ * Creates a Set-Cookie header on a response object.
+ *
+ * @param {Request Object} req
+ * @param {Response Object} res
+ * @param {Object} opt
+ */
 
 exports.setResponseCookie = function (req, res, opt) {
     var str = (typeof opt === 'string') ? opt: exports.cookieString(req, opt);

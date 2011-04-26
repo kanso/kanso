@@ -94,6 +94,77 @@
 
       <h2 id="modules">Modules</h2>
 
+      <h3 id="cookies">Cookies</h3>
+      <p>Functions related to the reading and manipulation of cookies.</p>
+
+      <h4 id="cookies_readBrowserCookies">
+        cookies.readBrowserCookies()
+      </h4>
+      <p>
+        Read cookies currently stored in the browser, returning an object
+        keyed by cookie name.
+      </p>
+      <div class="returns">Returns: Object</div>
+
+      <h4 id="cookies_readBrowserCookie">
+        cookies.readBrowserCookie(name)
+      </h4>
+      <p>
+        Reads browser cookies and returned the value of the named cookie.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>name (String)</li>
+        </ul>
+      </div>
+      <div class="returns">Returns: String</div>
+
+      <h4 id="cookies_cookieString">
+        cookies.cookieString(req, opt)
+      </h4>
+      <p>
+        Creates a string for storing a cookie on the browser.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>req (Request Object)</li>
+          <li>opt (Object)</li>
+        </ul>
+      </div>
+      <div class="returns">Returns: String</div>
+
+      <h4 id="cookies_setBrowserCookie">
+        cookies.setBrowserCookie(req, opt)
+      </h4>
+      <p>
+        Sets a cookie on the browser, for use client-side only.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>req (Request Object)</li>
+          <li>opt (Object)</li>
+        </ul>
+      </div>
+
+      <h4 id="cookies_setResponseCookie">
+        cookies.setResponseCookie(req, res, opt)
+      </h4>
+      <p>
+        Creates a Set-Cookie header on a response object.
+      </p>
+      <div class="params">
+        Parameters:
+        <ul>
+          <li>req (Request Object)</li>
+          <li>res (Response Object)</li>
+          <li>opt (Object)</li>
+        </ul>
+      </div>
+
+
       <h3 id="core">Core</h3>
       <p>
         The core module contains functions used by kanso to facilitate the running
