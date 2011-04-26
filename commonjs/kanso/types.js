@@ -27,8 +27,8 @@ var utils = require('./utils'),
  * Options:
  *   fields      {Object}  - Field objects to use as the Types's schema
  *   permissions {Object}  - a permissions check function or an object
- *                           containing separate functions to run on create,
- *                           edit and update operations.
+ *                           containing separate functions to run on add,
+ *                           remove and update operations.
  *
  * @param {Object} options
  * @constructor

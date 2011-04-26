@@ -1862,6 +1862,273 @@ usernameMatchesField(['meta','creator'])
 
       <div class="returns"><strong>Returns:</strong> String</div>
 
+      <h3 id="types">Types</h3>
+      <p>
+        Document types can be used to ease the validation of updates and check
+        permissions when creating, editing or deleting documents.
+      </p>
+
+      <h4 id="types_Type">
+        types.Type(name, options)
+      </h4>
+      <p>
+        Creates a new Type object
+      </p>
+
+      <div class="constructor">constructor</div>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>options</th>
+            <td class="type">Object</td>
+            <td class="description">see below for available properties</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h5>Options:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>fields</th>
+            <td class="type">Object</td>
+            <td class="description">Field objects to use as the Type's schema</td>
+          </tr>
+          <tr>
+            <th>permissions</th>
+            <td class="type">Object</td>
+            <td class="description">
+              a permissions check function or an object
+              containing separate functions to run on add, remove and update
+              operations
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Type Object</div>
+
+      <h4 id="types_Type_validate">
+        Type.validate(doc, rawDoc)
+      </h4>
+      <p>
+        Run field validators against document and check for missing required
+        fields or extra fields when the Types's allow_extra_fields property is
+        set to false.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>doc</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>rawDoc</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="types_Type_authorize">
+        Type.authorize(nDoc, oDoc, user)
+      </h4>
+      <p>
+        Run field permissions checks against userCtx and document.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>nDoc</th>
+            <td class="type">Object</td>
+            <td class="description">new document</td>
+          </tr>
+          <tr>
+            <th>oDoc</th>
+            <td class="type">Object</td>
+            <td class="description">old document</td>
+          </tr>
+          <tr>
+            <th>userCtx</th>
+            <td class="type">Object</td>
+            <td class="description">user context object</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="types_Type_authField">
+        Type.authField(f, nDoc, oDoc, nVal, oVal, user, path)
+      </h4>
+      <p>
+        Authorize a specific field, returning all permissions errors as an array with
+        each error's field property prefixed by the current path.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>f</th>
+            <td class="type">Field</td>
+            <td class="description">field object</td>
+          </tr>
+          <tr>
+            <th>nDoc</th>
+            <td class="type">Object</td>
+            <td class="description">new document</td>
+          </tr>
+          <tr>
+            <th>oDoc</th>
+            <td class="type">Object</td>
+            <td class="description">old document</td>
+          </tr>
+          <tr>
+            <th>nVal</th>
+            <td class="type"></td>
+            <td class="description">new field value</td>
+          </tr>
+          <tr>
+            <th>oVal</th>
+            <td class="type"></td>
+            <td class="description">old field value</td>
+          </tr>
+          <tr>
+            <th>user</th>
+            <td class="type">Object</td>
+            <td class="description">user context object</td>
+          </tr>
+          <tr>
+            <th>path</th>
+            <td class="type">Array</td>
+            <td class="description">current path</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="types_Type_authFieldSet">
+        Type.authFieldSet(f, nDoc, oDoc, nVal, oVal, user, path)
+      </h4>
+      <p>
+        Authorizes an object containing fields or other sub-objects, iterating over
+        each property and recursing through sub-objects to find all Fields.
+      </p>
+      <p>
+        Returns an array of permissions errors, each with a field property set to the
+        path of the field which caused the error.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>f</th>
+            <td class="type">Field</td>
+            <td class="description">field object</td>
+          </tr>
+          <tr>
+            <th>nDoc</th>
+            <td class="type">Object</td>
+            <td class="description">new document</td>
+          </tr>
+          <tr>
+            <th>oDoc</th>
+            <td class="type">Object</td>
+            <td class="description">old document</td>
+          </tr>
+          <tr>
+            <th>nVal</th>
+            <td class="type"></td>
+            <td class="description">new field value</td>
+          </tr>
+          <tr>
+            <th>oVal</th>
+            <td class="type"></td>
+            <td class="description">old field value</td>
+          </tr>
+          <tr>
+            <th>user</th>
+            <td class="type">Object</td>
+            <td class="description">user context object</td>
+          </tr>
+          <tr>
+            <th>path</th>
+            <td class="type">Array</td>
+            <td class="description">current path</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <div class="returns"><strong>Returns:</strong> Array</div>
+
+      <h4 id="types_Type_create">
+        Type.create(userCtx, callback)
+      </h4>
+      <p>
+        Create's a new object for this Type. Pre-filling any default values and
+        providing a new _id value. This is a convenient funciton to use when creating
+        a type to embed within another.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>userCtx</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="types_validate_doc_update ">
+        types.validate_doc_update(types, newDoc, oldDoc, userCtx)
+      </h4>
+      <p>
+        Calls validation and permissions functions relevant to a document update.
+        This should be called from your app's exported validate_doc_update function
+        if you wish to use kanso Types in you project.
+      </p>
+      <p>
+        Throws on error.
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>types</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>newDoc</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>oldDoc</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>userCtx</th>
+            <td class="type">Object</td>
+          </tr>
+        </tbody>
+      </table>
+
+
       <h2 id="commands">Commands</h2>
       <p>
         Typing 'kanso' with no arguments will present you with a list of available
