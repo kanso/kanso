@@ -106,6 +106,7 @@ exports.hidden = function (options) {
  */
 
 exports.textarea = function (options) {
+    options = options || {};
     var w = new Widget('textarea', options);
     w.toHTML = function (name, value, raw) {
         if (raw === undefined) {
