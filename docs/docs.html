@@ -97,6 +97,12 @@
         whenever a change to the user's session is detected (usually after calling
         login or logout from the session module).
       </p>
+      <p>
+        A sessionChange event will also occur on the initial site load,
+        as soon as the user's session details are available. This happens
+        after the init method has fired and before the client-side
+        rendering of the list, show or update function for that page.
+      </p>
 
       <h2 id="modules">Modules</h2>
       <p>
