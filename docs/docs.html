@@ -103,6 +103,16 @@
         after the init method has fired and before the client-side
         rendering of the list, show or update function for that page.
       </p>
+      <p>
+        The sessionChange event accepts two arguments: the new user context object,
+        and a request object, for example:
+      </p>
+      <pre><code class="javascript">exports.sessionChange = function (userCtx, req) {
+    // re-render the session information (logged in as... etc)
+    $('#session').html(
+        templates.render('session.html', req, {})
+    );
+};</code></pre>
 
       <h2 id="modules">Modules</h2>
       <p>
