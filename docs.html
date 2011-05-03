@@ -1853,10 +1853,39 @@ usernameMatchesField(['meta','creator'])
         templates.render(name, req, context)
       </h4>
       <p>
-        Synchronously render dust template and return result, automatically adding
-        baseURL to the template's context. The request object is required so we
-        can determine the value of baseURL.
+        Synchronously render dust template and return the result.
+        The request object is required so we can determine the value of baseURL.
       </p>
+
+      <h5>Context Variables</h5>
+      <p class="small">
+        The following context variables are automatically made available to
+        templates:
+      </p>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>baseURL</th>
+            <td class="type">String</td>
+            <td class="description">Base URL for the site, all app URLs should start with this</td>
+          </tr>
+          <tr>
+            <th>userCtx</th>
+            <td class="type">Object</td>
+            <td class="description">The request's user context (username, roles, etc)</td>
+          </tr>
+          <tr>
+            <th>isBrowser</th>
+            <td class="type">Boolean</td>
+            <td class="description">Whether this template is being rendered by the browser or CouchDB</td>
+          </tr>
+          <tr>
+            <th>flashMessages</th>
+            <td class="type">Array</td>
+            <td class="description">Messages added using the flashmessages module</td>
+          </tr>
+        </tbody>
+      </table>
 
       <h5>Parameters:</h5>
       <table class="params">
