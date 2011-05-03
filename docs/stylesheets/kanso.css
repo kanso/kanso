@@ -265,6 +265,9 @@ img {
     font-size: 0.8em;
     margin-bottom: 2.618em;
 }
+.small {
+    font-size: 0.8em;
+}
 
 h5 {
     font-weight: bold;
