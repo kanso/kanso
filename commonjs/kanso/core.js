@@ -137,7 +137,7 @@ exports.init = function () {
     $('a').live('click', function (ev) {
         var href = $(this).attr('href');
 
-        if (exports.isAppURL(href)) {
+        if (href !== '#' && exports.isAppURL(href)) {
             var url = exports.appPath(href);
             ev.preventDefault();
             var hash;

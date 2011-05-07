@@ -35,10 +35,13 @@ exports.updates = require('./updates');
 
 
 exports.bindSessionControls = function () {
-    $('#session .logout a').click(function () {
+    $('#session .logout a').click(function (ev) {
+        ev.preventDefault();
         session.logout();
+        return false;
     });
-    $('#session .login a').click(function () {
+    $('#session .login a').click(function (ev) {
+        ev.preventDefault();
         var div = $('<div><h2>Login</h2></div>');
         div.append('<form id="login_form" action="/_session" method="POST">' +
             '<div class="general_errors"></div>' +
@@ -86,8 +89,10 @@ exports.bindSessionControls = function () {
             return false;
         });
         div.modal({autoResize: true, overlayClose: true});
+        return false;
     });
-    $('#session .signup a').click(function () {
+    $('#session .signup a').click(function (ev) {
+        ev.preventDefault();
         var div = $('<div><h2>Create account</h2></div>');
         div.append('<form id="signup_form" action="/_session" method="POST">' +
             '<div class="general_errors"></div>' +
@@ -139,6 +144,7 @@ exports.bindSessionControls = function () {
             return false;
         });
         div.modal({autoResize: true, overlayClose: true});
+        return false;
     });
 };
 
