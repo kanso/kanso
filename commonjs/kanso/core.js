@@ -711,7 +711,8 @@ exports.setURL = function (method, url, data, hash) {
     window.History.pushState({
         method: method,
         hash: hash,
-        data: data
+        data: data,
+        timestamp: new Date().getTime()
     }, document.title, fullurl);
 };
 
