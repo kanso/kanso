@@ -1,0 +1,23 @@
+2011.05.08, Version 0.0.4
+
+* Added HTTPS support for pushing apps
+
+* Links without a href attribute are now ignored (as the browser would)
+
+* Fixed race-condition when clicking on links in quick succession
+
+* Added a catch-all rewrite to a 404.html template in the project skeleton
+
+* The isBrowser, initial_hit and userCtx properties are longer exported from core
+
+* Form values are no longer cleared in admin app when logging in/out, or after
+  a permisions error
+
+* Fixed a bug matching splats in URL rewrites
+
+* Check user's session for changes when db calls result in 'Unauthorized'
+
+* Fixed some JSLint issues
+
+* Update History.js for admin app - fixes links in browsers without pushState
+support
