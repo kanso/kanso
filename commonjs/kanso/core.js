@@ -682,8 +682,7 @@ exports.handle = function (method, url, data) {
     }
     else {
         console.log(method + ' ' + url + ' -> [404]');
-        alert('404');
-        // TODO: render a standard 404 template?
+        window.location = exports.getBaseURL() + url;
     }
 
     /**
