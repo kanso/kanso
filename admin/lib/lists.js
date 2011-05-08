@@ -64,7 +64,7 @@ exports.typelist = adminList(function (rows, ddoc, req) {
         app = utils.appRequire(ddoc, settings.load),
         type = app.types ? app.types[req.query.type]: undefined;
 
-    var f = rows.map(function (r) {
+    var f = _.map(rows, function (r) {
         var display_name = r.id;
         if (type && type.display_name) {
             display_name = type.display_name(r.doc);
@@ -103,7 +103,7 @@ exports.typelist = adminList(function (rows, ddoc, req) {
                     return;
                 }
                 var rows = result.rows;
-                var f = rows.map(function (r) {
+                var f = _.map(rows, function (r) {
                     var display_name = r.id;
                     if (type && type.display_name) {
                         display_name = type.display_name(r.doc);

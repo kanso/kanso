@@ -32,7 +32,7 @@ exports.addtype = function (doc, req) {
                 if (err) {
                     flashmessages.addMessage(req, {
                         type: 'error',
-                        message: err.toString()
+                        message: err.message || err.toString()
                     });
 
                     var content = templates.render('add_type.html', req, {
@@ -98,7 +98,7 @@ exports.updatetype = function (doc, req) {
                 if (err) {
                     flashmessages.addMessage(req, {
                         type: 'error',
-                        message: err.toString()
+                        message: err.message || err.toString()
                     });
 
                     var content = templates.render('edit_type.html', req, {
@@ -160,7 +160,7 @@ exports.deletetype = function (doc, req) {
         if (err) {
             flashmessages.addMessage(req, {
                 type: 'error',
-                message: err.toString()
+                message: err.message || err.toString()
             });
         }
         else {

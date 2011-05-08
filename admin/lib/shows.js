@@ -199,7 +199,7 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
         }
         console.log('viewlist');
         console.log(res);
-        var rows = res.rows.map(function (r) {
+        var rows = _.map(res.rows, function (r) {
             r.value = JSON.stringify(r.value);
             r.key = JSON.stringify(r.key);
             return r;
