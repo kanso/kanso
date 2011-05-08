@@ -12,6 +12,24 @@
 var utils = require('./utils'),
     settings = require('./settings');
 
+var session = null;
+// avoid making a circular require in CouchDB
+if (utils.isBrowser) {
+    session = require('./session');
+}
+
+
+/**
+ * When a db call results in an unauthorized response, the user's session is
+ * checked to see if their session has timed out or they've logged out in
+ * another screen.
+ *
+ * This check is throttled to once per second, to avoid flooding the server if
+ * multiple requests are made with incorrect permissions.
+ */
+
+var last_session_check = 0;
+
 
 /**
  * Taken from jQuery 1.4.4 so we can support more recent versions of jQuery.
@@ -51,6 +69,13 @@ var httpData = function (xhr, type, s) {
 function onComplete(callback) {
     return function (req) {
         var resp = httpData(req, "json");
+        if (req.status === 401) {
+            // returned 'Unauthorized', check the user's session if it's not
+            // been checked on an 'Unauthorized' repsonse in the last second
+            if (session && last_session_check < new Date().getTime() - 1000) {
+                session.info();
+            }
+        }
         if (req.status === 200 || req.status === 201 || req.status === 202) {
             callback(null, resp);
         }
