@@ -316,7 +316,7 @@ EmbeddedList.prototype.isEmpty = function (value, raw) {
  */
 
 EmbeddedList.prototype.missingIDs = function (list) {
-    var errs = []
+    var errs = [];
     _.each(list, function (v, i) {
         if (!v._id) {
             var e = new Error('Embedded document missing _id');
@@ -435,7 +435,7 @@ EmbeddedList.prototype.authorize = function (nDoc, oDoc, nVal, oVal, user) {
         var args = [nDoc, oDoc, nd, od, user];
 
         if (_.isFunction(perms)) {
-            curr_errs = utils.getErrors(perms, args)
+            curr_errs = utils.getErrors(perms, args);
         }
         // on update
         var fn = perms.update;
@@ -641,7 +641,7 @@ exports.timestamp = function (options) {
 
 exports.choice = function (options) {
     if (!options || !options.values) {
-        throw new Error('No values defined')
+        throw new Error('No values defined');
     }
     options = prependValidator(options, function (doc, value) {
         for (var i = 0; i < options.values.length; i++) {
@@ -653,7 +653,7 @@ exports.choice = function (options) {
     });
     // use value as label if no label defined
     options.values = _.map(options.values, function (v) {
-        return _.isArray(v) ? v: [v,v];
+        return _.isArray(v) ? v: [v, v];
     });
     return new Field(_.defaults(options, {
         widget: widgets.select({values: options.values})

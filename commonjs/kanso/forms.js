@@ -67,18 +67,18 @@ Form.prototype.isValid = function () {
  * Converts current form to a HTML string, using an optional renderer class.
  *
  * @param {Object} req
- * @param {Renderer} rendererClass
+ * @param {Renderer} RendererClass
  * @return {String}
  * @api public
  */
 
-Form.prototype.toHTML = function (req, rendererClass) {
+Form.prototype.toHTML = function (req, RendererClass) {
     var values = this.values || fieldset.createDefaults(
         this.fields,
         req.userCtx
     );
-    rendererClass = rendererClass || render.table;
-    var renderer = new rendererClass();
+    RendererClass = RendererClass || render.table;
+    var renderer = new RendererClass();
     return renderer.start() +
         this.renderFields(
             renderer, this.fields, values, this.raw, this.errors, []
@@ -131,9 +131,12 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
 
     var keys = _.keys(fields);
     return _.reduce(keys, function (html, k) {
+
         var f_path = path.concat([k]);
         var f_errs = errsBelowPath(errs, f_path);
         var cname = utils.constructorName(fields[k]);
+        var new_renderer;
+
         if (cname === 'Field') {
             return html + renderer.field(
                 fields[k],
@@ -144,7 +147,7 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
             );
         }
         else if (cname === 'Embedded') {
-            var new_renderer = renderer.embed(
+            new_renderer = renderer.embed(
                 fields[k].type,
                 f_path.join('.'),
                 values[k],
@@ -170,7 +173,7 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
         }
         else if (cname === 'EmbeddedList') {
             var type = fields[k].type;
-            var new_renderer = renderer.embedList(
+            new_renderer = renderer.embedList(
                 type,
                 f_path.join('.'),
                 values[k],

@@ -41,12 +41,12 @@ var httpData = function (xhr, type, s) {
         data = xml ? xhr.responseXML : xhr.responseText;
 
     if (xml && data.documentElement.nodeName === "parsererror") {
-        $.error( "parsererror" );
+        $.error("parsererror");
     }
     if (s && s.dataFilter) {
         data = s.dataFilter(data, type);
     }
-    if (typeof data === "string" ) {
+    if (typeof data === "string") {
         if (type === "json" || !type && ct.indexOf("json") >= 0) {
             data = $.parseJSON(data);
         }

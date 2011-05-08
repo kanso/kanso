@@ -1,3 +1,5 @@
+/*global kanso: true */
+
 /**
  * Functions related to the management of user sessions and account information.
  */

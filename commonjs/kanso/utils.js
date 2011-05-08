@@ -176,7 +176,7 @@ exports.constructorName = function (obj) {
  */
 
 exports.getErrors = function (fn, args) {
-    var arr = []
+    var arr = [];
     try {
         arr = arr.concat(fn.apply(this, args) || []);
     }

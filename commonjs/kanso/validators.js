@@ -162,7 +162,7 @@ exports.url = function () {
 
 exports.missingIDs = function () {
     return function (doc, value) {
-        var errs = []
+        var errs = [];
         _.each(value, function (v, i) {
             if (!v._id) {
                 var e = new Error('Embedded document missing _id');

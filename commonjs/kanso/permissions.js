@@ -129,7 +129,7 @@ exports.all = function (perms) {
         return _.reduce(perms, function (errs, p) {
             return errs.concat(utils.getErrors(p, args));
         }, []);
-    }
+    };
 };
 
 /**
@@ -158,7 +158,7 @@ exports.any = function (perms) {
             }
         }
         return errs;
-    }
+    };
 };
 
 /**

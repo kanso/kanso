@@ -121,7 +121,7 @@ Type.prototype.validate = function (doc, rawDoc) {
 
 Type.prototype.authorize = function (nDoc, oDoc, user) {
     var perms = this.permissions;
-    var errs = []
+    var errs = [];
     if (_.isFunction(perms)) {
         errs = errs.concat(
             utils.getErrors(perms, [nDoc, oDoc, null, null, user])
