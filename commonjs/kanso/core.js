@@ -36,7 +36,7 @@ var settings = require('./settings'), // module auto-generated
  * commonjs implementation.
  */
 
-exports.isBrowser = utils.isBrowser;
+//exports.isBrowser = utils.isBrowser;
 
 
 /**
@@ -47,7 +47,7 @@ exports.isBrowser = utils.isBrowser;
  * by them.
  */
 
-exports.initial_hit = utils.initial_hit;
+//exports.initial_hit = utils.initial_hit;
 
 
 
@@ -94,7 +94,7 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
  */
 
 // TODO: added to utils to avoid circular dependency bug in couchdb
-exports.userCtx = utils.userCtx;
+//exports.userCtx = utils.userCtx;
 
 
 /**
@@ -339,7 +339,7 @@ exports.createRequest = function (method, url, data, match, callback) {
         headers: {},
         path: to.split('/'),
         client: true,
-        initial_hit: exports.initial_hit,
+        initial_hit: utils.initial_hit,
         cookie: cookies.readBrowserCookies()
     };
     if (data) {
