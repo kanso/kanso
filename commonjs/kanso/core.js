@@ -98,6 +98,19 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
 
 
 /**
+ * Keeps track of the last *triggered* request. This is to avoid a race
+ * condition where two link clicks in quick succession can cause the rendered
+ * page to not match the current URL. If the first link's document or view takes
+ * longer to return than the second, the URL was updated for the second link
+ * click but the page for the first link will render last, overwriting the
+ * correct page. Now, callbacks for fetching documents and views check against
+ * this value to see if they should continue rendering the result or not.
+ */
+
+var current_request_uuid = null;
+
+
+/**
  * The module loaded as the design document (load property in kanso.json).
  * Likely to cause circular require in couchdb so only run browser side.
  * TODO: when circular requires are fixed in couchdb, remove the isBrowser check
@@ -406,23 +419,25 @@ exports.runShowBrowser = function (req, name, docid, callback) {
     var fn = kanso.app.shows[name];
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            if (err) {
-                return callback(err);
-            }
-            var res = exports.runShow(fn, doc, req);
-            if (res) {
-                exports.handleResponse(res);
-            }
-            else {
-                // returned without response, meaning cookies won't be set by
-                // handleResponseHeaders
-                if (req.outgoing_flash_messages) {
-                    flashmessages.setCookieBrowser(
-                        req, req.outgoing_flash_messages
-                    );
+            if (current_request_uuid === req.uuid) {
+                if (err) {
+                    return callback(err);
                 }
+                var res = exports.runShow(fn, doc, req);
+                if (res) {
+                    exports.handleResponse(res);
+                }
+                else {
+                    // returned without response, meaning cookies won't be set
+                    // by handleResponseHeaders
+                    if (req.outgoing_flash_messages) {
+                        flashmessages.setCookieBrowser(
+                            req, req.outgoing_flash_messages
+                        );
+                    }
+                }
+                callback();
             }
-            callback();
         });
     }
     else {
@@ -464,23 +479,25 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
     var fn = kanso.app.updates[name];
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            if (err) {
-                return callback(err);
-            }
-            var res = exports.runUpdate(fn, doc, req);
-            if (res) {
-                exports.handleResponse(res[1]);
-            }
-            else {
-                // returned without response, meaning cookies won't be set by
-                // handleResponseHeaders
-                if (req.outgoing_flash_messages) {
-                    flashmessages.setCookieBrowser(
-                        req, req.outgoing_flash_messages
-                    );
+            if (current_request_uuid === req.uuid) {
+                if (err) {
+                    return callback(err);
                 }
+                var res = exports.runUpdate(fn, doc, req);
+                if (res) {
+                    exports.handleResponse(res[1]);
+                }
+                else {
+                    // returned without response, meaning cookies won't be set
+                    // by handleResponseHeaders
+                    if (req.outgoing_flash_messages) {
+                        flashmessages.setCookieBrowser(
+                            req, req.outgoing_flash_messages
+                        );
+                    }
+                }
+                callback();
             }
-            callback();
         });
     }
     else {
@@ -545,37 +562,39 @@ exports.runListBrowser = function (req, name, view, callback) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
         db.getView(view, req.query, function (err, data) {
-            if (err) {
-                return callback(err);
-            }
-            getRow = function () {
-                return data.rows.shift();
-            };
-            start = function (res) {
-                //console.log('start');
-                //console.log(res);
-                if (res && res.headers) {
-                    exports.handleResponseHeaders(res.headers);
+            if (current_request_uuid === req.uuid) {
+                if (err) {
+                    return callback(err);
                 }
-            };
-            var head = exports.createHead(data);
-            var res = exports.runList(fn, head, req);
-            if (res) {
-                exports.handleResponse(res);
-            }
-            else {
-                // returned without response, meaning cookies won't be set by
-                // handleResponseHeaders
-                if (req.outgoing_flash_messages) {
-                    flashmessages.setCookieBrowser(
-                        req, req.outgoing_flash_messages
-                    );
+                getRow = function () {
+                    return data.rows.shift();
+                };
+                start = function (res) {
+                    //console.log('start');
+                    //console.log(res);
+                    if (res && res.headers) {
+                        exports.handleResponseHeaders(res.headers);
+                    }
+                };
+                var head = exports.createHead(data);
+                var res = exports.runList(fn, head, req);
+                if (res) {
+                    exports.handleResponse(res);
                 }
+                else {
+                    // returned without response, meaning cookies won't be set
+                    // by handleResponseHeaders
+                    if (req.outgoing_flash_messages) {
+                        flashmessages.setCookieBrowser(
+                            req, req.outgoing_flash_messages
+                        );
+                    }
+                }
+                getRow = function () {
+                    return null;
+                };
+                callback();
             }
-            getRow = function () {
-                return null;
-            };
-            callback();
         });
     }
     // TODO: check if it should throw here
@@ -630,6 +649,7 @@ exports.handle = function (method, url, data) {
             }
 
             console.log(msg);
+            current_request_uuid = req.uuid;
 
             var after = function () {
                 if (parsed.hash) {
