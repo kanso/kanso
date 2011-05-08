@@ -185,7 +185,9 @@ exports.init = function () {
 
 exports.rewriteGroups = function (pattern, url) {
     var pathname = urlParse(url).pathname;
-    var re = new RegExp('^' + pattern.replace(/:\w+/g, '([^/]+)') + '$');
+    var re = new RegExp(
+        '^' + pattern.replace(/:\w+/g, '([^/]+)').replace(/\*/g, '.*') + '$'
+    );
     var m = re.exec(pathname);
     if (!m) {
         return [];
