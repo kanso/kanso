@@ -2729,6 +2729,21 @@ usernameMatchesField(['meta','creator'])
                            (allows vhosts on CouchDB &lt; v1.1.x)
   </pre>
 
+      <h3 id="autopush">Autopush</h3>
+      <p>Upload a project, then watch files for changes.</p>
+      <pre>kanso autopush [OPTIONS] DB [PATH]
+
+  Parameters:
+    DB     The CouchDB instance to upload the app to
+    PATH   The project path to load the app from
+
+  Options:
+    --minify               Compress CommonJS modules using UglifyJS
+    --minify-attachments   Compress .js attachments
+    --baseURL PATH         Force the baseURL to a specific value.
+                           (allows vhosts on CouchDB &lt; v1.1.x)
+  </pre>
+
       <h3 id="pushdata">Pushdata</h3>
       <p>Push a file or directory of JSON files to DB.</p>
       <pre>kanso pushdata [OPTIONS] DB PATH
