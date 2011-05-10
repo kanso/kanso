@@ -1,3 +1,12 @@
+2011.05.10, Version 0.0.5
+
+* Added autopush command
+
+* Added -v and --version flags
+
+* Fixed underscore bug in admin app
+
+
 2011.05.08, Version 0.0.4
 
 * Added HTTPS support for pushing apps
