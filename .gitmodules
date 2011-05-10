@@ -16,3 +16,6 @@
 [submodule "deps/UglifyJS"]
 	path = deps/UglifyJS
 	url = git://github.com/mishoo/UglifyJS.git
+[submodule "deps/watch"]
+	path = deps/watch
+	url = git://github.com/mikeal/watch.git
