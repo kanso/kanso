@@ -5,7 +5,8 @@ var utils = require('./utils'),
     kanso_utils = require('kanso/utils'),
     db = require('kanso/db'),
     admin_forms = require('./forms'),
-    templates = require('kanso/templates');
+    templates = require('kanso/templates'),
+    _ = require('kanso/underscore');
 
 
 var adminShow = function (fn) {
