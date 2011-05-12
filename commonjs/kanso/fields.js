@@ -720,7 +720,7 @@ exports.embedList = function (options) {
  *
  * To accept an array of values other than strings, add a function to options
  * called parseEach which accepts the string value for each item and performs
- * to transformation.
+ * the transformation.
  *
  * @param {Object} options
  * @api public
