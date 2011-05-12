@@ -728,6 +728,7 @@ exports.embedList = function (options) {
 
 exports.array = function (options) {
     options = options || {};
+    options.hint = options.hint || "Values should be comma separated";
     prependValidator(options, function (doc, value) {
         if (!_.isArray(value)) {
             throw new Error('Not an array');

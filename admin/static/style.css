@@ -156,7 +156,8 @@ form.delete_form {
     vertical-align: top;
 }
 
-.description {
+.description,
+.hint {
     font-weight: normal;
     color: #666;
     font-size: 0.85em;

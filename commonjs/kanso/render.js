@@ -34,6 +34,12 @@ exports.descriptionHTML = function (obj) {
     }
     return '';
 };
+exports.hintHTML = function (obj) {
+    if (obj.hint) {
+        return '<div class="hint">' + obj.hint + '</div>';
+    }
+    return '';
+};
 
 exports.classes = function (field, errors) {
     var r = ['field'];
@@ -62,6 +68,7 @@ exports.table = function () {
             '</th>' +
             '<td>' +
                 field.widget.toHTML(name, value, raw) +
+                exports.hintHTML(field) +
             '</td>' +
             '<td class="errors">' +
                 exports.errorHTML(errors) +
