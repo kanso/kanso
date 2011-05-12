@@ -28,6 +28,13 @@ exports.labelHTML = function (field, name, id) {
     '</label>';
 };
 
+exports.descriptionHTML = function (obj) {
+    if (obj.description) {
+        return '<div class="description">' + obj.description + '</div>';
+    }
+    return '';
+};
+
 exports.classes = function (field, errors) {
     var r = ['field'];
     if (errors && errors.length) {
@@ -49,7 +56,10 @@ exports.table = function () {
             return field.widget.toHTML(name, value, raw);
         }
         return '<tr class="' + exports.classes(field, errors).join(' ') + '">' +
-            '<th>' + exports.labelHTML(field, name) + '</th>' +
+            '<th>' +
+                exports.labelHTML(field, name) +
+                exports.descriptionHTML(field) +
+            '</th>' +
             '<td>' +
                 field.widget.toHTML(name, value, raw) +
             '</td>' +
@@ -65,7 +75,10 @@ exports.table = function () {
             display_name = type.display_name(value);
         }
         return '<tr class="embedded">' +
-            '<th>' + exports.labelHTML(type, name) + '</th>' +
+            '<th>' +
+                exports.labelHTML(type, name) +
+                exports.descriptionHTML(type) +
+            '</th>' +
             '<td class="field" rel="' + type.name + '">' +
             '<table rel="' + name + '"><tbody><tr><td>' +
             '<input type="hidden" value="' + fval + '" name="' + name + '" />' +
@@ -80,7 +93,10 @@ exports.table = function () {
     };
     this.embedList = function (type, name, value, raw, errors) {
         var html = '<tr class="embeddedlist">' +
-            '<th>' + exports.labelHTML(type, name) + '</th>' +
+            '<th>' +
+                exports.labelHTML(type, name) +
+                exports.descriptionHTML(type) +
+            '</th>' +
             '<td class="field" rel="' + type.name + '">' +
             '<table rel="' + name + '"><tbody>';
         _.each(value, function (v, i) {

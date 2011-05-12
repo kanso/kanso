@@ -87,6 +87,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         app_heading: utils.capitalize(req.query.app),
         type: req.query.type,
         type_heading: utils.typeHeading(req.query.type),
+        description: type.description,
         form: form.toHTML(req, forms.render.table)
     });
     $('#content').html(content);

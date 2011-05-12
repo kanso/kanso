@@ -39,6 +39,7 @@ exports.addtype = function (doc, req) {
                         app: req.query.app,
                         app_heading: utils.capitalize(req.query.app),
                         type: req.query.type,
+                        description: type.description,
                         type_heading: utils.typeHeading(req.query.type),
                         form: form.toHTML(req, forms.render.table)
                     });
@@ -65,6 +66,7 @@ exports.addtype = function (doc, req) {
                 app: req.query.app,
                 app_heading: utils.capitalize(req.query.app),
                 type: req.query.type,
+                description: type.description,
                 type_heading: utils.typeHeading(req.query.type),
                 form: form.toHTML(req, forms.render.table)
             });
