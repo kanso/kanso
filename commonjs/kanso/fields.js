@@ -591,8 +591,8 @@ exports.creator = function (options) {
     return exports.string(_.defaults(options, {
         required: false,
         widget: widgets.hidden(),
-        default_value: function (req) {
-            return (req.userCtx && req.userCtx.name) || '';
+        default_value: function (userCtx) {
+            return (userCtx && userCtx.name) || '';
         }
     }));
 };
@@ -622,7 +622,7 @@ exports.timestamp = function (options) {
     }
     return exports.number(_.defaults(options, {
         widget: widgets.hidden(),
-        default_value: function (req) {
+        default_value: function (userCtx) {
             return new Date().getTime();
         }
     }));

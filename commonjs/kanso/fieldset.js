@@ -31,7 +31,7 @@ exports.createDefaults = function (fields, userCtx) {
             }
         }
         else {
-            result[k] = exports.createDefaults(f);
+            result[k] = exports.createDefaults(f, userCtx);
         }
         return result;
     }, {});
