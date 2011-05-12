@@ -712,3 +712,34 @@ exports.embed = function (options) {
 exports.embedList = function (options) {
     return new EmbeddedList(options);
 };
+
+
+/**
+ * Creates a array Field. The default parse function expects a single row of
+ * comma separated values.
+ *
+ * To accept an array of values other than strings, add a function to options
+ * called parseEach which accepts the string value for each item and performs
+ * to transformation.
+ *
+ * @param {Object} options
+ * @api public
+ */
+
+exports.array = function (options) {
+    options = options || {};
+    prependValidator(options, function (doc, value) {
+        if (!_.isArray(value)) {
+            throw new Error('Not an array');
+        }
+    });
+    return exports.string(_.defaults(options, {
+        parse: function (raw) {
+            var result = utils.parseCSV(raw || '')[0] || [];
+            if (options.parseEach) {
+                result = _.map(result, options.parseEach);
+            }
+            return result;
+        }
+    }));
+};
