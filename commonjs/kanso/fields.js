@@ -590,7 +590,7 @@ exports.creator = function (options) {
     }
     return exports.string(_.defaults(options, {
         required: false,
-        widget: widgets.hidden(),
+        widget: widgets.computed(),
         default_value: function (userCtx) {
             return (userCtx && userCtx.name) || '';
         }
@@ -621,7 +621,7 @@ exports.timestamp = function (options) {
         p.update = permissions.fieldUneditable();
     }
     return exports.number(_.defaults(options, {
-        widget: widgets.hidden(),
+        widget: widgets.computed(),
         default_value: function (userCtx) {
             return new Date().getTime();
         }

@@ -7,7 +7,8 @@
  * Module dependencies
  */
 
-var forms = require('./forms');
+var forms = require('./forms'),
+    utils = require('./utils');
 
 
 /**
@@ -124,7 +125,7 @@ exports.textarea = function (options) {
             html += ' rows="' + options.rows + '"';
         }
         html += '>';
-        html += raw.replace(/</g, '&lt;').replace(/>/g, '&gt');
+        html += utils.escapeHTML(raw);
         html += '</textarea>';
         return html;
     };
@@ -175,6 +176,31 @@ exports.select = function (options) {
             html += '</option>';
         }
         html += '</select>';
+        return html;
+    };
+    return w;
+};
+
+/**
+ * Creates a new computed widget. Computed widgets display a string, but are
+ * uneditable, working as a hidden field behind the scenes.
+ *
+ * @param options
+ * @returns {Widget Object}
+ */
+
+exports.computed = function (options) {
+    var w = new Widget('computed', options);
+    w.toHTML = function (name, value, raw) {
+        if (raw === undefined) {
+            raw = (value === undefined) ? '': '' + value;
+        }
+        if (raw === null || raw === undefined) {
+            raw = '';
+        }
+        var html = '<input type="hidden" value="' + raw + '"';
+        html += this._attrs(name) + ' />';
+        html += '<span>' + utils.escapeHTML(raw) + '</span>';
         return html;
     };
     return w;
