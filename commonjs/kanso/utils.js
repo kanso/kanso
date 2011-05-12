@@ -195,3 +195,45 @@ exports.escapeHTML = function (s) {
     s = s.replace(/"/g, '&quot;');
     return s;
 };
+
+// Parsing comma-separated values (CSV) in JavaScript by M. A. SRIDHAR
+// http://yawgb.blogspot.com/2009/03/parsing-comma-separated-values-in.html
+
+exports.parseCSV = function (csvString) {
+    var fieldEndMarker  = /([,\015\012] *)/g;
+    var qFieldEndMarker = /("")*"([,\015\012] *)/g;
+    var startIndex = 0;
+    var records = [], currentRecord = [];
+    do {
+        var ch = csvString.charAt(startIndex);
+        var endMarkerRE = (ch === '"') ? qFieldEndMarker : fieldEndMarker;
+        endMarkerRE.lastIndex = startIndex;
+        var matchArray = endMarkerRE.exec(csvString);
+        if (!matchArray || !matchArray.length) {
+            break;
+        }
+        var endIndex = endMarkerRE.lastIndex;
+        endIndex -= matchArray[matchArray.length - 1].length;
+        var match = csvString.substring(startIndex, endIndex);
+        if (match.charAt(0) === '"') {
+            match = match.substring(1, match.length - 1).replace(/""/g, '"');
+        }
+        currentRecord.push(match);
+        var marker = matchArray[0];
+        if (marker.indexOf(',') < 0) {
+            records.push(currentRecord);
+            currentRecord = [];
+        }
+        startIndex = endMarkerRE.lastIndex;
+    } while (true);
+    if (startIndex < csvString.length) {
+        var remaining = csvString.substring(startIndex).trim();
+        if (remaining) {
+            currentRecord.push(remaining);
+        }
+    }
+    if (currentRecord.length > 0) {
+        records.push(currentRecord);
+    }
+    return records;
+};
