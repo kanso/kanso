@@ -119,18 +119,18 @@ exports.request = function (options, callback) {
  * @param {Function} callback
  */
 
- exports.getRewrite = function(path, q, callback) {
+exports.getRewrite = function (path, q, callback) {
     if (!utils.isBrowser) {
         throw new Error('getRewrite cannot be called server-side');
     }
 
     var base = utils.getBaseURL();
     var req = {
-        url: base + '/_db/_design/' + settings.name + '/_rewrite/' + path
+        url: base + '/_db/_design/' + settings.name + '/_rewrite/' + path,
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
- }
+};
 
 
 /**
@@ -252,7 +252,7 @@ exports.getList = function (list, view, q, callback) {
     }
     var base = utils.getBaseURL();
     var req = {
-        url: base + '/_db/_design/' + settings.name + '/_list/' + list + '/' + view
+        url: base + '/_db/_design/' + settings.name + '/_list/' + list + '/' + view,
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
