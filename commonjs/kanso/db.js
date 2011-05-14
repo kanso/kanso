@@ -110,6 +110,30 @@ exports.request = function (options, callback) {
 
 
 /**
+ * Fetches a rewrite from the database the app is running on. Results
+ * are passed to the callback, with the first argument of the callback
+ * reserved for any exceptions that occurred (node.js style).
+ *
+ * @param {String} path
+ * @param {Object} q
+ * @param {Function} callback
+ */
+
+ exports.getRewrite = function(path, q, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getRewrite cannot be called server-side');
+    }
+
+    var base = utils.getBaseURL();
+    var req = {
+        url: base + '/_db/_design/' + settings.name + '/_rewrite/' + path
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+ }
+
+
+/**
  * Fetches a document from the database the app is running on. Results are
  * passed to the callback, with the first argument of the callback reserved
  * for any exceptions that occurred (node.js style).
@@ -204,6 +228,31 @@ exports.getView = function (view, q, callback) {
     var base = utils.getBaseURL();
     var req = {
         url: base + '/_db/_design/' + settings.name + '/_view/' + view,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Transforms and fetches a view through a list from the database the app
+ * is running on. Results are passed to the callback, with the first
+ * argument of the callback reservedfor any exceptions that occurred (node.js style).
+ *
+ * @param {String} list
+ * @param {String} view
+ * @param {Object} q
+ * @param {Function} callback
+ */
+
+// TODO: make q argument optional?
+exports.getList = function (list, view, q, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getList cannot be called server-side');
+    }
+    var base = utils.getBaseURL();
+    var req = {
+        url: base + '/_db/_design/' + settings.name + '/_list/' + list + '/' + view
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
