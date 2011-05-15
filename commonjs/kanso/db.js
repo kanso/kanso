@@ -246,6 +246,7 @@ exports.getView = function (view, q, callback) {
  */
 
 // TODO: make q argument optional?
+// TODO: run list function client-side?
 exports.getList = function (list, view, q, callback) {
     if (!utils.isBrowser) {
         throw new Error('getList cannot be called server-side');
