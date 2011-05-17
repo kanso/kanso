@@ -111,7 +111,8 @@ exports.typelist = adminList(function (rows, ddoc, req) {
                     return {id: r.id, display_name: display_name};
                 });
                 var html = templates.render('typelist_rows.html', req, {
-                    rows: f
+                    rows: f,
+						        app: req.query.app
                 });
                 more_link.data('last_id', rows[rows.length-1].id);
                 $('table.typelist tbody').append(html);
