@@ -1,3 +1,5 @@
+/*global $: false */
+
 var db = require('kanso/db');
 
 exports.capitalize = function (str) {
@@ -123,6 +125,7 @@ var Couch = exports.Couch = {
                         var s = "function (module, exports, require) { " +
                             newModule.current + " }";
                         try {
+                            var func;
                             eval('var func = (' + s + ')');
                             func.apply(sandbox, [
                                 newModule,

@@ -23,16 +23,17 @@ var adminShow = function (fn) {
             }
             fn(doc, ddoc, req);
         });
-    }
+    };
 };
 
 exports.types = adminShow(function (doc, ddoc, req) {
     var settings = utils.appRequire(ddoc, 'kanso/settings');
     var app = utils.appRequire(ddoc, settings.load);
 
+    var k;
     var types = [];
     if (app.types) {
-        for (var k in app.types) {
+        for (k in app.types) {
             if (app.types.hasOwnProperty(k)) {
                 types.push(k);
             }
@@ -41,7 +42,7 @@ exports.types = adminShow(function (doc, ddoc, req) {
 
     var views = [];
     if (app.views) {
-        for (var k in app.views) {
+        for (k in app.views) {
             if (app.views.hasOwnProperty(k)) {
                 views.push(k);
             }
@@ -119,10 +120,11 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
 
 exports.fieldPairs = function (fields, doc, path) {
     var pairs = [];
+    var val, type, display_name;
     for (var k in fields) {
         if (fields.hasOwnProperty(k)) {
             if (kanso_utils.constructorName(fields[k]) === 'Field') {
-                var val = kanso_utils.getPropertyPath(doc, path.concat([k]));
+                val = kanso_utils.getPropertyPath(doc, path.concat([k]));
                 if (!fields[k].isEmpty(val) || !fields[k].omit_empty) {
                     pairs.push({
                         field: path.concat([k]).join('.'),
@@ -136,9 +138,9 @@ exports.fieldPairs = function (fields, doc, path) {
                         fields[k].type.fields, doc, path.concat([k])
                     )
                 );*/
-                var val = kanso_utils.getPropertyPath(doc, path.concat([k]));
-                var type = fields[k].type;
-                var display_name = val ? val._id: '';
+                val = kanso_utils.getPropertyPath(doc, path.concat([k]));
+                type = fields[k].type;
+                display_name = val ? val._id: '';
                 if (type.display_name) {
                     display_name = type.display_name(val);
                 }
@@ -158,14 +160,14 @@ exports.fieldPairs = function (fields, doc, path) {
                             )
                         );
                         */
-                        var val = kanso_utils.getPropertyPath(doc, path.concat([k,i]));
-                        var type = fields[k].type;
-                        var display_name = val ? val._id: '';
+                        val = kanso_utils.getPropertyPath(doc, path.concat([k, i]));
+                        type = fields[k].type;
+                        display_name = val ? val._id: '';
                         if (type.display_name) {
                             display_name = type.display_name(val);
                         }
                         pairs.push({
-                            field: path.concat([k,i]).join('.'),
+                            field: path.concat([k, i]).join('.'),
                             value: display_name
                         });
                     }
@@ -291,7 +293,7 @@ exports.viewtype = adminShow(function (doc, ddoc, req) {
     }
 
     var tfields = type ? type.fields: {};
-		var dname = (type && type.display_name) ? type.display_name(doc) : doc._id
+    var dname = (type && type.display_name) ? type.display_name(doc): doc._id;
     var content = templates.render('viewtype.html', req, {
         fields: exports.fieldPairs(tfields, doc, []),
         doc: doc,
