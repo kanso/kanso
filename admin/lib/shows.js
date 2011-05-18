@@ -291,9 +291,11 @@ exports.viewtype = adminShow(function (doc, ddoc, req) {
     }
 
     var tfields = type ? type.fields: {};
+		var dname = (type && type.display_name) ? type.display_name(doc) : doc._id
     var content = templates.render('viewtype.html', req, {
         fields: exports.fieldPairs(tfields, doc, []),
         doc: doc,
+        display_name: dname,
         app: req.query.app,
         app_heading: utils.capitalize(req.query.app),
         type: doc.type,
