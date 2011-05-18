@@ -9,6 +9,8 @@ NODEJSLIBDIR ?= $(LIBDIR)/$(NODEJS)
 
 BUILDDIR = dist
 
+COMMONJSFILES = $(shell find ./commonjs/kanso/*.js | grep -v ./commonjs/kanso/sha1.js | grep -v ./commonjs/kanso/underscore.js)
+
 $(shell if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi)
 
 all: build
@@ -36,6 +38,6 @@ clean:
 	rm -rf $(BUILDDIR) stamp-build
 
 lint:
-	nodelint --config nodelint.cfg ./bin/kanso ./commonjs/kanso/*.js ./lib/*.js ./static/kanso.js
+	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./lib/*.js ./static/kanso.js ./admin/lib/*.js
 
 .PHONY: test install uninstall build all clean lint
