@@ -234,6 +234,28 @@ exports.all = function (/*optional*/q, callback) {
     exports.request(req, callback);
 };
 
+/**
+ *
+ * @param {Object} options
+ * @param {Function} callback
+ */
+
+exports.replicate = function (options, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('replicate cannot be called server-side');
+    }
+    if (!options.source) {
+      throw new Error('a source parameter must be provided');
+    }
+    if (!options.target) {
+      throw new Error('a target parameter must be provided');
+    }
+    var req = {
+        url: '/_replicator',
+        data: JSON.stringify(options)
+    };
+    exports.request(req, callback);
+};
 
 /**
  * Properly encodes query parameters to CouchDB views etc. Handle complex
