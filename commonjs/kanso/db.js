@@ -254,6 +254,7 @@ exports.replicate = function (options, callback) {
       throw new Error('target parameter must be provided');
     }
     var req = {
+        method: 'PUT',
         url: '/_replicator',
         data: JSON.stringify(options)
     };
@@ -261,8 +262,29 @@ exports.replicate = function (options, callback) {
 };
 
 /**
+ * Stops a replication operation already in progress.
+ * The id parameter is available in the callback function
+ * that is invoked by replicate. The replication id can also
+ * be selected at the time replicate is called.
+ *
+ * @param {String} id
+ * @param {Function} callback
+ */
+
+exports.stopReplication = function (id, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('stopReplication cannot be called server-side');
+    }
+    var req = {
+        method: 'DELETE',
+        url: '/_replicator/' + id
+    };
+    exports.request(req, callback);
+};
+
+/**
  * Deletes an existing user document, given its username. You
- * must be logged in as an administrative user for this functio
+ * must be logged in as an administrative user for this function
  * to succeed.
  *
  * @param {String} username
