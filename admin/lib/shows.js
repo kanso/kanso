@@ -35,7 +35,10 @@ exports.types = adminShow(function (doc, ddoc, req) {
     if (app.types) {
         for (k in app.types) {
             if (app.types.hasOwnProperty(k)) {
-                types.push(k);
+                types.push({
+                    title: utils.typeHeading(k),
+                    key: k
+                });
             }
         }
     }
@@ -44,7 +47,10 @@ exports.types = adminShow(function (doc, ddoc, req) {
     if (app.views) {
         for (k in app.views) {
             if (app.views.hasOwnProperty(k)) {
-                views.push(k);
+                views.push({
+                    title: utils.viewHeading(k),
+                    key: k
+                });
             }
         }
     }
@@ -88,6 +94,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         app_heading: utils.capitalize(req.query.app),
         type: req.query.type,
         type_heading: utils.typeHeading(req.query.type),
+        type_title: req.query.type.replace(/_/g, ' '),
         description: type.description,
         form: form.toHTML(req, forms.render.table)
     });
@@ -109,6 +116,7 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
         app_heading: utils.capitalize(req.query.app),
         type: doc.type,
         type_heading: utils.typeHeading(doc.type),
+        type_title: doc.type.replace(/_/g, ' '),
         id: req.query.id,
         form: form.toHTML(req, forms.render.table)
     });
@@ -302,7 +310,8 @@ exports.viewtype = adminShow(function (doc, ddoc, req) {
         app_heading: utils.capitalize(req.query.app),
         type: doc.type,
         type_plural: utils.typePlural(doc.type),
-        type_heading: utils.typeHeading(doc.type)
+        type_heading: utils.typeHeading(doc.type),
+        type_title: doc.type.replace(/_/g, ' ')
     });
 
     var title = req.query.app + ' - ' + doc.type + ' - ' + req.query.id;

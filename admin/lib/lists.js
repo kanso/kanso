@@ -77,7 +77,8 @@ exports.typelist = adminList(function (rows, ddoc, req) {
         app: req.query.app,
         app_heading: utils.capitalize(req.query.app),
         type: req.query.type,
-        type_heading: utils.typeHeading(req.query.type)
+        type_heading: utils.typeHeading(req.query.type),
+        type_title: req.query.type.replace(/_/g, ' ')
     });
 
     $('#content').html(content);
