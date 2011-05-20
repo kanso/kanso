@@ -6,6 +6,7 @@ var utils = require('./utils'),
     db = require('kanso/db'),
     admin_forms = require('./forms'),
     templates = require('kanso/templates'),
+    querystring = require('kanso/querystring'),
     _ = require('kanso/underscore');
 
 
@@ -30,6 +31,8 @@ exports.types = adminShow(function (doc, ddoc, req) {
     var settings = utils.appRequire(ddoc, 'kanso/settings');
     var app = utils.appRequire(ddoc, settings.load);
 
+    var baseURL = kanso_utils.getBaseURL(req);
+
     var k;
     var types = [];
     if (app.types) {
@@ -47,9 +50,13 @@ exports.types = adminShow(function (doc, ddoc, req) {
     if (app.views) {
         for (k in app.views) {
             if (app.views.hasOwnProperty(k)) {
+                var reduce = app.views[k].hasOwnProperty('reduce');
                 views.push({
                     title: utils.viewHeading(k),
-                    key: k
+                    key: k,
+                    reduce: reduce,
+                    url: baseURL + '/' + settings.name + '/views/' + k +
+                         (reduce ? '?reduce=false': '')
                 });
             }
         }
@@ -209,8 +216,6 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
             alert(err);
             return;
         }
-        console.log('viewlist');
-        console.log(res);
         var rows = _.map(res.rows, function (r) {
             r.value = JSON.stringify(r.value);
             r.key = JSON.stringify(r.key);
@@ -224,10 +229,14 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
         var last_row = rows[rows.length - 1];
         var last_key = last_row ? last_row.key: null;
         var last_id = last_row ? last_row.id: null;
-        var next_link = '' +
-            '?startkey=' + encodeURIComponent(last_key) +
-            '&startkey_docid=' + encodeURIComponent(last_id) +
-            '&skip=1';
+        var next_link = '?' + querystring.stringify(
+            _.extend(_.clone(req.query), {
+                startkey: last_key,
+                startkey_docid: last_id,
+                descending: false,
+                skip: 1
+            })
+        );
 
         var show_next_link = true;
         if (req.query.descending === 'true') {
@@ -240,11 +249,14 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
         var first_row = rows[0];
         var first_key = first_row ? first_row.key: null;
         var first_id = first_row ? first_row.id: null;
-        var prev_link = '' +
-            '?startkey=' + encodeURIComponent(first_key) +
-            '&startkey_docid=' + encodeURIComponent(first_id) +
-            '&descending=true' +
-            '&skip=1';
+        var prev_link = '?' + querystring.stringify(
+            _.extend(_.clone(req.query), {
+                startkey: first_key,
+                startkey_docid: first_id,
+                descending: true,
+                skip: 1
+            })
+        );
 
         var show_prev_link = true;
         if (req.query.descending === 'true') {
