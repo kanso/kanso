@@ -304,6 +304,7 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
         var title = req.query.app + ' - ' + req.query.view;
         $('#content').html(content);
         document.title = title;
+        $('#content table.viewlist tr:odd').addClass('odd');
     });
 });
 
