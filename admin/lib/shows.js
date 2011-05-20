@@ -205,7 +205,10 @@ exports.fieldPairs = function (fields, doc, path) {
 
 
 exports.viewlist = adminShow(function (doc, ddoc, req) {
-    var base = kanso_utils.getBaseURL();
+    var base = kanso_utils.getBaseURL(),
+        settings = utils.appRequire(ddoc, 'kanso/settings'),
+        app = utils.appRequire(ddoc, settings.load);
+
     var view_req = {
         url: base + '/_db/_design/' + req.query.app + '/_view/' + req.query.view,
         data: db.stringifyQuery(req.query)
@@ -279,9 +282,14 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
         }
 
 
+        var baseURL = kanso_utils.getBaseURL(req);
+        var reduce = app.views[req.query.view].hasOwnProperty('reduce');
+
         var content = templates.render('view.html', req, {
             rows: rows,
             view_heading: utils.viewHeading(req.query.view),
+            view_url: baseURL + '/' + settings.name + '/views/' +
+                      req.query.view + (reduce ? '?reduce=false': ''),
             view: req.query.view,
             app: req.query.app,
             app_heading: utils.capitalize(req.query.app),
