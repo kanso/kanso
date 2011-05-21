@@ -143,7 +143,7 @@ exports.request = function (options, callback) {
  * @param {Function} callback
  */
 
-exports.getRewrite = function (path, q/*optional*/, callback) {
+exports.getRewrite = function (path, /*optional*/q, callback) {
     if (!utils.isBrowser) {
         throw new Error('getRewrite cannot be called server-side');
     }
@@ -174,7 +174,7 @@ exports.getRewrite = function (path, q/*optional*/, callback) {
  * @param {Function} callback
  */
 
-exports.getDoc = function (id, q/*optional*/, callback) {
+exports.getDoc = function (id, /*optional*/q, callback) {
     if (!utils.isBrowser) {
         throw new Error('getDoc cannot be called server-side');
     }
@@ -252,7 +252,7 @@ exports.removeDoc = function (doc, callback) {
  * @param {Function} callback
  */
 
-exports.getView = function (view, q/*optional*/, callback) {
+exports.getView = function (view, /*optional*/q, callback) {
     if (!utils.isBrowser) {
         throw new Error('getView cannot be called server-side');
     }
@@ -284,7 +284,7 @@ exports.getView = function (view, q/*optional*/, callback) {
  */
 
 // TODO: run list function client-side?
-exports.getList = function (list, view, q/*optional*/, callback) {
+exports.getList = function (list, view, /*optional*/q, callback) {
     if (!utils.isBrowser) {
         throw new Error('getList cannot be called server-side');
     }
@@ -317,7 +317,7 @@ exports.getList = function (list, view, q/*optional*/, callback) {
  */
 
 // TODO: run show function client-side?
-exports.getShow = function (show, docid, q/*optional*/, callback) {
+exports.getShow = function (show, docid, /*optional*/q, callback) {
     if (!utils.isBrowser) {
         throw new Error('getShow cannot be called server-side');
     }
