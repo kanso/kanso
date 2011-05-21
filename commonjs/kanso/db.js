@@ -251,7 +251,8 @@ exports.getView = function (view, q, callback) {
 /**
  * Transforms and fetches a view through a list from the database the app
  * is running on. Results are passed to the callback, with the first
- * argument of the callback reservedfor any exceptions that occurred (node.js style).
+ * argument of the callback reserved for any exceptions that occurred
+ * (node.js style).
  *
  * @param {String} list
  * @param {String} view
@@ -266,8 +267,36 @@ exports.getList = function (list, view, q, callback) {
         throw new Error('getList cannot be called server-side');
     }
     var base = utils.getBaseURL();
+    var name = settings.name;
     var req = {
-        url: base + '/_db/_design/' + settings.name + '/_list/' + list + '/' + view,
+        url: base + '/_db/_design/' + name + '/_list/' + list + '/' + view,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Transforms and fetches a document through a show from the database the app
+ * is running on. Results are passed to the callback, with the first
+ * argument of the callback reserved for any exceptions that occurred
+ * (node.js style).
+ *
+ * @param {String} show
+ * @param {String} docid
+ * @param {Object} q
+ * @param {Function} callback
+ */
+
+// TODO: make q argument optional?
+// TODO: run show function client-side?
+exports.getShow = function (show, docid, q, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getShow cannot be called server-side');
+    }
+    var base = utils.getBaseURL();
+    var show_url = base + '/_db/_design/' + settings.name + '/_show/' + show;
+    var req = {
+        url: show_url + (docid ? '/' + docid: ''),
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
