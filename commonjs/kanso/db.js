@@ -105,6 +105,18 @@ function onComplete(callback) {
     };
 }
 
+/**
+ * Encodes a document id or view, list or show name.
+ *
+ * @param {String} str
+ * @return {String}
+ * @api public
+ */
+
+exports.encode = function (str) {
+    return encodeURIComponent(str).replace(/^_design%2F/, '_design/');
+};
+
 
 /**
  * Make a request, with some default settings and proper callback
@@ -139,7 +151,7 @@ exports.getRewrite = function (path, q, callback) {
     path = (path[0] === '/') ? path: '/' + path;
 
     var base = utils.getBaseURL();
-    var name = encodeURIComponent(settings.name);
+    var name = exports.encode(settings.name);
     var req = {
         url: base + '/_db/_design/' + name + '/_rewrite' + path,
         data: exports.stringifyQuery(q)
@@ -164,7 +176,7 @@ exports.getDoc = function (id, q, callback) {
         throw new Error('getDoc cannot be called server-side');
     }
     var req = {
-        url: utils.getBaseURL() + '/_db/' + encodeURIComponent(id),
+        url: utils.getBaseURL() + '/_db/' + exports.encode(id),
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
@@ -190,7 +202,7 @@ exports.saveDoc = function (doc, callback) {
     }
     else {
         method = "PUT";
-        url += '/' + encodeURIComponent(doc._id);
+        url += '/' + exports.encode(doc._id);
     }
     var req = {
         type: method,
@@ -216,8 +228,8 @@ exports.removeDoc = function (doc, callback) {
         throw new Error('removeDoc cannot be called server-side');
     }
     var url = utils.getBaseURL() + '/_db/' +
-        encodeURIComponent(doc._id) +
-        '?rev=' + encodeURIComponent(doc._rev);
+        exports.encode(doc._id) +
+        '?rev=' + exports.encode(doc._rev);
 
     exports.request({type: 'DELETE', url: url}, callback);
 };
@@ -239,8 +251,8 @@ exports.getView = function (view, q, callback) {
         throw new Error('getView cannot be called server-side');
     }
     var base = utils.getBaseURL();
-    var name = encodeURIComponent(settings.name);
-    var viewname = encodeURIComponent(view);
+    var name = exports.encode(settings.name);
+    var viewname = exports.encode(view);
     var req = {
         url: base + '/_db/_design/' + name + '/_view/' + viewname,
         data: exports.stringifyQuery(q)
@@ -268,9 +280,9 @@ exports.getList = function (list, view, q, callback) {
         throw new Error('getList cannot be called server-side');
     }
     var base = utils.getBaseURL();
-    var name = encodeURIComponent(settings.name);
-    var listname = encodeURIComponent(list);
-    var viewname = encodeURIComponent(view);
+    var name = exports.encode(settings.name);
+    var listname = exports.encode(list);
+    var viewname = exports.encode(view);
     var req = {
         url: base + '/_db/_design/' + name + '/_list/' + listname +
              '/' + viewname,
@@ -298,11 +310,11 @@ exports.getShow = function (show, docid, q, callback) {
         throw new Error('getShow cannot be called server-side');
     }
     var base = utils.getBaseURL();
-    var name = encodeURIComponent(settings.name);
-    var showname = encodeURIComponent(show);
+    var name = exports.encode(settings.name);
+    var showname = exports.encode(show);
     var show_url = base + '/_db/_design/' + name + '/_show/' + showname;
     var req = {
-        url: show_url + (docid ? '/' + encodeURIComponent(docid): ''),
+        url: show_url + (docid ? '/' + exports.encode(docid): ''),
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
