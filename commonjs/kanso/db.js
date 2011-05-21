@@ -139,13 +139,17 @@ exports.request = function (options, callback) {
  * reserved for any exceptions that occurred (node.js style).
  *
  * @param {String} path
- * @param {Object} q
+ * @param {Object} q (optional)
  * @param {Function} callback
  */
 
-exports.getRewrite = function (path, q, callback) {
+exports.getRewrite = function (path, q/*optional*/, callback) {
     if (!utils.isBrowser) {
         throw new Error('getRewrite cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
     }
     // prepend forward-slash if missing
     path = (path[0] === '/') ? path: '/' + path;
@@ -166,14 +170,17 @@ exports.getRewrite = function (path, q, callback) {
  * for any exceptions that occurred (node.js style).
  *
  * @param {String} id
- * @param {Object} q
+ * @param {Object} q (optional)
  * @param {Function} callback
  */
 
-// TODO: make q argument optional?
-exports.getDoc = function (id, q, callback) {
+exports.getDoc = function (id, q/*optional*/, callback) {
     if (!utils.isBrowser) {
         throw new Error('getDoc cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
     }
     var req = {
         url: utils.getBaseURL() + '/_db/' + exports.encode(id),
@@ -241,14 +248,17 @@ exports.removeDoc = function (doc, callback) {
  * for any exceptions that occurred (node.js style).
  *
  * @param {String} view
- * @param {Object} q
+ * @param {Object} q (optional)
  * @param {Function} callback
  */
 
-// TODO: make q argument optional?
-exports.getView = function (view, q, callback) {
+exports.getView = function (view, q/*optional*/, callback) {
     if (!utils.isBrowser) {
         throw new Error('getView cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
     }
     var base = utils.getBaseURL();
     var name = exports.encode(settings.name);
@@ -269,15 +279,18 @@ exports.getView = function (view, q, callback) {
  *
  * @param {String} list
  * @param {String} view
- * @param {Object} q
+ * @param {Object} q (optional)
  * @param {Function} callback
  */
 
-// TODO: make q argument optional?
 // TODO: run list function client-side?
-exports.getList = function (list, view, q, callback) {
+exports.getList = function (list, view, q/*optional*/, callback) {
     if (!utils.isBrowser) {
         throw new Error('getList cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
     }
     var base = utils.getBaseURL();
     var name = exports.encode(settings.name);
@@ -299,15 +312,18 @@ exports.getList = function (list, view, q, callback) {
  *
  * @param {String} show
  * @param {String} docid
- * @param {Object} q
+ * @param {Object} q (optional)
  * @param {Function} callback
  */
 
-// TODO: make q argument optional?
 // TODO: run show function client-side?
-exports.getShow = function (show, docid, q, callback) {
+exports.getShow = function (show, docid, q/*optional*/, callback) {
     if (!utils.isBrowser) {
         throw new Error('getShow cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
     }
     var base = utils.getBaseURL();
     var name = exports.encode(settings.name);
