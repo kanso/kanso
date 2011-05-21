@@ -758,7 +758,7 @@
       </table>
 
       <h4 id="db_getList">
-        db.getList(view, q, callback)
+        db.getList(list, view, q, callback)
       </h4>
       <p>
         Transforms and fetches a view through a list from the database the app
@@ -775,6 +775,38 @@
           </tr>
           <tr>
             <th>view</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>q</th>
+            <td class="type">Object</td>
+          </tr>
+          <tr>
+            <th>callback</th>
+            <td class="type">Function</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h4 id="db_getShow">
+        db.getShow(show, docid, q, callback)
+      </h4>
+      <p>
+        Transforms and fetches a document through a show from the database the app
+        is running on. Results are passed to the callback, with the first
+        argument of the callback reserved for any exceptions that occurred
+        (node.js style).
+      </p>
+
+      <h5>Parameters:</h5>
+      <table class="params">
+        <tbody>
+          <tr>
+            <th>show</th>
+            <td class="type">String</td>
+          </tr>
+          <tr>
+            <th>docid</th>
             <td class="type">String</td>
           </tr>
           <tr>
