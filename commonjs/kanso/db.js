@@ -68,7 +68,19 @@ var httpData = function (xhr, type, s) {
 
 function onComplete(callback) {
     return function (req) {
-        var resp = httpData(req, "json");
+        var resp;
+        var ctype = req.getResponseHeader('Content-Type');
+        if (ctype === 'application/json' || ctype === 'text/json') {
+            try {
+                resp = httpData(req, "json");
+            }
+            catch (e) {
+                return callback(e);
+            }
+        }
+        else {
+            resp = req.responseText;
+        }
         if (req.status === 401) {
             // returned 'Unauthorized', check the user's session if it's not
             // been checked on an 'Unauthorized' repsonse in the last second
