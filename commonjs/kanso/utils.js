@@ -237,3 +237,19 @@ exports.parseCSV = function (csvString) {
     }
     return records;
 };
+
+/**
+ * Creates couchdb response object for returning from a show, list or update
+ * function, which redirects to the given app url (automatically prepending the
+ * baseURL)
+ *
+ * @param {Object} req
+ * @param {String} url
+ * @return {Object}
+ * @api public
+ */
+
+exports.redirect = function (req, url) {
+    var baseURL = exports.getBaseURL(req);
+    return {code: 302, headers: {'Location': baseURL + url}};
+};
