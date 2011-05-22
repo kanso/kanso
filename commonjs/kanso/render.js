@@ -53,11 +53,14 @@ exports.classes = function (field, errors) {
 };
 
 exports.table = function () {
+    // called at the start of rendering the form
+    // the string returned from this function is prepended to the form's markup
     this.start = function () {
         return '';
     };
+    // Called when any field that is not an embed or embedList field is
+    // encountered
     this.field = function (field, name, value, raw, errors) {
-        // TODO: handle multipleCheckbox and multipleRadio fields
         if (field.widget.type === 'hidden') {
             return field.widget.toHTML(name, value, raw);
         }
@@ -75,6 +78,7 @@ exports.table = function () {
             '</td>' +
         '</tr>';
     };
+    // Called when an embed field is encountered
     this.embed = function (type, name, value, raw, errors) {
         var fval = value ? JSON.stringify(value).replace(/"/g, '&#34;'): '';
         var display_name = value ? value._id: '';
@@ -98,6 +102,7 @@ exports.table = function () {
             '</td>' +
         '</tr>';
     };
+    // Called when an embedList field is encountered
     this.embedList = function (type, name, value, raw, errors) {
         var html = '<tr class="embeddedlist">' +
             '<th>' +
@@ -126,6 +131,8 @@ exports.table = function () {
         '</tr>';
         return html;
     };
+    // called at the end of rendering the form
+    // the string returned from this function is appended to the form's markup
     this.end = function () {
         return '';
     };
