@@ -295,6 +295,8 @@ exports.newUUID = function (cacheNum, callback) {
     });
 };
 
+
+
 /**
  * Fetches the most recent revision of the replication document
  * referred to by the id parameter.
@@ -313,6 +315,33 @@ exports.getReplication = function (id, callback) {
     exports.request(req, callback);
 };
 
+/**
+ * Replicates options.source to options.target. The strings 
+ * options.source and options.target are each either a
+ * CouchDB database name or a CouchDB database URI.
+ *
+ * @param {Object} options
+ * @param {Function} callback
+ */
+
+exports.replicate = function (options, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('replicate cannot be called server-side');
+    }
+    if (!options.source) {
+      throw new Error('source parameter must be provided');
+    }
+    if (!options.target) {
+      throw new Error('target parameter must be provided');
+    }
+    var req = {
+        type: 'POST',
+        url: '/_replicator',
+        data: JSON.stringify(options),
+        contentType: 'application/json'
+    };
+    exports.request(req, callback);
+};
 
 /**
  * Stops a replication operation already in progress.
@@ -357,8 +386,7 @@ exports.stopReplication = function (doc, callback, options) {
                   + 'last read, and stopReplication failed to re-request it'
               );
             }
-            console.log('retry');
-            return setTimeout(function() {
+            setTimeout(function() {
               return exports.stopReplication(newdoc, callback, options);
             }, options.delay);
           });
