@@ -295,8 +295,6 @@ exports.newUUID = function (cacheNum, callback) {
     });
 };
 
-
-
 /**
  * Fetches the most recent revision of the replication document
  * referred to by the id parameter.
@@ -358,8 +356,8 @@ exports.stopReplication = function (doc, callback, options) {
     }
 
     if (!options) options = {};
-    if (!options.limit) options.limit = 3;
-    if (!options.delay) options.delay = 1.0;
+    if (!options.limit) options.limit = 3;   /* times */
+    if (!options.delay) options.delay = 500; /* ms */
 
     var req = {
         type: 'DELETE',
