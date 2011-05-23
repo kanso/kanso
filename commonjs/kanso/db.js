@@ -234,80 +234,6 @@ exports.all = function (/*optional*/q, callback) {
     exports.request(req, callback);
 };
 
-/**
- * Replicates options.source to options.target. The strings 
- * options.source and options.target are each either a
- * CouchDB database name or a CouchDB database URI.
- *
- * @param {Object} options
- * @param {Function} callback
- */
-
-exports.replicate = function (options, callback) {
-    if (!utils.isBrowser) {
-        throw new Error('replicate cannot be called server-side');
-    }
-    if (!options.source) {
-      throw new Error('source parameter must be provided');
-    }
-    if (!options.target) {
-      throw new Error('target parameter must be provided');
-    }
-    var req = {
-        method: 'PUT',
-        url: '/_replicator',
-        data: JSON.stringify(options)
-    };
-    exports.request(req, callback);
-};
-
-/**
- * Stops a replication operation already in progress.
- * The id parameter is available in the callback function
- * that is invoked by replicate. The replication id can also
- * be selected at the time replicate is called.
- *
- * @param {String} id
- * @param {Function} callback
- */
-
-exports.stopReplication = function (id, callback) {
-    if (!utils.isBrowser) {
-        throw new Error('stopReplication cannot be called server-side');
-    }
-    var req = {
-        method: 'DELETE',
-        url: '/_replicator/' + id
-    };
-    exports.request(req, callback);
-};
-
-/**
- * Deletes an existing user document, given its username. You
- * must be logged in as an administrative user for this function
- * to succeed.
- *
- * @param {String} username
- * @param {Function} callback
- */
-
-exports.deleteUser = function (username, callback) {
-    var doc = {};
-    doc._id = 'org.couchdb.user:' + username;
-
-    exports.userDb(function (err, userdb) {
-        if (err) {
-            return callback(err);
-        }
-        var req = {
-            type: 'DELETE',
-            url: ('/' + userdb + '/' + doc._id),
-            data: JSON.stringify(doc),
-            contentType: 'application/json'
-        };
-        db.request(req, callback);
-    });
-};
 
 /**
  * Properly encodes query parameters to CouchDB views etc. Handle complex
@@ -368,3 +294,115 @@ exports.newUUID = function (cacheNum, callback) {
         callback(null, uuidCache.shift());
     });
 };
+
+/**
+ * Fetches the most recent revision of the replication document
+ * referred to by the id parameter.
+ *
+ * @param {String} id
+ * @param {Function} callback
+ */
+
+exports.getReplication = function (id, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getReplication cannot be called server-side');
+    }
+    var req = {
+        url: '/_replicator/' + encodeURIComponent(id)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Stops a replication operation already in progress.
+ * The doc parameter can be obtained by calling getReplication.
+ *
+ * @param {String} id
+ * @param {Function} callback
+ */
+
+exports.stopReplication = function (doc, callback, options) {
+
+    if (!utils.isBrowser) {
+        throw new Error('stopReplication cannot be called server-side');
+    }
+
+    if (!options) options = {};
+    if (!options.limit) options.limit = 3;
+    if (!options.delay) options.delay = 1.0;
+
+    var req = {
+        type: 'DELETE',
+        url: '/_replicator/'
+          + encodeURIComponent(doc._id)
+          + '?rev=' + encodeURIComponent(doc._rev)
+    };
+
+    exports.request(req, function(err, rv) {
+
+      if (/conflict/i.test(err)) {  /* HTTP 409: Document Update Conflict */
+
+        /* Race condition:
+            The CouchDB replication finished (or was updated) between
+            the caller's getReplication and now. Subject to restrictions
+            in the options object, call getReplication and then try again. */
+
+        if (options.limit > 0) {
+          options.limit -= 1;
+          return exports.getReplication(doc._id, function(err_get, newdoc) {
+            if (err_get) {
+              throw new Error(
+                'The specified replication document changed since our '
+                  + 'last read, and stopReplication failed to re-request it'
+              );
+            }
+            console.log('retry');
+            return setTimeout(function() {
+              return exports.stopReplication(newdoc, callback, options);
+            }, options.delay);
+          });
+        }
+
+      } else {
+
+        /* Normal case:
+            Replication document was not changed since the last
+            read; go ahead and invoke the callback and return. */
+
+        return callback(err, rv);
+      }
+
+      /* Not reached */
+      return false;
+
+    });
+
+};
+
+/**
+ * Deletes an existing user document, given its username. You
+ * must be logged in as an administrative user for this function
+ * to succeed.
+ *
+ * @param {String} username
+ * @param {Function} callback
+ */
+
+exports.deleteUser = function (username, callback) {
+    var id = 'org.couchdb.user:' + username;
+
+    exports.userDb(function (err, userdb) {
+        if (err) {
+            return callback(err);
+        }
+        var req = {
+            type: 'DELETE',
+            url: ('/' + userdb + '/' + id),
+            data: doc,
+            contentType: 'application/json'
+        };
+        db.request(req, callback);
+    });
+};
+
