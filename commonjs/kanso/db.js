@@ -66,7 +66,7 @@ var httpData = function (xhr, type, s) {
  * @api private
  */
 
-function onComplete(callback) {
+function onComplete(options, callback) {
     return function (req) {
         var resp;
         var ctype = req.getResponseHeader('Content-Type');
@@ -79,6 +79,11 @@ function onComplete(callback) {
             }
         }
         else {
+            if (options.expect_json) {
+                return callback(
+                    new Error('Expected JSON response, got ' + ctype)
+                );
+            }
             resp = req.responseText;
         }
         if (req.status === 401) {
@@ -127,7 +132,7 @@ exports.encode = function (str) {
  */
 
 exports.request = function (options, callback) {
-    options.complete = onComplete(callback);
+    options.complete = onComplete(options, callback);
     options.dataType = 'json';
     $.ajax(options);
 };
@@ -184,7 +189,8 @@ exports.getDoc = function (id, /*optional*/q, callback) {
     }
     var req = {
         url: utils.getBaseURL() + '/_db/' + exports.encode(id),
-        data: exports.stringifyQuery(q)
+        data: exports.stringifyQuery(q),
+        expect_json: true
     };
     exports.request(req, callback);
 };
@@ -216,7 +222,8 @@ exports.saveDoc = function (doc, callback) {
         url: url,
         data: JSON.stringify(doc),
         processData: false,
-        contentType: 'application/json'
+        contentType: 'application/json',
+        expect_json: true
     };
     exports.request(req, callback);
 };
@@ -265,7 +272,8 @@ exports.getView = function (view, /*optional*/q, callback) {
     var viewname = exports.encode(view);
     var req = {
         url: base + '/_db/_design/' + name + '/_view/' + viewname,
-        data: exports.stringifyQuery(q)
+        data: exports.stringifyQuery(q),
+        expect_json: true
     };
     exports.request(req, callback);
 };
@@ -356,7 +364,8 @@ exports.all = function (/*optional*/q, callback) {
     var base = utils.getBaseURL();
     var req = {
         url: base + '/_db/_all_docs',
-        data: exports.stringifyQuery(q)
+        data: exports.stringifyQuery(q),
+        expect_json: true
     };
     exports.request(req, callback);
 };
@@ -411,7 +420,8 @@ exports.newUUID = function (cacheNum, callback) {
     var base = utils.getBaseURL();
     var req = {
         url: '/_uuids',
-        data: {count: cacheNum}
+        data: {count: cacheNum},
+        expect_json: true
     };
     exports.request(req, function (err, resp) {
         if (err) {
