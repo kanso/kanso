@@ -296,6 +296,42 @@ exports.newUUID = function (cacheNum, callback) {
 };
 
 /**
+ * Creates a CouchDB database (read: a collection of documents).
+ *
+ * @param {String} name
+ * @param {Function} callback
+ */
+
+exports.createDatabase = function (name, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('createDatabase cannot be called server-side');
+    }
+    var req = {
+        type: 'PUT',
+        url: '/' + exports.encode(name)
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Deletes a CouchDB database (read: a collection of documents).
+ *
+ * @param {String} name
+ * @param {Function} callback
+ */
+
+exports.deleteDatabase = function (name, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('deleteDatabase cannot be called server-side');
+    }
+    var req = {
+        type: 'DELETE',
+        url: '/' + exports.encode(name)
+    };
+    exports.request(req, callback);
+};
+
+/**
  * Fetches the most recent revision of the replication document
  * referred to by the id parameter.
  *
