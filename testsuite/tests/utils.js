@@ -7,7 +7,9 @@ exports['getBaseURL - browser'] = function (test) {
     utils.isBrowser = true;
     var _getWindowLocation = utils.getWindowLocation;
     var testpath = function (p) {
-        utils.getWindowLocation = function () { return {pathname: p}; };
+        utils.getWindowLocation = function () {
+            return {pathname: p};
+        };
         return utils.getBaseURL();
     };
     test.equal(testpath('/'), '');
@@ -31,15 +33,15 @@ exports['getBaseURL - couchdb no vhost'] = function (test) {
         return utils.getBaseURL({path: p, headers: {}});
     };
     test.equal(
-        testpath(['db','_design','doc','_show','testshow']),
+        testpath(['db', '_design', 'doc', '_show', 'testshow']),
         '/db/_design/doc/_rewrite'
     );
     test.equal(
-        testpath(['db','_design','doc','_list','testlist']),
+        testpath(['db', '_design', 'doc', '_list', 'testlist']),
         '/db/_design/doc/_rewrite'
     );
     test.equal(
-        testpath(['db','_design','doc']),
+        testpath(['db', '_design', 'doc']),
         '/db/_design/doc/_rewrite'
     );
     utils.isBrowser = true;
@@ -50,7 +52,7 @@ exports['getBaseURL - couchdb with vhost'] = function (test) {
     utils.isBrowser = false;
     var testpath = function (p) {
         var req = {
-            path: ['db','_design','doc','_show','testshow'],
+            path: ['db', '_design', 'doc', '_show', 'testshow'],
             headers: {'x-couchdb-vhost-path': p}
         };
         return utils.getBaseURL(req);
@@ -72,14 +74,14 @@ exports['getBaseURL - couchdb no request'] = function (test) {
 
 exports['getPropertyPath'] = function (test) {
     var obj = {some: {nested: {path: 'yay'}}};
-    test.equal(utils.getPropertyPath(obj, ['some','nested','path']), 'yay');
-    test.same(utils.getPropertyPath(obj, ['some','nested']), {path: 'yay'});
+    test.equal(utils.getPropertyPath(obj, ['some', 'nested', 'path']), 'yay');
+    test.same(utils.getPropertyPath(obj, ['some', 'nested']), {path: 'yay'});
     test.strictEqual(
-        utils.getPropertyPath(obj, ['some','nested','missing']),
+        utils.getPropertyPath(obj, ['some', 'nested', 'missing']),
         undefined
     );
     test.strictEqual(
-        utils.getPropertyPath(obj, ['blah','blah','blah']),
+        utils.getPropertyPath(obj, ['blah', 'blah', 'blah']),
         undefined
     );
     utils.isBrowser = true;

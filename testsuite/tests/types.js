@@ -1,12 +1,13 @@
 var types = require('kanso/types'),
     fields = require('kanso/fields'),
-    db = require('kanso/db');
+    db = require('kanso/db'),
+    _ = require('kanso/underscore');
 
 
 exports['Type - defaults'] = function (test) {
     var Type = types.Type;
     var t = new Type('t');
-    test.same(Object.keys(t.fields), ['_id','_rev', '_deleted', 'type']);
+    test.same(_.keys(t.fields), ['_id', '_rev', '_deleted', 'type']);
     test.same(t.permissions, {});
     test.done();
 };
@@ -112,7 +113,7 @@ exports['validate - missing required fields - nested'] = function (test) {
         fields: {
             one: {
                 two: new Field({
-                validators: [logArgs]
+                    validators: [logArgs]
                 })
             }
         }
@@ -219,10 +220,16 @@ exports['validate Embedded'] = function (test) {
     });
 
     var doc = {type: 't1', embeddedT1: {
-        _id: 'id1', type: 't2', one: 'one', two: 'two'
+        _id: 'id1',
+        type: 't2',
+        one: 'one',
+        two: 'two'
     }};
     var raw = {type: 't1', embeddedT1: {
-        _id: 'id1', type: 't2', one: 'one', two: 'two'
+        _id: 'id1',
+        type: 't2',
+        one: 'one',
+        two: 'two'
     }};
     var errs = t2.validate(doc, raw);
 

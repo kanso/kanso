@@ -44,7 +44,7 @@ exports['range'] = function (test) {
     test.done();
 };
 
-exports['regexp'] = function(test){
+exports['regexp'] = function (test) {
     test.expect(2);
     try {
         validators.regexp(/^\d+$/)('doc', 'abc123', 'abc123');
@@ -120,7 +120,7 @@ exports['maxlength'] = function (test) {
 exports['rangelength'] = function (test) {
     test.expect(2);
     try {
-        validators.rangelength(2,4)('doc', '12345', '12345');
+        validators.rangelength(2, 4)('doc', '12345', '12345');
     }
     catch (e) {
         test.equals(
@@ -129,16 +129,16 @@ exports['rangelength'] = function (test) {
         );
     }
     try {
-        validators.rangelength(2,4)('doc', '1', '1');
+        validators.rangelength(2, 4)('doc', '1', '1');
     }
-    catch (e) {
+    catch (e2) {
         test.equals(
-            e.message,
+            e2.message,
             'Please enter a value between 2 and 4 characters long'
         );
     }
     // this should not throw
-    validators.rangelength(2,4)('doc', '12', '12');
-    validators.rangelength(2,4)('doc', '1234', '1234');
+    validators.rangelength(2, 4)('doc', '12', '12');
+    validators.rangelength(2, 4)('doc', '1234', '1234');
     test.done();
 };

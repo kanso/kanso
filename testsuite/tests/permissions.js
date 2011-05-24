@@ -4,15 +4,15 @@ var permissions = require('kanso/permissions');
 exports['matchUsername'] = function (test) {
     var fn = permissions.matchUsername();
     test.throws(function () {
-        fn({}, {}, 'testuser2', null, {name:'testuser'});
+        fn({}, {}, 'testuser2', null, {name: 'testuser'});
     });
     test.throws(function () {
-        fn({}, {}, '', null, {name:'testuser'});
+        fn({}, {}, '', null, {name: 'testuser'});
     });
     // should not throw
-    fn({}, {}, 'testuser', null, {name:'testuser'});
+    fn({}, {}, 'testuser', null, {name: 'testuser'});
     fn({}, {}, '', null, {name: ''});
-    fn({}, {}, undefined, null, {name:''});
+    fn({}, {}, undefined, null, {name: ''});
     fn({}, {}, '', null, {name: undefined});
     test.done();
 };
@@ -20,13 +20,13 @@ exports['matchUsername'] = function (test) {
 exports['fieldUneditable'] = function (test) {
     var fn = permissions.fieldUneditable();
     test.throws(function () {
-        fn({}, {}, 'val', 'val2', {name:'testuser'});
+        fn({}, {}, 'val', 'val2', {name: 'testuser'});
     });
     test.throws(function () {
-        fn({}, {}, '', 'val', {name:'testuser'});
+        fn({}, {}, '', 'val', {name: 'testuser'});
     });
     // should not throw
-    fn({}, {}, 'val', 'val', {name:'testuser'});
+    fn({}, {}, 'val', 'val', {name: 'testuser'});
     fn({}, {}, '', '', {name: 'testuser'});
     test.done();
 };
@@ -44,7 +44,7 @@ exports['usernameMatchesField'] = function (test) {
 };
 
 exports['usernameMatchesField - nested field'] = function (test) {
-    var fn = permissions.usernameMatchesField(['one','two','three']);
+    var fn = permissions.usernameMatchesField(['one', 'two', 'three']);
     var oldDoc = {one: {two: {three: 'testuser'}}};
     var userCtx = {name: 'testuser'};
     fn({}, oldDoc, 'newVal', 'oldVal', userCtx);
@@ -73,8 +73,12 @@ exports['loggedIn'] = function (test) {
 exports['all - pass'] = function (test) {
     var calls = [];
     var fn = permissions.all([
-        function () { calls.push('one'); },
-        function () { calls.push('two'); }
+        function () {
+            calls.push('one');
+        },
+        function () {
+            calls.push('two');
+        }
     ]);
     test.equal(fn().length, 0);
     test.same(calls, ['one', 'two']);
@@ -84,8 +88,13 @@ exports['all - pass'] = function (test) {
 exports['all - fail'] = function (test) {
     var calls = [];
     var fn = permissions.all([
-        function () { calls.push('one'); },
-        function () { calls.push('two'); throw new Error('fail'); }
+        function () {
+            calls.push('one');
+        },
+        function () {
+            calls.push('two');
+            throw new Error('fail');
+        }
     ]);
     test.equal(fn().length, 1);
     test.same(calls, ['one', 'two']);
@@ -95,8 +104,13 @@ exports['all - fail'] = function (test) {
 exports['any - pass'] = function (test) {
     var calls = [];
     var fn = permissions.any([
-        function () { calls.push('one'); },
-        function () { calls.push('two'); throw new Error('fail'); }
+        function () {
+            calls.push('one');
+        },
+        function () {
+            calls.push('two');
+            throw new Error('fail');
+        }
     ]);
     test.equal(fn().length, 0);
     test.same(calls, ['one']);
@@ -106,8 +120,14 @@ exports['any - pass'] = function (test) {
 exports['any - fail'] = function (test) {
     var calls = [];
     var fn = permissions.any([
-        function () { calls.push('one'); throw new Error('fail'); },
-        function () { calls.push('two'); throw new Error('fail'); }
+        function () {
+            calls.push('one');
+            throw new Error('fail');
+        },
+        function () {
+            calls.push('two');
+            throw new Error('fail');
+        }
     ]);
     test.equal(fn().length, 2);
     test.same(calls, ['one', 'two']);

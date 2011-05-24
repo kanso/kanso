@@ -223,8 +223,8 @@ exports['Form.toHTML - existing values'] = function (test) {
 
 exports['Form.toHTML - errors'] = function (test) {
     var err1 = {field: ['one'], msg: 'err1'};
-    var err2 = {field: ['two','three'], msg: 'err2'};
-    var err3 = {field: ['two','three'], msg: 'err3'};
+    var err2 = {field: ['two', 'three'], msg: 'err2'};
+    var err3 = {field: ['two', 'three'], msg: 'err3'};
 
     var f = new forms.Form({
         one: fields.string({default_value: 'asdf'}),
@@ -261,8 +261,8 @@ exports['Form.toHTML - errors'] = function (test) {
 
 exports['Form.toHTML - embedded'] = function (test) {
     var err1 = {field: ['one'], msg: 'err1'};
-    var err2 = {field: ['two','three'], msg: 'err2'};
-    var err3 = {field: ['two','three'], msg: 'err3'};
+    var err2 = {field: ['two', 'three'], msg: 'err2'};
+    var err3 = {field: ['two', 'three'], msg: 'err3'};
 
     var t = new types.Type('t', {
         fields: {
@@ -295,7 +295,7 @@ exports['Form.toHTML - embedded'] = function (test) {
                     calls.push('end2');
                     return '';
                 }
-            }
+            };
         };
         this.end = function () {
             calls.push('end');
@@ -321,8 +321,8 @@ exports['Form.toHTML - embedded'] = function (test) {
 
 exports['Form.toHTML - embeddedList'] = function (test) {
     var err1 = {field: ['one'], msg: 'err1'};
-    var err2 = {field: ['two','three'], msg: 'err2'};
-    var err3 = {field: ['two','three'], msg: 'err3'};
+    var err2 = {field: ['two', 'three'], msg: 'err2'};
+    var err3 = {field: ['two', 'three'], msg: 'err3'};
 
     var t = new types.Type('t', {
         fields: {
@@ -369,7 +369,7 @@ exports['Form.toHTML - embeddedList'] = function (test) {
                     calls.push('end2');
                     return '';
                 }
-            }
+            };
         };
         this.end = function () {
             calls.push('end');
@@ -389,8 +389,8 @@ exports['Form.toHTML - embeddedList'] = function (test) {
 
 exports['Form.toHTML - embeddedList - with values'] = function (test) {
     var err1 = {field: ['one'], msg: 'err1'};
-    var err2 = {field: ['two','three'], msg: 'err2'};
-    var err3 = {field: ['two','three'], msg: 'err3'};
+    var err2 = {field: ['two', 'three'], msg: 'err2'};
+    var err3 = {field: ['two', 'three'], msg: 'err3'};
 
     var t = new types.Type('t', {
         fields: {
@@ -437,7 +437,7 @@ exports['Form.toHTML - embeddedList - with values'] = function (test) {
                     calls.push('end2');
                     return '';
                 }
-            }
+            };
         };
         this.end = function () {
             calls.push('end');

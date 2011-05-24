@@ -1,3 +1,5 @@
+/*globals kanso: false */
+
 var _ = require('kanso/underscore');
 
 
@@ -6,7 +8,7 @@ var _ = require('kanso/underscore');
 exports.getTestModuleNames = function () {
     var ids = _.keys(kanso.moduleCache);
     var test_ids = _.filter(ids, function (id) {
-        return /^tests\//.test(id);
+        return (/^tests\//).test(id);
     });
     var test_names = _.map(test_ids, function (id) {
         return id.replace(/^tests\//, '');

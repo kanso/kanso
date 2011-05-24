@@ -52,7 +52,7 @@ exports['Field.validate - return arrays'] = function (test) {
     var f = new Field({
         validators: [
             function (doc, value, raw) {
-                return [1,2]
+                return [1, 2];
             },
             function (doc, value, raw) {
                 return [3];
@@ -183,9 +183,8 @@ exports['Embedded - defaults'] = function (test) {
 
 exports['Embedded - no type'] = function (test) {
     test.expect(1);
-    var Embedded = fields.Embedded;
     try {
-        new Embedded();
+        var f = new fields.Embedded();
     }
     catch (err) {
         test.equal(err.message, 'No type specified');
@@ -299,7 +298,7 @@ exports['Embedded.authorize - permissions as an object'] = function (test) {
     test.same(errs[0].field, ['test']);
     test.same(calls, ['add']);
 
-    var errs = e.authorize(
+    errs = e.authorize(
         newDoc, oldDoc, newDoc.embed, oldDoc.embed, 'user'
     );
     test.equal(errs.length, 1);
@@ -308,7 +307,7 @@ exports['Embedded.authorize - permissions as an object'] = function (test) {
     test.same(calls, ['add', 'update']);
 
     newDoc = {embed: {_deleted: true}};
-    var errs = e.authorize(
+    errs = e.authorize(
         newDoc, oldDoc, newDoc.embed, oldDoc.embed, 'user'
     );
     test.equal(errs.length, 1);
@@ -374,9 +373,8 @@ exports['EmbeddedList - defaults'] = function (test) {
 
 exports['EmbeddedList - no type'] = function (test) {
     test.expect(1);
-    var EmbeddedList = fields.EmbeddedList;
     try {
-        new EmbeddedList();
+        var f = new fields.EmbeddedList();
     }
     catch (err) {
         test.equal(err.message, 'No type specified');
@@ -405,9 +403,9 @@ exports['EmbeddedList.validate'] = function (test) {
     var errs = e.validate(doc, doc.embeddedThing, doc.embeddedThing);
     test.equal(errs.length, 2);
     test.equal(errs[0].message, 'Required field');
-    test.same(errs[0].field, ['0','two']);
+    test.same(errs[0].field, ['0', 'two']);
     test.equal(errs[1].message, 'Required field');
-    test.same(errs[1].field, ['1','one']);
+    test.same(errs[1].field, ['1', 'one']);
     test.done();
 };
 
@@ -502,46 +500,46 @@ exports['EmbeddedList.authorize - type permissions as a function'] = function (t
         [newDoc.embedded[1], oldDoc.embedded[1], null, null, 'user']
     ]);
     test.equal(errs.length, 2);
-    test.same(errs[0].field, ['embedded','0']);
-    test.same(errs[1].field, ['embedded','1']);
+    test.same(errs[0].field, ['embedded', '0']);
+    test.same(errs[1].field, ['embedded', '1']);
 
     // One remove
-    var calls = [];
-    var oldDoc = {type: 't2', embedded: [
+    calls = [];
+    oldDoc = {type: 't2', embedded: [
         {_id: 'id1', type: 't1', one: 'asdf'},
         {_id: 'id2', type: 't1', one: 'asdf'}
     ]};
-    var newDoc = {type: 't2', embedded: [
+    newDoc = {type: 't2', embedded: [
         {_id: 'id1', type: 't1', one: 'asdf'}
     ]};
 
-    var errs = t2.authorize(newDoc, oldDoc, 'user');
+    errs = t2.authorize(newDoc, oldDoc, 'user');
     test.same(calls, [
         [newDoc.embedded[0], oldDoc.embedded[0], null, null, 'user'],
         [{_deleted: true}, oldDoc.embedded[1], null, null, 'user']
     ]);
     test.equal(errs.length, 2);
-    test.same(errs[0].field, ['embedded','0']);
-    test.same(errs[1].field, ['embedded','1']);
+    test.same(errs[0].field, ['embedded', '0']);
+    test.same(errs[1].field, ['embedded', '1']);
 
     // One add
-    var calls = [];
-    var oldDoc = {type: 't2', embedded: [
+    calls = [];
+    oldDoc = {type: 't2', embedded: [
         {_id: 'id1', type: 't1', one: 'asdf'}
     ]};
-    var newDoc = {type: 't2', embedded: [
+    newDoc = {type: 't2', embedded: [
         {_id: 'id1', type: 't1', one: 'asdf'},
         {_id: 'id2', type: 't1', one: 'asdf'}
     ]};
 
-    var errs = t2.authorize(newDoc, oldDoc, 'user');
+    errs = t2.authorize(newDoc, oldDoc, 'user');
     test.same(calls, [
         [newDoc.embedded[0], oldDoc.embedded[0], null, null, 'user'],
         [newDoc.embedded[1], oldDoc.embedded[1], null, null, 'user']
     ]);
     test.equal(errs.length, 2);
-    test.same(errs[0].field, ['embedded','0']);
-    test.same(errs[1].field, ['embedded','1']);
+    test.same(errs[0].field, ['embedded', '0']);
+    test.same(errs[1].field, ['embedded', '1']);
 
     test.done();
 };
@@ -590,29 +588,29 @@ exports['EmbeddedList.authorize - type permissions as an object'] = function (te
     test.same(calls, ['update', 'update']);
 
     // One remove
-    var calls = [];
-    var oldDoc = {type: 't2', embedded: [
+    calls = [];
+    oldDoc = {type: 't2', embedded: [
         {_id: 'id1', type: 't1', one: 'asdf'},
         {_id: 'id2', type: 't1', one: 'asdf'}
     ]};
-    var newDoc = {type: 't2', embedded: [
+    newDoc = {type: 't2', embedded: [
         {_id: 'id1', type: 't1', one: 'asdf'}
     ]};
 
-    var errs = t2.authorize(newDoc, oldDoc, 'user');
+    errs = t2.authorize(newDoc, oldDoc, 'user');
     test.same(calls, ['update', 'remove']);
 
     // One add
-    var calls = [];
-    var oldDoc = {type: 't2', embedded: [
+    calls = [];
+    oldDoc = {type: 't2', embedded: [
         {_id: 'id1', type: 't1', one: 'asdf'}
     ]};
-    var newDoc = {type: 't2', embedded: [
+    newDoc = {type: 't2', embedded: [
         {_id: 'id1', type: 't1', one: 'asdf'},
         {_id: 'id2', type: 't1', one: 'asdf'}
     ]};
 
-    var errs = t2.authorize(newDoc, oldDoc, 'user');
+    errs = t2.authorize(newDoc, oldDoc, 'user');
     test.same(calls, ['update', 'add']);
 
     test.done();
@@ -952,9 +950,15 @@ exports['creator - existing permissions'] = function (test) {
     var calls = [];
     var f = fields.creator({
         permissions: {
-            add: function () { calls.push('add'); },
-            update:   function () { calls.push('update'); },
-            remove: function () { calls.push('remove'); }
+            add: function () {
+                calls.push('add');
+            },
+            update: function () {
+                calls.push('update');
+            },
+            remove: function () {
+                calls.push('remove');
+            }
         }
     });
     var userCtx = {name: 'testuser'};
@@ -970,7 +974,7 @@ exports['creator - existing permissions'] = function (test) {
         f.permissions.update({}, {}, 'testuser2', null, userCtx).length, 1
     );
     f.permissions.remove();
-    test.same(calls, ['add','add','update','update','remove']);
+    test.same(calls, ['add', 'add', 'update', 'update', 'remove']);
     // required should be false by default because anonymous users will
     // set to empty
     test.strictEqual(f.required, false);
@@ -988,64 +992,76 @@ exports['timestamp'] = function (test) {
     var calls = [];
     f = fields.timestamp({
         permissions: {
-            add: function () { calls.push('add'); },
-            update:   function () { calls.push('update'); },
-            remove: function () { calls.push('remove'); }
+            add: function () {
+                calls.push('add');
+            },
+            update: function () {
+                calls.push('update');
+            },
+            remove: function () {
+                calls.push('remove');
+            }
         }
     });
     f.permissions.add({}, {}, 'val', 'val', 'user');
     f.permissions.update({}, {}, 'val', 'val', 'user');
     f.permissions.remove({}, {}, 'val', 'val', 'user');
-    test.same(calls, ['add','update','remove']);
+    test.same(calls, ['add', 'update', 'remove']);
     test.done();
 };
 
 exports['choice'] = function (test) {
     // throw when no values defined in options
-    test.throws(function () { fields.choice(); });
+    test.throws(function () {
+        fields.choice();
+    });
 
     var f = fields.choice({
-        values: ['a','b','c']
+        values: ['a', 'b', 'c']
     });
     // should not return errors
-    test.equal(f.validate({},'a').length, 0);
-    test.equal(f.validate({},'b').length, 0);
-    test.equal(f.validate({},'c').length, 0);
+    test.equal(f.validate({}, 'a').length, 0);
+    test.equal(f.validate({}, 'b').length, 0);
+    test.equal(f.validate({}, 'c').length, 0);
     // should return errors
-    test.equal(f.validate({},'d').length, 1);
+    test.equal(f.validate({}, 'd').length, 1);
     test.done();
 };
 
 exports['choice - labels'] = function (test) {
     // throw when no values defined in options
-    test.throws(function () { fields.choice(); });
+    test.throws(function () {
+        fields.choice();
+    });
 
     var f = fields.choice({
-        values: [['a','A'],['b','B'],'c']
+        values: [['a', 'A'], ['b', 'B'], 'c']
     });
     // should not return errors
-    test.equal(f.validate({},'a').length, 0);
-    test.equal(f.validate({},'b').length, 0);
-    test.equal(f.validate({},'c').length, 0);
+    test.equal(f.validate({}, 'a').length, 0);
+    test.equal(f.validate({}, 'b').length, 0);
+    test.equal(f.validate({}, 'c').length, 0);
     // should return errors
-    test.equal(f.validate({},'d').length, 1);
+    test.equal(f.validate({}, 'd').length, 1);
     test.done();
 };
 
 exports['numberChoice'] = function (test) {
     // throw when no values defined in options
-    test.throws(function () { fields.numberChoice(); });
+    test.throws(function () {
+        fields.numberChoice();
+    });
 
     var f = fields.numberChoice({
-        values: [1,2,3]
+        values: [1, 2, 3]
     });
     // should not return errors
-    test.equal(f.validate({},1).length, 0);
-    test.equal(f.validate({},2).length, 0);
-    test.equal(f.validate({},3).length, 0);
+    test.equal(f.validate({}, 1).length, 0);
+    test.equal(f.validate({}, 2).length, 0);
+    test.equal(f.validate({}, 3).length, 0);
     // should return errors
-    test.equal(f.validate({},4).length, 1);
-    test.equal(f.validate({},NaN).length, 2);
+    test.equal(f.validate({}, 4).length, 1);
+    test.equal(f.validate({}, NaN).length, 2);
     test.done();
 };
 
