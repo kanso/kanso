@@ -1,3 +1,5 @@
+/*global $: false */
+
 var db = require('kanso/db');
 
 exports.capitalize = function (str) {
@@ -7,15 +9,15 @@ exports.capitalize = function (str) {
 exports.typePlural = function (type) {
     // capitalize and make plural
     // TODO: add django admin panel for custom setting of plurals
-    return type + 's';
+    return type.replace(/_/g, ' ') + 's';
 };
 
 exports.typeHeading = function (type) {
-    return exports.capitalize(exports.typePlural(type));
+    return exports.capitalize(exports.typePlural(type.replace(/_/g, ' ')));
 };
 
 exports.viewHeading = function (view) {
-    return exports.capitalize(view);
+    return exports.capitalize(view.replace(/_/g, ' '));
 };
 
 
@@ -123,6 +125,7 @@ var Couch = exports.Couch = {
                         var s = "function (module, exports, require) { " +
                             newModule.current + " }";
                         try {
+                            var func;
                             eval('var func = (' + s + ')');
                             func.apply(sandbox, [
                                 newModule,

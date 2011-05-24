@@ -1,6 +1,7 @@
 @font-face {
     font-family: "Iconic Stroke";
-    src: url(fonts/iconic_stroke.eot) !important;
+    src: url('fonts/iconic_stroke.eot') !important;
+		src: url('fonts/iconic_stroke.svg#iconic') format('svg'), url('fonts/iconic_stroke.ttf') format('truetype');
 }
 
 .icon {
@@ -84,6 +85,7 @@ table.viewlist {
     border-collapse: collapse;
     border-spacing: 0;
     margin: 0 0 18px 0;
+    line-height: 0;
     /*width: 100%;*/
 }
 
@@ -94,11 +96,15 @@ table.viewlist {
     border-bottom: 1px solid #999;
 }
 
-.typelist td.actions,
-.viewlist td.actions,
 .typelist th,
 .viewlist th {
-    padding: 0 1em;
+    padding: 0em 1em;
+    line-height: 1.618em;
+}
+
+.typelist td.actions,
+.viewlist td.actions {
+    padding: 0.618em 1em 0 0.618em;
 }
 
 
@@ -106,7 +112,7 @@ table.viewlist {
 .viewlist td {
     vertical-align: top;
     background-color: #fefefe;
-    padding: 0.326em 0;
+    padding: 1em 0;
     margin: 0;
     border: 0;
 }
@@ -118,6 +124,7 @@ table.viewlist {
 .typelist td.data,
 .viewlist td.data {
     font-size: 0.9em;
+    padding: 1.4em 1em 1.4em 0;
 }
 
 .typelist tr:hover td,
@@ -139,11 +146,15 @@ table.viewlist {
 th.actions,
 td.actions {
     width: 210px;
+    padding: 0;
+    margin: 0;
     padding-left: 50px !important;
 }
 
 form.delete_form {
     display: inline;
+    margin: 0;
+    padding: 0;
 }
 
 .form_table th {
@@ -156,7 +167,8 @@ form.delete_form {
     vertical-align: top;
 }
 
-.description {
+.description,
+.hint {
     font-weight: normal;
     color: #666;
     font-size: 0.85em;
@@ -189,11 +201,15 @@ p.description {
     background: none;
     display: inline;
     cursor: pointer;
+    margin: 0;
 }
 
 .button .label {
     position: relative;
     top: -0.286em;
+    margin: 0;
+    padding: 0;
+    margin-bottom: -0.286em;
 }
 
 .button input {
@@ -209,9 +225,18 @@ p.description {
 }
 .button input.icon {
     margin: 0;
-    padding-right: 0.143em;
+    padding: 0;
+    font-size: 2em;
     color: #999;
 }
+
+.button input.label {
+    margin: 0;
+    padding: 0;
+    font-size: 11.2px;
+    font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
+}
+
 
 .button:hover {
     color: #000;

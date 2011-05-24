@@ -1,3 +1,52 @@
+2011.05.21, Version 0.0.6
+
+* Better support for encoding unusual document ids and other parameters in db module
+
+* Update db.request so responses are only parsed as JSON if the Content-Type
+of the response is application/json
+
+* In the db module, JSON parsing errors are now passed to callbacks
+
+* Make most db function query parameters optional
+
+* Added array and numberArray fields
+
+* Added computed widget (displays the data but is not editable)
+
+* Bug fix for creator field when used at a sub-level of a document
+
+* Push support for upcoming node v0.5.0 release
+
+* Updated querystring module with latest code from node.js
+
+* Added getShow, getList and getRewrite functions to db module, thanks to
+Gabor Ratky (https://github.com/rgabo)
+
+* Fixed a number of admin app issues:
+
+  * Fixed icons, thanks to Steven Hammond (https://github.com/shammond42)
+
+  * Now displays view results with reduce=false by default
+
+  * Fixed alternating row colours in view results
+
+  * Updated display_name for types to accept string or path to field as well
+  as functions, thanks to Steven Hammond (https://github.com/shammond42)
+
+  * If available, use display_name instead of id when viewing a document, thanks
+  to Steven Hammond (https://github.com/shammond42)
+
+  * Fixed bug in types list view where 'show more' link wouldn't work, thanks
+  to Steven Hammond (https://github.com/shammond42)
+
+  * Nicer headings and link text, capitalizing and replacing underscores with
+  spaces as form fields do
+
+  * Admin app now displays widget hints and field / type descriptions
+
+  * Added admin app to 'make lint' targets
+
+
 2011.05.10, Version 0.0.5
 
 * Added autopush command

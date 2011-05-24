@@ -728,6 +728,7 @@ exports.embedList = function (options) {
 
 exports.array = function (options) {
     options = options || {};
+    options.hint = options.hint || "Values should be comma separated";
     prependValidator(options, function (doc, value) {
         if (!_.isArray(value)) {
             throw new Error('Not an array');
@@ -742,4 +743,27 @@ exports.array = function (options) {
             return result;
         }
     }));
+};
+
+/**
+ * Creates a number array Field, same as the array field only each value is
+ * parsed as a number instead of a string.
+ *
+ * @param {Object} options
+ * @api public
+ */
+
+exports.numberArray = function (options) {
+    options = options || {};
+    options.parseEach = options.parseEach || function (v) {
+        return Number(v);
+    };
+    prependValidator(options, function (doc, value) {
+        for (var i = 0, len = value.length; i < len; i++) {
+            if (isNaN(value[i])) {
+                throw new Error('Not a number');
+            }
+        }
+    });
+    return exports.array(options);
 };

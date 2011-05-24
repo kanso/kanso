@@ -12,7 +12,7 @@
   {?types}
     <ul>
     {#types}
-      <li><a href="{baseURL}/{app}/types/{.}">{.}</a></li>
+      <li><a href="{baseURL}/{app}/types/{key}">{title}</a></li>
     {/types}
     </ul>
   {:else}
@@ -24,7 +24,7 @@
   {?views}
     <ul>
     {#views}
-      <li><a href="{baseURL}/{app}/views/{.}">{.}</a></li>
+      <li><a href="{url}">{title}</a></li>
     {/views}
     </ul>
   {:else}

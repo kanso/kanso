@@ -6,7 +6,9 @@ exports.apps = {
         var id = doc._id;
         if (doc.format === 'kanso') {
             if (id !== '_design/admin' && id.substr(0, 8) === '_design/') {
-                emit(id.substr(8), id);
+                var name = id.substr(8);
+                var cap = name.substr(0, 1).toUpperCase() + name.substr(1);
+                emit(name, cap.replace(/_/g, ' '));
             }
         }
     }

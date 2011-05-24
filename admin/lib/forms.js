@@ -1,3 +1,5 @@
+/*global $: false */
+
 var utils = require('./utils'),
     db = require('kanso/db'),
     kanso_utils = require('kanso/utils'),

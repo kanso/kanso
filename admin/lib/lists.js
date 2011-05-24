@@ -77,7 +77,8 @@ exports.typelist = adminList(function (rows, ddoc, req) {
         app: req.query.app,
         app_heading: utils.capitalize(req.query.app),
         type: req.query.type,
-        type_heading: utils.typeHeading(req.query.type)
+        type_heading: utils.typeHeading(req.query.type),
+        type_title: req.query.type.replace(/_/g, ' ')
     });
 
     $('#content').html(content);
@@ -85,7 +86,7 @@ exports.typelist = adminList(function (rows, ddoc, req) {
 
     if (rows.length === 10) {
         var more_link = $('<a href="#">Show more...</a>');
-        more_link.data('last_id', rows[rows.length-1].id);
+        more_link.data('last_id', rows[rows.length - 1].id);
         more_link.click(function (ev) {
             ev.preventDefault();
             var q = {
@@ -111,9 +112,10 @@ exports.typelist = adminList(function (rows, ddoc, req) {
                     return {id: r.id, display_name: display_name};
                 });
                 var html = templates.render('typelist_rows.html', req, {
-                    rows: f
+                    rows: f,
+                    app: req.query.app
                 });
-                more_link.data('last_id', rows[rows.length-1].id);
+                more_link.data('last_id', rows[rows.length - 1].id);
                 $('table.typelist tbody').append(html);
             });
             return false;

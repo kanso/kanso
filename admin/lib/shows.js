@@ -6,6 +6,7 @@ var utils = require('./utils'),
     db = require('kanso/db'),
     admin_forms = require('./forms'),
     templates = require('kanso/templates'),
+    querystring = require('kanso/querystring'),
     _ = require('kanso/underscore');
 
 
@@ -23,27 +24,40 @@ var adminShow = function (fn) {
             }
             fn(doc, ddoc, req);
         });
-    }
+    };
 };
 
 exports.types = adminShow(function (doc, ddoc, req) {
     var settings = utils.appRequire(ddoc, 'kanso/settings');
     var app = utils.appRequire(ddoc, settings.load);
 
+    var baseURL = kanso_utils.getBaseURL(req);
+
+    var k;
     var types = [];
     if (app.types) {
-        for (var k in app.types) {
+        for (k in app.types) {
             if (app.types.hasOwnProperty(k)) {
-                types.push(k);
+                types.push({
+                    title: utils.typeHeading(k),
+                    key: k
+                });
             }
         }
     }
 
     var views = [];
     if (app.views) {
-        for (var k in app.views) {
+        for (k in app.views) {
             if (app.views.hasOwnProperty(k)) {
-                views.push(k);
+                var reduce = app.views[k].hasOwnProperty('reduce');
+                views.push({
+                    title: utils.viewHeading(k),
+                    key: k,
+                    reduce: reduce,
+                    url: baseURL + '/' + settings.name + '/views/' + k +
+                         (reduce ? '?reduce=false': '')
+                });
             }
         }
     }
@@ -87,6 +101,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         app_heading: utils.capitalize(req.query.app),
         type: req.query.type,
         type_heading: utils.typeHeading(req.query.type),
+        type_title: req.query.type.replace(/_/g, ' '),
         description: type.description,
         form: form.toHTML(req, forms.render.table)
     });
@@ -108,6 +123,7 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
         app_heading: utils.capitalize(req.query.app),
         type: doc.type,
         type_heading: utils.typeHeading(doc.type),
+        type_title: doc.type.replace(/_/g, ' '),
         id: req.query.id,
         form: form.toHTML(req, forms.render.table)
     });
@@ -119,10 +135,11 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
 
 exports.fieldPairs = function (fields, doc, path) {
     var pairs = [];
+    var val, type, display_name;
     for (var k in fields) {
         if (fields.hasOwnProperty(k)) {
             if (kanso_utils.constructorName(fields[k]) === 'Field') {
-                var val = kanso_utils.getPropertyPath(doc, path.concat([k]));
+                val = kanso_utils.getPropertyPath(doc, path.concat([k]));
                 if (!fields[k].isEmpty(val) || !fields[k].omit_empty) {
                     pairs.push({
                         field: path.concat([k]).join('.'),
@@ -136,9 +153,9 @@ exports.fieldPairs = function (fields, doc, path) {
                         fields[k].type.fields, doc, path.concat([k])
                     )
                 );*/
-                var val = kanso_utils.getPropertyPath(doc, path.concat([k]));
-                var type = fields[k].type;
-                var display_name = val ? val._id: '';
+                val = kanso_utils.getPropertyPath(doc, path.concat([k]));
+                type = fields[k].type;
+                display_name = val ? val._id: '';
                 if (type.display_name) {
                     display_name = type.display_name(val);
                 }
@@ -158,14 +175,14 @@ exports.fieldPairs = function (fields, doc, path) {
                             )
                         );
                         */
-                        var val = kanso_utils.getPropertyPath(doc, path.concat([k,i]));
-                        var type = fields[k].type;
-                        var display_name = val ? val._id: '';
+                        val = kanso_utils.getPropertyPath(doc, path.concat([k, i]));
+                        type = fields[k].type;
+                        display_name = val ? val._id: '';
                         if (type.display_name) {
                             display_name = type.display_name(val);
                         }
                         pairs.push({
-                            field: path.concat([k,i]).join('.'),
+                            field: path.concat([k, i]).join('.'),
                             value: display_name
                         });
                     }
@@ -188,7 +205,10 @@ exports.fieldPairs = function (fields, doc, path) {
 
 
 exports.viewlist = adminShow(function (doc, ddoc, req) {
-    var base = kanso_utils.getBaseURL();
+    var base = kanso_utils.getBaseURL(),
+        settings = utils.appRequire(ddoc, 'kanso/settings'),
+        app = utils.appRequire(ddoc, settings.load);
+
     var view_req = {
         url: base + '/_db/_design/' + req.query.app + '/_view/' + req.query.view,
         data: db.stringifyQuery(req.query)
@@ -199,8 +219,6 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
             alert(err);
             return;
         }
-        console.log('viewlist');
-        console.log(res);
         var rows = _.map(res.rows, function (r) {
             r.value = JSON.stringify(r.value);
             r.key = JSON.stringify(r.key);
@@ -214,10 +232,14 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
         var last_row = rows[rows.length - 1];
         var last_key = last_row ? last_row.key: null;
         var last_id = last_row ? last_row.id: null;
-        var next_link = '' +
-            '?startkey=' + encodeURIComponent(last_key) +
-            '&startkey_docid=' + encodeURIComponent(last_id) +
-            '&skip=1';
+        var next_link = '?' + querystring.stringify(
+            _.extend(_.clone(req.query), {
+                startkey: last_key,
+                startkey_docid: last_id,
+                descending: false,
+                skip: 1
+            })
+        );
 
         var show_next_link = true;
         if (req.query.descending === 'true') {
@@ -230,11 +252,14 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
         var first_row = rows[0];
         var first_key = first_row ? first_row.key: null;
         var first_id = first_row ? first_row.id: null;
-        var prev_link = '' +
-            '?startkey=' + encodeURIComponent(first_key) +
-            '&startkey_docid=' + encodeURIComponent(first_id) +
-            '&descending=true' +
-            '&skip=1';
+        var prev_link = '?' + querystring.stringify(
+            _.extend(_.clone(req.query), {
+                startkey: first_key,
+                startkey_docid: first_id,
+                descending: true,
+                skip: 1
+            })
+        );
 
         var show_prev_link = true;
         if (req.query.descending === 'true') {
@@ -257,9 +282,14 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
         }
 
 
+        var baseURL = kanso_utils.getBaseURL(req);
+        var reduce = app.views[req.query.view].hasOwnProperty('reduce');
+
         var content = templates.render('view.html', req, {
             rows: rows,
             view_heading: utils.viewHeading(req.query.view),
+            view_url: baseURL + '/' + settings.name + '/views/' +
+                      req.query.view + (reduce ? '?reduce=false': ''),
             view: req.query.view,
             app: req.query.app,
             app_heading: utils.capitalize(req.query.app),
@@ -274,6 +304,7 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
         var title = req.query.app + ' - ' + req.query.view;
         $('#content').html(content);
         document.title = title;
+        $('#content table.viewlist tr:odd').addClass('odd');
     });
 });
 
@@ -291,14 +322,17 @@ exports.viewtype = adminShow(function (doc, ddoc, req) {
     }
 
     var tfields = type ? type.fields: {};
+    var dname = (type && type.display_name) ? type.display_name(doc): doc._id;
     var content = templates.render('viewtype.html', req, {
         fields: exports.fieldPairs(tfields, doc, []),
         doc: doc,
+        display_name: dname,
         app: req.query.app,
         app_heading: utils.capitalize(req.query.app),
         type: doc.type,
         type_plural: utils.typePlural(doc.type),
-        type_heading: utils.typeHeading(doc.type)
+        type_heading: utils.typeHeading(doc.type),
+        type_title: doc.type.replace(/_/g, ' ')
     });
 
     var title = req.query.app + ' - ' + doc.type + ' - ' + req.query.id;

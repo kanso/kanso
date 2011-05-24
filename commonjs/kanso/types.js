@@ -13,6 +13,7 @@
  */
 
 var utils = require('./utils'),
+    kanso_utils = require('kanso/utils'),
     db = require('./db'),
     fields = require('./fields'),
     fieldset = require('./fieldset'),
@@ -29,7 +30,11 @@ var utils = require('./utils'),
  *   permissions {Object}  - a permissions check function or an object
  *                           containing separate functions to run on add,
  *                           remove and update operations.
- *
+ *   display_name {function|string|array} - name to be used when displaying
+ *                           the document in the admin tool. A string or array
+ *                           will become the property to display. A function
+ *                           should take the document as a object and return
+ *                           the display name.
  * @param {Object} options
  * @constructor
  * @api public
@@ -78,11 +83,22 @@ var Type = exports.Type = function Type(name, options) {
             f[k] = options.fields[k];
         }
     }
+
     options.fields = f;
     _.extend(this, _.defaults(options, {
         permissions: []
     }));
 
+    if (options.display_name) {
+        if (typeof options.display_name !== 'function') {
+            this.display_name = function (doc) {
+                if (typeof options.display_name === 'string') {
+                    options.display_name = [options.display_name];
+                }
+                return kanso_utils.getPropertyPath(doc, options.display_name);
+            };
+        }
+    }
 };
 
 /**
