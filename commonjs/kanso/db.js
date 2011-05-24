@@ -176,19 +176,28 @@ exports.getRewrite = function (path, /*optional*/q, callback) {
  *
  * @param {String} id
  * @param {Object} q (optional)
+ * @param {Object} options (optional)
  * @param {Function} callback
  */
 
-exports.getDoc = function (id, /*optional*/q, callback) {
+exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('getDoc cannot be called server-side');
     }
     if (!callback) {
+      if (!options) {
+        /* arity = 2: Omits q, options */
         callback = q;
+        options = {};
         q = {};
+      } else {
+        /* arity = 3: Omits options */
+        callback = options;
+        options = {};
+      }
     }
     var req = {
-        url: utils.getBaseURL() + '/_db/' + exports.encode(id),
+        url: (options.db || utils.getBaseURL() + '/_db/' + exports.encode(id)),
         data: exports.stringifyQuery(q),
         expect_json: true
     };
@@ -202,14 +211,20 @@ exports.getDoc = function (id, /*optional*/q, callback) {
  * for any exceptions that occurred (node.js style).
  *
  * @param {Object} doc
+ * @param {Object} options (optional)
  * @param {Function} callback
  */
 
-exports.saveDoc = function (doc, callback) {
+exports.saveDoc = function (doc, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('saveDoc cannot be called server-side');
     }
     var method, url = utils.getBaseURL() + '/_db';
+    if (!callback) {
+        /* Arity = 2: Omits options */
+        callback = options;
+        options = {};
+    }
     if (doc._id === undefined) {
         method = "POST";
     }
@@ -219,7 +234,7 @@ exports.saveDoc = function (doc, callback) {
     }
     var req = {
         type: method,
-        url: url,
+        url: (options.db || url),
         data: JSON.stringify(doc),
         processData: false,
         contentType: 'application/json',
@@ -237,15 +252,20 @@ exports.saveDoc = function (doc, callback) {
  * @param {Function} callback
  */
 
-exports.removeDoc = function (doc, callback) {
+exports.removeDoc = function (doc, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('removeDoc cannot be called server-side');
+    }
+    if (!callback) {
+        /* Arity = 2: Omits options */
+        callback = options;
+        options = {};
     }
     var url = utils.getBaseURL() + '/_db/' +
         exports.encode(doc._id) +
         '?rev=' + exports.encode(doc._rev);
 
-    exports.request({type: 'DELETE', url: url}, callback);
+    exports.request({type: 'DELETE', url: (options.db || url)}, callback);
 };
 
 
@@ -595,9 +615,9 @@ exports.stopReplication = function (doc, callback, options) {
         throw new Error('stopReplication cannot be called server-side');
     }
 
-    if (!options) options = {};
-    if (!options.limit) options.limit = 3;   /* times */
-    if (!options.delay) options.delay = 500; /* ms */
+    if (options == undefined) options = {};
+    if (options.limit == undefined) options.limit = 3;   /* times */
+    if (options.delay == undefined) options.delay = 500; /* ms */
 
     var req = {
         type: 'DELETE',

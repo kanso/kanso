@@ -1,5 +1,6 @@
 
 var db = require('kanso/db'),
+    utils = require('kanso/utils'),
     async = require('lib/async');
 
 
@@ -20,6 +21,7 @@ exports['database creation'] = function(test)
   });
 };
 
+/* A deeply-nested version; no async.js dependency */
 exports['simple replication, no async'] = function(test)
 {
   test.expect(8);
@@ -65,6 +67,7 @@ exports['simple replication, no async'] = function(test)
   });
 };
 
+/* Same as above, but using async.js */
 exports['simple replication, async'] = function(test)
 {
   test.expect(8);
@@ -114,6 +117,92 @@ exports['simple replication, async'] = function(test)
     },
     function(callback) {
       db.deleteDatabase('kanso_testsuite_source', function(err, rv) {
+        test.equal(rv.ok, true, 'second deleteDatabase returns okay');
+        callback();
+      });
+    },
+  ], function() {
+    test.done();
+  });
+
+};
+
+exports['once-only replication, async'] = function(test)
+{
+  test.expect(14);
+
+  /* Discover what database we're living inside of */
+  source_database = (utils.getBaseURL().slice(1).split('/'))[0];
+
+  async.waterfall([
+    function(callback) {
+      db.createDatabase('kanso_testsuite_target1', function(err, rv) {
+        test.equal(rv.ok, true, 'first createDatabase returns okay');
+        callback();
+      });
+    },
+    function(callback) {
+      db.createDatabase('kanso_testsuite_target2', function(err, rv) {
+        test.equal(rv.ok, true, 'second createDatabase returns okay');
+        callback();
+      });
+    },
+    function(callback) {
+      db.replicate(
+        { source: source_database,
+          target: 'kanso_testsuite_target1',
+          create_target: false, continuous: false },
+
+        function(err, rv) {
+          test.equal(err, undefined, 'No error starting replication');
+          test.notEqual(rv.id, undefined, 'Replication job ID is defined');
+          callback(null, rv);
+        }
+      );
+    },
+    function(doc1, callback) {
+      db.replicate(
+        { source: source_database,
+          target: 'kanso_testsuite_target2',
+          create_target: false, continuous: false },
+
+        function(err, rv) {
+          test.equal(err, undefined, 'No error starting replication');
+          test.notEqual(rv.id, undefined, 'Replication job ID is defined');
+          callback(null, doc1, rv);
+        }
+      );
+    },
+    function(doc1, doc2, callback) {
+      db.getReplication(
+        doc1.id,
+        function(err, rv) {
+          test.equal(err, undefined, 'No error getting replication #1');
+          test.notEqual(rv._id, undefined, 'getReplication #1 has id');
+          test.notEqual(rv._rev, undefined, 'getReplication #1 has rev');
+          callback(null, doc2);
+        }
+      );
+    },
+    function(doc2, callback) {
+      db.getReplication(
+        doc2.id,
+        function(err, rv) {
+          test.equal(err, undefined, 'No error getting replication #2');
+          test.notEqual(rv._id, undefined, 'getReplication #2 has id');
+          test.notEqual(rv._rev, undefined, 'getReplication #2 has rev');
+          callback();
+        }
+      );
+    },
+    function(callback) {
+      db.deleteDatabase('kanso_testsuite_target2', function(err, rv) {
+        test.equal(rv.ok, true, 'first deleteDatabase returns okay');
+        callback();
+      });
+    },
+    function(callback) {
+      db.deleteDatabase('kanso_testsuite_target1', function(err, rv) {
         test.equal(rv.ok, true, 'second deleteDatabase returns okay');
         callback();
       });
