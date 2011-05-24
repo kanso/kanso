@@ -60,6 +60,17 @@ exports.session = null;
 
 
 /**
+ * This is used to make unit testing in the browser easier.
+ * Because it can be overridden without actually changing the window's location.
+ * (and navigating away from the test suite)
+ */
+
+exports.getWindowLocation = function () {
+    return window.location;
+};
+
+
+/**
  * Returns the path to prefix to any URLs. When running behind a
  * virtual host, there is nothing to prefix URLs with. When accessing the
  * app directly, URLs need to be prefixed with /db/_design/appname/_rewrite.
@@ -82,7 +93,7 @@ exports.getBaseURL = function (req) {
     }
     if (exports.isBrowser) {
         var re = new RegExp('(.*\\/_rewrite).*$');
-        var match = re.exec(window.location.pathname);
+        var match = re.exec(exports.getWindowLocation().pathname);
         if (match) {
             return match[1];
         }
@@ -236,4 +247,20 @@ exports.parseCSV = function (csvString) {
         records.push(currentRecord);
     }
     return records;
+};
+
+/**
+ * Creates couchdb response object for returning from a show, list or update
+ * function, which redirects to the given app url (automatically prepending the
+ * baseURL)
+ *
+ * @param {Object} req
+ * @param {String} url
+ * @return {Object}
+ * @api public
+ */
+
+exports.redirect = function (req, url) {
+    var baseURL = exports.getBaseURL(req);
+    return {code: 302, headers: {'Location': baseURL + url}};
 };

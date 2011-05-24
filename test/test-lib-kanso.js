@@ -80,6 +80,7 @@ exports['load'] = function (test) {
             test.same(doc.rewrites, [
                 {from: '/kanso.js', to: 'kanso.js'},
                 {from: '/_db/*', to: '../../*'},
+                {from: '/_db', to: '../..'},
                 {from: '/', to: '_show/testshow'}
             ]);
             test.done();

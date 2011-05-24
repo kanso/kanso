@@ -73,6 +73,11 @@ Form.prototype.isValid = function () {
  */
 
 Form.prototype.toHTML = function (req, RendererClass) {
+    if (!req) {
+        throw new Error(
+            'Form\'s toHTML method requires request object as first argument'
+        );
+    }
     var values = this.values || fieldset.createDefaults(
         this.fields,
         req.userCtx

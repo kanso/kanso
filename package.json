@@ -12,7 +12,7 @@
         "uglify-js": "1.0.1",
         "watch": "0.3.1"
     },
-    "version": "0.0.6",
+    "version": "0.0.7",
     "repository": {
         "type": "git",
         "url": "http://github.com/caolan/kanso.git"

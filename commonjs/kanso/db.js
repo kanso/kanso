@@ -79,6 +79,11 @@ function onComplete(options, callback) {
             }
         }
         else {
+            if (options.expect_json) {
+                return callback(
+                    new Error('Expected JSON response, got ' + ctype)
+                );
+            }
             resp = req.responseText;
         }
         if (req.status === 401) {
@@ -184,12 +189,8 @@ exports.getDoc = function (id, /*optional*/q, callback) {
     }
     var req = {
         url: utils.getBaseURL() + '/_db/' + exports.encode(id),
-<<<<<<< HEAD
         data: exports.stringifyQuery(q),
         expect_json: true
-=======
-        data: exports.stringifyQuery(q)
->>>>>>> 4c1ab67fabce8e85fcbe90663d46f2402b1fe828
     };
     exports.request(req, callback);
 };
@@ -266,7 +267,72 @@ exports.getView = function (view, /*optional*/q, callback) {
         callback = q;
         q = {};
     }
-<<<<<<< HEAD
+    var base = utils.getBaseURL();
+    var name = exports.encode(settings.name);
+    var viewname = exports.encode(view);
+    var req = {
+        url: base + '/_db/_design/' + name + '/_view/' + viewname,
+        data: exports.stringifyQuery(q),
+        expect_json: true
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Transforms and fetches a view through a list from the database the app
+ * is running on. Results are passed to the callback, with the first
+ * argument of the callback reserved for any exceptions that occurred
+ * (node.js style).
+ *
+ * @param {String} list
+ * @param {String} view
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ */
+
+// TODO: run list function client-side?
+exports.getList = function (list, view, /*optional*/q, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getList cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var base = utils.getBaseURL();
+    var name = exports.encode(settings.name);
+    var listname = exports.encode(list);
+    var viewname = exports.encode(view);
+    var req = {
+        url: base + '/_db/_design/' + name + '/_list/' + listname +
+             '/' + viewname,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Transforms and fetches a document through a show from the database the app
+ * is running on. Results are passed to the callback, with the first
+ * argument of the callback reserved for any exceptions that occurred
+ * (node.js style).
+ *
+ * @param {String} show
+ * @param {String} docid
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ */
+
+// TODO: run show function client-side?
+exports.getShow = function (show, docid, /*optional*/q, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getShow cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
     var base = utils.getBaseURL();
     var name = exports.encode(settings.name);
     var viewname = exports.encode(view);
@@ -338,78 +404,6 @@ exports.getShow = function (show, docid, /*optional*/q, callback) {
     var showname = exports.encode(show);
     var show_url = base + '/_db/_design/' + name + '/_show/' + showname;
     var req = {
-=======
-    var base = utils.getBaseURL();
-    var name = exports.encode(settings.name);
-    var viewname = exports.encode(view);
-    var req = {
-        url: base + '/_db/_design/' + name + '/_view/' + viewname,
-        data: exports.stringifyQuery(q)
-    };
-    exports.request(req, callback);
-};
-
-
-/**
- * Transforms and fetches a view through a list from the database the app
- * is running on. Results are passed to the callback, with the first
- * argument of the callback reserved for any exceptions that occurred
- * (node.js style).
- *
- * @param {String} list
- * @param {String} view
- * @param {Object} q (optional)
- * @param {Function} callback
- */
-
-// TODO: run list function client-side?
-exports.getList = function (list, view, /*optional*/q, callback) {
-    if (!utils.isBrowser) {
-        throw new Error('getList cannot be called server-side');
-    }
-    if (!callback) {
-        callback = q;
-        q = {};
-    }
-    var base = utils.getBaseURL();
-    var name = exports.encode(settings.name);
-    var listname = exports.encode(list);
-    var viewname = exports.encode(view);
-    var req = {
-        url: base + '/_db/_design/' + name + '/_list/' + listname +
-             '/' + viewname,
-        data: exports.stringifyQuery(q)
-    };
-    exports.request(req, callback);
-};
-
-/**
- * Transforms and fetches a document through a show from the database the app
- * is running on. Results are passed to the callback, with the first
- * argument of the callback reserved for any exceptions that occurred
- * (node.js style).
- *
- * @param {String} show
- * @param {String} docid
- * @param {Object} q (optional)
- * @param {Function} callback
- */
-
-// TODO: run show function client-side?
-exports.getShow = function (show, docid, /*optional*/q, callback) {
-    if (!utils.isBrowser) {
-        throw new Error('getShow cannot be called server-side');
-    }
-    if (!callback) {
-        callback = q;
-        q = {};
-    }
-    var base = utils.getBaseURL();
-    var name = exports.encode(settings.name);
-    var showname = exports.encode(show);
-    var show_url = base + '/_db/_design/' + name + '/_show/' + showname;
-    var req = {
->>>>>>> 4c1ab67fabce8e85fcbe90663d46f2402b1fe828
         url: show_url + (docid ? '/' + exports.encode(docid): ''),
         data: exports.stringifyQuery(q)
     };
