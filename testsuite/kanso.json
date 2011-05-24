@@ -1,0 +1,7 @@
+{
+    "name": "testsuite",
+    "load": "lib/app",
+    "modules": ["lib", "tests"],
+    "templates": "templates",
+    "attachments": "static"
+}
