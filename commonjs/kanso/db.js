@@ -66,9 +66,26 @@ var httpData = function (xhr, type, s) {
  * @api private
  */
 
-function onComplete(callback) {
+function onComplete(options, callback) {
     return function (req) {
-        var resp = httpData(req, "json");
+        var resp;
+        var ctype = req.getResponseHeader('Content-Type');
+        if (ctype === 'application/json' || ctype === 'text/json') {
+            try {
+                resp = httpData(req, "json");
+            }
+            catch (e) {
+                return callback(e);
+            }
+        }
+        else {
+            if (options.expect_json) {
+                return callback(
+                    new Error('Expected JSON response, got ' + ctype)
+                );
+            }
+            resp = req.responseText;
+        }
         if (req.status === 401) {
             // returned 'Unauthorized', check the user's session if it's not
             // been checked on an 'Unauthorized' repsonse in the last second
@@ -93,6 +110,18 @@ function onComplete(callback) {
     };
 }
 
+/**
+ * Encodes a document id or view, list or show name.
+ *
+ * @param {String} str
+ * @return {String}
+ * @api public
+ */
+
+exports.encode = function (str) {
+    return encodeURIComponent(str).replace(/^_design%2F/, '_design/');
+};
+
 
 /**
  * Make a request, with some default settings and proper callback
@@ -103,9 +132,40 @@ function onComplete(callback) {
  */
 
 exports.request = function (options, callback) {
-    options.complete = onComplete(callback);
+    options.complete = onComplete(options, callback);
     options.dataType = 'json';
     $.ajax(options);
+};
+
+
+/**
+ * Fetches a rewrite from the database the app is running on. Results
+ * are passed to the callback, with the first argument of the callback
+ * reserved for any exceptions that occurred (node.js style).
+ *
+ * @param {String} path
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ */
+
+exports.getRewrite = function (path, /*optional*/q, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getRewrite cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    // prepend forward-slash if missing
+    path = (path[0] === '/') ? path: '/' + path;
+
+    var base = utils.getBaseURL();
+    var name = exports.encode(settings.name);
+    var req = {
+        url: base + '/_db/_design/' + name + '/_rewrite' + path,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
 };
 
 
@@ -115,19 +175,22 @@ exports.request = function (options, callback) {
  * for any exceptions that occurred (node.js style).
  *
  * @param {String} id
- * @param {Object} q
+ * @param {Object} q (optional)
  * @param {Function} callback
  */
 
-// TODO: encode doc id in url
-// TODO: make q argument optional?
-exports.getDoc = function (id, q, callback) {
+exports.getDoc = function (id, /*optional*/q, callback) {
     if (!utils.isBrowser) {
         throw new Error('getDoc cannot be called server-side');
     }
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
     var req = {
-        url: utils.getBaseURL() + '/_db/' + id,
-        data: exports.stringifyQuery(q)
+        url: utils.getBaseURL() + '/_db/' + exports.encode(id),
+        data: exports.stringifyQuery(q),
+        expect_json: true
     };
     exports.request(req, callback);
 };
@@ -142,7 +205,6 @@ exports.getDoc = function (id, q, callback) {
  * @param {Function} callback
  */
 
-// TODO: encode doc id in url
 exports.saveDoc = function (doc, callback) {
     if (!utils.isBrowser) {
         throw new Error('saveDoc cannot be called server-side');
@@ -153,14 +215,15 @@ exports.saveDoc = function (doc, callback) {
     }
     else {
         method = "PUT";
-        url += '/' + doc._id;
+        url += '/' + exports.encode(doc._id);
     }
     var req = {
         type: method,
         url: url,
         data: JSON.stringify(doc),
         processData: false,
-        contentType: 'application/json'
+        contentType: 'application/json',
+        expect_json: true
     };
     exports.request(req, callback);
 };
@@ -176,11 +239,11 @@ exports.saveDoc = function (doc, callback) {
 
 exports.removeDoc = function (doc, callback) {
     if (!utils.isBrowser) {
-        throw new Error('saveDoc cannot be called server-side');
+        throw new Error('removeDoc cannot be called server-side');
     }
     var url = utils.getBaseURL() + '/_db/' +
-        encodeURIComponent(doc._id) +
-        '?rev=' + encodeURIComponent(doc._rev);
+        exports.encode(doc._id) +
+        '?rev=' + exports.encode(doc._rev);
 
     exports.request({type: 'DELETE', url: url}, callback);
 };
@@ -192,18 +255,90 @@ exports.removeDoc = function (doc, callback) {
  * for any exceptions that occurred (node.js style).
  *
  * @param {String} view
- * @param {Object} q
+ * @param {Object} q (optional)
  * @param {Function} callback
  */
 
-// TODO: make q argument optional?
-exports.getView = function (view, q, callback) {
+exports.getView = function (view, /*optional*/q, callback) {
     if (!utils.isBrowser) {
         throw new Error('getView cannot be called server-side');
     }
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
     var base = utils.getBaseURL();
+    var name = exports.encode(settings.name);
+    var viewname = exports.encode(view);
     var req = {
-        url: base + '/_db/_design/' + settings.name + '/_view/' + view,
+        url: base + '/_db/_design/' + name + '/_view/' + viewname,
+        data: exports.stringifyQuery(q),
+        expect_json: true
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Transforms and fetches a view through a list from the database the app
+ * is running on. Results are passed to the callback, with the first
+ * argument of the callback reserved for any exceptions that occurred
+ * (node.js style).
+ *
+ * @param {String} list
+ * @param {String} view
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ */
+
+// TODO: run list function client-side?
+exports.getList = function (list, view, /*optional*/q, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getList cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var base = utils.getBaseURL();
+    var name = exports.encode(settings.name);
+    var listname = exports.encode(list);
+    var viewname = exports.encode(view);
+    var req = {
+        url: base + '/_db/_design/' + name + '/_list/' + listname +
+             '/' + viewname,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Transforms and fetches a document through a show from the database the app
+ * is running on. Results are passed to the callback, with the first
+ * argument of the callback reserved for any exceptions that occurred
+ * (node.js style).
+ *
+ * @param {String} show
+ * @param {String} docid
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ */
+
+// TODO: run show function client-side?
+exports.getShow = function (show, docid, /*optional*/q, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getShow cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var base = utils.getBaseURL();
+    var name = exports.encode(settings.name);
+    var showname = exports.encode(show);
+    var show_url = base + '/_db/_design/' + name + '/_show/' + showname;
+    var req = {
+        url: show_url + (docid ? '/' + exports.encode(docid): ''),
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
@@ -229,7 +364,8 @@ exports.all = function (/*optional*/q, callback) {
     var base = utils.getBaseURL();
     var req = {
         url: base + '/_db/_all_docs',
-        data: exports.stringifyQuery(q)
+        data: exports.stringifyQuery(q),
+        expect_json: true
     };
     exports.request(req, callback);
 };
@@ -284,7 +420,8 @@ exports.newUUID = function (cacheNum, callback) {
     var base = utils.getBaseURL();
     var req = {
         url: '/_uuids',
-        data: {count: cacheNum}
+        data: {count: cacheNum},
+        expect_json: true
     };
     exports.request(req, function (err, resp) {
         if (err) {
@@ -331,6 +468,7 @@ exports.deleteDatabase = function (name, callback) {
     exports.request(req, callback);
 };
 
+
 /**
  * Fetches the most recent revision of the replication document
  * referred to by the id parameter.
@@ -344,7 +482,7 @@ exports.getReplication = function (id, callback) {
         throw new Error('getReplication cannot be called server-side');
     }
     var req = {
-        url: '/_replicator/' + encodeURIComponent(id)
+        url: '/_replicator/' + exports.encode(id)
     };
     exports.request(req, callback);
 };
@@ -398,8 +536,8 @@ exports.stopReplication = function (doc, callback, options) {
     var req = {
         type: 'DELETE',
         url: '/_replicator/'
-          + encodeURIComponent(doc._id)
-          + '?rev=' + encodeURIComponent(doc._rev)
+          + exports.encode(doc._id)
+          + '?rev=' + exports.encode(doc._rev)
     };
 
     exports.request(req, function(err, rv) {
@@ -460,7 +598,7 @@ exports.deleteUser = function (username, callback) {
         }
         var req = {
             type: 'DELETE',
-            url: ('/' + userdb + '/' + id),
+            url: '/' + exports.encode(userdb) + '/' + exports.encode(id),
             data: doc,
             contentType: 'application/json'
         };
