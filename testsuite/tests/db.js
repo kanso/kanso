@@ -248,10 +248,8 @@ exports['complex replication, async'] = function(test)
           db.saveDoc(example_doc, function(err, rv) {
             test.notEqual(rv.id, undefined, 'ID for new document is defined');
             all_created_docs[i] = rv;
-          });
-          if (next_fn) {
             next_fn();
-          }
+          });
         }
       }
 
