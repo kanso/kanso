@@ -483,6 +483,7 @@ exports['Form.validate'] = function (test) {
 };
 
 exports['Form.validate - error on string field'] = function (test) {
+    test.expect(1);
     var req = {}
     var f = new forms.Form({
         baz: fields.string(),
