@@ -269,6 +269,10 @@ exports.parseRaw = function (fields, raw) {
         var f = fields[k];
         var r = raw[k];
         var cname = utils.constructorName(f);
+        var allowedCnames = ['Object', 'Field', 'Embedded', 'EmbeddedList']
+        if (!_.contains(allowedCnames, cname)) {
+            throw new Error('This field type '+cname+' is not supported.');
+        }
         if (cname === 'Field') {
             if (!f.isEmpty(r) || !f.omit_empty) {
                 doc[k] = f.parse(r);

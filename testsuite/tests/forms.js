@@ -482,6 +482,20 @@ exports['Form.validate'] = function (test) {
     test.done();
 };
 
+exports['Form.validate - error on string field'] = function (test) {
+    var req = {}
+    var f = new forms.Form({
+        baz: fields.string(),
+        type: 'test'
+    });
+    try {
+        f.validate(req);
+    } catch (e) {
+        test.equals(e.message, 'This field type String is not supported.');
+    }
+    test.done();
+}
+
 exports['Form.isValid'] = function (test) {
     var f = new forms.Form();
     f.errors = [];
