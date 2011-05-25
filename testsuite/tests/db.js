@@ -362,7 +362,7 @@ exports['complex replication, async'] = function(test)
           callback(null, doc1, doc2);
         });
 
-      }, 10000); /* Fix me: Add a waitReplication function */
+      }, 2500); /* Fix me: Add a waitReplication function */
     },
     function(doc1, doc2, callback) {
       db.stopReplication(
