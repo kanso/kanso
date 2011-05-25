@@ -631,6 +631,33 @@ exports.startReplication = function (options, callback) {
 };
 
 /**
+ * Waits for a replication operation to enter a specific state.
+ * waitReplication polls the _replication database using the
+ * doc provided, and evaluates state_function(doc) at each iteration.
+ * This function stops polling and invokes callback when the
+ * state_function evaluates to true. If state_function is not
+ * provided, waitReplication waits for the doc's _replication_state
+ * to change from 'triggered' to 'complete' (or 'error').
+ *
+ * @param {Object} doc
+ * @param {Function} state_function (optional)
+ * @param {Function} callback
+ */
+
+exports.waitReplication = function (doc, /*optional*/state_function, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('waitReplication cannot be called server-side');
+    }
+    if (!callback) {
+        callback = state_function;
+        state_function = function(x) {
+            return (x._replication_state == 'complete'
+                    || x._replication_state == 'error');
+        }
+    }
+});
+
+/**
  * Stops a replication operation already in progress.
  * The doc parameter can be obtained by calling getReplication.
  *
