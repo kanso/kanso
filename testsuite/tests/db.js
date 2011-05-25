@@ -144,7 +144,7 @@ exports['simple replication, no async'] = function(test)
                     test.done();
                   });
                 });
-              }, 2000);
+              }, 2000); /* Fix me: Add a waitReplication function */
             }
           );
       });
@@ -326,30 +326,30 @@ exports['complex replication, async'] = function(test)
           return function(next_fn) {
             var id = all_created_docs[i].id;
             async.waterfall([
-              function(cb) {
+              function(nxt) {
                 db.getDoc(
                   id, {}, { db: 'kanso_testsuite_target1' },
                   function(err, rv) {
                     test.notEqual(rv, undefined, 'Test document #1 exists');
                     test.notEqual(rv._rev, undefined, 'Test document #1 has rev');
-                    cb();
+                    nxt();
                   }
                 );
               },
-              function(cb) {
+              function(nxt) {
                 db.getDoc(
                   id, {}, { db: 'kanso_testsuite_target2' },
                   function(err, rv) {
                     test.notEqual(rv, undefined, 'Test document #2 exists');
                     test.notEqual(rv._rev, undefined, 'Test document #2 has rev');
-                    cb();
+                    nxt();
                   }
                 );
-              },
-              function() {
-                next_fn();
               }
-            ]);
+            ],
+            function() {
+              next_fn();
+            });
           }
         };
 
