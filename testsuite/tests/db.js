@@ -116,8 +116,8 @@ exports['simple replication, no async'] = function(test)
     db.createDatabase('kanso_testsuite_target', function(e2, r2) {
       test.equal(r2.ok, true, 'second createDatabase returns okay');
 
-      /* Start replication */
-      db.replicate(
+      /* Start replication job */
+      db.startReplication(
         { source: 'kanso_testsuite_source',
           target: 'kanso_testsuite_target',
           create_target: false, continuous: true },
@@ -171,7 +171,7 @@ exports['simple replication, async'] = function(test)
       });
     },
     function(callback) {
-      db.replicate(
+      db.startReplication(
         { source: 'kanso_testsuite_source',
           target: 'kanso_testsuite_target',
           create_target: false, continuous: true },
@@ -265,7 +265,7 @@ exports['complex replication, async'] = function(test)
       });
     },
     function(callback) {
-      db.replicate(
+      db.startReplication(
         { source: kanso_database,
           target: 'kanso_testsuite_target1',
           create_target: false, continuous: true },
@@ -278,7 +278,7 @@ exports['complex replication, async'] = function(test)
       );
     },
     function(doc1, callback) {
-      db.replicate(
+      db.startReplication(
         { source: kanso_database,
           target: 'kanso_testsuite_target2',
           create_target: false, continuous: true },

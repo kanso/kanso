@@ -611,9 +611,9 @@ exports.getReplication = function (id, callback) {
  * @param {Function} callback
  */
 
-exports.replicate = function (options, callback) {
+exports.startReplication = function (options, callback) {
     if (!utils.isBrowser) {
-        throw new Error('replicate cannot be called server-side');
+        throw new Error('startReplication cannot be called server-side');
     }
     if (!options.source) {
       throw new Error('source parameter must be provided');
