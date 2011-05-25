@@ -127,12 +127,14 @@ exports['simple replication, async'] = function(test)
 
 };
 
-exports['once-only replication, async'] = function(test)
+exports['complex replication, async'] = function(test)
 {
-  test.expect(14);
+  var kanso_database = (utils.getBaseURL().slice(1).split('/'))[0];
 
-  /* Discover what database we're living inside of */
-  source_database = (utils.getBaseURL().slice(1).split('/'))[0];
+  var num_docs = 10;
+  var all_created_docs = [];
+
+  test.expect(48);
 
   async.waterfall([
     function(callback) {
@@ -148,23 +150,56 @@ exports['once-only replication, async'] = function(test)
       });
     },
     function(callback) {
-      db.replicate(
-        { source: source_database,
-          target: 'kanso_testsuite_target1',
-          create_target: false, continuous: false },
 
-        function(err, rv) {
-          test.equal(err, undefined, 'No error starting replication');
-          test.notEqual(rv.id, undefined, 'Replication job ID is defined');
-          callback(null, rv);
+      /* Function generator:
+          Generates steps to be used inside of async.waterfall. */
+
+      var make_create_doc_fn = function(i) {
+        return function(next_fn) {
+          var example_doc = {
+            i: i, test: true, data: 'abcdefghijklmnopqrstuvwxyz'
+          };
+          db.saveDoc(example_doc, function(err, rv) {
+            test.notEqual(rv.id, undefined, 'ID for new document is defined');
+            all_created_docs[i] = rv;
+          });
+          if (next_fn) {
+            next_fn();
+          }
         }
-      );
+      }
+
+      /* Create 100 test documents */
+      var create_fn_list = [];
+
+      for (var i = 0; i < num_docs; ++i) {
+        create_fn_list[i] = make_create_doc_fn(i);
+      }
+      
+      async.waterfall(create_fn_list, function() {
+        callback();
+      });
+    },
+    function(callback) {
+      setTimeout(function() {
+        db.replicate(
+          { source: kanso_database,
+            target: 'kanso_testsuite_target1',
+            create_target: false, continuous: true },
+
+          function(err, rv) {
+            test.equal(err, undefined, 'No error starting replication');
+            test.notEqual(rv.id, undefined, 'Replication job ID is defined');
+            callback(null, rv);
+          }
+        );
+      }, 5000);
     },
     function(doc1, callback) {
       db.replicate(
-        { source: source_database,
+        { source: kanso_database,
           target: 'kanso_testsuite_target2',
-          create_target: false, continuous: false },
+          create_target: false, continuous: true },
 
         function(err, rv) {
           test.equal(err, undefined, 'No error starting replication');
@@ -173,6 +208,7 @@ exports['once-only replication, async'] = function(test)
         }
       );
     },
+
     function(doc1, doc2, callback) {
       db.getReplication(
         doc1.id,
@@ -180,17 +216,88 @@ exports['once-only replication, async'] = function(test)
           test.equal(err, undefined, 'No error getting replication #1');
           test.notEqual(rv._id, undefined, 'getReplication #1 has id');
           test.notEqual(rv._rev, undefined, 'getReplication #1 has rev');
-          callback(null, doc2);
+          callback(null, doc1, doc2);
         }
       );
     },
-    function(doc2, callback) {
+    function(doc1, doc2, callback) {
       db.getReplication(
         doc2.id,
         function(err, rv) {
           test.equal(err, undefined, 'No error getting replication #2');
           test.notEqual(rv._id, undefined, 'getReplication #2 has id');
           test.notEqual(rv._rev, undefined, 'getReplication #2 has rev');
+          callback(null, doc1, doc2);
+        }
+      );
+    },
+    function(doc1, doc2, callback) {
+      setTimeout(function() {
+
+        /* Function generator:
+            Generates steps to be used inside of async.waterfall.
+            Each step is itself a two-step waterfall. Confusing. */
+
+        var make_verify_doc_fn = function(i) {
+          return function(next_fn) {
+            var id = all_created_docs[i].id;
+            async.waterfall([
+              function(cb) {
+                db.getDoc(
+                  id, {}, { db: '/kanso_testsuite_target1' },
+                  function(err1, rv1) {
+                    test.notEqual(rv1._rev, undefined, 'Test document #1 has rev');
+                    cb();
+                  }
+                );
+              },
+              function(cb) {
+                db.getDoc(
+                  id, {}, { db: '/kanso_testsuite_target2' },
+                  function(err1, rv1) {
+                    test.notEqual(rv1._rev, undefined, 'Test document #1 has rev');
+                    cb();
+                  }
+                );
+              },
+              function() {
+                next_fn();
+              }
+            ]);
+          }
+        };
+
+        /* Verify 100 previously-crated documents */
+        var verify_fn_list = [];
+
+        for (var i = 0; i < num_docs; ++i) {
+          verify_fn_list[i] = make_verify_doc_fn(i);
+        }
+        
+        async.waterfall(verify_fn_list, function() {
+          callback(null, doc1, doc2);
+        });
+
+      }, 7500); /* Fix me: Can we detect when replication is complete? */
+    },
+    function(doc1, doc2, callback) {
+      db.stopReplication(
+        { _id: doc1.id, _rev: doc1.rev },
+
+        function(err, rv) {
+          test.equal(err, undefined, 'No error stopping replication #1');
+          test.equal(rv.ok, true, 'stopReplication #1 returns okay');
+          callback(null, doc1, doc2);
+        }
+      );
+    },
+    function(doc1, doc2, callback) {
+      db.stopReplication(
+        { _id: doc2.id, _rev: doc2.rev },
+
+        function(err, rv) {
+          test.equal(err, undefined, 'No error stopping replication #2');
+          test.equal(rv.ok, true, 'stopReplication #2 returns okay');
           callback();
         }
       );

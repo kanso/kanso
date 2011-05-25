@@ -197,8 +197,8 @@ exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
       }
     }
     var req = {
-        url: (options.db || utils.getBaseURL() + '/_db/' + exports.encode(id)),
-        data: exports.stringifyQuery(q),
+        url: (options.db || (utils.getBaseURL() + '/_db')) + '/' + exports.encode(id),
+        data: (options.db ? null : exports.stringifyQuery(q)),
         expect_json: true
     };
     exports.request(req, callback);
@@ -219,7 +219,7 @@ exports.saveDoc = function (doc, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('saveDoc cannot be called server-side');
     }
-    var method, url = utils.getBaseURL() + '/_db';
+    var method, url = (options.db || (utils.getBaseURL() + '/_db'));
     if (!callback) {
         /* Arity = 2: Omits options */
         callback = options;
@@ -234,7 +234,7 @@ exports.saveDoc = function (doc, /*optional*/options, callback) {
     }
     var req = {
         type: method,
-        url: (options.db || url),
+        url: url,
         data: JSON.stringify(doc),
         processData: false,
         contentType: 'application/json',
