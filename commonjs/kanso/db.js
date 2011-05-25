@@ -644,17 +644,30 @@ exports.startReplication = function (options, callback) {
  * @param {Function} callback
  */
 
-exports.waitReplication = function (doc, /*optional*/state_function, callback) {
+exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_function, callback) {
     if (!utils.isBrowser) {
         throw new Error('waitReplication cannot be called server-side');
     }
+    var default_state_function = function(x) {
+        return (x._replication_state == 'complete'
+                || x._replication_state == 'error');
+    }
     if (!callback) {
-        callback = state_function;
-        state_function = function(x) {
-            return (x._replication_state == 'complete'
-                    || x._replication_state == 'error');
+        if (!state_function) {
+            /* Arity = 2: doc, callback */
+            callback = options;
+            options = {};
+            state_function = default_state_function;
+        } else {
+            /* Arity = 3: doc, options, callback */
+            callback = state_function;
+            state_function = default_state_function;
         }
     }
+    if (options == undefined) options = {};
+    if (options.limit == undefined) options.limit = 100;  /* times */
+    if (options.delay == undefined) options.delay = 2000; /* ms */
+
 });
 
 /**
