@@ -4,20 +4,103 @@ var db = require('kanso/db'),
     async = require('lib/async');
 
 
-exports['database creation'] = function(test)
+exports['database creation/deletion'] = function(test)
 {
-  db.createDatabase('kanso_testsuite_database', function(err_c, rv_c) {
-    test.expect(6);
+  test.expect(6);
+  var database_name = 'kanso_testsuite_database';
+
+  db.createDatabase(database_name, function(err_c, rv_c) {
     test.equal(err_c, undefined, 'Created database successfully');
     test.notEqual(rv_c, undefined, 'Return value is defined');
     test.equal(rv_c.ok, true, 'createDatabase returns okay');
 
-    db.deleteDatabase('kanso_testsuite_database', function(err_d, rv_d) {
+    db.deleteDatabase(database_name, function(err_d, rv_d) {
       test.equal(err_d, undefined, 'Deleted database successfully');
       test.notEqual(rv_d, undefined, 'Return value is defined');
       test.equal(rv_d.ok, true, 'deleteDatabase returns okay');
       test.done();
     });
+  });
+};
+
+exports['options.db for saveDoc/getDoc/removeDoc, async'] = function(test)
+{
+  test.expect(12);
+  var database_name = 'kanso_testsuite_options';
+
+  async.waterfall([
+    function(callback) {
+      db.createDatabase(database_name, function(err, rv) {
+        test.equal(rv.ok, true, 'createDatabase returns okay');
+        callback();
+      });
+    },
+    function(callback) {
+      db.saveDoc(
+        { test: true }, { db: database_name },
+        function(err, rv) {
+          test.notEqual(rv, undefined, 'New test document #1 created');
+          test.notEqual(rv.id, undefined, 'New test document #1 has id');
+          callback(null, rv);
+        }
+      );
+    },
+    function(doc1, callback) {
+      db.saveDoc(
+        { test: true }, { db: database_name },
+        function(err, rv) {
+          test.notEqual(rv, undefined, 'New test document #2 created');
+          test.notEqual(rv.id, undefined, 'New test document #2 has id');
+          callback(null, doc1, rv);
+        }
+      );
+    },
+    function(doc1, doc2, callback) {
+      db.getDoc(
+        doc1.id, {}, { db: database_name },
+        function(err, rv) {
+          test.notEqual(rv, undefined, 'Test document #1 found');
+          test.notEqual(rv._rev, undefined, 'Test document #1 has rev');
+          callback(null, doc1, doc2);
+        }
+      );
+    },
+    function(doc1, doc2, callback) {
+      db.getDoc(
+        doc2.id, {}, { db: '/' + database_name },
+        function(err, rv) {
+          test.notEqual(rv, undefined, 'Test document #2 found');
+          test.notEqual(rv._rev, undefined, 'Test document #2 has rev');
+          callback(null, doc1, doc2);
+        }
+      );
+    },
+    function(doc1, doc2, callback) {
+      db.removeDoc(
+        { _id: doc1.id, _rev: doc1.rev }, { db: '/' + database_name },
+        function(err, rv) {
+          test.notEqual(rv.ok, undefined, 'Test document #1 removed');
+          callback(null, doc2);
+        }
+      );
+    },
+    function(doc2, callback) {
+      db.removeDoc(
+        { _id: doc2.id, _rev: doc2.rev }, { db: database_name },
+        function(err, rv) {
+          test.notEqual(rv.ok, undefined, 'Test document #2 removed');
+          callback();
+        }
+      );
+    },
+    function(callback) {
+      db.deleteDatabase('/' + database_name, function(err, rv) {
+        test.equal(rv.ok, true, 'deleteDatabase returns okay');
+        callback();
+      });
+    }
+  ], function() {
+    test.done();
   });
 };
 
@@ -52,14 +135,16 @@ exports['simple replication, no async'] = function(test)
               test.equal(rv_stop.ok, true, 'stopReplication returns');
 
               /* Delete databases */
-              db.deleteDatabase('kanso_testsuite_source', function(e3, r3) {
-                test.equal(r3.ok, true, 'first deleteDatabase returns okay');
+              setTimeout(function() {
+                db.deleteDatabase('kanso_testsuite_source', function(e3, r3) {
+                  test.equal(r3.ok, true, 'first deleteDatabase returns okay');
 
-                db.deleteDatabase('kanso_testsuite_target', function(e4, r4) {
-                  test.equal(r4.ok, true, 'second deleteDatabase returns okay');
-                  test.done();
+                  db.deleteDatabase('kanso_testsuite_target', function(e4, r4) {
+                    test.equal(r4.ok, true, 'second deleteDatabase returns okay');
+                    test.done();
+                  });
                 });
-              });
+              }, 2000);
             }
           );
       });
@@ -110,10 +195,12 @@ exports['simple replication, async'] = function(test)
       );
     },
     function(callback) {
-      db.deleteDatabase('kanso_testsuite_target', function(err, rv) {
-        test.equal(rv.ok, true, 'first deleteDatabase returns okay');
-        callback();
-      });
+      setTimeout(function() {
+        db.deleteDatabase('kanso_testsuite_target', function(err, rv) {
+          test.equal(rv.ok, true, 'first deleteDatabase returns okay');
+          callback();
+        });
+      }, 2000); /* Fix me: Add a waitReplication function */
     },
     function(callback) {
       db.deleteDatabase('kanso_testsuite_source', function(err, rv) {
@@ -129,12 +216,11 @@ exports['simple replication, async'] = function(test)
 
 exports['complex replication, async'] = function(test)
 {
-  var kanso_database = (utils.getBaseURL().slice(1).split('/'))[0];
-
   var num_docs = 10;
   var all_created_docs = [];
+  var kanso_database = (utils.getBaseURL().slice(1).split('/'))[0];
 
-  test.expect(48);
+  test.expect((num_docs * 6) + 8);
 
   async.waterfall([
     function(callback) {
@@ -181,19 +267,17 @@ exports['complex replication, async'] = function(test)
       });
     },
     function(callback) {
-      setTimeout(function() {
-        db.replicate(
-          { source: kanso_database,
-            target: 'kanso_testsuite_target1',
-            create_target: false, continuous: true },
+      db.replicate(
+        { source: kanso_database,
+          target: 'kanso_testsuite_target1',
+          create_target: false, continuous: true },
 
-          function(err, rv) {
-            test.equal(err, undefined, 'No error starting replication');
-            test.notEqual(rv.id, undefined, 'Replication job ID is defined');
-            callback(null, rv);
-          }
-        );
-      }, 5000);
+        function(err, rv) {
+          test.equal(err, undefined, 'No error starting replication');
+          test.notEqual(rv.id, undefined, 'Replication job ID is defined');
+          callback(null, rv);
+        }
+      );
     },
     function(doc1, callback) {
       db.replicate(
@@ -244,18 +328,20 @@ exports['complex replication, async'] = function(test)
             async.waterfall([
               function(cb) {
                 db.getDoc(
-                  id, {}, { db: '/kanso_testsuite_target1' },
-                  function(err1, rv1) {
-                    test.notEqual(rv1._rev, undefined, 'Test document #1 has rev');
+                  id, {}, { db: 'kanso_testsuite_target1' },
+                  function(err, rv) {
+                    test.notEqual(rv, undefined, 'Test document #1 exists');
+                    test.notEqual(rv._rev, undefined, 'Test document #1 has rev');
                     cb();
                   }
                 );
               },
               function(cb) {
                 db.getDoc(
-                  id, {}, { db: '/kanso_testsuite_target2' },
-                  function(err1, rv1) {
-                    test.notEqual(rv1._rev, undefined, 'Test document #1 has rev');
+                  id, {}, { db: 'kanso_testsuite_target2' },
+                  function(err, rv) {
+                    test.notEqual(rv, undefined, 'Test document #2 exists');
+                    test.notEqual(rv._rev, undefined, 'Test document #2 has rev');
                     cb();
                   }
                 );
@@ -278,7 +364,7 @@ exports['complex replication, async'] = function(test)
           callback(null, doc1, doc2);
         });
 
-      }, 7500); /* Fix me: Can we detect when replication is complete? */
+      }, 10000); /* Fix me: Add a waitReplication function */
     },
     function(doc1, doc2, callback) {
       db.stopReplication(

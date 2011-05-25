@@ -184,21 +184,31 @@ exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('getDoc cannot be called server-side');
     }
+    if (!id) {
+        throw new Error('getDoc requires an id parameter to work properly');
+    }
     if (!callback) {
-      if (!options) {
-        /* arity = 2: Omits q, options */
-        callback = q;
-        options = {};
-        q = {};
-      } else {
-        /* arity = 3: Omits options */
-        callback = options;
-        options = {};
-      }
+        if (!options) {
+          /* arity = 2: Omits q, options */
+          callback = q;
+          options = {};
+          q = {};
+        } else {
+          /* arity = 3: Omits options */
+          callback = options;
+          options = {};
+        }
+    }
+    var url;
+    if (options.db) {
+        /* Force leading slash; make absolute path */
+        url = (options.db.substr(0,1) != '/' ? '/' : '') + options.db;
+    } else {
+        url = utils.getBaseURL() + '/_db';
     }
     var req = {
-        url: (options.db || (utils.getBaseURL() + '/_db')) + '/' + exports.encode(id),
-        data: (options.db ? null : exports.stringifyQuery(q)),
+        url: url + '/' + exports.encode(id),
+        data: exports.stringifyQuery(q),
         expect_json: true
     };
     exports.request(req, callback);
@@ -219,7 +229,13 @@ exports.saveDoc = function (doc, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('saveDoc cannot be called server-side');
     }
-    var method, url = (options.db || (utils.getBaseURL() + '/_db'));
+    var method, url;
+    if (options.db) {
+        /* Force leading slash; make absolute path */
+        url = (options.db.substr(0,1) != '/' ? '/' : '') + options.db;
+    } else {
+        url = utils.getBaseURL() + '/_db';
+    }
     if (!callback) {
         /* Arity = 2: Omits options */
         callback = options;
@@ -230,7 +246,7 @@ exports.saveDoc = function (doc, /*optional*/options, callback) {
     }
     else {
         method = "PUT";
-        url += '/' + exports.encode(doc._id);
+        url += '/' + doc._id;
     }
     var req = {
         type: method,
@@ -256,16 +272,29 @@ exports.removeDoc = function (doc, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('removeDoc cannot be called server-side');
     }
+    if (!doc._id) {
+        throw new Error('removeDoc requires an _id field in your document');
+    }
+    if (!doc._rev) {
+        throw new Error('removeDoc requires a _rev field in your document');
+    }
     if (!callback) {
         /* Arity = 2: Omits options */
         callback = options;
         options = {};
     }
-    var url = utils.getBaseURL() + '/_db/' +
-        exports.encode(doc._id) +
-        '?rev=' + exports.encode(doc._rev);
-
-    exports.request({type: 'DELETE', url: (options.db || url)}, callback);
+    var url;
+    if (options.db) {
+        /* Force leading slash; make absolute path */
+        url = (options.db.substr(0,1) != '/' ? '/' : '') + options.db + '/';
+    } else {
+        url = utils.getBaseURL() + '/_db/';
+    }
+    url += exports.encode(doc._id) + '?rev=' + exports.encode(doc._rev);
+    var req = {
+        type: 'DELETE', url: url
+    };
+    exports.request(req, callback);
 };
 
 
@@ -531,7 +560,7 @@ exports.createDatabase = function (name, callback) {
     }
     var req = {
         type: 'PUT',
-        url: '/' + exports.encode(name)
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
     };
     exports.request(req, callback);
 };
@@ -549,7 +578,7 @@ exports.deleteDatabase = function (name, callback) {
     }
     var req = {
         type: 'DELETE',
-        url: '/' + exports.encode(name)
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
     };
     exports.request(req, callback);
 };
