@@ -135,16 +135,14 @@ exports['simple replication, no async'] = function(test)
               test.equal(rv_stop.ok, true, 'stopReplication returns');
 
               /* Delete databases */
-              setTimeout(function() {
-                db.deleteDatabase('kanso_testsuite_source', function(e3, r3) {
-                  test.equal(r3.ok, true, 'first deleteDatabase returns okay');
+              db.deleteDatabase('kanso_testsuite_source', function(e3, r3) {
+                test.equal(r3.ok, true, 'first deleteDatabase returns okay');
 
-                  db.deleteDatabase('kanso_testsuite_target', function(e4, r4) {
-                    test.equal(r4.ok, true, 'second deleteDatabase returns okay');
-                    test.done();
-                  });
+                db.deleteDatabase('kanso_testsuite_target', function(e4, r4) {
+                  test.equal(r4.ok, true, 'second deleteDatabase returns okay');
+                  test.done();
                 });
-              }, 2000); /* Fix me: Add a waitReplication function */
+              });
             }
           );
       });
@@ -195,12 +193,10 @@ exports['simple replication, async'] = function(test)
       );
     },
     function(callback) {
-      setTimeout(function() {
-        db.deleteDatabase('kanso_testsuite_target', function(err, rv) {
-          test.equal(rv.ok, true, 'first deleteDatabase returns okay');
-          callback();
-        });
-      }, 2000); /* Fix me: Add a waitReplication function */
+      db.deleteDatabase('kanso_testsuite_target', function(err, rv) {
+        test.equal(rv.ok, true, 'first deleteDatabase returns okay');
+        callback();
+      });
     },
     function(callback) {
       db.deleteDatabase('kanso_testsuite_source', function(err, rv) {
@@ -220,7 +216,7 @@ exports['complex replication, async'] = function(test)
   var all_created_docs = [];
   var kanso_database = (utils.getBaseURL().slice(1).split('/'))[0];
 
-  test.expect((num_docs * 6) + 8);
+  test.expect((num_docs * 6) + 10);
 
   async.waterfall([
     function(callback) {
@@ -314,55 +310,59 @@ exports['complex replication, async'] = function(test)
       );
     },
     function(doc1, doc2, callback) {
-      setTimeout(function() {
+      db.waitReplication(doc1, function(err1) {
+        test.equal(err1, undefined, 'waitReplication #1 encoutered no error');
 
-        /* Function generator:
-            Generates steps to be used inside of async.waterfall.
-            Each step is itself a two-step waterfall. Confusing. */
+        db.waitReplication(doc2, function(err2) {
+          test.equal(err2, undefined, 'waitReplication #2 encoutered no error');
 
-        var make_verify_doc_fn = function(i) {
-          return function(next_fn) {
-            var id = all_created_docs[i].id;
-            async.waterfall([
-              function(nxt) {
-                db.getDoc(
-                  id, {}, { db: 'kanso_testsuite_target1' },
-                  function(err, rv) {
-                    test.notEqual(rv, undefined, 'Test document #1 exists');
-                    test.notEqual(rv._rev, undefined, 'Test document #1 has rev');
-                    nxt();
-                  }
-                );
-              },
-              function(nxt) {
-                db.getDoc(
-                  id, {}, { db: 'kanso_testsuite_target2' },
-                  function(err, rv) {
-                    test.notEqual(rv, undefined, 'Test document #2 exists');
-                    test.notEqual(rv._rev, undefined, 'Test document #2 has rev');
-                    nxt();
-                  }
-                );
-              }
-            ],
-            function() {
-              next_fn();
-            });
+          /* Function generator:
+              Generates steps to be used inside of async.waterfall.
+              Each step is itself a two-step waterfall. Probably confusing. */
+
+          var make_verify_doc_fn = function(i) {
+            return function(next_fn) {
+              var id = all_created_docs[i].id;
+              async.waterfall([
+                function(nxt) {
+                  db.getDoc(
+                    id, {}, { db: 'kanso_testsuite_target1' },
+                    function(err, rv) {
+                      test.notEqual(rv, undefined, 'Test document #1 exists');
+                      test.notEqual(rv._rev, undefined, 'Test document #1 has rev');
+                      nxt();
+                    }
+                  );
+                },
+                function(nxt) {
+                  db.getDoc(
+                    id, {}, { db: 'kanso_testsuite_target2' },
+                    function(err, rv) {
+                      test.notEqual(rv, undefined, 'Test document #2 exists');
+                      test.notEqual(rv._rev, undefined, 'Test document #2 has rev');
+                      nxt();
+                    }
+                  );
+                }
+              ],
+              function() {
+                next_fn();
+              });
+            }
+          };
+
+          /* Verify 100 previously-crated documents */
+          var verify_fn_list = [];
+
+          for (var i = 0; i < num_docs; ++i) {
+            verify_fn_list[i] = make_verify_doc_fn(i);
           }
-        };
-
-        /* Verify 100 previously-crated documents */
-        var verify_fn_list = [];
-
-        for (var i = 0; i < num_docs; ++i) {
-          verify_fn_list[i] = make_verify_doc_fn(i);
-        }
-        
-        async.waterfall(verify_fn_list, function() {
-          callback(null, doc1, doc2);
+          
+          async.waterfall(verify_fn_list, function() {
+            callback(null, doc1, doc2);
+          });
         });
-
-      }, 2500); /* Fix me: Add a waitReplication function */
+      });
     },
     function(doc1, doc2, callback) {
       db.stopReplication(

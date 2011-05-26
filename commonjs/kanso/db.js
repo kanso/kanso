@@ -637,7 +637,7 @@ exports.startReplication = function (options, callback) {
  * This function stops polling and invokes callback when the
  * state_function evaluates to true. If state_function is not
  * provided, waitReplication waits for the doc's _replication_state
- * to change from 'triggered' to 'complete' (or 'error').
+ * to change from 'triggered' to 'completed' (or 'error').
  *
  * @param {Object} doc
  * @param {Function} state_function (optional)
@@ -648,9 +648,11 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
     if (!utils.isBrowser) {
         throw new Error('waitReplication cannot be called server-side');
     }
-    var default_state_function = function(doc, initial_doc) {
-        return (doc._replication_state == 'complete'
-                || doc._replication_state == 'error');
+    var default_state_function = function(recent_doc, initial_doc) {
+        return (
+          recent_doc._replication_state == 'completed'
+              || recent_doc._replication_state == 'error'
+        );
     }
     if (!callback) {
         if (!state_function) {
@@ -669,25 +671,25 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
     if (options.delay == undefined) options.delay = 2000; /* ms */
 
     /* Fetch latest revision */
-    exports.getReplication(doc._id, function(err, rv) {
+    exports.getReplication(doc.id, function(err, rv) {
 
-      /* Check for event */
-      if (state_function(rv, doc))
-        return callback(rv, doc);
+        /* Check for error, then for an interesting event */
+        if (err || state_function(rv, doc)) {
+            return callback(err, rv, doc);
+        }
+        /* Termination condition for recursion... */
+        if (options.limit > 0) {
 
-      /* Termination condition for recursion */
-      if (options.limit > 0) {
+            /* ...with well-defined progress toward it */
+            options.limit -= 1;
 
-        /* Well-defined progress toward termination */
-        options.limit -= 1;
-
-        /* Go around */
-        return setTimeout(function() {
-          return exports.waitReplication(
-            doc, options, state_function, callback
-          );
-        }, options.delay);
-      }
+            /* Go around */
+            return setTimeout(function() {
+                return exports.waitReplication(
+                    doc, options, state_function, callback
+                );
+            }, options.delay);
+        }
     });
 };
 
@@ -718,42 +720,44 @@ exports.stopReplication = function (doc, callback, options) {
 
     exports.request(req, function(err, rv) {
 
-      if (/conflict/i.test(err)) {  /* HTTP 409: Document Update Conflict */
+        if (err && err.status == 409) {  /* Document update conflict */
 
-        /* Race condition:
-            The CouchDB replication finished (or was updated) between
-            the caller's getReplication and now. Subject to restrictions
-            in the options object, call getReplication and then try again. */
+            /* Race condition:
+                The CouchDB replication finished (or was updated) between
+                the caller's getReplication and now. Subject to restrictions
+                in options, call getReplication and then try again. */
 
-        /* Termination condition for recursion */
-        if (options.limit > 0) {
-          /* Well-defined progress toward termination */
-          options.limit -= 1;
-          return exports.getReplication(doc._id, function(err_get, newdoc) {
-            if (err_get) {
-              throw new Error(
-                'The specified replication document changed since our '
-                  + 'last read, and stopReplication failed to re-request it'
-              );
+            /* Termination condition for recursion... */
+            if (options.limit > 0) {
+
+                /* ...with well-defined progress toward it */
+                options.limit -= 1;
+
+                return exports.getReplication(doc._id, function(e, d) {
+                    if (e) {
+                        throw new Error(
+                          'The specified replication document changed since '
+                            + 'our last read, and we failed to re-request it'
+                        );
+                    }
+                    /* Go around */
+                    setTimeout(function() {
+                        return exports.stopReplication(d, callback, options);
+                    }, options.delay);
+                });
             }
-            /* Go around */
-            setTimeout(function() {
-              return exports.stopReplication(newdoc, callback, options);
-            }, options.delay);
-          });
+
+        } else {
+
+          /* Normal case:
+              Replication document was not changed since the last
+              read; go ahead and invoke the callback and return. */
+
+          return callback(err, rv);
         }
 
-      } else {
-
-        /* Normal case:
-            Replication document was not changed since the last
-            read; go ahead and invoke the callback and return. */
-
-        return callback(err, rv);
-      }
-
-      /* Not reached */
-      return false;
+        /* Not reached */
+        return false;
 
     });
 
