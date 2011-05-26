@@ -532,7 +532,8 @@ exports.getReplication = function (id, callback) {
         throw new Error('getReplication cannot be called server-side');
     }
     var req = {
-        url: '/_replicator/' + exports.encode(id)
+        url: '/_replicator/' + exports.encode(id),
+        cache: false /* Work around IE7 issue */
     };
     exports.request(req, callback);
 };
