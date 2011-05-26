@@ -648,9 +648,9 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
     if (!utils.isBrowser) {
         throw new Error('waitReplication cannot be called server-side');
     }
-    var default_state_function = function(x) {
-        return (x._replication_state == 'complete'
-                || x._replication_state == 'error');
+    var default_state_function = function(doc, initial_doc) {
+        return (doc._replication_state == 'complete'
+                || doc._replication_state == 'error');
     }
     if (!callback) {
         if (!state_function) {
@@ -668,7 +668,28 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
     if (options.limit == undefined) options.limit = 100;  /* times */
     if (options.delay == undefined) options.delay = 2000; /* ms */
 
-});
+    /* Fetch latest revision */
+    exports.getReplication(doc._id, function(err, rv) {
+
+      /* Check for event */
+      if (state_function(rv, doc))
+        return callback(rv, doc);
+
+      /* Termination condition for recursion */
+      if (options.limit > 0) {
+
+        /* Well-defined progress toward termination */
+        options.limit -= 1;
+
+        /* Go around */
+        return setTimeout(function() {
+          return exports.waitReplication(
+            doc, options, state_function, callback
+          );
+        }, options.delay);
+      }
+    });
+};
 
 /**
  * Stops a replication operation already in progress.
@@ -704,7 +725,9 @@ exports.stopReplication = function (doc, callback, options) {
             the caller's getReplication and now. Subject to restrictions
             in the options object, call getReplication and then try again. */
 
+        /* Termination condition for recursion */
         if (options.limit > 0) {
+          /* Well-defined progress toward termination */
           options.limit -= 1;
           return exports.getReplication(doc._id, function(err_get, newdoc) {
             if (err_get) {
@@ -713,6 +736,7 @@ exports.stopReplication = function (doc, callback, options) {
                   + 'last read, and stopReplication failed to re-request it'
               );
             }
+            /* Go around */
             setTimeout(function() {
               return exports.stopReplication(newdoc, callback, options);
             }, options.delay);

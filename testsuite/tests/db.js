@@ -120,7 +120,7 @@ exports['simple replication, no async'] = function(test)
       db.startReplication(
         { source: 'kanso_testsuite_source',
           target: 'kanso_testsuite_target',
-          create_target: false, continuous: true },
+          create_target: false, continuous: false },
 
         function(err_start, rv_start) {
           test.equal(err_start, undefined, 'No error starting replication');
@@ -174,7 +174,7 @@ exports['simple replication, async'] = function(test)
       db.startReplication(
         { source: 'kanso_testsuite_source',
           target: 'kanso_testsuite_target',
-          create_target: false, continuous: true },
+          create_target: false, continuous: false },
 
         function(err, rv) {
           test.equal(err, undefined, 'No error starting replication');
@@ -268,7 +268,7 @@ exports['complex replication, async'] = function(test)
       db.startReplication(
         { source: kanso_database,
           target: 'kanso_testsuite_target1',
-          create_target: false, continuous: true },
+          create_target: false, continuous: false },
 
         function(err, rv) {
           test.equal(err, undefined, 'No error starting replication');
@@ -281,7 +281,7 @@ exports['complex replication, async'] = function(test)
       db.startReplication(
         { source: kanso_database,
           target: 'kanso_testsuite_target2',
-          create_target: false, continuous: true },
+          create_target: false, continuous: false },
 
         function(err, rv) {
           test.equal(err, undefined, 'No error starting replication');
