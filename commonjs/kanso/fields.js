@@ -374,6 +374,16 @@ EmbeddedList.prototype.validate = function (doc, value, raw) {
         return [];
     }
 
+    // check all values are objects
+    var non_objects = _.filter(value, function (v) {
+        return !(v instanceof Object) || _.isArray(v);
+    });
+    if (non_objects.length) {
+        return _.map(non_objects, function (v) {
+            return new Error(v + ' is not an object');
+        });
+    }
+
     // check for missing ids
     var missing = this.missingIDs(value);
     if (missing.length) {
