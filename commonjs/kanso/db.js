@@ -189,20 +189,20 @@ exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
     }
     if (!callback) {
         if (!options) {
-          /* arity = 2: Omits q, options */
-          callback = q;
-          options = {};
-          q = {};
+            /* arity = 2: Omits q, options */
+            callback = q;
+            options = {};
+            q = {};
         } else {
           /* arity = 3: Omits options */
-          callback = options;
-          options = {};
+            callback = options;
+            options = {};
         }
     }
     var url;
     if (options.db) {
         /* Force leading slash; make absolute path */
-        url = (options.db.substr(0,1) != '/' ? '/' : '') + options.db;
+        url = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db;
     } else {
         url = utils.getBaseURL() + '/_db';
     }
@@ -232,7 +232,7 @@ exports.saveDoc = function (doc, /*optional*/options, callback) {
     var method, url;
     if (options.db) {
         /* Force leading slash; make absolute path */
-        url = (options.db.substr(0,1) != '/' ? '/' : '') + options.db;
+        url = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db;
     } else {
         url = utils.getBaseURL() + '/_db';
     }
@@ -286,13 +286,14 @@ exports.removeDoc = function (doc, /*optional*/options, callback) {
     var url;
     if (options.db) {
         /* Force leading slash; make absolute path */
-        url = (options.db.substr(0,1) != '/' ? '/' : '') + options.db + '/';
+        url = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db + '/';
     } else {
         url = utils.getBaseURL() + '/_db/';
     }
     url += exports.encode(doc._id) + '?rev=' + exports.encode(doc._rev);
     var req = {
-        type: 'DELETE', url: url
+        type: 'DELETE',
+        url: url
     };
     exports.request(req, callback);
 };
@@ -550,10 +551,10 @@ exports.startReplication = function (options, callback) {
         throw new Error('startReplication cannot be called server-side');
     }
     if (!options.source) {
-      throw new Error('source parameter must be provided');
+        throw new Error('source parameter must be provided');
     }
     if (!options.target) {
-      throw new Error('target parameter must be provided');
+        throw new Error('target parameter must be provided');
     }
     var req = {
         type: 'POST',
@@ -582,12 +583,12 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
     if (!utils.isBrowser) {
         throw new Error('waitReplication cannot be called server-side');
     }
-    var default_state_function = function(recent_doc, initial_doc) {
+    var default_state_function = function (recent_doc, initial_doc) {
         return (
-          recent_doc._replication_state == 'completed'
-              || recent_doc._replication_state == 'error'
+          recent_doc._replication_state === 'completed' ||
+              recent_doc._replication_state === 'error'
         );
-    }
+    };
     if (!callback) {
         if (!state_function) {
             /* Arity = 2: doc, callback */
@@ -600,12 +601,18 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
             state_function = default_state_function;
         }
     }
-    if (options == undefined) options = {};
-    if (options.limit == undefined) options.limit = 100;  /* times */
-    if (options.delay == undefined) options.delay = 2000; /* ms */
+    if (options === undefined) {
+        options = {};
+    }
+    if (options.limit === undefined) {
+        options.limit = 100; /* times */
+    }
+    if (options.delay === undefined) {
+        options.delay = 2000; /* ms */
+    }
 
     /* Fetch latest revision */
-    exports.getReplication(doc.id, function(err, rv) {
+    exports.getReplication(doc.id, function (err, rv) {
 
         /* Check for error, then for an interesting event */
         if (err || state_function(rv, doc)) {
@@ -618,7 +625,7 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
             options.limit -= 1;
 
             /* Go around */
-            return setTimeout(function() {
+            return setTimeout(function () {
                 return exports.waitReplication(
                     doc, options, state_function, callback
                 );
@@ -633,28 +640,35 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
  *
  * @param {String} id
  * @param {Function} callback
+ * @param {Function} options
  */
 
-exports.stopReplication = function (doc, callback, options) {
+exports.stopReplication = function (doc, callback, /*optional*/options) {
 
     if (!utils.isBrowser) {
         throw new Error('stopReplication cannot be called server-side');
     }
 
-    if (options == undefined) options = {};
-    if (options.limit == undefined) options.limit = 3;   /* times */
-    if (options.delay == undefined) options.delay = 500; /* ms */
+    if (options === undefined) {
+        options = {};
+    }
+    if (options.limit === undefined || options.limit === null) {
+        options.limit = 3; /* times */
+    }
+    if (options.delay === undefined || options.delay === null) {
+        options.delay = 500; /* ms */
+    }
 
     var req = {
         type: 'DELETE',
-        url: '/_replicator/'
-          + exports.encode(doc._id)
-          + '?rev=' + exports.encode(doc._rev)
+        url: '/_replicator/' +
+          exports.encode(doc._id) +
+          '?rev=' + exports.encode(doc._rev)
     };
 
-    exports.request(req, function(err, rv) {
+    exports.request(req, function (err, rv) {
 
-        if (err && err.status == 409) {  /* Document update conflict */
+        if (err && err.status === 409) {  /* Document update conflict */
 
             /* Race condition:
                 The CouchDB replication finished (or was updated) between
@@ -667,15 +681,15 @@ exports.stopReplication = function (doc, callback, options) {
                 /* ...with well-defined progress toward it */
                 options.limit -= 1;
 
-                return exports.getReplication(doc._id, function(e, d) {
+                return exports.getReplication(doc._id, function (e, d) {
                     if (e) {
                         throw new Error(
-                          'The specified replication document changed since '
-                            + 'our last read, and we failed to re-request it'
+                          'The specified replication document changed ' +
+                          'since last read, and we failed to re-request it'
                         );
                     }
                     /* Go around */
-                    setTimeout(function() {
+                    setTimeout(function () {
                         return exports.stopReplication(d, callback, options);
                     }, options.delay);
                 });
@@ -683,11 +697,11 @@ exports.stopReplication = function (doc, callback, options) {
 
         } else {
 
-          /* Normal case:
-              Replication document was not changed since the last
-              read; go ahead and invoke the callback and return. */
+            /* Normal case:
+                Replication document was not changed since the last
+                read; go ahead and invoke the callback and return. */
 
-          return callback(err, rv);
+            return callback(err, rv);
         }
 
         /* Not reached */
@@ -716,10 +730,9 @@ exports.deleteUser = function (username, callback) {
         var req = {
             type: 'DELETE',
             url: '/' + exports.encode(userdb) + '/' + exports.encode(id),
-            data: doc,
             contentType: 'application/json'
         };
-        db.request(req, callback);
+        exports.request(req, callback);
     });
 };
 
