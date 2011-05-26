@@ -289,7 +289,7 @@ exports['validate EmbeddedList'] = function (test) {
 
     var doc = {type: 't1', embeds: [
         {type: 't2', _id: 'id1', one: 'one', two: 'two'},
-        {type: 't2', _id: 'id2', one: 'one'},
+        {type: 't2', _id: 'id2', one: 'one'}
     ]};
     var errs = t2.validate(doc, doc);
 

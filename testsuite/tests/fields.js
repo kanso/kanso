@@ -859,7 +859,7 @@ exports['EmbeddedList - remove item from list'] = function (test) {
         {_id: 'id2', type: 't', test: 'asdf'}
     ]};
     var newDoc = {_id: 't2id', type: 't2', embeddedThing: [
-        {_id: 'id2', type: 't', test: 'asdf'},
+        {_id: 'id2', type: 't', test: 'asdf'}
     ]};
 
     // this should not throw
@@ -867,7 +867,7 @@ exports['EmbeddedList - remove item from list'] = function (test) {
         types.validate_doc_update(type_list, newDoc, oldDoc, {});
     }
     catch (e) {
-        throw new Error(e.unauthorized);
+        throw new Error(e.unauthorized || e);
     }
     test.done();
 };
