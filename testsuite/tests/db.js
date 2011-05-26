@@ -25,12 +25,14 @@ exports['database creation/deletion'] = function (test)
 
 exports['options.db for saveDoc/getDoc/removeDoc, async'] = function (test)
 {
-    test.expect(12);
+    test.expect(16);
     var database_name = 'kanso_testsuite_options';
 
     async.waterfall([
         function (callback) {
             db.createDatabase(database_name, function (err, rv) {
+                test.equal(err, undefined, 'createDatabase has no error');
+                test.notEqual(rv, undefined, 'createDatabase returns a value');
                 test.equal(rv.ok, true, 'createDatabase returns okay');
                 callback();
             });
@@ -95,6 +97,8 @@ exports['options.db for saveDoc/getDoc/removeDoc, async'] = function (test)
         },
         function (callback) {
             db.deleteDatabase('/' + database_name, function (err, rv) {
+                test.equal(err, undefined, 'deleteDatabase has no error');
+                test.notEqual(rv, undefined, 'deleteDatabase returns a value');
                 test.equal(rv.ok, true, 'deleteDatabase returns okay');
                 callback();
             });
@@ -107,13 +111,17 @@ exports['options.db for saveDoc/getDoc/removeDoc, async'] = function (test)
 /* A deeply-nested version; no async.js dependency */
 exports['simple replication, no async'] = function (test)
 {
-    test.expect(8);
+    test.expect(16);
 
     /* Create databases */
     db.createDatabase('kanso_testsuite_source', function (e1, r1) {
+        test.equal(e1, undefined, 'first createDatabase has no error');
+        test.notEqual(r1, undefined, 'first createDatabase returns a value');
         test.equal(r1.ok, true, 'first createDatabase returns okay');
 
         db.createDatabase('kanso_testsuite_target', function (e2, r2) {
+            test.equal(e2, undefined, 'second createDatabase has no error');
+            test.notEqual(r2, undefined, 'second createDatabase returns a value');
             test.equal(r2.ok, true, 'second createDatabase returns okay');
 
             /* Start replication job */
@@ -136,9 +144,13 @@ exports['simple replication, no async'] = function (test)
 
                             /* Delete databases */
                             db.deleteDatabase('kanso_testsuite_source', function (e3, r3) {
+                                test.equal(e3, undefined, 'first deleteDatabase has no error');
+                                test.notEqual(r3, undefined, 'first deleteDatabase returns a value');
                                 test.equal(r3.ok, true, 'first deleteDatabase returns okay');
 
                                 db.deleteDatabase('kanso_testsuite_target', function (e4, r4) {
+                                    test.equal(e4, undefined, 'second deleteDatabase has no error');
+                                    test.notEqual(r4, undefined, 'second deleteDatabase returns a value');
                                     test.equal(r4.ok, true, 'second deleteDatabase returns okay');
                                     test.done();
                                 });
@@ -154,17 +166,21 @@ exports['simple replication, no async'] = function (test)
 /* Same as above, but using async.js */
 exports['simple replication, async'] = function (test)
 {
-    test.expect(8);
+    test.expect(12);
 
     async.waterfall([
         function (callback) {
             db.createDatabase('kanso_testsuite_source', function (err, rv) {
+                test.equal(err, undefined, 'first createDatabase has no error');
+                test.notEqual(rv, undefined, 'first createDatabase returns a value');
                 test.equal(rv.ok, true, 'first createDatabase returns okay');
                 callback();
             });
         },
         function (callback) {
             db.createDatabase('kanso_testsuite_target', function (err, rv) {
+                test.equal(err, undefined, 'second createDatabase has no error');
+                test.notEqual(rv, undefined, 'second createDatabase returns a value');
                 test.equal(rv.ok, true, 'second createDatabase returns okay');
                 callback();
             });
@@ -204,7 +220,7 @@ exports['simple replication, async'] = function (test)
                 test.equal(rv.ok, true, 'second deleteDatabase returns okay');
                 callback();
             });
-        },
+        }
     ], function () {
         test.done();
     });
@@ -217,17 +233,21 @@ exports['complex replication, async'] = function (test)
     var all_created_docs = [];
     var kanso_database = (utils.getBaseURL().slice(1).split('/'))[0];
 
-    test.expect((num_docs * 6) + 10);
+    test.expect((num_docs * 6) + 34);
 
     async.waterfall([
         function (callback) {
             db.createDatabase('kanso_testsuite_target1', function (err, rv) {
+                test.equal(err, undefined, 'first createDatabase has no error');
+                test.notEqual(rv, undefined, 'first createDatabase returns a value');
                 test.equal(rv.ok, true, 'first createDatabase returns okay');
                 callback();
             });
         },
         function (callback) {
             db.createDatabase('kanso_testsuite_target2', function (err, rv) {
+                test.equal(err, undefined, 'second createDatabase has no error');
+                test.notEqual(rv, undefined, 'second createDatabase returns a value');
                 test.equal(rv.ok, true, 'second createDatabase returns okay');
                 callback();
             });
@@ -245,6 +265,7 @@ exports['complex replication, async'] = function (test)
                         data: 'abcdefghijklmnopqrstuvwxyz'
                     };
                     db.saveDoc(example_doc, function (err, rv) {
+                        test.notEqual(rv, undefined, 'New document is defined');
                         test.notEqual(rv.id, undefined, 'ID for new document is defined');
                         all_created_docs[i] = rv;
                         next_fn();
@@ -271,6 +292,7 @@ exports['complex replication, async'] = function (test)
 
                 function (err, rv) {
                     test.equal(err, undefined, 'No error starting replication');
+                    test.notEqual(rv, undefined, 'Replication job returns a value');
                     test.notEqual(rv.id, undefined, 'Replication job ID is defined');
                     callback(null, rv);
                 }
@@ -284,6 +306,7 @@ exports['complex replication, async'] = function (test)
 
                 function (err, rv) {
                     test.equal(err, undefined, 'No error starting replication');
+                    test.notEqual(rv, undefined, 'Replication job returns a value');
                     test.notEqual(rv.id, undefined, 'Replication job ID is defined');
                     callback(null, doc1, rv);
                 }
@@ -295,6 +318,7 @@ exports['complex replication, async'] = function (test)
                 doc1.id,
                 function (err, rv) {
                     test.equal(err, undefined, 'No error getting replication #1');
+                    test.notEqual(rv, undefined, 'Replication job #1 has a value');
                     test.notEqual(rv._id, undefined, 'getReplication #1 has id');
                     test.notEqual(rv._rev, undefined, 'getReplication #1 has rev');
                     callback(null, doc1, doc2);
@@ -306,6 +330,7 @@ exports['complex replication, async'] = function (test)
                 doc2.id,
                 function (err, rv) {
                     test.equal(err, undefined, 'No error getting replication #2');
+                    test.notEqual(rv, undefined, 'Replication job #2 has a value');
                     test.notEqual(rv._id, undefined, 'getReplication #2 has id');
                     test.notEqual(rv._rev, undefined, 'getReplication #2 has rev');
                     callback(null, doc1, doc2);
@@ -373,6 +398,7 @@ exports['complex replication, async'] = function (test)
 
                 function (err, rv) {
                     test.equal(err, undefined, 'No error stopping replication #1');
+                    test.notEqual(rv, undefined, 'stopReplication #1 returns value');
                     test.equal(rv.ok, true, 'stopReplication #1 returns okay');
                     callback(null, doc1, doc2);
                 }
@@ -384,6 +410,7 @@ exports['complex replication, async'] = function (test)
 
                 function (err, rv) {
                     test.equal(err, undefined, 'No error stopping replication #2');
+                    test.notEqual(rv, undefined, 'stopReplication #2 returns value');
                     test.equal(rv.ok, true, 'stopReplication #2 returns okay');
                     callback();
                 }
@@ -391,16 +418,20 @@ exports['complex replication, async'] = function (test)
         },
         function (callback) {
             db.deleteDatabase('kanso_testsuite_target2', function (err, rv) {
+                test.equal(err, undefined, 'first deleteDatabase has no error');
+                test.notEqual(rv, undefined, 'first deleteDatabase returns a value');
                 test.equal(rv.ok, true, 'first deleteDatabase returns okay');
                 callback();
             });
         },
         function (callback) {
             db.deleteDatabase('kanso_testsuite_target1', function (err, rv) {
+                test.equal(err, undefined, 'second deleteDatabase has no error');
+                test.notEqual(rv, undefined, 'second deleteDatabase returns a value');
                 test.equal(rv.ok, true, 'second deleteDatabase returns okay');
                 callback();
             });
-        },
+        }
     ], function () {
         test.done();
     });
