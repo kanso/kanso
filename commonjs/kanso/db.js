@@ -176,19 +176,38 @@ exports.getRewrite = function (path, /*optional*/q, callback) {
  *
  * @param {String} id
  * @param {Object} q (optional)
+ * @param {Object} options (optional)
  * @param {Function} callback
  */
 
-exports.getDoc = function (id, /*optional*/q, callback) {
+exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('getDoc cannot be called server-side');
     }
+    if (!id) {
+        throw new Error('getDoc requires an id parameter to work properly');
+    }
     if (!callback) {
-        callback = q;
-        q = {};
+        if (!options) {
+          /* arity = 2: Omits q, options */
+          callback = q;
+          options = {};
+          q = {};
+        } else {
+          /* arity = 3: Omits options */
+          callback = options;
+          options = {};
+        }
+    }
+    var url;
+    if (options.db) {
+        /* Force leading slash; make absolute path */
+        url = (options.db.substr(0,1) != '/' ? '/' : '') + options.db;
+    } else {
+        url = utils.getBaseURL() + '/_db';
     }
     var req = {
-        url: utils.getBaseURL() + '/_db/' + exports.encode(id),
+        url: url + '/' + exports.encode(id),
         data: exports.stringifyQuery(q),
         expect_json: true
     };
@@ -202,20 +221,32 @@ exports.getDoc = function (id, /*optional*/q, callback) {
  * for any exceptions that occurred (node.js style).
  *
  * @param {Object} doc
+ * @param {Object} options (optional)
  * @param {Function} callback
  */
 
-exports.saveDoc = function (doc, callback) {
+exports.saveDoc = function (doc, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('saveDoc cannot be called server-side');
     }
-    var method, url = utils.getBaseURL() + '/_db';
+    var method, url;
+    if (options.db) {
+        /* Force leading slash; make absolute path */
+        url = (options.db.substr(0,1) != '/' ? '/' : '') + options.db;
+    } else {
+        url = utils.getBaseURL() + '/_db';
+    }
+    if (!callback) {
+        /* Arity = 2: Omits options */
+        callback = options;
+        options = {};
+    }
     if (doc._id === undefined) {
         method = "POST";
     }
     else {
         method = "PUT";
-        url += '/' + exports.encode(doc._id);
+        url += '/' + doc._id;
     }
     var req = {
         type: method,
@@ -237,15 +268,33 @@ exports.saveDoc = function (doc, callback) {
  * @param {Function} callback
  */
 
-exports.removeDoc = function (doc, callback) {
+exports.removeDoc = function (doc, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('removeDoc cannot be called server-side');
     }
-    var url = utils.getBaseURL() + '/_db/' +
-        exports.encode(doc._id) +
-        '?rev=' + exports.encode(doc._rev);
-
-    exports.request({type: 'DELETE', url: url}, callback);
+    if (!doc._id) {
+        throw new Error('removeDoc requires an _id field in your document');
+    }
+    if (!doc._rev) {
+        throw new Error('removeDoc requires a _rev field in your document');
+    }
+    if (!callback) {
+        /* Arity = 2: Omits options */
+        callback = options;
+        options = {};
+    }
+    var url;
+    if (options.db) {
+        /* Force leading slash; make absolute path */
+        url = (options.db.substr(0,1) != '/' ? '/' : '') + options.db + '/';
+    } else {
+        url = utils.getBaseURL() + '/_db/';
+    }
+    url += exports.encode(doc._id) + '?rev=' + exports.encode(doc._rev);
+    var req = {
+        type: 'DELETE', url: url
+    };
+    exports.request(req, callback);
 };
 
 
@@ -262,6 +311,72 @@ exports.removeDoc = function (doc, callback) {
 exports.getView = function (view, /*optional*/q, callback) {
     if (!utils.isBrowser) {
         throw new Error('getView cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var base = utils.getBaseURL();
+    var name = exports.encode(settings.name);
+    var viewname = exports.encode(view);
+    var req = {
+        url: base + '/_db/_design/' + name + '/_view/' + viewname,
+        data: exports.stringifyQuery(q),
+        expect_json: true
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Transforms and fetches a view through a list from the database the app
+ * is running on. Results are passed to the callback, with the first
+ * argument of the callback reserved for any exceptions that occurred
+ * (node.js style).
+ *
+ * @param {String} list
+ * @param {String} view
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ */
+
+// TODO: run list function client-side?
+exports.getList = function (list, view, /*optional*/q, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getList cannot be called server-side');
+    }
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var base = utils.getBaseURL();
+    var name = exports.encode(settings.name);
+    var listname = exports.encode(list);
+    var viewname = exports.encode(view);
+    var req = {
+        url: base + '/_db/_design/' + name + '/_list/' + listname +
+             '/' + viewname,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Transforms and fetches a document through a show from the database the app
+ * is running on. Results are passed to the callback, with the first
+ * argument of the callback reserved for any exceptions that occurred
+ * (node.js style).
+ *
+ * @param {String} show
+ * @param {String} docid
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ */
+
+// TODO: run show function client-side?
+exports.getShow = function (show, docid, /*optional*/q, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getShow cannot be called server-side');
     }
     if (!callback) {
         callback = q;
@@ -431,3 +546,246 @@ exports.newUUID = function (cacheNum, callback) {
         callback(null, uuidCache.shift());
     });
 };
+
+/**
+ * Creates a CouchDB database (read: a collection of documents).
+ *
+ * @param {String} name
+ * @param {Function} callback
+ */
+
+exports.createDatabase = function (name, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('createDatabase cannot be called server-side');
+    }
+    var req = {
+        type: 'PUT',
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Deletes a CouchDB database (read: a collection of documents).
+ *
+ * @param {String} name
+ * @param {Function} callback
+ */
+
+exports.deleteDatabase = function (name, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('deleteDatabase cannot be called server-side');
+    }
+    var req = {
+        type: 'DELETE',
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Fetches the most recent revision of the replication document
+ * referred to by the id parameter.
+ *
+ * @param {String} id
+ * @param {Function} callback
+ */
+
+exports.getReplication = function (id, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('getReplication cannot be called server-side');
+    }
+    var req = {
+        url: '/_replicator/' + exports.encode(id)
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Replicates options.source to options.target. The strings 
+ * options.source and options.target are each either a
+ * CouchDB database name or a CouchDB database URI.
+ *
+ * @param {Object} options
+ * @param {Function} callback
+ */
+
+exports.startReplication = function (options, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('startReplication cannot be called server-side');
+    }
+    if (!options.source) {
+      throw new Error('source parameter must be provided');
+    }
+    if (!options.target) {
+      throw new Error('target parameter must be provided');
+    }
+    var req = {
+        type: 'POST',
+        url: '/_replicator',
+        data: JSON.stringify(options),
+        contentType: 'application/json'
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Waits for a replication operation to enter a specific state.
+ * waitReplication polls the _replication database using the
+ * doc provided, and evaluates state_function(doc) at each iteration.
+ * This function stops polling and invokes callback when the
+ * state_function evaluates to true. If state_function is not
+ * provided, waitReplication waits for the doc's _replication_state
+ * to change from 'triggered' to 'completed' (or 'error').
+ *
+ * @param {Object} doc
+ * @param {Function} state_function (optional)
+ * @param {Function} callback
+ */
+
+exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_function, callback) {
+    if (!utils.isBrowser) {
+        throw new Error('waitReplication cannot be called server-side');
+    }
+    var default_state_function = function(recent_doc, initial_doc) {
+        return (
+          recent_doc._replication_state == 'completed'
+              || recent_doc._replication_state == 'error'
+        );
+    }
+    if (!callback) {
+        if (!state_function) {
+            /* Arity = 2: doc, callback */
+            callback = options;
+            options = {};
+            state_function = default_state_function;
+        } else {
+            /* Arity = 3: doc, options, callback */
+            callback = state_function;
+            state_function = default_state_function;
+        }
+    }
+    if (options == undefined) options = {};
+    if (options.limit == undefined) options.limit = 100;  /* times */
+    if (options.delay == undefined) options.delay = 2000; /* ms */
+
+    /* Fetch latest revision */
+    exports.getReplication(doc.id, function(err, rv) {
+
+        /* Check for error, then for an interesting event */
+        if (err || state_function(rv, doc)) {
+            return callback(err, rv, doc);
+        }
+        /* Termination condition for recursion... */
+        if (options.limit > 0) {
+
+            /* ...with well-defined progress toward it */
+            options.limit -= 1;
+
+            /* Go around */
+            return setTimeout(function() {
+                return exports.waitReplication(
+                    doc, options, state_function, callback
+                );
+            }, options.delay);
+        }
+    });
+};
+
+/**
+ * Stops a replication operation already in progress.
+ * The doc parameter can be obtained by calling getReplication.
+ *
+ * @param {String} id
+ * @param {Function} callback
+ */
+
+exports.stopReplication = function (doc, callback, options) {
+
+    if (!utils.isBrowser) {
+        throw new Error('stopReplication cannot be called server-side');
+    }
+
+    if (options == undefined) options = {};
+    if (options.limit == undefined) options.limit = 3;   /* times */
+    if (options.delay == undefined) options.delay = 500; /* ms */
+
+    var req = {
+        type: 'DELETE',
+        url: '/_replicator/'
+          + exports.encode(doc._id)
+          + '?rev=' + exports.encode(doc._rev)
+    };
+
+    exports.request(req, function(err, rv) {
+
+        if (err && err.status == 409) {  /* Document update conflict */
+
+            /* Race condition:
+                The CouchDB replication finished (or was updated) between
+                the caller's getReplication and now. Subject to restrictions
+                in options, call getReplication and then try again. */
+
+            /* Termination condition for recursion... */
+            if (options.limit > 0) {
+
+                /* ...with well-defined progress toward it */
+                options.limit -= 1;
+
+                return exports.getReplication(doc._id, function(e, d) {
+                    if (e) {
+                        throw new Error(
+                          'The specified replication document changed since '
+                            + 'our last read, and we failed to re-request it'
+                        );
+                    }
+                    /* Go around */
+                    setTimeout(function() {
+                        return exports.stopReplication(d, callback, options);
+                    }, options.delay);
+                });
+            }
+
+        } else {
+
+          /* Normal case:
+              Replication document was not changed since the last
+              read; go ahead and invoke the callback and return. */
+
+          return callback(err, rv);
+        }
+
+        /* Not reached */
+        return false;
+
+    });
+
+};
+
+/**
+ * Deletes an existing user document, given its username. You
+ * must be logged in as an administrative user for this function
+ * to succeed.
+ *
+ * @param {String} username
+ * @param {Function} callback
+ */
+
+exports.deleteUser = function (username, callback) {
+    var id = 'org.couchdb.user:' + username;
+
+    exports.userDb(function (err, userdb) {
+        if (err) {
+            return callback(err);
+        }
+        var req = {
+            type: 'DELETE',
+            url: '/' + exports.encode(userdb) + '/' + exports.encode(id),
+            data: doc,
+            contentType: 'application/json'
+        };
+        db.request(req, callback);
+    });
+};
+
