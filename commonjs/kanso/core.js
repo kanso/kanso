@@ -57,6 +57,12 @@ var settings = require('./settings'), // module auto-generated
 
 exports.history_support = false;
 
+/**
+ * Stores the current html5 history state to detect duplicate popstate events
+ */
+
+exports.current_state = null;
+
 
 if (typeof window !== 'undefined') {
     if (!window.console) {
@@ -167,23 +173,26 @@ exports.init = function () {
             }
         });
 
-        var popped = false;
         window.onpopstate = function (ev) {
-            popped = true;
             var url = exports.getURL();
             var state = ev.state || {};
             var method = state.method || 'GET';
-            exports.handle(method, url, state.data);
-        };
-        // TODO: remove timeout and check for duplicate popstate events instead
-        setTimeout(function () {
-            if (!popped) {
-                // some browsers don't fire the popstate on initial load,
-                // this includes FF4 and Safari - Chrome seems to fire
-                // automatically
-                window.onpopstate({});
+            var data = state.data;
+
+            var curr = exports.current_state;
+            if (curr && curr.url === url && curr.timestamp == state.timestamp) {
+                // duplicate popstate event
+                console.log('duplicate popstate event');
+                return;
             }
-        }, 500);
+            exports.current_state = {
+                method: method,
+                url: url,
+                data: data
+            };
+            exports.handle(method, url, data);
+        };
+        window.onpopstate({});
     }
     else {
         // This browser has no html5  history support, attempt to
