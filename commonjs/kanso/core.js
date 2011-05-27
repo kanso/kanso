@@ -50,6 +50,13 @@ var settings = require('./settings'), // module auto-generated
 //exports.initial_hit = utils.initial_hit;
 
 
+/**
+ * This variable keeps track of whether or not the browser supports
+ * pushstate for manipulating browser history.
+ */
+
+exports.history_support = false;
+
 
 if (typeof window !== 'undefined') {
     if (!window.console) {
@@ -130,53 +137,60 @@ if (utils.isBrowser) {
 
 exports.init = function () {
 
-    $('form').live('submit', function (ev) {
-        var action = $(this).attr('action') || exports.getURL();
-        var method = $(this).attr('method').toUpperCase();
+    if (window.history && history.pushState) {
+        exports.history_support = true;
 
-        // _session is a special case always available at the root url
-        if (action !== '/_session' && exports.isAppURL(action)) {
-            var url = exports.appPath(action);
-            ev.preventDefault();
-            var fields = $(this).serializeArray();
-            var data = {};
-            for (var i = 0; i < fields.length; i++) {
-                data[fields[i].name] = fields[i].value;
+        $('form').live('submit', function (ev) {
+            var action = $(this).attr('action') || exports.getURL();
+            var method = $(this).attr('method').toUpperCase();
+
+            // _session is a special case always available at the root url
+            if (action !== '/_session' && exports.isAppURL(action)) {
+                var url = exports.appPath(action);
+                ev.preventDefault();
+                var fields = $(this).serializeArray();
+                var data = {};
+                for (var i = 0; i < fields.length; i++) {
+                    data[fields[i].name] = fields[i].value;
+                }
+                exports.setURL(method, url, data);
             }
-            exports.setURL(method, url, data);
-        }
-    });
+        });
 
-    $('a').live('click', function (ev) {
-        var href = $(this).attr('href');
+        $('a').live('click', function (ev) {
+            var href = $(this).attr('href');
 
-        if (href && href !== '#' && exports.isAppURL(href)) {
-            var url = exports.appPath(href);
-            ev.preventDefault();
-            var hash;
-            if (url.indexOf('#') !== -1) {
-                // work around History not supporting hashes in urls
-                var parts = url.split('#');
-                url = parts[0];
-                hash = parts[1];
+            if (href && exports.isAppURL(href)) {
+                var url = exports.appPath(href);
+                ev.preventDefault();
+                exports.setURL('GET', url, {});
             }
-            exports.setURL('GET', url, {}, hash);
-        }
-    });
+        });
 
-    window.History.Adapter.bind(window, 'statechange', function (ev) {
-        var url = exports.getURL();
-        var state_data = window.History.getState().data;
-        var method = state_data.method || 'GET';
-        var data = state_data.data;
-        if (state_data.hash) {
-            // TODO: this is a work around until History can support hashes
-            url += '#' + state_data.hash;
-        }
-        exports.handle(method, url, data);
-    });
-    if (window.History.getState()) {
-        window.History.Adapter.trigger(window, 'statechange');
+        var popped = false;
+        window.onpopstate = function (ev) {
+            popped = true;
+            var url = exports.getURL();
+            var state = ev.state || {};
+            var method = state.method || 'GET';
+            exports.handle(method, url, state.data);
+        };
+        // TODO: remove timeout and check for duplicate popstate events instead
+        setTimeout(function () {
+            if (!popped) {
+                // some browsers don't fire the popstate on initial load,
+                // this includes FF4 and Safari - Chrome seems to fire
+                // automatically
+                window.onpopstate({});
+            }
+        }, 500);
+    }
+    else {
+        // This browser has no html5  history support, attempt to
+        // enhance the page anyway
+        // TODO: figure out the data from the initial request
+        // TODO: figure out the method from the initial request
+        exports.handle('GET', exports.getURL(), {});
     }
 
     // TODO: should this be after userCtx is available??
@@ -724,17 +738,17 @@ exports.handle = function (method, url, data) {
  * @param {String} method
  * @param {String} url
  * @param {Object} data (optional)
- * @param {String} hash (optional)
  */
 
-exports.setURL = function (method, url, data, hash) {
+exports.setURL = function (method, url, data) {
     var fullurl = exports.getBaseURL() + url;
-    window.History.pushState({
+    var state = {
         method: method,
-        hash: hash,
         data: data,
         timestamp: new Date().getTime()
-    }, document.title, fullurl);
+    };
+    window.history.pushState(state, document.title, fullurl);
+    window.onpopstate(state);
 };
 
 
@@ -758,21 +772,20 @@ exports.getBaseURL = utils.getBaseURL;
 exports.getURL = function () {
     var re = new RegExp('\\/_rewrite(.*)$');
 
-    var History_url = window.History.getState().url,
-        parts = new RegExp('(.*)\\/uid=([0-9]+)$').exec(History_url),
-        url = parts ? (parts[1] || History_url) : History_url;
-
-    var loc = urlParse(url),
+    var loc = urlParse(window.location),
         match = re.exec(loc.pathname);
 
     if (match) {
-        var newurl = {pathname: match[1] || '/'};
+        var newurl = {
+            pathname: match[1] || '/',
+            hash: loc.hash
+        };
         if (loc.search) {
             newurl.search = loc.search;
         }
         return urlFormat(newurl) || '/';
     }
-    return loc.pathname || '/';
+    return '' + window.location || '/';
 };
 
 /**
@@ -827,7 +840,7 @@ exports.appPath = function (p) {
         // include protocol
         var origin = p.split('/').slice(0, 3).join('/');
         // coerce window.location to a real string so we can use split in IE
-        var loc = '' + window.History.getState().url;
+        var loc = '' + window.location;
         if (origin === loc.split('/').slice(0, 3).join('/')) {
             // remove origin, set p to pathname only
             // IE often adds this to a tags, hence why we strip it out now
@@ -856,6 +869,6 @@ exports.appPath = function (p) {
 
 exports.isAppURL = function (url) {
     // coerce window.location to a real string in IE
-    return exports.sameOrigin(url, '' + window.History.getState().url);
+    return exports.sameOrigin(url, '' + window.location);
 };
 
