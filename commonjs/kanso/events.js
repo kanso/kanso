@@ -2,9 +2,7 @@
  * Module dependencies
  */
 
-var settings = require('kanso/settings'),
-    app = settings.load ? require(settings.load): {},
-    _ = require('./underscore')._;
+var _ = require('./underscore')._;
 
 /**
  * Stores the bound listeners
@@ -76,9 +74,6 @@ exports.emit = function (name) {
  * Returns an array of the bound event listeners for the given event name.
  * If no events are bound, an empty array is returned.
  *
- * This list includes functions bound by being exported from a kanso app's
- * events property.
- *
  * @param {String} name
  * @return {Array}
  * @api public
@@ -86,18 +81,11 @@ exports.emit = function (name) {
 
 exports.listeners = function (name) {
     var fns = listeners[name] || [];
-    if (app.events && app.events[name]) {
-        fns = fns.concat([app.events[name]]);
-    }
-    return fns;
+    return listeners[name] || [];
 };
 
 /**
  * Removes all bound event listeners for a given event name.
- *
- * This function will not remove listeners bound by being exported from a kanso
- * app's events property. Only functions manually bound using events.on or
- * events.once can be unbound in this way.
  *
  * @param {String} name
  * @api public
@@ -109,10 +97,6 @@ exports.removeAllListeners = function (name) {
 
 /**
  * Removes a specific event listener for a given event name.
- *
- * This function will not remove a listener bound by being exported from a kanso
- * app's events property. Only functions manually bound using events.on or
- * events.once can be unbound in this way.
  *
  * @param {String} name
  * @param {Function} listener

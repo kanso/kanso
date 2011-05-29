@@ -1,12 +1,19 @@
 /**
+ * Bindings to Kanso events
+ */
+
+var events = require('kanso/events');
+
+
+/**
  * The init method fires when the app is initially loaded from a page rendered
  * by CouchDB.
  */
 
 /**
- * exports.init = function () {
+ * events.on('init', function () {
  *     // app initialization code goes here...
- * };
+ * });
  */
 
 
@@ -17,7 +24,7 @@
  */
 
 /**
- * exports.sessionChange = function (userCtx, req) {
+ * events.on('sessionChange', function (userCtx, req) {
  *     // session change handling code goes here...
- * };
+ * });
  */
