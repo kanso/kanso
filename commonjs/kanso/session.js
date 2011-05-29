@@ -1,5 +1,3 @@
-/*global kanso: true */
-
 /**
  * Functions related to the management of user sessions and account information.
  */
@@ -11,6 +9,7 @@
 var db = require('./db'),
     sha1 = require('./sha1'),
     cookies = require('./cookies'),
+    events = require('./events'),
     utils = require('./utils');
 
 
@@ -49,22 +48,19 @@ exports.fakeRequest = function (userCtx, callback) {
  */
 
 exports.sessionChange = function (userCtx, callback) {
-    if (kanso.app.events && kanso.app.events.sessionChange) {
-        var req = exports.fakeRequest(userCtx, function (err, req) {
-            if (err) {
-                if (callback) {
-                    return callback(err);
-                }
-                throw err;
-            }
-            kanso.app.events.sessionChange(userCtx, req);
+    var req = exports.fakeRequest(userCtx, function (err, req) {
+        if (err) {
             if (callback) {
-                callback();
+                return callback(err);
             }
-        });
-    }
+            throw err;
+        }
+        events.emit('sessionChange', userCtx, req);
+        if (callback) {
+            callback();
+        }
+    });
 };
-
 
 /**
  * Logs out the current user.

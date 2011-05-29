@@ -19,6 +19,7 @@ var settings = require('./settings'), // module auto-generated
     session = require('./session'),
     cookies = require('./cookies'),
     flashmessages = require('./flashmessages'),
+    events = require('./events'),
     urlParse = url.parse,
     urlFormat = url.format;
 
@@ -180,7 +181,7 @@ exports.init = function () {
             var data = state.data;
 
             var curr = exports.current_state;
-            if (curr && curr.url === url && curr.timestamp == state.timestamp) {
+            if (curr && curr.url === url && curr.timestamp === state.timestamp) {
                 // duplicate popstate event
                 return;
             }
@@ -201,14 +202,15 @@ exports.init = function () {
         // TODO: figure out the method from the initial request
         // because the initial request may have been a POST (pointing to
         // an update function instead of the show this GET might render)
+        //
+        // - perhaps use cookies to pass the method and data back to the client?
+        //
         exports.handle('GET', exports.getURL(), {});
     }
 
     // TODO: should this be after userCtx is available??
     // call init on app too
-    if (exports.app.events && exports.app.events.init) {
-        exports.app.events.init();
-    }
+    events.emit('init');
 };
 
 
