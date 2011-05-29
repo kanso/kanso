@@ -496,6 +496,14 @@ exports.runShowBrowser = function (req, name, docid, callback) {
 
 exports.runShow = function (fn, doc, req) {
     flashmessages.updateRequest(req);
+    var info = {
+        type: 'show',
+        name: req.path[3],
+        target: req.path[4],
+        query: req.query,
+        fn: fn
+    };
+    events.emit('beforeRequest', info, req);
     var res = fn(doc, req);
     req.response_received = true;
     return flashmessages.updateResponse(req, res);
@@ -565,6 +573,14 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
 
 exports.runUpdate = function (fn, doc, req) {
     flashmessages.updateRequest(req);
+    var info = {
+        type: 'update',
+        name: req.path[3],
+        target: req.path[4],
+        query: req.query,
+        fn: fn
+    };
+    events.emit('beforeRequest', info, req);
     var val = fn(doc, req);
     req.response_received = true;
     if (val) {
@@ -669,6 +685,14 @@ exports.runList = function (fn, head, req) {
     start = function (res) {
         _start(flashmessages.updateResponse(req, res));
     };
+    var info = {
+        type: 'list',
+        name: req.path[3],
+        target: req.path[4],
+        query: req.query,
+        fn: fn
+    };
+    events.emit('beforeRequest', info, req);
     var val = fn(head, req);
     start = _start;
     return val;
