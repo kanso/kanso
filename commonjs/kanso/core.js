@@ -182,7 +182,6 @@ exports.init = function () {
             var curr = exports.current_state;
             if (curr && curr.url === url && curr.timestamp == state.timestamp) {
                 // duplicate popstate event
-                console.log('duplicate popstate event');
                 return;
             }
             exports.current_state = {
@@ -197,15 +196,18 @@ exports.init = function () {
     else {
         // This browser has no html5  history support, attempt to
         // enhance the page anyway
-        // TODO: figure out the data from the initial request
+        // TODO: figure out the data from the initial request as this
+        // re-rendering might wipe relevant data from the response
         // TODO: figure out the method from the initial request
+        // because the initial request may have been a POST (pointing to
+        // an update function instead of the show this GET might render)
         exports.handle('GET', exports.getURL(), {});
     }
 
     // TODO: should this be after userCtx is available??
     // call init on app too
-    if (exports.app.init) {
-        exports.app.init();
+    if (exports.app.events && exports.app.events.init) {
+        exports.app.events.init();
     }
 };
 

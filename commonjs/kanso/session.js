@@ -49,7 +49,7 @@ exports.fakeRequest = function (userCtx, callback) {
  */
 
 exports.sessionChange = function (userCtx, callback) {
-    if (kanso.app.sessionChange) {
+    if (kanso.app.events && kanso.app.events.sessionChange) {
         var req = exports.fakeRequest(userCtx, function (err, req) {
             if (err) {
                 if (callback) {
@@ -57,7 +57,7 @@ exports.sessionChange = function (userCtx, callback) {
                 }
                 throw err;
             }
-            kanso.app.sessionChange(userCtx, req);
+            kanso.app.events.sessionChange(userCtx, req);
             if (callback) {
                 callback();
             }
