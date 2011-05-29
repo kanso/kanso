@@ -444,6 +444,15 @@ exports.handleResponseHeaders = function (headers) {
 exports.runShowBrowser = function (req, name, docid, callback) {
     var result;
     var fn = kanso.app.shows[name];
+
+    events.emit('beforeResource', {
+        type: 'show',
+        name: name,
+        target: docid,
+        query: req.query,
+        fn: fn
+    });
+
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
             if (current_request_uuid === req.uuid) {
@@ -504,6 +513,15 @@ exports.runShow = function (fn, doc, req) {
 exports.runUpdateBrowser = function (req, name, docid, callback) {
     var result;
     var fn = kanso.app.updates[name];
+
+    events.emit('beforeResource', {
+        type: 'update',
+        name: name,
+        target: docid,
+        query: req.query,
+        fn: fn
+    });
+
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
             if (current_request_uuid === req.uuid) {
@@ -585,6 +603,15 @@ exports.createHead = function (data) {
 
 exports.runListBrowser = function (req, name, view, callback) {
     var fn = kanso.app.lists[name];
+
+    events.emit('beforeResource', {
+        type: 'list',
+        name: name,
+        target: view,
+        query: req.query,
+        fn: fn
+    });
+
     if (view) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
