@@ -2,6 +2,7 @@
 
 var session = require('kanso/session'),
     templates = require('kanso/templates'),
+    events = require('kanso/events'),
     utils = require('./utils');
 
 
@@ -150,11 +151,11 @@ exports.bindSessionControls = function () {
     });
 };
 
-exports.init = function () {
+events.on('init', function () {
     exports.bindSessionControls();
-};
+});
 
-exports.sessionChange = function (userCtx, req) {
+events.on('sessionChange', function (userCtx, req) {
     $('#session').replaceWith(templates.render('session.html', req, userCtx));
     exports.bindSessionControls();
-};
+});
