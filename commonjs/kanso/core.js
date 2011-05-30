@@ -187,14 +187,19 @@ exports.init = function () {
             var data = state.data;
 
             var curr = exports.current_state;
-            if (curr && curr.url === url && curr.timestamp === state.timestamp) {
+            if (curr &&
+                curr.url === url &&
+                curr.timestamp === state.timestamp &&
+                curr.method === state.method) {
                 // duplicate popstate event
+                // console.log('duplicate popstate event');
                 return;
             }
             exports.current_state = {
                 method: method,
                 url: url,
-                data: data
+                data: data,
+                timestamp: ev.timestamp
             };
             exports.handle(method, url, data);
         };
@@ -883,7 +888,7 @@ exports.setURL = function (method, url, data) {
         timestamp: new Date().getTime()
     };
     window.history.pushState(state, document.title, fullurl);
-    window.onpopstate(state);
+    window.onpopstate({state: state});
 };
 
 
