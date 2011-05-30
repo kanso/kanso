@@ -59,7 +59,8 @@ exports.once = function (name, listener) {
  */
 
 exports.emit = function (name) {
-    console.log('Event: ' + name);
+    //console.log('Event: ' + name);
+    console.log(arguments);
     var args = Array.prototype.slice.call(arguments, 1);
     var fns = exports.listeners(name);
     for (var i = 0, len = fns.length; i < len; i++) {

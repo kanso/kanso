@@ -95,6 +95,12 @@ if (typeof start === 'undefined' && typeof window !== 'undefined') {
         //console.log(options);
     };
 }
+if (typeof send === 'undefined' && typeof window !== 'undefined') {
+    window.send = function (options) {
+        //console.log('send');
+        //console.log(options);
+    };
+}
 if (typeof log === 'undefined' && typeof window !== 'undefined') {
     window.log = function () {
         return console.log.apply(console, arguments);
@@ -445,13 +451,14 @@ exports.runShowBrowser = function (req, name, docid, callback) {
     var result;
     var fn = kanso.app.shows[name];
 
-    events.emit('beforeResource', {
+    var info = {
         type: 'show',
         name: name,
         target: docid,
         query: req.query,
         fn: fn
-    });
+    };
+    events.emit('beforeResource', info);
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
@@ -460,6 +467,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
                     return callback(err);
                 }
                 var res = exports.runShow(fn, doc, req);
+                events.emit('afterResponse', info, req, res);
                 if (res) {
                     exports.handleResponse(res);
                 }
@@ -478,6 +486,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
     }
     else {
         var res = exports.runShow(fn, null, req);
+        events.emit('afterResponse', info, req, res);
         if (res) {
             exports.handleResponse(res);
         }
@@ -498,14 +507,20 @@ exports.runShow = function (fn, doc, req) {
     flashmessages.updateRequest(req);
     var info = {
         type: 'show',
-        name: req.path[3],
-        target: req.path[4],
+        name: req.path[1],
+        target: req.path[2],
         query: req.query,
         fn: fn
     };
     events.emit('beforeRequest', info, req);
     var res = fn(doc, req);
     req.response_received = true;
+
+    if (!(res instanceof Object)) {
+        res = {code: 200, body: res};
+    }
+    events.emit('beforeResponseStart', info, req, res);
+    events.emit('beforeResponseData', info, req, res, res.body || '');
     return flashmessages.updateResponse(req, res);
 };
 
@@ -522,13 +537,14 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
     var result;
     var fn = kanso.app.updates[name];
 
-    events.emit('beforeResource', {
+    var info = {
         type: 'update',
         name: name,
         target: docid,
         query: req.query,
         fn: fn
-    });
+    };
+    events.emit('beforeResource', info);
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
@@ -537,6 +553,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
                     return callback(err);
                 }
                 var res = exports.runUpdate(fn, doc, req);
+                events.emit('afterResponse', info, req, res);
                 if (res) {
                     exports.handleResponse(res[1]);
                 }
@@ -555,6 +572,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
     }
     else {
         var res = exports.runUpdate(fn, null, req);
+        events.emit('afterResponse', info, req, res);
         if (res) {
             exports.handleResponse(res[1]);
         }
@@ -575,16 +593,24 @@ exports.runUpdate = function (fn, doc, req) {
     flashmessages.updateRequest(req);
     var info = {
         type: 'update',
-        name: req.path[3],
-        target: req.path[4],
+        name: req.path[1],
+        target: req.path[2],
         query: req.query,
         fn: fn
     };
     events.emit('beforeRequest', info, req);
     var val = fn(doc, req);
     req.response_received = true;
+
+    var res = val[1];
+    if (!(res instanceof Object)) {
+        res = {code: 200, body: res};
+    }
+    events.emit('beforeResponseStart', info, req, res);
+    events.emit('beforeResponseData', info, req, res, res.body || '');
+
     if (val) {
-        return [val[0], flashmessages.updateResponse(req, val[1])];
+        return [val[0], flashmessages.updateResponse(req, res)];
     }
 };
 
@@ -620,13 +646,14 @@ exports.createHead = function (data) {
 exports.runListBrowser = function (req, name, view, callback) {
     var fn = kanso.app.lists[name];
 
-    events.emit('beforeResource', {
+    var info = {
         type: 'list',
         name: name,
         target: view,
         query: req.query,
         fn: fn
-    });
+    };
+    events.emit('beforeResource', info);
 
     if (view) {
         // update_seq used in head parameter passed to list function
@@ -648,6 +675,7 @@ exports.runListBrowser = function (req, name, view, callback) {
                 };
                 var head = exports.createHead(data);
                 var res = exports.runList(fn, head, req);
+                events.emit('afterResponse', info, req, res);
                 if (res) {
                     exports.handleResponse(res);
                 }
@@ -681,20 +709,63 @@ exports.runListBrowser = function (req, name, view, callback) {
 
 exports.runList = function (fn, head, req) {
     flashmessages.updateRequest(req);
-    var _start = start;
-    start = function (res) {
-        _start(flashmessages.updateResponse(req, res));
-    };
     var info = {
         type: 'list',
-        name: req.path[3],
-        target: req.path[4],
+        name: req.path[1],
+        target: req.path[2],
         query: req.query,
         fn: fn
     };
+    // cache response from start call
+    var start_res;
+    var _start = start;
+    start = function (res) {
+        start_res = res;
+        events.emit('beforeResponseStart', info, req, res);
+        if (res.body) {
+            events.emit('beforeResponseData', info, req, res, res.body);
+        }
+        _start(flashmessages.updateResponse(req, res));
+    };
+    var _send = send;
+    send = function (data) {
+        if (!start_res.body) {
+            start_res.body = '';
+        }
+        // TODO: does it make sense to store data here and use up memory
+        // on the server?
+        start_res.body += data;
+        events.emit('beforeResponseData', info, req, start_res, data);
+        _send(data);
+    };
     events.emit('beforeRequest', info, req);
     var val = fn(head, req);
+    req.response_received = true;
+
+    if (val instanceof Object) {
+        if (!start_res) {
+            start_res = val;
+            events.emit('beforeResponseStart', info, req, start_res);
+        }
+        var data = start_res.body || '';
+        events.emit('beforeResponseData', info, req, start_res, data);
+    }
+    else {
+        if (!start_res) {
+            start_res = {code: 200, body: val};
+            events.emit('beforeResponseStart', info, req, start_res);
+            events.emit('beforeResponseData', info, req, start_res, val);
+            start = _start;
+            send = _send;
+            return start_res;
+        }
+        else {
+            start_res.body = start_res.body ? start_res.body + val: val;
+            events.emit('beforeResponseData', info, req, start_res, val);
+        }
+    }
     start = _start;
+    send = _send;
     return val;
 };
 
