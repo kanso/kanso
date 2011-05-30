@@ -607,7 +607,7 @@ exports.runUpdate = function (fn, doc, req) {
     var val = fn(doc, req);
     req.response_received = true;
 
-    var res = val[1];
+    var res = val ? val[1]: null;
     if (!(res instanceof Object)) {
         res = {code: 200, body: res};
     }
