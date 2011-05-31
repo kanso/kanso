@@ -14,6 +14,7 @@ This means highly-responsive web-apps, that are still search-engine friendly.
 * __Wiki:__ [https://github.com/caolan/kanso/wiki](https://github.com/caolan/kanso/wiki)
 * __Issues:__ [https://github.com/caolan/kanso/issues](https://github.com/caolan/kanso/issues)
 * __Mailing List:__ [http://groups.google.com/group/kanso](http://groups.google.com/group/kanso)
+* __IRC:__ #kansojs on FreeNode
 
 Kanso provides a whole host of tools for making serious CouchApp development easier,
 to find out more about this new approach to web development take a look at the
