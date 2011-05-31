@@ -12,12 +12,33 @@ var utils = require('./utils'),
  * Form object, presents fields and parses responses.
  *
  * @param {Object} fields
+ * @param {Object} doc
+ * @param {Object} options
  * @constructor
  * @api public
  */
 
-var Form = exports.Form = function Form(fields, doc) {
+var Form = exports.Form = function Form(fields, doc, options) {
+
     this.fields = (fields && fields.fields) ? fields.fields: fields;
+
+    if (options) {
+        if (options.exclude) {
+            for (k in this.fields) {
+                if (_.contains(options.exclude, k)) {
+                    delete this.fields[k];
+                }
+            }
+        }
+        if (options.fields) {
+            for (k in this.fields) {
+                if (!_.contains(options.fields, k)) {
+                    delete this.fields[k];
+                }
+            }
+        }
+    }
+
     /*
     if (utils.constructorName(fields) === 'Type') {
         this.type = fields;

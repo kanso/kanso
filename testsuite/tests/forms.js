@@ -505,3 +505,29 @@ exports['Form.isValid'] = function (test) {
     test.strictEqual(f.isValid(), false);
     test.done();
 };
+
+exports['Form parse options.exclude param'] = function (test) {
+    test.expect(3);
+    var options = { exclude: ['baz'] };
+    var form = new forms.Form({ 
+        foo: fields.string(),
+        bar: fields.string(),
+        baz: fields.number() }, null, options);
+    test.strictEqual('foo' in form.fields, true);
+    test.strictEqual('bar' in form.fields, true);
+    test.strictEqual('baz' in form.fields, false);
+    test.done();
+}
+
+exports['Form parse options.fields param'] = function (test) {
+    test.expect(3);
+    var options = { fields: ['bar','baz'] };
+    var form = new forms.Form({
+        foo: fields.string(),
+        bar: fields.string(),
+        baz: fields.number() }, null, options);
+    test.strictEqual('foo' in form.fields, false);
+    test.strictEqual('bar' in form.fields, true);
+    test.strictEqual('baz' in form.fields, true);
+    test.done();
+};
