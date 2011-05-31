@@ -1,4 +1,11 @@
 /**
+ * Functions for dealing with collections of fields. Used by both the
+ * types and forms modules.
+ *
+ * @module
+ */
+
+/**
  * Module dependencies
  */
 
@@ -9,6 +16,7 @@ var _ = require('./underscore'),
 /**
  * Returns a hierachy of default values for a given set of Field objects
  *
+ * @name createDefaults(fields, userCtx)
  * @param {Object} fields
  * @return {Object}
  * @api public
@@ -41,6 +49,7 @@ exports.createDefaults = function (fields, userCtx) {
  * Validate a specific field, returning all validation errors as an array with
  * each error's field property prefixed by the current path.
  *
+ * @name validateField(field, doc, value, raw, path)
  * @param {Field} field
  * @param {Object} doc
  * @param value
@@ -66,6 +75,7 @@ exports.validateField = function (field, doc, value, raw, path) {
  * Returns an array of validation errors, each with a field property set to the
  * path of the field which caused the error.
  *
+ * @name validate(fields, doc, values, raw, path, extra)
  * @param {Object} fields
  * @param {Object} doc
  * @param {Object} values

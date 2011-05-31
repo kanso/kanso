@@ -1,4 +1,13 @@
 /**
+ * The events module handles events emitted by Kanso as well as custom
+ * events defined by a Kanso app. These events can be used client-side
+ * or server-side. Although you are limited to synchronous operation on
+ * the server, so events are less likely to be useful there.
+ *
+ * @module
+ */
+
+/**
  * Module dependencies
  */
 
@@ -14,6 +23,7 @@ var listeners = {};
 /**
  * Adds a listener function for the given event name.
  *
+ * @name on(name, listener)
  * @param {String} name
  * @param {Function} listener
  * @api public
@@ -30,6 +40,7 @@ exports.on = function (name, listener) {
  * Binds an event listener to the given event name, but unbinds it
  * after its first invocation.
  *
+ * @name once(name, listener)
  * @param {String} name
  * @param {Function} listener
  * @api public
@@ -53,6 +64,7 @@ exports.once = function (name, listener) {
  * The first argument is the event name to emit any additional arguments
  * are used as arguments to the bound event listeners.
  *
+ * @name emit(name, [...])
  * @param {String} name
  * @param ...
  * @api public
@@ -75,6 +87,7 @@ exports.emit = function (name) {
  * Returns an array of the bound event listeners for the given event name.
  * If no events are bound, an empty array is returned.
  *
+ * @name listeners(name)
  * @param {String} name
  * @return {Array}
  * @api public
@@ -88,6 +101,7 @@ exports.listeners = function (name) {
 /**
  * Removes all bound event listeners for a given event name.
  *
+ * @name removeAllListeners(name)
  * @param {String} name
  * @api public
  */
@@ -99,6 +113,7 @@ exports.removeAllListeners = function (name) {
 /**
  * Removes a specific event listener for a given event name.
  *
+ * @name removeListener(name, listener)
  * @param {String} name
  * @param {Function} listener
  * @api public

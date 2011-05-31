@@ -1,10 +1,8 @@
 /**
- * Fields
- * ======
- *
  * The building blocks of Types and Forms, Fields help to validate and authorize
  * changes to docuemnt values.
  *
+ * @module
  */
 
 
@@ -22,16 +20,18 @@ var permissions = require('./permissions'),
 /**
  * Field objects are used when constructing content types and forms.
  *
- * Options:
- *   omit_empty  {Boolean} - whether to omit the field from a document when
+ * **Options**
+ *
+ * * omit_empty  {Boolean} - whether to omit the field from a document when
  *                           the field is empty
- *   permissions {Object}  - a permissions check function or an object
+ * * permissions {Object}  - a permissions check function or an object
  *                           containing separate functions to run on create,
  *                           edit and update operations.
- *   validators  {Array}   - an array of validation functions (default: [])
- *   required    {Boolean} - whether the field is required (default: true)
+ * * validators  {Array}   - an array of validation functions (default: [])
+ * * required    {Boolean} - whether the field is required (default: true)
  *
  * @constructor
+ * @name Field
  * @param {Object} options
  * @api public
  */
@@ -51,6 +51,7 @@ var Field = exports.Field = function Field(options) {
  * Parses a raw value returning the correct JavaScript type for this field.
  * This will usually be overridden by other field types.
  *
+ * @name Field.parse(raw)
  * @param raw
  * @api public
  */
@@ -67,6 +68,7 @@ Field.prototype.parse = function (raw) {
  * checks the parsed value, so that other field types overridding this method
  * have the raw data available.
  *
+ * @name Field.isEmpty(value, raw)
  * @param value - the parsed value for the field
  * @param raw - the raw value for this field
  * @returns {Boolean}
@@ -84,6 +86,7 @@ Field.prototype.isEmpty = function (value, raw) {
  * Run the field's validation functions against a value. Returns an
  * array of validation errors, or an empty array if valid.
  *
+ * @name Field.validate(doc, value, raw)
  * @param {Object} doc
  * @param value
  * @param raw
@@ -115,6 +118,7 @@ Field.prototype.validate = function (doc, value, raw) {
  * changes. Returns an array of permissions errors, or an empty array if the
  * changes are permissible.
  *
+ * @name Field.authorize(newDoc, oldDoc, newVal, oldVal, userCtx)
  * @param {Object} newDoc
  * @param {Object} oldDoc
  * @param newVal
@@ -158,16 +162,18 @@ Field.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, userCtx) {
  *
  * Exposes the same methods as Field objects.
  *
- * Options:
- *   type        {Type Object}  - Required, the Type definition to embed
- *   omit_empty  {Boolean} - whether to omit the field from a document when
+ * **Options**
+ *
+ * * type        {Type Object}  - Required, the Type definition to embed
+ * * omit_empty  {Boolean} - whether to omit the field from a document when
  *                           the field is empty
- *   permissions {Object}  - a permissions check function or an object
+ * * permissions {Object}  - a permissions check function or an object
  *                           containing separate functions to run on create,
  *                           edit and update operations.
- *   validators  {Array}   - an array of validation functions (default: [])
- *   required    {Boolean} - whether the field is required (default: true)
+ * * validators  {Array}   - an array of validation functions (default: [])
+ * * required    {Boolean} - whether the field is required (default: true)
  *
+ * @name Embedded
  * @param {Object} options
  * @constructor
  * @api public
@@ -197,6 +203,7 @@ var Embedded = exports.Embedded = function Embedded(options) {
  * checks the parsed value, so that other field types overridding this method
  * have the raw data available.
  *
+ * @name Embedded.isEmpty(value, raw)
  * @param value - the parsed value for the field
  * @param raw - the raw value for this field
  * @api public
@@ -210,6 +217,7 @@ Embedded.prototype.isEmpty = function (value, raw) {
  * Run the type's validate function against a value. Returns an
  * array of validation errors, or an empty array if valid.
  *
+ * @name Embedded.validate(doc, value, raw)
  * @param {Object} doc
  * @param value
  * @param raw
@@ -236,6 +244,7 @@ Embedded.prototype.validate = function (doc, value, raw) {
  * changes. Returns an array of permissions errors, or an empty array if the
  * changes are permissible.
  *
+ * @name Embedded.authorize(newDoc, oldDoc, newVal, oldVal, user)
  * @param {Object} newDoc
  * @param {Object} oldDoc
  * @param newVal
@@ -257,16 +266,18 @@ Embedded.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, user) {
  *
  * Exposes the same methods as Field objects.
  *
- * Options:
- *   type        {Type Object}  - Required, the Type definition to embed
- *   omit_empty  {Boolean} - whether to omit the field from a document when
+ * **Options**
+ *
+ * * type        {Type Object}  - Required, the Type definition to embed
+ * * omit_empty  {Boolean} - whether to omit the field from a document when
  *                           the field is empty
- *   permissions {Object}  - a permissions check function or an object
+ * * permissions {Object}  - a permissions check function or an object
  *                           containing separate functions to run on create,
  *                           edit and update operations.
- *   validators  {Array}   - an array of validation functions (default: [])
- *   required    {Boolean} - whether the field is required (default: true)
+ * * validators  {Array}   - an array of validation functions (default: [])
+ * * required    {Boolean} - whether the field is required (default: true)
  *
+ * @name EmbeddedList
  * @param {Object} options
  * @constructor
  * @api public
@@ -296,6 +307,7 @@ var EmbeddedList = exports.EmbeddedList = function EmbeddedList(options) {
  * checks the parsed value, so that other field types overridding this method
  * have the raw data available.
  *
+ * @name EmbeddedList.isEmpty(value, raw)
  * @param value - the parsed value for the field
  * @param raw - the raw value for this field
  * @api public
@@ -310,6 +322,7 @@ EmbeddedList.prototype.isEmpty = function (value, raw) {
  * array of Error objects for each occurence. Returns an empty array if
  * all documents have a populated _id property.
  *
+ * @name EmbeddedList.missingIDs(list)
  * @param {Array} list
  * @return {Array}
  * @api public
@@ -332,6 +345,7 @@ EmbeddedList.prototype.missingIDs = function (list) {
  * array of Error objects for each occurence. Returns an empty array if
  * all documents have a unique _id property.
  *
+ * @name EmbeddedList.duplicateIDs(list)
  * @param {Array} list
  * @return {Array}
  * @api public
@@ -356,6 +370,7 @@ EmbeddedList.prototype.duplicateIDs = function (list) {
  * against each embedded document. Returns an array of validation errors, or
  * an empty array if valid.
  *
+ * @name EmbeddedList.validate(doc, value, raw)
  * @param {Object} doc
  * @param value
  * @param raw
@@ -413,6 +428,7 @@ EmbeddedList.prototype.validate = function (doc, value, raw) {
  * changes. Returns an array of permissions errors, or an empty array if the
  * changes are permissible.
  *
+ * @name EmbeddedList.authorize(nDoc, oDoc, nVal, oVal, user)
  * @param {Object} nDoc
  * @param {Object} oDoc
  * @param nVal
@@ -488,6 +504,7 @@ var prependValidator = function (options, fn) {
 /**
  * Creates a new string Field
  *
+ * @name string([options])
  * @param {Object} options
  * @api public
  */
@@ -504,6 +521,7 @@ exports.string = function (options) {
 /**
  * Creates a new number Field
  *
+ * @name number([options])
  * @param {Object} options
  * @api public
  */
@@ -528,6 +546,7 @@ exports.number = function (options) {
 /**
  * Creates a new boolean Field
  *
+ * @name boolean([options])
  * @param {Object} options
  * @api public
  */
@@ -544,6 +563,7 @@ exports.boolean = function (options) {
 /**
  * Creates a URL Field
  *
+ * @name url([options])
  * @param {Object} options
  * @api public
  */
@@ -557,6 +577,7 @@ exports.url = function (options) {
 /**
  * Creates an email Field
  *
+ * @name email([options])
  * @param {Object} options
  * @api public
  */
@@ -570,6 +591,7 @@ exports.email = function (options) {
 /**
  * Creates a creator Field
  *
+ * @name creator([options])
  * @param {Object} options
  * @api public
  */
@@ -611,6 +633,7 @@ exports.creator = function (options) {
 /**
  * Creates a timestamp Field
  *
+ * @name timestamp([options])
  * @param {Object} options
  * @api public
  */
@@ -645,6 +668,7 @@ exports.timestamp = function (options) {
  * Required option: values - an array of possible choices, each an array
  * with the first item as the value and the second as its label.
  *
+ * @name choice([options])
  * @param {Object} options
  * @api public
  */
@@ -674,6 +698,7 @@ exports.choice = function (options) {
 /**
  * Creates a number choice Field
  *
+ * @name numberChoice([options])
  * @param {Object} options
  * @api public
  */
@@ -701,6 +726,7 @@ exports.numberChoice = function (options) {
  *
  * Required option: type - the Type definition to embed
  *
+ * @name embed([options])
  * @param {Object} options
  * @api public
  */
@@ -715,6 +741,7 @@ exports.embed = function (options) {
  *
  * Required option: type - the Type definition to embed
  *
+ * @name embedList([options])
  * @param {Object} options
  * @api public
  */
@@ -732,6 +759,7 @@ exports.embedList = function (options) {
  * called parseEach which accepts the string value for each item and performs
  * the transformation.
  *
+ * @name array([options])
  * @param {Object} options
  * @api public
  */
@@ -759,6 +787,7 @@ exports.array = function (options) {
  * Creates a number array Field, same as the array field only each value is
  * parsed as a number instead of a string.
  *
+ * @name numberArray([options])
  * @param {Object} options
  * @api public
  */
