@@ -1,8 +1,11 @@
 var _ = require('./underscore')._;
 
 /**
- * The majority of this module is taken from node.js and modified slightly
- * to work in the browser.
+ * Querystring functions ported from node.js to work in CouchDB and the browser.
+ * This module is used internally by Kanso, although you can use it in your
+ * apps too if you find the functions useful.
+ *
+ * @module
  */
 
 
@@ -31,11 +34,29 @@ var _ = require('./underscore')._;
 
 var QueryString = exports;
 
+/**
+ * Decodes a URI Component, provided so that it could be overridden if
+ * necessary.
+ *
+ * @name unescape(str)
+ * @param {String} str
+ * @returns {String}
+ * @api public
+ */
 
 QueryString.unescape = function (str) {
     return decodeURIComponent(str);
 };
 
+/**
+ * Encodes a URI Component, provided so that it could be overridden if
+ * necessary.
+ *
+ * @name escape(str)
+ * @param {String} str
+ * @returns {String}
+ * @api public
+ */
 
 QueryString.escape = function (str) {
     return encodeURIComponent(str);
@@ -57,6 +78,30 @@ var stringifyPrimitive = function (v) {
     }
 };
 
+/**
+ * Serialize an object to a query string. Optionally override the default
+ * separator and assignment characters.
+ *
+ * **Example:**
+ *
+ * <pre><code class="javascript">
+ * querystring.stringify({foo: 'bar'})
+ * // returns
+ * 'foo=bar'
+ *
+ * querystring.stringify({foo: 'bar', baz: 'bob'}, ';', ':')
+ * // returns
+ * 'foo:bar;baz:bob'
+ * </code></pre>
+ *
+ * @name stringify(obj, [sep, eq, name])
+ * @param {Object} obj
+ * @param {String} sep
+ * @param {String} eq
+ * @param {String} name
+ * @returns {String}
+ * @api public
+ */
 
 QueryString.stringify = QueryString.encode = function (obj, sep, eq, name) {
     sep = sep || '&';
@@ -86,7 +131,26 @@ QueryString.stringify = QueryString.encode = function (obj, sep, eq, name) {
            QueryString.escape(stringifyPrimitive(obj));
 };
 
-// Parse a key=val string.
+/**
+ * Deserialize a query string to an object. Optionally override the default
+ * separator and assignment characters.
+ *
+ * **Example:**
+ *
+ * <pre><code class="javascript">
+ * querystring.parse('a=b&b=c')
+ * // returns
+ * // { a: 'b', b: 'c' }
+ * </code></pre>
+ *
+ * @name decode(qs, [sep, eq])
+ * @param {String} qs
+ * @param {String} sep
+ * @param {String} eq
+ * @returns {Object}
+ * @api public
+ */
+
 QueryString.parse = QueryString.decode = function (qs, sep, eq) {
     sep = sep || '&';
     eq = eq || '=';

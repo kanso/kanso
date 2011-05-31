@@ -1,10 +1,8 @@
 /**
- * Permissions
- * ===========
+ * Permissions functions are used on both Fields and Types to check a given
+ * user is authorized to make a change to a document.
  *
- * Used on both Fields and Types to check a given user is authorized to make
- * a change to a document.
- *
+ * @module
  */
 
 
@@ -19,6 +17,7 @@ var utils = require('./utils'),
 /**
  * Field's new value should match current user's name
  *
+ * @name matchUsername()
  * @return {Function}
  * @api public
  */
@@ -39,6 +38,8 @@ exports.matchUsername = function () {
 /**
  * Checks if the user has a specific role
  *
+ * @name hasRole(role)
+ * @param {String} role
  * @return {Function}
  * @api public
  */
@@ -56,6 +57,7 @@ exports.hasRole = function (role) {
  * The value of this field should never change after the document has been
  * created.
  *
+ * @name fieldUneditable()
  * @return {Function}
  * @api public
  */
@@ -74,6 +76,7 @@ exports.fieldUneditable = function () {
  * User's name should match the *old* value of the given field. A field can be
  * specified using a string or an array of strings (like a path).
  *
+ * <pre>
  * eg: usernameMatchesField('creator')
  *     usernameMatchesField(['meta','creator'])
  *
@@ -81,8 +84,10 @@ exports.fieldUneditable = function () {
  *         creator: 'name',
  *         meta: {creator: 'name2'}
  *     }
+ * </pre>
  *
- * @param path
+ * @name usernameMatchesField(path)
+ * @param {String | Array} path
  * @return {Function}
  * @api public
  */
@@ -102,6 +107,7 @@ exports.usernameMatchesField = function (path) {
 /**
  * Checks that user's context has a username
  *
+ * @name loggedIn()
  * @return {Function}
  * @api public
  */
@@ -118,6 +124,7 @@ exports.loggedIn = function () {
  * Runs an array of permissions functions and checks that all of them pass,
  * returning all failures.
  *
+ * @name all(perms)
  * @param {Array} perms
  * @return {Function}
  * @api public
@@ -136,6 +143,7 @@ exports.all = function (perms) {
  * Tests to see if any one permission function passes, returning on the
  * first success. If all permissions fail, then all errors are returned.
  *
+ * @name any(perms)
  * @param {Array} perms
  * @api public
  */
@@ -171,6 +179,7 @@ exports.any = function (perms) {
  * allow both the owner of the parent document and the owner of the comment
  * itself to remove it.
  *
+ * <pre><code class="javascript">
  *     comment: fields.embed({
  *         type: types.comment,
  *         permissions: {
@@ -180,7 +189,9 @@ exports.any = function (perms) {
  *             ])
  *         }
  *     });
+ * </code></pre>
  *
+ * @name inherit(type)
  * @param {Type} type
  * @api public
  */
