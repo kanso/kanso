@@ -69,14 +69,13 @@ var Type = exports.Type = function Type(name, options) {
     f.type = fields.string({
         default_value: name,
         widget: widgets.hidden(),
-        permissions: {
-            add: function (newDoc, oldDoc, newVal, oldVal, userCtx) {
-                if (newVal !== undefined && newVal !== name) {
+        validators: [
+            function (doc, val, raw) {
+                if (val !== name) {
                     throw new Error('Unexpected value for type');
                 }
             },
-            update: permissions.fieldUneditable()
-        }
+        ]
     });
     for (var k in options.fields) {
         if (options.fields.hasOwnProperty(k)) {

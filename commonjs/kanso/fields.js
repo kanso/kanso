@@ -376,7 +376,17 @@ EmbeddedList.prototype.validate = function (doc, value, raw) {
 
     // check all values are objects
     var non_objects = _.filter(value, function (v) {
-        return (typeof(v) != 'object') || _.isArray(v);
+
+        /* Workaround for interpreter bug:
+            Saving embedList() data throws an error when running in a
+            CouchDB linked against js-1.8.0. We encounter a situation where
+            typeof(v) === 'object', but the 'v instanceof Object' test
+            incorrectly returns false. We suspect an interpreter bug.
+            Please revisit this using a CouchDB linked against js-1.8.5.
+            We don't currently have the infrastructure for a test case. */
+        
+        /* Before: return !(v instanceof Object) || _.isArray(v); */
+        return typeof(v) !== 'object' || _.isArray(v);
     });
     if (non_objects.length) {
         return _.map(non_objects, function (v) {
