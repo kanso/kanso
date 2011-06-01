@@ -30,8 +30,10 @@ exports.createDefaults = function (fields, userCtx) {
                 }
             }
         }
-        else {
+        else if (cname == 'Object') {
             result[k] = exports.createDefaults(f, userCtx);
+        } else {
+            throw new Error('The field type `' + cname + '` is not supported.');
         }
         return result;
     }, {});
@@ -51,7 +53,7 @@ exports.createDefaults = function (fields, userCtx) {
  */
 
 exports.validateField = function (field, doc, value, raw, path) {
-    //console.log('validateField: ' + path.join('.'));
+    //log('validateField: ' + path.join('.'));
     return _.map(field.validate(doc, value, raw), function (err) {
         err.field = path.concat(err.field || []);
         err.has_field = true;
@@ -77,7 +79,7 @@ exports.validateField = function (field, doc, value, raw, path) {
  */
 
 exports.validate = function (fields, doc, values, raw, path, extra) {
-    //console.log('validateFieldSet: ' + path.join('.'));
+    //log('validateFieldSet: ' + path.join('.'));
     values = values || {};
     fields = fields || {};
     raw = raw || {};

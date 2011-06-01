@@ -145,7 +145,7 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
         if (cname === 'Field') {
             return html + renderer.field(
                 fields[k],
-                f_path.join('.'),
+                f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
@@ -154,7 +154,7 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
         else if (cname === 'Embedded') {
             new_renderer = renderer.embed(
                 fields[k].type,
-                f_path.join('.'),
+                f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
@@ -180,7 +180,7 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
             var type = fields[k].type;
             new_renderer = renderer.embedList(
                 type,
-                f_path.join('.'),
+                f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
@@ -196,7 +196,7 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
                         var f_errs2 = errsBelowPath(f_errs, f_path2);
                         var v_renderer = new_renderer.each(
                             type,
-                            f_path2.join('.'),
+                            f_path2,
                             v,
                             (raw[k] === undefined || raw[k][i] === undefined) ? v[i]: raw[k][i],
                             f_errs2
@@ -218,16 +218,19 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
             }
             return html;
         }
-        else {
-            return html + that.renderFields(
-                renderer,
-                fields[k],
-                values[k],
-                (raw[k] === undefined) ? values[k]: raw[k],
-                errs,
-                f_path
-            );
-        }
+        else if (cname == 'Object') {
+            return html + (k ? renderer.beginGroup(f_path) : '') +
+                that.renderFields(
+                    renderer,
+                    fields[k],
+                    values[k],
+                    (raw[k] === undefined) ? values[k]: raw[k],
+                    errs,
+                    f_path
+                ) + (k ? renderer.endGroup(f_path) : '');
+        } else {
+            throw new Error('The field type `' + cname + '` is not supported.');
+        };
     }, '');
 };
 
@@ -269,10 +272,7 @@ exports.parseRaw = function (fields, raw) {
         var f = fields[k];
         var r = raw[k];
         var cname = utils.constructorName(f);
-        var allowedCnames = ['Object', 'Field', 'Embedded', 'EmbeddedList'];
-        if (!_.contains(allowedCnames, cname)) {
-            throw new Error('This field type ' + cname + ' is not supported.');
-        }
+
         if (cname === 'Field') {
             if (!f.isEmpty(r) || !f.omit_empty) {
                 doc[k] = f.parse(r);
@@ -310,8 +310,10 @@ exports.parseRaw = function (fields, raw) {
                 delete doc[k];
             }
         }
-        else {
+        else if (cname == 'Object') {
             doc[k] = exports.parseRaw(f, r);
+        } else {
+            throw new Error('The field type `' + cname + '` is not supported.');
         }
     }
     return doc;

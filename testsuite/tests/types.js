@@ -267,6 +267,34 @@ exports['validate Embedded - missing fields'] = function (test) {
     test.done();
 };
 
+exports['validate Embedded - optional'] = function (test) {
+    var Embedded = fields.Embedded;
+    var Field = fields.Field;
+    var Type = types.Type;
+
+    var t1 = new Type('t1', {
+        fields: {
+            one: new Field(),
+        }
+    });
+
+    var t2 = new Type('t2', {
+        fields: {
+            embeddedT1: new Embedded({
+                type: t1,
+                required: false
+            })
+        }
+    });
+
+    var doc = { type: 't2' };
+    var raw = { type: 't2' };
+    var errs = t2.validate(doc, raw);
+
+    test.equal(errs.length, 0);
+    test.done();
+};
+
 exports['validate EmbeddedList'] = function (test) {
     var EmbeddedList = fields.EmbeddedList;
     var Field = fields.Field;
@@ -382,6 +410,34 @@ exports['authorize - type-level add, update, remove'] = function (test) {
     test.equal(errs.length, 1);
     test.same(calls, ['add', 'update', 'remove']);
 
+    test.done();
+};
+
+exports['authorize Embedded - optional'] = function (test) {
+    var Embedded = fields.Embedded;
+    var Field = fields.Field;
+    var Type = types.Type;
+
+    var t1 = new Type('t1', {
+        fields: {
+            one: new Field(),
+        }
+    });
+
+    var t2 = new Type('t2', {
+        fields: {
+            embeddedT1: new Embedded({
+                type: t1,
+                required: false
+            })
+        }
+    });
+
+    var doc = { type: 't2' };
+    var raw = { type: 't2' };
+    var errs = t2.authorize(doc, raw);
+
+    test.equal(errs.length, 0);
     test.done();
 };
 

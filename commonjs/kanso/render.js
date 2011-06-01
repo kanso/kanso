@@ -56,17 +56,42 @@ exports.table = function () {
     // called at the start of rendering the form
     // the string returned from this function is prepended to the form's markup
     this.start = function () {
+        this.depth = 0;
         return '';
+    };
+    // Called immediately before a new group of fields is processed
+    this.beginGroup = function(path) {
+        this.depth += 1;
+        var name = _.last(path);
+        var css_class = 'depth-' + this.depth;
+        return (
+            '<tbody class="head ' + css_class + '">' +
+            '<tr>' +
+                '<th colspan="3">' +
+                (name.substr(0, 1).toUpperCase() +
+                    name.substr(1).replace(/_/g, ' ')) +
+                '</th>' +
+            '</tr>' +
+            '</tbody>' +
+            '<tbody class="group ' + css_class + '">'
+        );
+    };
+    // Called immediately after a group of fields is processed
+    this.endGroup = function(path) {
+        this.depth -= 1;
+        return '</tbody>';
     };
     // Called when any field that is not an embed or embedList field is
     // encountered
-    this.field = function (field, name, value, raw, errors) {
+    this.field = function (field, path, value, raw, errors) {
+        var name = path.join('.');
+        var caption = path.slice(this.depth).join(' ');
         if (field.widget.type === 'hidden') {
             return field.widget.toHTML(name, value, raw);
         }
         return '<tr class="' + exports.classes(field, errors).join(' ') + '">' +
             '<th>' +
-                exports.labelHTML(field, name) +
+                exports.labelHTML(field, caption) +
                 exports.descriptionHTML(field) +
             '</th>' +
             '<td>' +
@@ -79,7 +104,9 @@ exports.table = function () {
         '</tr>';
     };
     // Called when an embed field is encountered
-    this.embed = function (type, name, value, raw, errors) {
+    this.embed = function (type, path, value, raw, errors) {
+        var name = path.join('.');
+        var caption = path.slice(this.depth).join(' ');
         var fval = value ? JSON.stringify(value).replace(/"/g, '&#34;'): '';
         var display_name = value ? value._id: '';
         if (type.display_name && value) {
@@ -87,7 +114,7 @@ exports.table = function () {
         }
         return '<tr class="embedded">' +
             '<th>' +
-                exports.labelHTML(type, name) +
+                exports.labelHTML(type, caption) +
                 exports.descriptionHTML(type) +
             '</th>' +
             '<td class="field" rel="' + type.name + '">' +
@@ -103,10 +130,12 @@ exports.table = function () {
         '</tr>';
     };
     // Called when an embedList field is encountered
-    this.embedList = function (type, name, value, raw, errors) {
+    this.embedList = function (type, path, value, raw, errors) {
+        var name = path.join('.');
+        var caption = path.slice(this.depth).join(' ');
         var html = '<tr class="embeddedlist">' +
             '<th>' +
-                exports.labelHTML(type, name) +
+                exports.labelHTML(type, caption) +
                 exports.descriptionHTML(type) +
             '</th>' +
             '<td class="field" rel="' + type.name + '">' +
