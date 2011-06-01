@@ -470,7 +470,8 @@ exports['Form.toHTML - embeddedList - with values'] = function (test) {
     test.done();
 };
 
-exports['Form.validate'] = function (test) {
+exports['Form.validate - numbers'] = function (test) {
+    test.expect(3);
     var f = new forms.Form({
         one: fields.number(),
         two: fields.number()
@@ -479,6 +480,41 @@ exports['Form.validate'] = function (test) {
     test.same(f.values, {one: 1, two: 2});
     test.same(f.raw, {one: '1', two: '2'});
     test.same(f.errors, []);
+    test.done();
+};
+
+exports['Form.validate - empty numbers'] = function (test) {
+    test.expect(1);
+    var f = new forms.Form({
+        one: fields.number(),
+        two: fields.number()
+    });
+    f.validate({});
+    test.strictEqual(f.isValid(), false);
+    test.done();
+};
+
+exports['Form.validate - strings'] = function (test) {
+    test.expect(3);
+    var f = new forms.Form({
+        one: fields.string(),
+        two: fields.string()
+    });
+    f.validate({form: {one: 'one', two: 'two'}});
+    test.same(f.values, {one: 'one', two: 'two'});
+    test.same(f.raw, {one: 'one', two: 'two'});
+    test.same(f.errors, []);
+    test.done();
+};
+
+exports['Form.validate - empty strings'] = function (test) {
+    test.expect(1);
+    var f = new forms.Form({
+        foo: fields.string({required:true}),
+        bar: fields.string()
+    });
+    f.validate({});
+    test.strictEqual(f.isValid(), false);
     test.done();
 };
 
@@ -494,6 +530,45 @@ exports['Form.validate - error on string field'] = function (test) {
     } catch (e) {
         test.equals(e.message, 'This field type String is not supported.');
     }
+    test.done();
+};
+
+exports['Form.validate - options.exclude'] = function (test) {
+    test.expect(2);
+    var req = {};
+    var f = new forms.Form({
+        foo: fields.string(),
+        bar: fields.number(),
+        baz: fields.number()},
+        null, { exclude: ['bar', 'baz'] }
+    );
+
+    f.validate(req);
+    test.strictEqual(f.isValid(), false); // broken
+
+    req = { foo: 'hi' };
+    f.validate(req);
+    test.strictEqual(f.isValid(), true);
+
+    test.done();
+};
+
+exports['Form.validate - options.fields'] = function (test) {
+    test.expect(2);
+    var req = {};
+    var f = new forms.Form({
+        foo: fields.string(),
+        bar: fields.number(),
+        baz: fields.number()
+    }, null, { fields: ['foo'] });
+
+    f.validate(req);
+    test.strictEqual(f.isValid(), false);
+
+    req = { foo: 'hi' };
+    f.validate(req);
+    test.strictEqual(f.isValid(), true);
+
     test.done();
 };
 
