@@ -167,6 +167,14 @@ form.delete_form {
     vertical-align: top;
 }
 
+.form_table tbody.head th {
+    color: #555;
+    font-weight: bold;
+    font-size: 1.1em;
+    padding-top: 1.5em;
+    border-bottom: solid 1px #888;
+}
+
 .description,
 .hint {
     font-weight: normal;
