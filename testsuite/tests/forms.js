@@ -139,8 +139,14 @@ exports['Form.toHTML'] = function (test) {
             calls.push('start');
             return '';
         };
-        this.field = function (field, name, value, raw, errors) {
-            calls.push([field, name, value, raw, errors]);
+        this.beginGroup = function () {
+            return;
+        };
+        this.endGroup = function () {
+            return;
+        };
+        this.field = function (field, path, value, raw, errors) {
+            calls.push([field, path.join('.'), value, raw, errors]);
         };
         this.end = function () {
             calls.push('end');
@@ -170,8 +176,14 @@ exports['Form.toHTML - default values'] = function (test) {
             calls.push('start');
             return '';
         };
-        this.field = function (field, name, value, raw, errors) {
-            calls.push([field, name, value, raw, errors]);
+        this.beginGroup = function () {
+            return;
+        };
+        this.endGroup = function () {
+            return;
+        };
+        this.field = function (field, path, value, raw, errors) {
+            calls.push([field, path.join('.'), value, raw, errors]);
         };
         this.end = function () {
             calls.push('end');
@@ -203,8 +215,14 @@ exports['Form.toHTML - existing values'] = function (test) {
             calls.push('start');
             return '';
         };
-        this.field = function (field, name, value, raw, errors) {
-            calls.push([field, name, value, raw, errors]);
+        this.beginGroup = function () {
+            return;
+        };
+        this.endGroup = function () {
+            return;
+        };
+        this.field = function (field, path, value, raw, errors) {
+            calls.push([field, path.join('.'), value, raw, errors]);
         };
         this.end = function () {
             calls.push('end');
@@ -241,8 +259,14 @@ exports['Form.toHTML - errors'] = function (test) {
             calls.push('start');
             return '';
         };
-        this.field = function (field, name, value, raw, errors) {
-            calls.push([field, name, value, raw, errors]);
+        this.beginGroup = function () {
+            return;
+        };
+        this.endGroup = function () {
+            return;
+        };
+        this.field = function (field, path, value, raw, errors) {
+            calls.push([field, path.join('.'), value, raw, errors]);
         };
         this.end = function () {
             calls.push('end');
@@ -281,15 +305,21 @@ exports['Form.toHTML - embedded'] = function (test) {
             calls.push('start');
             return '';
         };
-        this.embed = function (type, name, value, raw, errors) {
-            calls.push(['embed', type, name, value, raw, errors]);
+        this.beginGroup = function () {
+            return;
+        };
+        this.endGroup = function () {
+            return;
+        };
+        this.embed = function (type, path, value, raw, errors) {
+            calls.push(['embed', type, path.join('.'), value, raw, errors]);
             return {
                 start: function () {
                     calls.push('start2');
                     return '';
                 },
-                field: function (field, name, value, raw, errors) {
-                    calls.push(['field', field, name, value, raw, errors]);
+                field: function (field, path, value, raw, errors) {
+                    calls.push(['field', field, path.join('.'), value, raw, errors]);
                 },
                 end: function () {
                     calls.push('end2');
@@ -342,22 +372,28 @@ exports['Form.toHTML - embeddedList'] = function (test) {
             calls.push('start');
             return '';
         };
-        this.embedList = function (type, name, value, raw, errors) {
-            calls.push(['embedList', type, name, value, raw, errors]);
+        this.beginGroup = function () {
+            return;
+        };
+        this.endGroup = function () {
+            return;
+        };
+        this.embedList = function (type, path, value, raw, errors) {
+            calls.push(['embedList', type, path.join('.'), value, raw, errors]);
             return {
                 start: function () {
                     calls.push('start2');
                     return '';
                 },
-                each: function (type, name, value, raw, errors) {
-                    calls.push(['each', type, name, value, raw, errors]);
+                each: function (type, path, value, raw, errors) {
+                    calls.push(['each', type, path.join('.'), value, raw, errors]);
                     return {
                         start: function () {
                             calls.push('start3');
                             return '';
                         },
-                        field: function (field, name, value, raw, errors) {
-                            calls.push(['field', field, name, value, raw, errors]);
+                        field: function (field, path, value, raw, errors) {
+                            calls.push(['field', field, path.join('.'), value, raw, errors]);
                         },
                         end: function () {
                             calls.push('end3');
@@ -410,22 +446,28 @@ exports['Form.toHTML - embeddedList - with values'] = function (test) {
             calls.push('start');
             return '';
         };
-        this.embedList = function (type, name, value, raw, errors) {
-            calls.push(['embedList', type, name, value, raw, errors]);
+        this.beginGroup = function () {
+            return;
+        };
+        this.endGroup = function () {
+            return;
+        };
+        this.embedList = function (type, path, value, raw, errors) {
+            calls.push(['embedList', type, path.join('.'), value, raw, errors]);
             return {
                 start: function () {
                     calls.push('start2');
                     return '';
                 },
-                each: function (type, name, value, raw, errors) {
-                    calls.push(['each', type, name, value, raw, errors]);
+                each: function (type, path, value, raw, errors) {
+                    calls.push(['each', type, path.join('.'), value, raw, errors]);
                     return {
                         start: function () {
                             calls.push('start3');
                             return '';
                         },
-                        field: function (field, name, value, raw, errors) {
-                            calls.push(['field', field, name, value, raw, errors]);
+                        field: function (field, path, value, raw, errors) {
+                            calls.push(['field', field, path.join('.'), value, raw, errors]);
                         },
                         end: function () {
                             calls.push('end3');
@@ -492,7 +534,7 @@ exports['Form.validate - error on string field'] = function (test) {
     try {
         f.validate(req);
     } catch (e) {
-        test.equals(e.message, 'This field type String is not supported.');
+        test.equals(/not supported/i.test(e.message), true);
     }
     test.done();
 };
