@@ -189,12 +189,12 @@ exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
     }
     if (!callback) {
         if (!options) {
-            /* arity = 2: Omits q, options */
+            /* Arity = 2: Omits q, options */
             callback = q;
             options = {};
             q = {};
         } else {
-          /* arity = 3: Omits options */
+          /* Arity = 3: Omits options */
             callback = options;
             options = {};
         }

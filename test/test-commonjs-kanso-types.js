@@ -244,11 +244,11 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var doc = {type: 't1', embeddedT1: {
-            _id: 'id1', type: 't2', one: 'one', two: 'two'
+        var doc = {type: 't2', embeddedT1: {
+            _id: 'id1', type: 't1', one: 'one', two: 'two'
         }};
-        var raw = {type: 't1', embeddedT1: {
-            _id: 'id1', type: 't2', one: 'one', two: 'two'
+        var raw = {type: 't2', embeddedT1: {
+            _id: 'id1', type: 't1', one: 'one', two: 'two'
         }};
         var errs = t2.validate(doc, raw);
 
@@ -276,13 +276,41 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var doc = {type: 't1', embeddedT1: {type: 't2', _id: 'id1', one: 'one'}};
-        var raw = {type: 't1', embeddedT1: {type: 't2', _id: 'id1', one: 'one'}};
+        var doc = {type: 't2', embeddedT1: {type: 't1', _id: 'id1', one: 'one'}};
+        var raw = {type: 't2', embeddedT1: {type: 't1', _id: 'id1', one: 'one'}};
         var errs = t2.validate(doc, raw);
 
         test.equal(errs.length, 1);
         test.equal(errs[0].message, 'Required field');
         test.same(errs[0].field, ['embeddedT1', 'two']);
+        test.done();
+    },
+
+    'validate Embedded - optional': function (test) {
+        var Embedded = this.fields.Embedded;
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var t1 = new Type('t1', {
+            fields: {
+                one: new Field(),
+            }
+        });
+
+        var t2 = new Type('t2', {
+            fields: {
+                embeddedT1: new Embedded({
+                    type: t1,
+                    required: false
+                })
+            }
+        });
+
+        var doc = { type: 't2' };
+        var raw = { type: 't2' };
+        var errs = t2.validate(doc, raw);
+
+        test.equal(errs.length, 0);
         test.done();
     },
 
@@ -306,9 +334,9 @@ module.exports = nodeunit.testCase({
             }
         });
 
-        var doc = {type: 't1', embeds: [
-            {type: 't2', _id: 'id1', one: 'one', two: 'two'},
-            {type: 't2', _id: 'id2', one: 'one'},
+        var doc = {type: 't2', embeds: [
+            {type: 't1', _id: 'id1', one: 'one', two: 'two'},
+            {type: 't1', _id: 'id2', one: 'one'},
         ]};
         var errs = t2.validate(doc, doc);
 
@@ -401,6 +429,34 @@ module.exports = nodeunit.testCase({
         test.equal(errs.length, 1);
         test.same(calls, ['add', 'update', 'remove']);
 
+        test.done();
+    },
+
+    'authorize Embedded - optional': function (test) {
+        var Embedded = this.fields.Embedded;
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var t1 = new Type('t1', {
+            fields: {
+                one: new Field(),
+            }
+        });
+
+        var t2 = new Type('t2', {
+            fields: {
+                embeddedT1: new Embedded({
+                    type: t1,
+                    required: false
+                })
+            }
+        });
+
+        var doc = { type: 't2' };
+        var raw = { type: 't2' };
+        var errs = t2.authorize(doc, raw);
+
+        test.equal(errs.length, 0);
         test.done();
     },
 
