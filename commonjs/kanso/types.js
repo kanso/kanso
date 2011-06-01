@@ -71,7 +71,7 @@ var Type = exports.Type = function Type(name, options) {
         widget: widgets.hidden(),
         permissions: {
             add: function (newDoc, oldDoc, newVal, oldVal, userCtx) {
-                if (newVal !== name) {
+                if (newVal !== undefined && newVal !== name) {
                     throw new Error('Unexpected value for type');
                 }
             },
@@ -179,7 +179,7 @@ Type.prototype.authorize = function (nDoc, oDoc, user) {
  */
 
 Type.prototype.authField = function (f, nDoc, oDoc, nVal, oVal, user, path) {
-    //console.log('authField: ' + path.join('.'));
+    //log('authField: ' + path.join('.'));
     return _.map(f.authorize(nDoc, oDoc, nVal, oVal, user), function (err) {
         err.field = path.concat(err.field || []);
         err.has_field = true;
@@ -206,7 +206,7 @@ Type.prototype.authField = function (f, nDoc, oDoc, nVal, oVal, user, path) {
  */
 
 Type.prototype.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path) {
-    //console.log('authFieldSet: ' + path.join('.'));
+    //log('authFieldSet: ' + path.join('.'));
     nVal = nVal || {};
     oVal = oVal || {};
     f = f || {};

@@ -376,7 +376,7 @@ EmbeddedList.prototype.validate = function (doc, value, raw) {
 
     // check all values are objects
     var non_objects = _.filter(value, function (v) {
-        return !(v instanceof Object) || _.isArray(v);
+        return (typeof(v) != 'object') || _.isArray(v);
     });
     if (non_objects.length) {
         return _.map(non_objects, function (v) {

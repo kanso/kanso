@@ -286,6 +286,34 @@ module.exports = nodeunit.testCase({
         test.done();
     },
 
+    'validate Embedded - optional': function (test) {
+        var Embedded = this.fields.Embedded;
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var t1 = new Type('t1', {
+            fields: {
+                one: new Field(),
+            }
+        });
+
+        var t2 = new Type('t2', {
+            fields: {
+                embeddedT1: new Embedded({
+                    type: t1,
+                    required: false
+                })
+            }
+        });
+
+        var doc = { type: 't2' };
+        var raw = { type: 't2' };
+        var errs = t2.validate(doc, raw);
+
+        test.equal(errs.length, 0);
+        test.done();
+    },
+
     'validate EmbeddedList': function (test) {
         var EmbeddedList = this.fields.EmbeddedList;
         var Field = this.fields.Field;
@@ -401,6 +429,34 @@ module.exports = nodeunit.testCase({
         test.equal(errs.length, 1);
         test.same(calls, ['add', 'update', 'remove']);
 
+        test.done();
+    },
+
+    'authorize Embedded - optional': function (test) {
+        var Embedded = this.fields.Embedded;
+        var Field = this.fields.Field;
+        var Type = this.types.Type;
+
+        var t1 = new Type('t1', {
+            fields: {
+                one: new Field(),
+            }
+        });
+
+        var t2 = new Type('t2', {
+            fields: {
+                embeddedT1: new Embedded({
+                    type: t1,
+                    required: false
+                })
+            }
+        });
+
+        var doc = { type: 't2' };
+        var raw = { type: 't2' };
+        var errs = t2.authorize(doc, raw);
+
+        test.equal(errs.length, 0);
         test.done();
     },
 
