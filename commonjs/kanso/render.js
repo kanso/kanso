@@ -60,7 +60,7 @@ exports.table = function () {
         return '';
     };
     // Called immediately before a new group of fields is processed
-    this.beginGroup = function(path) {
+    this.beginGroup = function (path) {
         this.depth += 1;
         var name = _.last(path);
         var css_class = 'depth-' + this.depth;
@@ -77,7 +77,7 @@ exports.table = function () {
         );
     };
     // Called immediately after a group of fields is processed
-    this.endGroup = function(path) {
+    this.endGroup = function (path) {
         this.depth -= 1;
         return '</tbody>';
     };

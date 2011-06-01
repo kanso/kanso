@@ -218,7 +218,7 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
             }
             return html;
         }
-        else if (cname == 'Object') {
+        else if (cname === 'Object') {
             return html + (k ? renderer.beginGroup(f_path) : '') +
                 that.renderFields(
                     renderer,
@@ -230,7 +230,7 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
                 ) + (k ? renderer.endGroup(f_path) : '');
         } else {
             throw new Error('The field type `' + cname + '` is not supported.');
-        };
+        }
     }, '');
 };
 
@@ -310,7 +310,7 @@ exports.parseRaw = function (fields, raw) {
                 delete doc[k];
             }
         }
-        else if (cname == 'Object') {
+        else if (cname === 'Object') {
             doc[k] = exports.parseRaw(f, r);
         } else {
             throw new Error('The field type `' + cname + '` is not supported.');
