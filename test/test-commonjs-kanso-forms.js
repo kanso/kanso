@@ -179,8 +179,14 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.field = function (field, name, value, raw, errors) {
-                calls.push([field, name, value, raw, errors]);
+            this.beginGroup = function () {
+                return;
+            };
+            this.endGroup = function () {
+                return;
+            };
+            this.field = function (field, path, value, raw, errors) {
+                calls.push([field, path.join('.'), value, raw, errors]);
             };
             this.end = function () {
                 calls.push('end');
@@ -211,8 +217,14 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.field = function (field, name, value, raw, errors) {
-                calls.push([field, name, value, raw, errors]);
+            this.beginGroup = function () {
+                return;
+            };
+            this.endGroup = function () {
+                return;
+            };
+            this.field = function (field, path, value, raw, errors) {
+                calls.push([field, path.join('.'), value, raw, errors]);
             };
             this.end = function () {
                 calls.push('end');
@@ -245,8 +257,14 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.field = function (field, name, value, raw, errors) {
-                calls.push([field, name, value, raw, errors]);
+            this.beginGroup = function () {
+                return;
+            };
+            this.endGroup = function () {
+                return;
+            };
+            this.field = function (field, path, value, raw, errors) {
+                calls.push([field, path.join('.'), value, raw, errors]);
             };
             this.end = function () {
                 calls.push('end');
@@ -284,8 +302,14 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.field = function (field, name, value, raw, errors) {
-                calls.push([field, name, value, raw, errors]);
+            this.beginGroup = function () {
+                return;
+            };
+            this.endGroup = function () {
+                return;
+            };
+            this.field = function (field, path, value, raw, errors) {
+                calls.push([field, path.join('.'), value, raw, errors]);
             };
             this.end = function () {
                 calls.push('end');
@@ -325,15 +349,21 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.embed = function (type, name, value, raw, errors) {
-                calls.push(['embed', type, name, value, raw, errors]);
+            this.beginGroup = function () {
+                return;
+            };
+            this.endGroup = function () {
+                return;
+            };
+            this.embed = function (type, path, value, raw, errors) {
+                calls.push(['embed', type, path.join('.'), value, raw, errors]);
                 return {
                     start: function () {
                         calls.push('start2');
                         return '';
                     },
-                    field: function (field, name, value, raw, errors) {
-                        calls.push(['field', field, name, value, raw, errors]);
+                    field: function (field, path, value, raw, errors) {
+                        calls.push(['field', field, path.join('.'), value, raw, errors]);
                     },
                     end: function () {
                         calls.push('end2');
@@ -387,22 +417,28 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.embedList = function (type, name, value, raw, errors) {
-                calls.push(['embedList', type, name, value, raw, errors]);
+            this.beginGroup = function () {
+                return;
+            };
+            this.endGroup = function () {
+                return;
+            };
+            this.embedList = function (type, path, value, raw, errors) {
+                calls.push(['embedList', type, path.join('.'), value, raw, errors]);
                 return {
                     start: function () {
                         calls.push('start2');
                         return '';
                     },
-                    each: function (type, name, value, raw, errors) {
-                        calls.push(['each', type, name, value, raw, errors]);
+                    each: function (type, path, value, raw, errors) {
+                        calls.push(['each', type, path.join('.'), value, raw, errors]);
                         return {
                             start: function () {
                                 calls.push('start3');
                                 return '';
                             },
-                            field: function (field, name, value, raw, errors) {
-                                calls.push(['field', field, name, value, raw, errors]);
+                            field: function (field, path, value, raw, errors) {
+                                calls.push(['field', field, path.join('.'), value, raw, errors]);
                             },
                             end: function () {
                                 calls.push('end3');
@@ -456,22 +492,28 @@ module.exports = nodeunit.testCase({
                 calls.push('start');
                 return '';
             };
-            this.embedList = function (type, name, value, raw, errors) {
-                calls.push(['embedList', type, name, value, raw, errors]);
+            this.beginGroup = function () {
+                return;
+            };
+            this.endGroup = function () {
+                return;
+            };
+            this.embedList = function (type, path, value, raw, errors) {
+                calls.push(['embedList', type, path.join('.'), value, raw, errors]);
                 return {
                     start: function () {
                         calls.push('start2');
                         return '';
                     },
-                    each: function (type, name, value, raw, errors) {
-                        calls.push(['each', type, name, value, raw, errors]);
+                    each: function (type, path, value, raw, errors) {
+                        calls.push(['each', type, path.join('.'), value, raw, errors]);
                         return {
                             start: function () {
                                 calls.push('start3');
                                 return '';
                             },
-                            field: function (field, name, value, raw, errors) {
-                                calls.push(['field', field, name, value, raw, errors]);
+                            field: function (field, path, value, raw, errors) {
+                                calls.push(['field', field, path.join('.'), value, raw, errors]);
                             },
                             end: function () {
                                 calls.push('end3');

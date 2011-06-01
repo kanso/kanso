@@ -30,7 +30,7 @@ exports.createDefaults = function (fields, userCtx) {
                 }
             }
         }
-        else if (cname == 'Object') {
+        else if (cname === 'Object') {
             result[k] = exports.createDefaults(f, userCtx);
         } else {
             throw new Error('The field type `' + cname + '` is not supported.');
