@@ -1,12 +1,5 @@
 # Writing Guides
 
-<div class="author">
-    by
-    <img src="http://gravatar.com/avatar/a12f0df529117f01505bfd072f65bacc?size=16" />
-    <a href="https://github.com/caolan">Caolan McMahon</a>
-</div>
-
-
 One of the best ways to give back to the Kanso project is to help others get
 started. You don't have to be an expert, you just need to have learned something
 that should be better documented.
