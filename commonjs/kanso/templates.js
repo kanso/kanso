@@ -29,6 +29,8 @@
  * automatically added to this module from your templates folder each time
  * your app is pushed to CouchDB. You can see a list of the loaded template
  * names on the 'loaded' property of this module.
+ *
+ * @module
  */
 
 
@@ -45,10 +47,11 @@ var utils = require('./utils'),
  * baseURL to the template's context. The request object is required so we
  * can determine the value of baseURL.
  *
+ * @name render(name, req, context)
  * @param {String} name
  * @param {Object} req
  * @param {Object} context
- * @return {String}
+ * @returns {String}
  * @api public
  */
 

@@ -219,9 +219,9 @@ exports['validate Embedded'] = function (test) {
         }
     });
 
-    var doc = {type: 't1', embeddedT1: {
+    var doc = {type: 't2', embeddedT1: {
         _id: 'id1',
-        type: 't2',
+        type: 't1',
         one: 'one',
         two: 'two'
     }};
@@ -257,8 +257,8 @@ exports['validate Embedded - missing fields'] = function (test) {
         }
     });
 
-    var doc = {type: 't1', embeddedT1: {type: 't2', _id: 'id1', one: 'one'}};
-    var raw = {type: 't1', embeddedT1: {type: 't2', _id: 'id1', one: 'one'}};
+    var doc = {type: 't2', embeddedT1: {type: 't1', _id: 'id1', one: 'one'}};
+    var raw = {type: 't2', embeddedT1: {type: 't1', _id: 'id1', one: 'one'}};
     var errs = t2.validate(doc, raw);
 
     test.equal(errs.length, 1);
@@ -315,9 +315,9 @@ exports['validate EmbeddedList'] = function (test) {
         }
     });
 
-    var doc = {type: 't1', embeds: [
-        {type: 't2', _id: 'id1', one: 'one', two: 'two'},
-        {type: 't2', _id: 'id2', one: 'one'}
+    var doc = {type: 't2', embeds: [
+        {type: 't1', _id: 'id1', one: 'one', two: 'two'},
+        {type: 't1', _id: 'id2', one: 'one'}
     ]};
     var errs = t2.validate(doc, doc);
 
