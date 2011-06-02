@@ -311,7 +311,7 @@ exports.div = function () {
             return field.widget.toHTML(name, value, raw);
         }
         return (
-            '<div class="field ' +
+            '<div class="' +
                 exports.classes(field, errors).join(' ') + '">' +
             '<div class="scalar">' +
                 '<div class="label">' +
@@ -356,7 +356,7 @@ exports.div = function () {
             display_name = type.display_name(value);
         }
         return (
-            '<div class="field ' +
+            '<div class="' +
                 exports.classes(type, errors).join(' ') + '">' +
             '<div class="embedded">' +
                 '<div class="label">' +
@@ -395,7 +395,7 @@ exports.div = function () {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         var html = (
-            '<div class="field ' +
+            '<div class="' +
                 exports.classes(type, errors).join(' ') + '">' +
             '<div class="embeddedlist">' +
                 '<div class="label">' +
