@@ -103,7 +103,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         type_heading: utils.typeHeading(req.query.type),
         type_title: req.query.type.replace(/_/g, ' '),
         description: type.description,
-        form: form.toHTML(req, forms.render.table)
+        form: form.toHTML(req)
     });
     $('#content').html(content);
     document.title = settings.name + ' - Types - ' + req.query.type;
@@ -125,7 +125,7 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
         type_heading: utils.typeHeading(doc.type),
         type_title: doc.type.replace(/_/g, ' '),
         id: req.query.id,
-        form: form.toHTML(req, forms.render.table)
+        form: form.toHTML(req)
     });
 
     $('#content').html(content);
