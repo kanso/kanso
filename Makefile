@@ -27,7 +27,7 @@ test:
 	nodeunit test
 
 docs:
-	rm -r www
+	rm -rf www
 	mkdir -p www
 	mkdir -p www/guides
 	cp -R docs/CNAME docs/css docs/images www
