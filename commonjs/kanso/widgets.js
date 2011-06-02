@@ -8,7 +8,8 @@
  */
 
 var forms = require('./forms'),
-    utils = require('./utils');
+    utils = require('./utils'),
+    events = require('./events');
 
 
 /**
@@ -28,6 +29,18 @@ var Widget = exports.Widget = function Widget(type, options) {
 };
 
 /**
+ * Generates an id string for a widget.
+ *
+ * @param {String} name - field name on the HTML form
+ * @returns {String}
+ */
+
+Widget.prototype._id = function (name) {
+    return (this.id ? this.id : 'id_' + name);
+};
+
+
+/**
  * Generates a string for common widget attributes.
  *
  * @param {String} name - field name on the HTML form
@@ -35,13 +48,50 @@ var Widget = exports.Widget = function Widget(type, options) {
  */
 
 Widget.prototype._attrs = function (name) {
-    var html = ' name="' + name + '"';
-    html += ' id=' + (this.id ? '"' + this.id + '"': '"id_' + name + '"');
+    var html = ' name="' + name + '" id="' + this._id(name) + '"';
     if (this.classes.length) {
         html += ' class="' + this.classes.join(' ') + '"';
     }
     return html;
 };
+
+
+/**
+ * Generates a script tag that invokes the widget's init() function
+ * within the client's web browser. This function uses the widget's
+ * type attribute to resolve the widget's (js) class, and the widget's
+ * id to resolve a particular instance of the widget's markup on the page.
+ *
+ * @param {String} name - field name on the HTML form
+ * @param {String} module - optional; the commonjs module to call in to.
+ *                  By default, this is 'kanso/widgets', i.e. this module.
+ * @param {String} namespace - optional; the namespace containing the widget
+ *                  initialization functions. By default, this is 'init'.
+ * @returns {String}
+ */
+
+Widget.prototype.scriptTagForInit = function (name, module, namespace)
+{
+    if (module === undefined) {
+        module = 'kanso/widgets';
+    }
+    if (namespace === undefined) {
+        namespace = 'init';
+    }
+    console.log(
+        '<script type="text/javascript">' +
+            "require('" + module + "')." + namespace + '.' +
+                this.type + "($('#" + this._id(name) + "'));" +
+        '</script>'
+    );
+    return (
+        '<script type="text/javascript">' +
+            "require('" + module + "')." + namespace + '.' +
+                this.type + "($('#" + this._id(name) + "'));" +
+        '</script>'
+    );
+}
+
 
 /**
  * Converts a widget to HTML using the provided name and parsed and raw values
@@ -65,6 +115,13 @@ Widget.prototype.toHTML = function (name, value, raw) {
     html += this._attrs(name);
     return html + ' />';
 };
+
+/**
+ * Storage for client-side widget initialization functions.
+ * For more information, see initScriptTag's documentation.
+ */
+
+exports.init = {};
 
 /**
  * Creates a new text input widget.
@@ -205,3 +262,40 @@ exports.computed = function (options) {
     };
     return w;
 };
+
+
+/**
+ * Creates a new selector widget. This widget allows the user
+ * to select a document from a CouchDB view (specified in options).
+ *
+ * @param options
+ * @returns {Widget Object}
+ */
+
+exports.selector = function (options) {
+    var w = new Widget('selector', options);
+    w.viewName = options.viewName;
+    w.toHTML = function (name, value, raw) {
+        var html = (
+            '<div class="widget-selector">' +
+                '<input type="hidden"' + this._attrs(name) + ' />' +
+                '<select></select>' +
+            '</div>' +
+            this.scriptTagForInit(name)
+        );
+        return html;
+    };
+    return w;
+};
+
+/**
+ * Client-side initialization function for a selector control.
+ */
+
+exports.init.selector = function (_singleton_elt) {
+    var input_elt = _singleton_elt.first();
+    var container_elt = input_elt.parent();
+    var select_elt = $('input[type=hidden] ~ select', container_elt);
+};
+
+
