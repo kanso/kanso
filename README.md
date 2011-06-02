@@ -1,6 +1,4 @@
-# Kanso
-
-![Kanso ribbon](http://kansojs.org/images/kanso_ribbon.png)
+![Kanso](http://kansojs.org/images/kanso.png)
 
 The write-once, run both ends framework for pure CouchApps.
 
