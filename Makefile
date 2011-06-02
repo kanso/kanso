@@ -26,6 +26,14 @@ stamp-build: $(wildcard  deps/* lib/*.js)
 test:
 	nodeunit test
 
+docs:
+	rm -r www
+	mkdir -p www
+	mkdir -p www/guides
+	cp -R docs/CNAME docs/css docs/images www
+	cp -R docs/guides/images www/guides
+	$(NODEJS) docs/build_docs.js
+
 install: build
 	#install --directory $(NODEJSLIBDIR)
 	cp -Ra $(BUILDDIR)/kanso $(NODEJSLIBDIR)
@@ -40,4 +48,4 @@ clean:
 lint:
 	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./lib/*.js ./static/kanso.js ./admin/lib/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
 
-.PHONY: test install uninstall build all clean lint
+.PHONY: test install uninstall build all clean lint docs

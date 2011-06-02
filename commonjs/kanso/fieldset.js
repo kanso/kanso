@@ -18,7 +18,7 @@ var _ = require('./underscore'),
  *
  * @name createDefaults(fields, userCtx)
  * @param {Object} fields
- * @return {Object}
+ * @returns {Object}
  * @api public
  */
 
@@ -55,7 +55,7 @@ exports.createDefaults = function (fields, userCtx) {
  * @param value
  * @param raw
  * @param {Array} path
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -82,7 +82,7 @@ exports.validateField = function (field, doc, value, raw, path) {
  * @param {Object} raw
  * @param {Array} path
  * @param {Boolean} extra - whether to allow extra values not covered by a field
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 

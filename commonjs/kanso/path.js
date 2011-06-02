@@ -133,14 +133,13 @@ exports.dirname = function (path) {
  * Return the last portion of a path. Similar to the Unix basename command.
  *
  * **Example**
- * <pre><code class="javascript">
- * path.basename('/foo/bar/baz/asdf/quux.html')
+ * <pre><code class="javascript">path.basename('/foo/bar/baz/asdf/quux.html')
  * // returns
  * 'quux.html'
  *
  * path.basename('/foo/bar/baz/asdf/quux.html', '.html')
  * // returns
- * // 'quux'
+ * 'quux'
  * </code></pre>
  *
  * @name basename(path, ext)
@@ -163,19 +162,18 @@ exports.basename = function (path, ext) {
  * portion of the path. If there is no '.' in the last portion of the path or
  * the only '.' is the first character, then it returns an empty string.
  *
- * <pre><code class="javascript">
- * path.extname('index.html')
+ * <pre><code class="javascript">path.extname('index.html')
  * // returns
  * '.html'
  *
  * path.extname('index')
  * // returns
- * // ''
+ * ''
  * </code></pre>
  *
  * @name extname(path)
  * @param {String} path
- * @return {String}
+ * @returns {String}
  * @api public
  */
 

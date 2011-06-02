@@ -1,10 +1,8 @@
 /**
- * Types
- * =====
- *
  * Document types can be used to ease the validation of updates and check
  * permissions when creating, editing or deleting documents.
  *
+ * @module
  */
 
 
@@ -25,16 +23,18 @@ var utils = require('./utils'),
 /**
  * Creates a new Type object
  *
- * Options:
- *   fields      {Object}  - Field objects to use as the Types's schema
- *   permissions {Object}  - a permissions check function or an object
+ * **Options**
+ * * fields      {Object}  - Field objects to use as the Types's schema
+ * * permissions {Object}  - a permissions check function or an object
  *                           containing separate functions to run on add,
  *                           remove and update operations.
- *   display_name {function|string|array} - name to be used when displaying
+ * * display_name {function|string|array} - name to be used when displaying
  *                           the document in the admin tool. A string or array
  *                           will become the property to display. A function
  *                           should take the document as a object and return
  *                           the display name.
+ *
+ * @name Type(name, options)
  * @param {Object} options
  * @constructor
  * @api public
@@ -106,9 +106,10 @@ var Type = exports.Type = function Type(name, options) {
  * fields or extra fields when the Types's allow_extra_fields property is
  * set to false.
  *
+ * @name Type.validate(doc, rawDoc)
  * @param {Object} doc
  * @param {Object} rawDoc
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -128,10 +129,11 @@ Type.prototype.validate = function (doc, rawDoc) {
 /**
  * Run field permissions checks against userCtx and document.
  *
+ * @name Type.authorize(nDoc, oDoc, user)
  * @param {Object} nDoc - new document
  * @param {Object} oDoc - old document
  * @param {Object} userCtx - user context object
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -167,6 +169,7 @@ Type.prototype.authorize = function (nDoc, oDoc, user) {
  * Authorize a specific field, returning all permissions errors as an array with
  * each error's field property prefixed by the current path.
  *
+ * @name Type.authField(f, nDoc, oDoc, nVal, oVal, user, path)
  * @param {Field} f     - field object
  * @param {Object} nDoc - new document
  * @param {Object} oDoc - old document
@@ -174,7 +177,7 @@ Type.prototype.authorize = function (nDoc, oDoc, user) {
  * @param oVal          - old field value
  * @param {Object} user - user context object
  * @param {Array} path  - current path
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -194,6 +197,7 @@ Type.prototype.authField = function (f, nDoc, oDoc, nVal, oVal, user, path) {
  * Returns an array of permissions errors, each with a field property set to the
  * path of the field which caused the error.
  *
+ * @name authFieldSet(f, nDoc, oDoc, nVal, oVal, user, path)
  * @param {Field} f     - field object
  * @param {Object} nDoc - new document
  * @param {Object} oDoc - old document
@@ -201,7 +205,7 @@ Type.prototype.authField = function (f, nDoc, oDoc, nVal, oVal, user, path) {
  * @param oVal          - old field value
  * @param {Object} user - user context object
  * @param {Array} path  - current path
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -267,8 +271,10 @@ Type.prototype.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path) {
  * providing a new _id value. This is a convenient funciton to use when creating
  * a type to embed within another.
  *
+ * @name Type.create(userCtx, callback)
  * @param {Object} userCtx
  * @param {Function} callback
+ * @api public
  */
 
 Type.prototype.create = function (userCtx, callback) {
@@ -289,10 +295,12 @@ Type.prototype.create = function (userCtx, callback) {
  *
  * Throws on error.
  *
+ * @name validate_doc_update(types, newDoc, oldDoc, userCtx)
  * @param {Object} types
  * @param {Object} newDoc
  * @param {Object} oldDoc
  * @param {Object} userCtx
+ * @api public
  */
 
 exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {

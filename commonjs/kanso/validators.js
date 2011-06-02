@@ -1,5 +1,7 @@
 /**
  * Validation functions used to validate Field contents.
+ *
+ * @module
  */
 
 var _ = require('./underscore')._;
@@ -8,8 +10,10 @@ var _ = require('./underscore')._;
 /**
  * Tests that the field's value is greater than 'min'.
  *
+ * @name min(min)
  * @param {Number} min
  * @returns {Function}
+ * @api public
  */
 
 exports.min = function (min) {
@@ -25,8 +29,10 @@ exports.min = function (min) {
 /**
  * Tests that the field's value is less than 'max'
  *
+ * @name max(max)
  * @param {Number} max
  * @returns {Function}
+ * @api public
  */
 
 exports.max = function (max) {
@@ -42,9 +48,11 @@ exports.max = function (max) {
 /**
  * Tests that the field's value is greater than 'min' AND less than 'max'
  *
+ * @name range(min, max)
  * @param {Number} min
  * @param {Number} max
  * @returns {Function}
+ * @api public
  */
 
 exports.range = function (min, max) {
@@ -60,8 +68,10 @@ exports.range = function (min, max) {
 /**
  * Tests that the field's value length is greater than 'val'
  *
+ * @name minlength(val)
  * @param {Number} val
  * @returns {Function}
+ * @api public
  */
 
 exports.minlength = function (val) {
@@ -75,8 +85,10 @@ exports.minlength = function (val) {
 /**
  * Tests that the field's value length is less than 'val'
  *
+ * @name maxlength(val)
  * @param {Number} val
  * @returns {Function}
+ * @api public
  */
 
 exports.maxlength = function (val) {
@@ -90,9 +102,11 @@ exports.maxlength = function (val) {
 /**
  * Tests that the field's value length is greater than 'min' AND less than 'max'
  *
+ * @name rangelength(min, max)
  * @param {Number} min
  * @param {Number} max
  * @returns {Function}
+ * @api public
  */
 
 exports.rangelength = function (min, max) {
@@ -109,9 +123,11 @@ exports.rangelength = function (min, max) {
 /**
  * Tests field's value against a regular expression
  *
+ * @name regexp(re, message)
  * @param {RegExp} re - can be a string or RegExp object
  * @param {String} message - (optional) a custom error message to throw
  * @returns {Function}
+ * @api public
  */
 
 exports.regexp = function (re, message) {
@@ -126,7 +142,9 @@ exports.regexp = function (re, message) {
 /**
  * Tests that field's value is a valid email address using a regular expression.
  *
+ * @name email()
  * @returns {Function}
+ * @api public
  */
 
 exports.email = function () {
@@ -138,7 +156,9 @@ exports.email = function () {
 /**
  * Tests that field's value is a valid URL using a regular expression.
  *
+ * @name url()
  * @returns {Function}
+ * @api public
  */
 
 exports.url = function () {
@@ -154,9 +174,10 @@ exports.url = function () {
  *
  * Used by the EmbeddedList field type.
  *
+ * @name missingIDs()
  * @param {Object} doc
  * @param {Array} value
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 

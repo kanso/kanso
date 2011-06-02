@@ -46,7 +46,7 @@ var Form = exports.Form = function Form(fields, doc) {
  *
  * @name Form.validate(req)
  * @param {Object} req
- * @return {Form}
+ * @returns {Form}
  * @api public
  */
 
@@ -65,7 +65,7 @@ Form.prototype.validate = function (req) {
  * is valid, false otherwise.
  *
  * @name Form.isValid()
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 
@@ -79,7 +79,7 @@ Form.prototype.isValid = function () {
  * @name Form.toHTML(req, [RendererClass])
  * @param {Object} req
  * @param {Renderer} RendererClass (optional)
- * @return {String}
+ * @returns {String}
  * @api public
  */
 
@@ -106,7 +106,7 @@ Form.prototype.toHTML = function (req, /*optional*/RendererClass) {
  *
  * @param {Array} errs
  * @param {Array} path
- * @return {Array}
+ * @returns {Array}
  */
 
 var errsBelowPath = function (errs, path) {
@@ -131,7 +131,7 @@ var errsBelowPath = function (errs, path) {
  * @param {Object} values
  * @param {Array} errs
  * @param {Array} path
- * @return {String}
+ * @returns {String}
  * @api public
  */
 
@@ -269,7 +269,7 @@ exports.formValuesToTree = function (form) {
  * @name parseRaw(fields, raw)
  * @param {Type} type
  * @param {Object} raw
- * @return {Object}
+ * @returns {Object}
  * @api public
  */
 

@@ -18,7 +18,7 @@ var utils = require('./utils'),
  * Field's new value should match current user's name
  *
  * @name matchUsername()
- * @return {Function}
+ * @returns {Function}
  * @api public
  */
 
@@ -40,7 +40,7 @@ exports.matchUsername = function () {
  *
  * @name hasRole(role)
  * @param {String} role
- * @return {Function}
+ * @returns {Function}
  * @api public
  */
 
@@ -58,7 +58,7 @@ exports.hasRole = function (role) {
  * created.
  *
  * @name fieldUneditable()
- * @return {Function}
+ * @returns {Function}
  * @api public
  */
 
@@ -88,7 +88,7 @@ exports.fieldUneditable = function () {
  *
  * @name usernameMatchesField(path)
  * @param {String | Array} path
- * @return {Function}
+ * @returns {Function}
  * @api public
  */
 
@@ -108,7 +108,7 @@ exports.usernameMatchesField = function (path) {
  * Checks that user's context has a username
  *
  * @name loggedIn()
- * @return {Function}
+ * @returns {Function}
  * @api public
  */
 
@@ -126,7 +126,7 @@ exports.loggedIn = function () {
  *
  * @name all(perms)
  * @param {Array} perms
- * @return {Function}
+ * @returns {Function}
  * @api public
  */
 

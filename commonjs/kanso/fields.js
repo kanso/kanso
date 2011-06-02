@@ -90,7 +90,7 @@ Field.prototype.isEmpty = function (value, raw) {
  * @param {Object} doc
  * @param value
  * @param raw
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -124,7 +124,7 @@ Field.prototype.validate = function (doc, value, raw) {
  * @param newVal
  * @param oldVal
  * @param {Object} userCtx
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -221,7 +221,7 @@ Embedded.prototype.isEmpty = function (value, raw) {
  * @param {Object} doc
  * @param value
  * @param raw
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -250,7 +250,7 @@ Embedded.prototype.validate = function (doc, value, raw) {
  * @param newVal
  * @param oldVal
  * @param {Object} user
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -324,7 +324,7 @@ EmbeddedList.prototype.isEmpty = function (value, raw) {
  *
  * @name EmbeddedList.missingIDs(list)
  * @param {Array} list
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -347,7 +347,7 @@ EmbeddedList.prototype.missingIDs = function (list) {
  *
  * @name EmbeddedList.duplicateIDs(list)
  * @param {Array} list
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -374,7 +374,7 @@ EmbeddedList.prototype.duplicateIDs = function (list) {
  * @param {Object} doc
  * @param value
  * @param raw
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 
@@ -434,7 +434,7 @@ EmbeddedList.prototype.validate = function (doc, value, raw) {
  * @param nVal
  * @param oVal
  * @param {Object} user
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 

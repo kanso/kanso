@@ -89,7 +89,7 @@ exports.emit = function (name) {
  *
  * @name listeners(name)
  * @param {String} name
- * @return {Array}
+ * @returns {Array}
  * @api public
  */
 

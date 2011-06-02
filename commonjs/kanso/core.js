@@ -289,7 +289,7 @@ exports.rewriteSplat = function (pattern, url) {
  * @name matchURL(method, url)
  * @param {String} method
  * @param {String} url
- * @return {Object}
+ * @returns {Object}
  * @api public
  */
 
@@ -1067,7 +1067,7 @@ exports.appPath = function (p) {
  *
  * @name isAppURL(url)
  * @param {String} url
- * @return {Boolean}
+ * @returns {Boolean}
  * @api public
  */
 

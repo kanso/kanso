@@ -117,7 +117,7 @@ function onComplete(options, callback) {
  *
  * @name encode(str)
  * @param {String} str
- * @return {String}
+ * @returns {String}
  * @api public
  */
 

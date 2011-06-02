@@ -1,3 +1,14 @@
+/**
+ * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
+ * in FIPS PUB 180-1. This module is used to hash user passwords in a way that's
+ * compatible with CouchDB.
+ *
+ * This module is Copyright Paul Johnston 2000 - 2002 and distributed under the
+ * BSD License. See http://pajhome.org.uk/crypt/md5 for details.
+ *
+ * @module
+ */
+
 /*
  * A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined
  * in FIPS PUB 180-1
@@ -202,9 +213,74 @@ function binb2b64(binarray)
 }
 
 
+/**
+ * Hashes a string using SHA1 and returns a hex representation of it.
+ *
+ * @name hex(s)
+ * @param {String} s
+ * @returns {String}
+ * @api public
+ */
+
 exports.hex = hex_sha1;
+
+/**
+ * Hashes a string using SHA1 and returns a base64 representation of it.
+ *
+ * @name base64(s)
+ * @param {String} s
+ * @returns {String}
+ * @api public
+ */
+
 exports.base64 = b64_sha1;
+
+/**
+ * Hashes a string using SHA1 and returns a string representation of it.
+ *
+ * @name str(s)
+ * @param {String} s
+ * @returns {String}
+ * @api public
+ */
+
 exports.str = str_sha1;
+
+/**
+ * Calculates the HMAC-SHA1 of a key and some data, returning a hex
+ * representation of it.
+ *
+ * @name hex_hmac(key, data)
+ * @param {String} key
+ * @param {String} data
+ * @returns {String}
+ * @api public
+ */
+
 exports.hex_hmac = hex_hmac_sha1;
+
+/**
+ * Calculates the HMAC-SHA1 of a key and some data, returning a base64
+ * representation of it.
+ *
+ * @name base64_hmac(key, data)
+ * @param {String} key
+ * @param {String} data
+ * @returns {String}
+ * @api public
+ */
+
 exports.base64_hmac = b64_hmac_sha1;
+
+/**
+ * Calculates the HMAC-SHA1 of a key and some data, returning a string
+ * representation of it.
+ *
+ * @name str_hmac(key, data)
+ * @param {String} key
+ * @param {String} data
+ * @returns {String}
+ * @api public
+ */
+
 exports.str_hmac = str_hmac_sha1;
