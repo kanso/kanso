@@ -241,6 +241,18 @@ function (err, results) {
             'community'
         ),
         async.apply(
+            create_page,
+            __dirname + '/docs.md',
+            output_dir + '/docs.html',
+            'api'
+        ),
+        async.apply(
+            create_page,
+            __dirname + '/tutorial.md',
+            output_dir + '/tutorial.html',
+            'guides'
+        ),
+        async.apply(
             create_guides,
             __dirname + '/guides',
             output_dir + '/guides'
