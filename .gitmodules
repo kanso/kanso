@@ -19,3 +19,6 @@
 [submodule "deps/watch"]
 	path = deps/watch
 	url = git://github.com/mikeal/watch.git
+[submodule "deps/scrawl"]
+	path = deps/scrawl
+	url = git://github.com/caolan/scrawl.git

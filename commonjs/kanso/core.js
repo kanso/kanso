@@ -5,6 +5,8 @@
  * The core module contains functions used by kanso to facilitate the running
  * of your app. You shouldn't need to use any of the functions here directly
  * unless you're messing with the internals of Kanso.
+ *
+ * @module
  */
 
 
@@ -229,9 +231,11 @@ exports.init = function () {
  * Extracts groups from a url, eg:
  * '/some/path' with pattern '/some/:name' -> {name: 'path'}
  *
+ * @name rewriteGroups(pattern, url)
  * @param {String} pattern
  * @param {String} url
  * @returns {Object}
+ * @api public
  */
 
 exports.rewriteGroups = function (pattern, url) {
@@ -259,9 +263,11 @@ exports.rewriteGroups = function (pattern, url) {
 /**
  * Extracts a splat value from a rewrite pattern and matching URL.
  *
+ * @name rewriteSplat(pattern, url)
  * @param {String} pattern
  * @param {String} url
  * @returns {String}
+ * @api public
  */
 
 exports.rewriteSplat = function (pattern, url) {
@@ -280,9 +286,11 @@ exports.rewriteSplat = function (pattern, url) {
  * Attempts to match rewrite from patterns to a URL, returning the
  * matching rewrite object if successful.
  *
+ * @name matchURL(method, url)
  * @param {String} method
  * @param {String} url
- * @return {Object}
+ * @returns {Object}
+ * @api public
  */
 
 exports.matchURL = function (method, url) {
@@ -306,10 +314,12 @@ exports.matchURL = function (method, url) {
  * Replace group names in a string with the value of that group
  * eg: "/:name" with groups {name: 'test'} -> "/test"
  *
+ * @name replaceGroups(val, groups, splat)
  * @param {String} val
  * @param {Object} groups
  * @param {String} splat
  * @returns {String}
+ * @api public
  */
 
 exports.replaceGroups = function (val, groups, splat) {
@@ -354,11 +364,13 @@ exports.replaceGroups = function (val, groups, splat) {
  * Creates a new request object from a url and matching rewrite object.
  * Query parameters are automatically populated from rewrite pattern.
  *
+ * @name createRequest(method, url, data, match, callback)
  * @param {String} method
  * @param {String} url
  * @param {Object} data
  * @param {Object} match
  * @param {Function} callback
+ * @api public
  */
 
 exports.createRequest = function (method, url, data, match, callback) {
@@ -446,10 +458,12 @@ exports.handleResponseHeaders = function (headers) {
 /**
  * Fetches the relevant document and calls the named show function.
  *
+ * @name runShowBrowser(req, name, docid, callback)
  * @param {Object} req
  * @param {String} name
  * @param {String} docid
  * @param {Function} callback
+ * @api public
  */
 
 exports.runShowBrowser = function (req, name, docid, callback) {
@@ -508,6 +522,17 @@ exports.runShowBrowser = function (req, name, docid, callback) {
     }
 };
 
+/**
+ * Runs a show function with the given document and request object,
+ * emitting relevant events. This function runs both server and client-side.
+ *
+ * @name runShow(fn, doc, req)
+ * @param {Function} fn
+ * @param {Object} doc
+ * @param {Object} req
+ * @api public
+ */
+
 exports.runShow = function (fn, doc, req) {
     flashmessages.updateRequest(req);
     var info = {
@@ -532,10 +557,12 @@ exports.runShow = function (fn, doc, req) {
 /**
  * Fetches the relevant document and calls the named update function.
  *
+ * @name runUpdateBrowser(req, name, docid, callback)
  * @param {Object} req
  * @param {String} name
  * @param {String} docid
  * @param {Function} callback
+ * @api public
  */
 
 exports.runUpdateBrowser = function (req, name, docid, callback) {
@@ -594,6 +621,17 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
     }
 };
 
+/**
+ * Runs a update function with the given document and request object,
+ * emitting relevant events. This function runs both server and client-side.
+ *
+ * @name runUpdate(fn, doc, req)
+ * @param {Function} fn
+ * @param {Object} doc
+ * @param {Object} req
+ * @api public
+ */
+
 exports.runUpdate = function (fn, doc, req) {
     flashmessages.updateRequest(req);
     var info = {
@@ -624,8 +662,10 @@ exports.runUpdate = function (fn, doc, req) {
  * Creates a fake head object from view results for passing to a list function
  * being run client-side.
  *
+ * @name createHead(data)
  * @param {Object} data
  * @returns {Object}
+ * @api public
  */
 
 exports.createHead = function (data) {
@@ -642,10 +682,12 @@ exports.createHead = function (data) {
 /**
  * Fetches the relevant view and calls the named list function with the results.
  *
+ * @name runListBrowser(req, name, view, callback)
  * @param {Object} req
  * @param {String} name
  * @param {String} view
  * @param {Function} callback
+ * @api public
  */
 
 exports.runListBrowser = function (req, name, view, callback) {
@@ -711,6 +753,17 @@ exports.runListBrowser = function (req, name, view, callback) {
         }
     }
 };
+
+/**
+ * Runs a list function with the given document and request object,
+ * emitting relevant events. This function runs both server and client-side.
+ *
+ * @name runList(fn, head, req)
+ * @param {Function} fn
+ * @param {Object} head
+ * @param {Object} req
+ * @api public
+ */
 
 exports.runList = function (fn, head, req) {
     flashmessages.updateRequest(req);
@@ -779,9 +832,11 @@ exports.runList = function (fn, head, req) {
  * Creates a request object for the url and runs appropriate show, list or
  * update functions.
  *
+ * @name handle(method, url, data)
  * @param {String} method
  * @param {String} url
  * @param {Object} data
+ * @api public
  */
 
 exports.handle = function (method, url, data) {
@@ -875,9 +930,11 @@ exports.handle = function (method, url, data) {
 /**
  * Add a history entry for the given url, prefixed with the baseURL for the app.
  *
+ * @name setURL(method, url, data)
  * @param {String} method
  * @param {String} url
  * @param {Object} data (optional)
+ * @api public
  */
 
 exports.setURL = function (method, url, data) {
@@ -905,6 +962,7 @@ exports.getBaseURL = utils.getBaseURL;
 /**
  * Gets the current app-level URL (without baseURL prefix).
  *
+ * @name getURL()
  * @returns {String}
  * @api public
  */
@@ -932,9 +990,11 @@ exports.getURL = function () {
  * Tests is two urls are of the same origin. Accepts parsed url objects
  * or strings as arguments.
  *
+ * @name sameOrigin(a, b)
  * @param a
  * @param b
  * @returns Boolean
+ * @api public
  */
 
 exports.sameOrigin = function (a, b) {
@@ -955,8 +1015,10 @@ exports.sameOrigin = function (a, b) {
  * Converts a full url to an app-level url (without baseURL prefix).
  * example: {baseURL}/some/path -> /some/path
  *
+ * @name appPath(p)
  * @param {String} p
  * @returns {String}
+ * @api public
  */
 
 exports.appPath = function (p) {
@@ -1003,12 +1065,13 @@ exports.appPath = function (p) {
  * Used to decide whether to handle a link or not. Should detect app vs.
  * external urls.
  *
+ * @name isAppURL(url)
  * @param {String} url
- * @return {Boolean}
+ * @returns {Boolean}
+ * @api public
  */
 
 exports.isAppURL = function (url) {
     // coerce window.location to a real string in IE
     return exports.sameOrigin(url, '' + window.location);
 };
-
