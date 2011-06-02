@@ -23,16 +23,17 @@ var utils = require('./utils'),
 /**
  * Creates a new Type object
  *
- * **Options**
- * * fields      {Object}  - Field objects to use as the Types's schema
- * * permissions {Object}  - a permissions check function or an object
- *                           containing separate functions to run on add,
- *                           remove and update operations.
- * * display_name {function|string|array} - name to be used when displaying
- *                           the document in the admin tool. A string or array
- *                           will become the property to display. A function
- *                           should take the document as a object and return
- *                           the display name.
+ * #### Options ####
+ *
+ * * **fields**       *Object* - Field objects to use as the Types's schema
+ * * **permissions**  *Object* - a permissions check function or an object
+ *                    containing separate functions to run on add, remove
+ *                    and update operations.
+ * * **display_name** *Function|String|Array* - name to be used when displaying
+ *                    the document in the admin tool. A string or array
+ *                    will become the property to display. A function
+ *                    should take the document as a object and return
+ *                    the display name.
  *
  * @name Type(name, options)
  * @param {Object} options

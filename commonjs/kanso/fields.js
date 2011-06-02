@@ -20,15 +20,15 @@ var permissions = require('./permissions'),
 /**
  * Field objects are used when constructing content types and forms.
  *
- * **Options**
+ * #### Options ####
  *
- * * omit_empty  {Boolean} - whether to omit the field from a document when
- *                           the field is empty
- * * permissions {Object}  - a permissions check function or an object
- *                           containing separate functions to run on create,
- *                           edit and update operations.
- * * validators  {Array}   - an array of validation functions (default: [])
- * * required    {Boolean} - whether the field is required (default: true)
+ * * **omit_empty**  *Boolean* - whether to omit the field from a document when
+ *                               the field is empty
+ * * **permissions** *Object*  - a permissions check function or an object
+ *                               containing separate functions to run on create,
+ *                               edit and update operations.
+ * * **validators**  *Array*   - an array of validation functions (default: [])
+ * * **required**    *Boolean* - whether the field is required (default: true)
  *
  * @constructor
  * @name Field
@@ -162,16 +162,16 @@ Field.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, userCtx) {
  *
  * Exposes the same methods as Field objects.
  *
- * **Options**
+ * #### Options ####
  *
- * * type        {Type Object}  - Required, the Type definition to embed
- * * omit_empty  {Boolean} - whether to omit the field from a document when
- *                           the field is empty
- * * permissions {Object}  - a permissions check function or an object
- *                           containing separate functions to run on create,
- *                           edit and update operations.
- * * validators  {Array}   - an array of validation functions (default: [])
- * * required    {Boolean} - whether the field is required (default: true)
+ * * **type**        *Type Object*  - Required, the Type definition to embed
+ * * **omit_empty**  *Boolean* - whether to omit the field from a document when
+ *                               the field is empty
+ * * **permissions** *Object*  - a permissions check function or an object
+ *                               containing separate functions to run on create,
+ *                               edit and update operations.
+ * * **validators**  *Array*   - an array of validation functions (default: [])
+ * * **required**    *Boolean* - whether the field is required (default: true)
  *
  * @name Embedded
  * @param {Object} options
@@ -266,16 +266,16 @@ Embedded.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, user) {
  *
  * Exposes the same methods as Field objects.
  *
- * **Options**
+ * #### Options ####
  *
- * * type        {Type Object}  - Required, the Type definition to embed
- * * omit_empty  {Boolean} - whether to omit the field from a document when
- *                           the field is empty
- * * permissions {Object}  - a permissions check function or an object
- *                           containing separate functions to run on create,
- *                           edit and update operations.
- * * validators  {Array}   - an array of validation functions (default: [])
- * * required    {Boolean} - whether the field is required (default: true)
+ * * **type**        *Type Object*  - Required, the Type definition to embed
+ * * **omit_empty**  *Boolean* - whether to omit the field from a document when
+ *                               the field is empty
+ * * **permissions** *Object*  - a permissions check function or an object
+ *                               containing separate functions to run on create,
+ *                               edit and update operations.
+ * * **validators**  *Array*   - an array of validation functions (default: [])
+ * * **required**    *Boolean* - whether the field is required (default: true)
  *
  * @name EmbeddedList
  * @param {Object} options
