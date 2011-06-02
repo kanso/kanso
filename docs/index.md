@@ -91,7 +91,8 @@ without the overhead.
 
 Kanso makes it easy to write CouchApps which go beyond the "single-page" AJAX app.
 You get clean URLs which point to server-rendered pages containing your core
-content, making it easy for search-engines index and providing a useful fall-back.
+content, making it easy for search-engines to index and providing a useful
+fall-back.
 
 You shouldn't need to break the web with "hash-bang" URLs that won't work at all
 in a browser without JavaScript. You should be able to describe fall-backs easily,
