@@ -28,8 +28,10 @@ new file with the <code>.md</code> extension to start a new guide. You can
 freely mix Markdown and normal HTML as you wish. If you want to add screenshots,
 put them in the <code>docs/guides/images</code> directory.
 
-Once you've finished authoring, you can preview the guide by
-running the following command in the main Kanso project directory:
+Once you've finished authoring, you'll want to add an entry in the
+<code>guides/index.md</code> file with a short description of your guide.
+You can preview the changes by running the following command in the main
+Kanso project directory:
 
     make docs
 
