@@ -88,7 +88,7 @@ exports.showModal = function (div, field_td, row, req, typename, val, rawval) {
 
         div.html('<h2>' + (val ? 'Edit ': 'Add ') + typename + '</h2>');
         var divform = $('<form><table class="form_table"><tbody>' +
-            form.toHTML(req, forms.render.table) +
+            form.toHTML(req) +
         '</tbody></table></form>');
         div.append(divform);
 

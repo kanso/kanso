@@ -552,11 +552,22 @@ exports['Form.validate - strings'] = function (test) {
 exports['Form.validate - empty strings'] = function (test) {
     test.expect(1);
     var f = new forms.Form({
-        foo: fields.string({required:true}),
+        foo: fields.string({required: true}),
         bar: fields.string()
     });
-    f.validate({});
+
+    f.validate({ });
     test.strictEqual(f.isValid(), false);
+
+    f.validate({ foo: null });
+    test.strictEqual(f.isValid(), false);
+
+    f.validate({ foo: 'baz' });
+    test.strictEqual(f.isValid(), true);
+
+    f.validate({ foo: 'baz', bar: null });
+    test.strictEqual(f.isValid(), true);
+
     test.done();
 };
 
@@ -578,10 +589,8 @@ exports['Form.validate - error on string field'] = function (test) {
 exports['Form.validate - options.exclude'] = function (test) {
     test.expect(2);
     var req = {};
-    var f = new forms.Form({
-        foo: fields.string(),
-        bar: fields.number(),
-        baz: fields.number()},
+    var f = new forms.Form(
+        { foo: fields.string(), bar: fields.number(), baz: fields.number() },
         null, { exclude: ['bar', 'baz'] }
     );
 
@@ -626,23 +635,23 @@ exports['Form.isValid'] = function (test) {
 exports['Form parse options.exclude param'] = function (test) {
     test.expect(3);
     var options = { exclude: ['baz'] };
-    var form = new forms.Form({ 
-        foo: fields.string(),
-        bar: fields.string(),
-        baz: fields.number() }, null, options);
+    var form = new forms.Form(
+        { foo: fields.string(), bar: fields.string(), baz: fields.number() },
+        null, options
+    );
     test.strictEqual('foo' in form.fields, true);
     test.strictEqual('bar' in form.fields, true);
     test.strictEqual('baz' in form.fields, false);
     test.done();
-}
+};
 
 exports['Form parse options.fields param'] = function (test) {
     test.expect(3);
-    var options = { fields: ['bar','baz'] };
-    var form = new forms.Form({
-        foo: fields.string(),
-        bar: fields.string(),
-        baz: fields.number() }, null, options);
+    var options = { fields: [ 'bar', 'baz' ] };
+    var form = new forms.Form(
+        { foo: fields.string(), bar: fields.string(), baz: fields.number() },
+        null, options
+    );
     test.strictEqual('foo' in form.fields, false);
     test.strictEqual('bar' in form.fields, true);
     test.strictEqual('baz' in form.fields, true);
