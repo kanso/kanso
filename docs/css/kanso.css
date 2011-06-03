@@ -42,12 +42,6 @@ body {
     margin: 0;
 }
 
-@-moz-document url-prefix() {
-    #rightmenu {
-        top: -1px;
-    }
-}
-
 #topmenu,
 #sessionmenu {
     font-size: 13px;
@@ -78,6 +72,14 @@ body {
     padding: 8px 9px 4px 9px;
     border-top: 2px solid #ccc;
 }
+
+@-moz-document url-prefix() {
+    #topmenu li a,
+    #sessionmenu li a {
+        padding: 6px 9px;
+    }
+}
+
 #topmenu li a:hover,
 #sessionmenu li a:hover {
     color: black;
