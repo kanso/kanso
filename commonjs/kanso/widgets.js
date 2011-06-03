@@ -33,11 +33,19 @@ var Widget = exports.Widget = function Widget(type, options) {
  * Generates an id string for a widget.
  *
  * @param {String} name - field name on the HTML form
+ * @param {String} extension - optional; a string to be added
+ *                  to the generated identifier. Use this when you
+ *                  want to make an identifier that is related to
+ *                  an existing identifier, but is still unique.
  * @returns {String}
  */
 
-Widget.prototype._id = function (name) {
-    return (this.id ? this.id : 'id_' + name.replace(/[^\w]+/, '_'));
+Widget.prototype._id = function (name, extension) {
+    return (
+        this.id ? this.id : 'id_' + name.replace(/[^\w]+/, '_')
+    ) + (
+        extension ? ('_' + extension) : ''
+    );
 };
 
 
@@ -45,11 +53,19 @@ Widget.prototype._id = function (name) {
  * Generates a string for common widget attributes.
  *
  * @param {String} name - field name on the HTML form
+ * @param {String} id_extension - optional; a string to be added
+ *                  to the generated DOM identifier. Use this when you
+ *                  want to make an identifier that is related to
+ *                  an existing identifier, but is still unique. The
+ *                  HTML form name will not b changed.
  * @returns {String}
  */
 
-Widget.prototype._attrs = function (name) {
-    var html = ' name="' + name + '" id="' + this._id(name) + '"';
+Widget.prototype._attrs = function (name, id_extension) {
+    var html = (
+        ' name="' + name + '" id="' +
+            this._id(name, id_extension) + '"'
+    );
     if (this.classes.length) {
         html += ' class="' + this.classes.join(' ') + '"';
     }
@@ -84,17 +100,21 @@ Widget.prototype.scriptTagForInit = function (name, options, module, ns)
         options = {};
     }
 
+    /* XSS Prevention:
+        Prevent escape from (i) the javascript string, and then (ii)
+        the CDATA block. Use a JSON string to keep these rules simple. */
+
     var json_options = (
-        /* Prevent escaping (i) javascript string, and (ii) CDATA section */
         JSON.stringify(options).replace(/'/g, "\\'").replace(']]>', '')
     );
+
     return (
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
             "require('" + module + "')." + ns + '.' +
                 this.type + "($('#" + this._id(name) + "'), " +
                 "'" + json_options + "');\n" +
-        "// ]]>\n" +
+        "// ]]>" +
         '</script>'
     );
 };
@@ -281,55 +301,84 @@ exports.computed = function (options) {
 
 exports.selector = function (options) {
     var w = new Widget('selector', options);
-    w.viewName = options.viewName;
+    w.options = options;
+    w.options.storeReference = true;
     w.toHTML = function (name, value, raw) {
-        var select_id = this._id(name) + '_select';
+        var input_html = (
+            '<input class="backing" type="hidden" ' + (
+                this.options.storeReference ?
+                    ('id="' + this._id(name) + '"') : this._attrs(name)
+            ) + ' />'
+        );
+        var select_html = (
+            '<select class="selector" ' + (
+                this.options.storeReference ?
+                    this._attrs(name, 'visible') :
+                    ('id="' + this._id(name, 'visible') + '"')
+            ) + '></select>'
+        );
         return (
             '<div class="widget layout">' +
             '<div class="selector">' +
-                '<input type="hidden"' + this._attrs(name) + ' />' +
-                '<select id="' + select_id + '"></select>' +
+                input_html + select_html +
                 '<div class="spinner" style="display: none;"></div>' +
             '</div>' +
             '</div>' +
-            this.scriptTagForInit(name, options)
+            this.scriptTagForInit(name, _.extend(this.options, {
+                value: value
+            }))
         );
     };
     return w;
 };
 
 /**
- * Client-side initialization function for a selector control.
+ * Selector widget: client-side initialization function.
  */
 
 exports.init.selector = function (_singleton_elt, _json_options) {
 
-    var options = JSON.parse(_json_options);
     var container_elt = _singleton_elt.first().parent();
-    var hidden_elt = $('input[type=hidden]', container_elt);
-    var select_elt = $('input[type=hidden] ~ select', container_elt);
-    var spinner_elt = $('input[type=hidden] ~ .spinner', container_elt);
+    var hidden_elt = $('input.backing', container_elt);
+    var select_elt = $('input.backing ~ select.selector', container_elt);
+    var spinner_elt = $('input.backing ~ .spinner', container_elt);
+
+    var options = JSON.parse(_json_options);
+    var value = options.value;
 
     select_elt.bind('change', function () {
-        /* Store reference */
+        /* Copy data to backing element */
         hidden_elt.val(select_elt.val());
     });
 
     spinner_elt.show();
 
     db.getView(options.viewName, {}, { db: options.db }, function (err, rv) {
-        if (err || !rv.rows) {
+        if (err) {
             throw new Error(
-                'Failed to request content from `' + options.viewName + '`'
+                'Failed to request content from CouchDB view `' +
+                    options.viewName + '`'
             );
         }
-        console.log(rv);
-        _.each(rv.rows, function(r) {
+
+        /* Option for 'no selection' */
+        var nil_option = $(document.createElement('option'));
+        if (!value) {
+            nil_option.attr('selected', 'selected');
+        }
+        select_elt.append(nil_option);
+
+        /* All other options */
+        _.each(rv.rows || [], function(r) {
             var option = $(document.createElement('option'));
+            if (r.id == value) {
+                option.attr('selected', 'selected');
+            }
             option.val(r.id);
-            option.text(r.id);
+            option.text(r.value);
             select_elt.append(option);
         });
+
         spinner_elt.hide();
         select_elt.trigger('change');
     });
