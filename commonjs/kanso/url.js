@@ -1,21 +1,39 @@
 /**
+ * URL functions ported from node.js to work in CouchDB and the browser.
+ * This module is used internally by Kanso, although you can use it in your
+ * apps too if you find the functions useful.
+ *
+ * @module
+ */
+
+// Copyright Joyent, Inc. and other Node contributors.
+//
+// Permission is hereby granted, free of charge, to any person obtaining a
+// copy of this software and associated documentation files (the
+// "Software"), to deal in the Software without restriction, including
+// without limitation the rights to use, copy, modify, merge, publish,
+// distribute, sublicense, and/or sell copies of the Software, and to permit
+// persons to whom the Software is furnished to do so, subject to the
+// following conditions:
+//
+// The above copyright notice and this permission notice shall be included
+// in all copies or substantial portions of the Software.
+//
+// THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS
+// OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+// MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN
+// NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM,
+// DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+// OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE
+// USE OR OTHER DEALINGS IN THE SOFTWARE.
+
+/**
  * From node.js v0.2.6
  */
 
-var path = require("kanso/path"),
-    querystring = require('kanso/querystring');
-
-
-// cross-browser Object.keys implementation
-var _keys = function (obj) {
-    var keys = [];
-    for (var k in obj) {
-        if (obj.hasOwnProperty(k)) {
-            keys.push(k);
-        }
-    }
-    return keys;
-};
+var path = require('kanso/path'),
+    querystring = require('kanso/querystring'),
+    _ = require('kanso/underscore')._;
 
 
 // define these here so at least they only have to be compiled once on the
@@ -59,6 +77,18 @@ function parseHost(host) {
     }
     return out;
 }
+
+/**
+ * Take a URL string, and return an object. Pass true as the second argument
+ * to also parse the query string using the querystring module.
+ *
+ * @name parse(url, [parseQueryString, slashesDenoteHost])
+ * @param {String} url
+ * @param {Boolean} parseQueryString
+ * @param {Boolean} slashesDenoteHost
+ * @returns Object
+ * @api public
+ */
 
 exports.parse = function (url, parseQueryString, slashesDenoteHost) {
     if (url && typeof(url) === "object" && url.href) {
@@ -109,7 +139,7 @@ exports.parse = function (url, parseQueryString, slashesDenoteHost) {
 
         // pull out the auth and port.
         var p = parseHost(out.host);
-        var keys = _keys(p);
+        var keys = _.keys(p);
         for (var j = 0, l2 = keys.length; j < l2; j++) {
             var key = keys[j];
             out[key] = p[key];
@@ -141,6 +171,14 @@ exports.parse = function (url, parseQueryString, slashesDenoteHost) {
 
     return out;
 };
+
+/**
+ * Take a parsed URL object, and return a formatted URL string.
+ *
+ * @name format(obj)
+ * @param {Object} obj
+ * @api public
+ */
 
 // format a parsed object into a url string
 exports.format = function (obj) {
@@ -185,6 +223,17 @@ exports.format = function (obj) {
 
     return protocol + host + pathname + search + hash;
 };
+
+/**
+ * Take a base URL, and a href URL, and resolve them as a browser would for
+ * an anchor tag.
+ *
+ * @name resolve(source, relative)
+ * @param {String} source
+ * @param {String} relative
+ * @returns {String}
+ * @api public
+ */
 
 exports.resolve = function (source, relative) {
     return exports.format(exports.resolveObject(source, relative));
@@ -376,4 +425,3 @@ exports.resolveObject = function (source, relative) {
 
     return source;
 };
-

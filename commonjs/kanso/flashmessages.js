@@ -12,6 +12,8 @@
  * Flash messages only persist for the next request or the next template render!
  * That means 2 redirects without explicitly currying the flash messages will
  * cause the messages to be lost.
+ *
+ * @module
  */
 
 /**
@@ -27,8 +29,10 @@ var utils = require('./utils'),
  * Reads the flash messages cookie from a request object, returning an
  * array of incoming messages.
  *
+ * @name readRequestCookie(req)
  * @param {Object} req
  * @returns {Array}
+ * @api public
  */
 
 exports.readRequestCookie = function (req) {
@@ -45,7 +49,9 @@ exports.readRequestCookie = function (req) {
  * Reads the flash messages cookie from the browser, returning an
  * array of incoming messages.
  *
+ * @name readBrowserCookie()
  * @returns {Array}
+ * @api public
  */
 
 exports.readBrowserCookie = function () {
@@ -62,8 +68,10 @@ exports.readBrowserCookie = function () {
  * Adds a flash_messages property to a request containing all incoming
  * messages.
  *
+ * @name updateRequest(req)
  * @param {Object} req
  * @returns {Request Object}
+ * @api public
  */
 
 exports.updateRequest = function (req) {
@@ -80,8 +88,10 @@ exports.updateRequest = function (req) {
  * Get's all current flash messages, stopping them from being outgoing on the
  * next request so they're not repeated.
  *
+ * @name getMessages(req)
  * @param {Object} req
  * @returns {Array}
+ * @api public
  */
 
 exports.getMessages = function (req) {
@@ -112,8 +122,10 @@ exports.getMessages = function (req) {
  * flagged as outgoing (sending in the response to be made available to the next
  * request).
  *
+ * @name getOutgoingMessages(req)
  * @param {Object} req
  * @returns {Array}
+ * @api public
  */
 
 exports.getOutgoingMessages = function (req) {
@@ -126,9 +138,11 @@ exports.getOutgoingMessages = function (req) {
  * Updates a response object after a list, show or update function has returned,
  * setting the flash messages cookie to include the outgoing messages.
  *
+ * @name updateResponse(req, res)
  * @param {Object} req
  * @param {Object} res
  * @returns {Response Object}
+ * @api public
  */
 
 exports.updateResponse = function (req, res) {
@@ -152,9 +166,11 @@ exports.updateResponse = function (req, res) {
 /**
  * Creates a new flash message object, associating it with the given request.
  *
+ * @name createMessage(req, msg)
  * @param {Object} req
  * @param {String} msg
  * @returns {Object}
+ * @api public
  */
 
 exports.createMessage = function (req, msg) {
@@ -168,8 +184,10 @@ exports.createMessage = function (req, msg) {
  * Stores a list of messages in the flash messages cookie. This function is for
  * client-side use.
  *
+ * @name setBrowserCookie(req, messages)
  * @param {Object} req
  * @param {Array} messages
+ * @api public
  */
 
 exports.setBrowserCookie = function (req, messages) {
@@ -185,8 +203,10 @@ exports.setBrowserCookie = function (req, messages) {
  * otherwise (if its the result of a client-side async operation) it's added
  * directly to the browsers cookies.
  *
+ * @name addMessage(req, msg)
  * @param {Object} req
  * @param {String} msg
+ * @api public
  */
 
 exports.addMessage = function (req, msg) {

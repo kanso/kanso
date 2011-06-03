@@ -1,3 +1,14 @@
+/**
+ * Used by Kanso internally, the excellent Underscore.js library is also
+ * included in the standard set of CommonJS modules pushed with your app.
+ *
+ * For more information on the Underscore.js API, see the website:
+ * http://documentcloud.github.com/underscore/
+ *
+ * @module
+ */
+
+
 //     Underscore.js 1.1.5
 //     (c) 2011 Jeremy Ashkenas, DocumentCloud Inc.
 //     Underscore is freely distributable under the MIT license.

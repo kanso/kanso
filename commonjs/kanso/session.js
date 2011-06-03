@@ -1,5 +1,7 @@
 /**
  * Functions related to the management of user sessions and account information.
+ *
+ * @module
  */
 
 /**
@@ -17,8 +19,10 @@ var db = require('./db'),
  * Creates a fake request to /_session to pass to sessionChange, useful
  * when using functions such as templates.render
  *
+ * @name fakeRequest(userCtx, callback)
  * @param {Object} userCtx
  * @param {Function} callback
+ * @api public
  */
 
 exports.fakeRequest = function (userCtx, callback) {
@@ -43,8 +47,10 @@ exports.fakeRequest = function (userCtx, callback) {
 /**
  * Calls sessionChange if exported from the currently loaded app.
  *
+ * @name sessionChange(userCtx, callback)
  * @param {Object} userCtx
  * @param {Function} callback
+ * @api public
  */
 
 exports.sessionChange = function (userCtx, callback) {
@@ -65,7 +71,9 @@ exports.sessionChange = function (userCtx, callback) {
 /**
  * Logs out the current user.
  *
+ * @name logout(callback)
  * @param {Function} callback
+ * @api public
  */
 
 exports.logout = function (callback) {
@@ -93,9 +101,11 @@ exports.logout = function (callback) {
 /**
  * Attempt to login using the username and password provided.
  *
+ * @name login(username, password, callback)
  * @param {String} username
  * @param {String} password
  * @param {Function} callback
+ * @api public
  */
 
 exports.login = function (username, password, callback) {
@@ -129,7 +139,9 @@ exports.login = function (username, password, callback) {
 /**
  * Returns the current user's session information.
  *
+ * @name info(callback)
  * @param {Function} callback
+ * @api public
  */
 
 exports.info = function (callback) {
@@ -157,7 +169,9 @@ exports.info = function (callback) {
 /**
  * Returns the authentication database for the current user's session.
  *
+ * @name userDb(callback)
  * @param {Function} callback
+ * @api public
  */
 
 exports.userDb = function (callback) {
@@ -172,9 +186,11 @@ exports.userDb = function (callback) {
 /**
  * Creates a new user document with given username and password.
  *
+ * @name signup(username, password, callback)
  * @param {String} username
  * @param {String} password
  * @param {Function} callback
+ * @api public
  */
 
 exports.signup = function (username, password, callback) {

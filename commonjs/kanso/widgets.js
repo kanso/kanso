@@ -1,6 +1,8 @@
 /**
  * Widgets define the way a Field object is displayed when rendered as part of a
  * Form. Changing a Field's widget will be reflected in the admin app.
+ *
+ * @module
  */
 
 /**
@@ -16,10 +18,12 @@ var db = require('./db'),
 /**
  * Widget constructor, creates a new Widget object.
  *
+ * @name Widget(type, [options])
  * @param {String} type
  * @param {Object} options
  * @constructor
  * @returns {Widget Object}
+ * @api public
  */
 
 var Widget = exports.Widget = function Widget(type, options) {
@@ -59,6 +63,7 @@ Widget.prototype._id = function (name, extension) {
  *                  an existing identifier, but is still unique. The
  *                  HTML form name will not b changed.
  * @returns {String}
+ * @api private
  */
 
 Widget.prototype._attrs = function (name, id_extension) {
@@ -123,10 +128,12 @@ Widget.prototype.scriptTagForInit = function (name, options, module, ns)
 /**
  * Converts a widget to HTML using the provided name and parsed and raw values
  *
+ * @name Widget.toHTML(name, value, raw)
  * @param {String} name
  * @param value
  * @param raw
  * @returns {String}
+ * @api public
  */
 
 Widget.prototype.toHTML = function (name, value, raw) {
@@ -153,8 +160,10 @@ exports.init = {};
 /**
  * Creates a new text input widget.
  *
+ * @name text([options])
  * @param options
  * @returns {Widget Object}
+ * @api public
  */
 
 exports.text = function (options) {
@@ -164,8 +173,10 @@ exports.text = function (options) {
 /**
  * Creates a new password input widget.
  *
+ * @name password([options])
  * @param options
  * @returns {Widget Object}
+ * @api public
  */
 
 exports.password = function (options) {
@@ -175,8 +186,10 @@ exports.password = function (options) {
 /**
  * Creates a new hidden input widget.
  *
+ * @name hidden([options])
  * @param options
  * @returns {Widget Object}
+ * @api public
  */
 
 exports.hidden = function (options) {
@@ -186,8 +199,10 @@ exports.hidden = function (options) {
 /**
  * Creates a new textarea widget.
  *
+ * @name textarea([options])
  * @param options
  * @returns {Widget Object}
+ * @api public
  */
 
 exports.textarea = function (options) {
@@ -219,8 +234,10 @@ exports.textarea = function (options) {
 /**
  * Creates a new checkbox widget.
  *
+ * @name checkbox([options])
  * @param options
  * @returns {Widget Object}
+ * @api public
  */
 
 exports.checkbox = function (options) {
@@ -237,8 +254,10 @@ exports.checkbox = function (options) {
 /**
  * Creates a new select widget.
  *
+ * @name select([options])
  * @param options
  * @returns {Widget Object}
+ * @api public
  */
 
 exports.select = function (options) {
@@ -269,8 +288,10 @@ exports.select = function (options) {
  * Creates a new computed widget. Computed widgets display a string, but are
  * uneditable, working as a hidden field behind the scenes.
  *
+ * @name computed([options])
  * @param options
  * @returns {Widget Object}
+ * @api public
  */
 
 exports.computed = function (options) {

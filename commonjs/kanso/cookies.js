@@ -2,6 +2,8 @@
 
 /**
  * Functions related to the manipulation and reading of cookies.
+ *
+ * @module
  */
 
 var utils = require('./utils');
@@ -11,7 +13,9 @@ var utils = require('./utils');
  * Read cookies currently stored in the browser, returning an object
  * keyed by cookie name.
  *
+ * @name readBrowserCookies()
  * @returns Object
+ * @api public
  */
 
 exports.readBrowserCookies = function () {
@@ -31,7 +35,9 @@ exports.readBrowserCookies = function () {
 /**
  * Reads browser cookies and returned the value of the named cookie.
  *
+ * @name readBrowserCookie(name)
  * @returns {String}
+ * @api public
  */
 
 exports.readBrowserCookie = function (name) {
@@ -41,9 +47,11 @@ exports.readBrowserCookie = function (name) {
 /**
  * Creates a string for storing a cookie on the browser.
  *
+ * @name cookieString(req, opt)
  * @param {Request Object} req
  * @param {Object} opt
  * @returns {String}
+ * @api public
  */
 
 exports.cookieString = function (req, opt) {
@@ -61,8 +69,10 @@ exports.cookieString = function (req, opt) {
 /**
  * Sets a cookie on the browser, for use client-side only.
  *
+ * @name setBrowserCookie(req, opt)
  * @param {Request Object} req
  * @param {Object} opt
+ * @api public
  */
 
 exports.setBrowserCookie = function (req, opt) {
@@ -77,9 +87,11 @@ exports.setBrowserCookie = function (req, opt) {
 /**
  * Creates a Set-Cookie header on a response object.
  *
+ * @name setResponseCookie(req, res, opt)
  * @param {Request Object} req
  * @param {Response Object} res
  * @param {Object} opt
+ * @api public
  */
 
 exports.setResponseCookie = function (req, res, opt) {

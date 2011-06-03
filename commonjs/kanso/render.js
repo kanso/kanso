@@ -1,5 +1,25 @@
+/**
+ * Renderer constructors and general utilities for rendering Form objects
+ * as HTML.
+ *
+ * @module
+ */
+
+/**
+ * Module dependencies
+ */
+
 var _ = require('./underscore')._;
 
+
+/**
+ * Renders HTML for error messages.
+ *
+ * @name errorHTML(errors)
+ * @param {Array} errors
+ * @returns {String}
+ * @api public
+ */
 
 exports.errorHTML = function (errors) {
     if (errors && errors.length) {
@@ -16,6 +36,18 @@ exports.errorHTML = function (errors) {
     return '';
 };
 
+/**
+ * Generates the text for a field's label, depending on whether
+ * a custom label is defined or not. If not, the name is captialized and
+ * underscores are replaces with spaces to produce the label's text.
+ *
+ * @name labelText(field, name)
+ * @param {Object} field
+ * @param {String} name
+ * @returns {String}
+ * @api public
+ */
+
 exports.labelText = function (field, name) {
     if (field.label) {
         return field.label;
@@ -23,11 +55,31 @@ exports.labelText = function (field, name) {
     return name.substr(0, 1).toUpperCase() + name.substr(1).replace(/_/g, ' ');
 };
 
+/**
+ * Generates HTML for label tags.
+ *
+ * @name labelHTML(field, name, id)
+ * @param {Object} field
+ * @param {String} name
+ * @param {String} id
+ * @returns {String}
+ * @api public
+ */
+
 exports.labelHTML = function (field, name, id) {
     return '<label for="' + (id || 'id_' + name) + '">' +
         exports.labelText(field, name, id) +
     '</label>';
 };
+
+/**
+ * Generates HTML for field descriptions (if defined).
+ *
+ * @name descriptionHTML(obj)
+ * @param {Object} obj
+ * @returns {String}
+ * @api public
+ */
 
 exports.descriptionHTML = function (obj) {
     if (obj.description) {
@@ -35,12 +87,35 @@ exports.descriptionHTML = function (obj) {
     }
     return '';
 };
+
+/**
+ * Generates HTML for field hints (if defined).
+ *
+ * @name hintHTML(obj)
+ * @param {Object} obj
+ * @returns {String}
+ * @api public
+ */
+
 exports.hintHTML = function (obj) {
     if (obj.hint) {
         return '<div class="hint">' + obj.hint + '</div>';
     }
     return '';
 };
+
+/**
+ * Creates an array of default class names for a field. This includes
+ * 'required' for required fields and 'error' for fields failing validation.
+ *
+ * All fields are given a 'field' class.
+ *
+ * @name classes(field, errors)
+ * @param {Object} field
+ * @param {Array} errors
+ * @returns {Array}
+ * @api public
+ */
 
 exports.classes = function (field, errors) {
     var r = ['field'];
@@ -54,11 +129,17 @@ exports.classes = function (field, errors) {
 };
 
 /**
- *  Renders a form using a single table, with <tbody> tags to represent
- *  nested field groups. The <tbody>s are labelled with specific CSS
- *  classes, including depth information. See style.css for details
- *  on how to style this output.
+ * The default table renderer class, passed to the toHTML method of a
+ * form. Renders a form using a single table, with <tbody> tags to
+ * represent nested field groups. The <tbody>s are labelled with
+ * specific CSS classes, including depth information. See style.css
+ * for details on how to style this output.
+ *
+ * @name table
+ * @constructor
+ * @api public
  */
+
 exports.table = function () {
 
     /**

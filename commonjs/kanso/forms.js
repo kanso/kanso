@@ -1,4 +1,10 @@
 /**
+ * Functions for the rendering, parsing and validation of forms.
+ *
+ * @module
+ */
+
+/**
  * Module dependencies
  */
 
@@ -11,7 +17,9 @@ var utils = require('./utils'),
 /**
  * Form object, presents fields and parses responses.
  *
+ * @name Form(fields | type, [doc])
  * @param {Object} fields
+ * @param {Object} doc (optional)
  * @constructor
  * @api public
  */
@@ -36,8 +44,9 @@ var Form = exports.Form = function Form(fields, doc) {
  * Parses a request and validates the result, binding values and errors to
  * the form instance.
  *
+ * @name Form.validate(req)
  * @param {Object} req
- * @return {Form}
+ * @returns {Form}
  * @api public
  */
 
@@ -55,7 +64,8 @@ Form.prototype.validate = function (req) {
  * After a form has called validate, this function will return true if the form
  * is valid, false otherwise.
  *
- * @return {Boolean}
+ * @name Form.isValid()
+ * @returns {Boolean}
  * @api public
  */
 
@@ -66,13 +76,14 @@ Form.prototype.isValid = function () {
 /**
  * Converts current form to a HTML string, using an optional renderer class.
  *
+ * @name Form.toHTML(req, [RendererClass])
  * @param {Object} req
- * @param {Renderer} RendererClass
- * @return {String}
+ * @param {Renderer} RendererClass (optional)
+ * @returns {String}
  * @api public
  */
 
-Form.prototype.toHTML = function (req, RendererClass) {
+Form.prototype.toHTML = function (req, /*optional*/RendererClass) {
     if (!req) {
         throw new Error(
             'Form\'s toHTML method requires request object as first argument'
@@ -95,8 +106,7 @@ Form.prototype.toHTML = function (req, RendererClass) {
  *
  * @param {Array} errs
  * @param {Array} path
- * @return {Array}
- * @api public
+ * @returns {Array}
  */
 
 var errsBelowPath = function (errs, path) {
@@ -115,17 +125,17 @@ var errsBelowPath = function (errs, path) {
  * each. Returns a HTML representation of the fields. Used internally by the
  * toHTML method, you should not need to call this function directly.
  *
- * TODO: this method is fugly, refactor!
- *
+ * @name Form.renderFields(renderer, fields, values, raw, err, path)
  * @param {Object} renderer
  * @param {Object} fields
  * @param {Object} values
  * @param {Array} errs
  * @param {Array} path
- * @return {String}
+ * @returns {String}
  * @api public
  */
 
+// TODO: this method is fugly, refactor!
 Form.prototype.renderFields = function (renderer, fields, values, raw, errs, path) {
     fields = fields || {};
     values = values || {};
@@ -239,8 +249,9 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
  * Transforms a flat object from a request query to a proper
  * hierarchy of properties.
  *
- * {'one.two': 'val'} --> {one: {two: 'val'}}
+ * <pre>{'one.two': 'val'} --> {one: {two: 'val'}}</pre>
  *
+ * @name formValuesToTree(form)
  * @param {Object} query
  * @api public
  */
@@ -258,9 +269,10 @@ exports.formValuesToTree = function (form) {
  * Transforms a raw query object from formValuesToTree to a
  * document which follows the schema for the given type.
  *
+ * @name parseRaw(fields, raw)
  * @param {Type} type
  * @param {Object} raw
- * @return {Object}
+ * @returns {Object}
  * @api public
  */
 

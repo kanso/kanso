@@ -3,6 +3,13 @@
 /**
  * General utility functions used by Kanso. Some functions were moved here from
  * other modules (such as core), to avoid a circular dependency bug in CouchDB.
+ *
+ * This module also stores some useful properties such as 'isBrowser', which is
+ * true if the code is running in a browser environment, and 'initial_hit' which
+ * is set to true when a page is first requested from CouchDB (and set to false
+ * for subsequent requests).
+ *
+ * @module
  */
 
 /**
@@ -46,7 +53,7 @@ exports.initial_hit = true;
 
 /**
  * Used to store userCtx, periodically updated like on session.login and
- * session.logout. TODO: Or if a permissions error is returned from a db method?
+ * session.logout.
  */
 
 // TODO: added to utils to avoid circular dependency bug in couchdb
@@ -75,8 +82,10 @@ exports.getWindowLocation = function () {
  * virtual host, there is nothing to prefix URLs with. When accessing the
  * app directly, URLs need to be prefixed with /db/_design/appname/_rewrite.
  *
- * The request object argument is only required when run server-side.
+ * The request object argument is only required when run server-side, but its
+ * a good idea to include it whenever you call getBaseURL.
  *
+ * @name getBaseURL(req)
  * @param {Object} req
  * @returns {String}
  * @api public
@@ -111,10 +120,14 @@ exports.getBaseURL = function (req) {
  * Returns the value of the matched path, or undefined if the property does not
  * exist.
  *
+ * <pre>
  * getPropertyPath({a: {b: 'foo'}}, ['a','b']) -> 'foo'
+ * </pre>
  *
+ * @name getPropertyPath(obj, path)
  * @param {Object} obj
  * @param {Array} path
+ * @api public
  */
 
 exports.getPropertyPath = function (obj, path) {
@@ -128,11 +141,14 @@ exports.getPropertyPath = function (obj, path) {
  * Traverses an object and its sub-objects using an array of property names.
  * Sets the value of the matched property.
  *
+ * <pre>
  * setPropertyPath({}, ['a','b'], 'foo') -> {a: {b: 'foo'}}
+ * </pre>
  *
+ * @name setPropertyPath(obj, path, val)
  * @param {Object} obj
  * @param {Array} path
- * @returns undefined
+ * @api public
  */
 
 exports.setPropertyPath = function (obj, path, val) {
@@ -159,8 +175,10 @@ exports.setPropertyPath = function (obj, path, val) {
  * as a workaround for CouchDB's lack of a module cache, where instanceof checks
  * can break if a module is re-eval'd.
  *
+ * @name constructorName(obj)
  * @param {Object} obj
  * @returns {String}
+ * @api public
  */
 
 exports.constructorName = function (obj) {
@@ -182,7 +200,7 @@ exports.constructorName = function (obj) {
  * @param {Array} arr
  * @param {Function} fn
  * @param {Array} args
- * @return {Array}
+ * @returns {Array}
  * @api private
  */
 
@@ -197,6 +215,16 @@ exports.getErrors = function (fn, args) {
     return arr;
 };
 
+/**
+ * Encodes required characters as HTML entities so a string can be included
+ * in a page.
+ *
+ * @name escapeHTML(s)
+ * @param {String} s
+ * @returns {String}
+ * @api public
+ */
+
 exports.escapeHTML = function (s) {
     s = '' + s; /* Coerce to string */
     s = s.replace(/&/g, '&amp;');
@@ -207,9 +235,18 @@ exports.escapeHTML = function (s) {
     return s;
 };
 
+/**
+ * Parse CSV strings into an array of rows, each row an array of values.
+ * Used by the array field's default CSV widget.
+ *
+ * @name parseCSV(csvString)
+ * @param {String} csvString
+ * @returns {Array}
+ * @api public
+ */
+
 // Parsing comma-separated values (CSV) in JavaScript by M. A. SRIDHAR
 // http://yawgb.blogspot.com/2009/03/parsing-comma-separated-values-in.html
-
 exports.parseCSV = function (csvString) {
     var fieldEndMarker  = /([,\015\012] *)/g;
     var qFieldEndMarker = /("")*"([,\015\012] *)/g;
@@ -250,13 +287,14 @@ exports.parseCSV = function (csvString) {
 };
 
 /**
- * Creates couchdb response object for returning from a show, list or update
+ * Creates CouchDB response object for returning from a show, list or update
  * function, which redirects to the given app url (automatically prepending the
  * baseURL)
  *
+ * @name redirect(req, url)
  * @param {Object} req
  * @param {String} url
- * @return {Object}
+ * @returns {Object}
  * @api public
  */
 
