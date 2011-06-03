@@ -24,6 +24,7 @@ body {
     border: none;
 }
 #site {
+    text-decoration: none;
     font-family: 'Helvetica Neue', 'Helvetica', Arial, FreeSans, sans-serif;
     font-size: 14.5px;
     border-left: 1px solid #ddd;
