@@ -302,19 +302,18 @@ exports.computed = function (options) {
 exports.selector = function (options) {
     var w = new Widget('selector', options);
     w.options = options;
-    w.options.storeReference = true;
     w.toHTML = function (name, value, raw) {
         var input_html = (
             '<input class="backing" type="hidden" ' + (
-                this.options.storeReference ?
-                    ('id="' + this._id(name) + '"') : this._attrs(name)
+                this.options.storeValue ?
+                    this._attrs(name) : ('id="' + this._id(name) + '"')
             ) + ' />'
         );
         var select_html = (
             '<select class="selector" ' + (
-                this.options.storeReference ?
-                    this._attrs(name, 'visible') :
-                    ('id="' + this._id(name, 'visible') + '"')
+                this.options.storeValue ?
+                    ('id="' + this._id(name, 'visible') + '"') :
+                        this._attrs(name, 'visible')
             ) + '></select>'
         );
         return (
@@ -346,10 +345,12 @@ exports.init.selector = function (_singleton_elt, _json_options) {
     var options = JSON.parse(_json_options);
     var value = options.value;
 
-    select_elt.bind('change', function () {
-        /* Copy data to backing element */
-        hidden_elt.val(select_elt.val());
-    });
+    if (options.storeValue) {
+        select_elt.bind('change', function () {
+            /* Copy data to backing element */
+            hidden_elt.val(select_elt.val());
+        });
+    }
 
     spinner_elt.show();
 
@@ -380,7 +381,10 @@ exports.init.selector = function (_singleton_elt, _json_options) {
         });
 
         spinner_elt.hide();
-        select_elt.trigger('change');
+    
+        if (options.storeValue) {
+            select_elt.trigger('change');
+        }
     });
 };
 
