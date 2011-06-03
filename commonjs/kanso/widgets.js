@@ -7,9 +7,10 @@
  * Module dependencies
  */
 
-var forms = require('./forms'),
+var db = require('./db'),
+    forms = require('./forms'),
     utils = require('./utils'),
-    events = require('./events');
+    _ = require('./underscore')._;
 
 
 /**
@@ -36,7 +37,7 @@ var Widget = exports.Widget = function Widget(type, options) {
  */
 
 Widget.prototype._id = function (name) {
-    return (this.id ? this.id : 'id_' + name);
+    return (this.id ? this.id : 'id_' + name.replace(/[^\w]+/, '_'));
 };
 
 
@@ -63,34 +64,40 @@ Widget.prototype._attrs = function (name) {
  * id to resolve a particular instance of the widget's markup on the page.
  *
  * @param {String} name - field name on the HTML form
+ * @param {Object} options - optional; data to be passed to init function.
  * @param {String} module - optional; the commonjs module to call in to.
  *                  By default, this is 'kanso/widgets', i.e. this module.
- * @param {String} namespace - optional; the namespace containing the widget
+ * @param {String} ns - optional; the namespace containing the widget
  *                  initialization functions. By default, this is 'init'.
  * @returns {String}
  */
 
-Widget.prototype.scriptTagForInit = function (name, module, namespace)
+Widget.prototype.scriptTagForInit = function (name, options, module, ns)
 {
     if (module === undefined) {
         module = 'kanso/widgets';
     }
-    if (namespace === undefined) {
-        namespace = 'init';
+    if (ns === undefined) {
+        ns = 'init';
     }
-    console.log(
-        '<script type="text/javascript">' +
-            "require('" + module + "')." + namespace + '.' +
-                this.type + "($('#" + this._id(name) + "'));" +
-        '</script>'
+    if (options === undefined) {
+        options = {};
+    }
+
+    var json_options = (
+        /* Prevent escaping (i) javascript string, and (ii) CDATA section */
+        JSON.stringify(options).replace(/'/g, "\\'").replace(']]>', '')
     );
     return (
         '<script type="text/javascript">' +
-            "require('" + module + "')." + namespace + '.' +
-                this.type + "($('#" + this._id(name) + "'));" +
+        "// <![CDATA[\n" +
+            "require('" + module + "')." + ns + '.' +
+                this.type + "($('#" + this._id(name) + "'), " +
+                "'" + json_options + "');\n" +
+        "// ]]>\n" +
         '</script>'
     );
-}
+};
 
 
 /**
@@ -276,14 +283,17 @@ exports.selector = function (options) {
     var w = new Widget('selector', options);
     w.viewName = options.viewName;
     w.toHTML = function (name, value, raw) {
-        var html = (
-            '<div class="widget-selector">' +
+        var select_id = this._id(name) + '_select';
+        return (
+            '<div class="widget layout">' +
+            '<div class="selector">' +
                 '<input type="hidden"' + this._attrs(name) + ' />' +
-                '<select></select>' +
+                '<select id="' + select_id + '"></select>' +
+                '<div class="spinner" style="display: none;"></div>' +
             '</div>' +
-            this.scriptTagForInit(name)
+            '</div>' +
+            this.scriptTagForInit(name, options)
         );
-        return html;
     };
     return w;
 };
@@ -292,10 +302,37 @@ exports.selector = function (options) {
  * Client-side initialization function for a selector control.
  */
 
-exports.init.selector = function (_singleton_elt) {
-    var input_elt = _singleton_elt.first();
-    var container_elt = input_elt.parent();
+exports.init.selector = function (_singleton_elt, _json_options) {
+
+    var options = JSON.parse(_json_options);
+    var container_elt = _singleton_elt.first().parent();
+    var hidden_elt = $('input[type=hidden]', container_elt);
     var select_elt = $('input[type=hidden] ~ select', container_elt);
+    var spinner_elt = $('input[type=hidden] ~ .spinner', container_elt);
+
+    select_elt.bind('change', function () {
+        /* Store reference */
+        hidden_elt.val(select_elt.val());
+    });
+
+    spinner_elt.show();
+
+    db.getView(options.viewName, {}, { db: options.db }, function (err, rv) {
+        if (err || !rv.rows) {
+            throw new Error(
+                'Failed to request content from `' + options.viewName + '`'
+            );
+        }
+        console.log(rv);
+        _.each(rv.rows, function(r) {
+            var option = $(document.createElement('option'));
+            option.val(r.id);
+            option.text(r.id);
+            select_elt.append(option);
+        });
+        spinner_elt.hide();
+        select_elt.trigger('change');
+    });
 };
 
 
