@@ -317,3 +317,55 @@ exports.redirect = function (req, url) {
     var baseURL = exports.getBaseURL(req);
     return {code: 302, headers: {'Location': baseURL + url}};
 };
+
+
+/**
+ * Recursively copies properties of an object, handling circular references
+ * and returning a new object completely seperate from the original.
+ *
+ * Modifications to the new object will not affect the original copy.
+ *
+ * @name deepCopy(obj, [limit])
+ * @param obj - the object to copy
+ * @param {Number} limit - the recursion depth before throwing (optional)
+ * @api public
+ */
+
+exports.deepCopy = function (obj, limit) {
+    // for handling circular references:
+    var seen = [];   // store references to original objects
+    var clones = []; // store references to copied objects
+
+    var fn = function (obj, limit) {
+        if (!limit) {
+            throw new Error('deepCopy recursion limit reached');
+        }
+
+        if (typeof obj === 'object') {
+
+            // check for a circular reference
+            var i = seen.indexOf(obj);
+            if (i !== -1) {
+                return clones[i];
+            }
+
+            // to fix instanceof and constructorName checks
+            var F = function () {};
+            F.prototype = obj;
+            var newObj = new F();
+
+            // add cloned object to list of references, so we
+            // can check for circular references later
+            seen.push(obj);
+            clones.push(newObj);
+
+            // deepCopy all properties
+            for (var k in obj) {
+                newObj[k] = fn(obj[k], limit - 1);
+            }
+            return newObj;
+        }
+        return obj;
+    };
+    return fn(obj, limit || 1000);
+};

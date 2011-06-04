@@ -87,3 +87,88 @@ exports['getPropertyPath'] = function (test) {
     utils.isBrowser = true;
     test.done();
 };
+
+exports['deepCopy'] = function (test) {
+    var a = {
+        one: 1,
+        two: {
+            three: 'foo'
+        },
+        four: [1, 2, 3]
+    };
+    var b = utils.deepCopy(a);
+    b.one = 2;
+    b.two.three = 'bar';
+
+    test.same(a, {
+        one: 1,
+        two: {
+            three: 'foo'
+        },
+        four: [1, 2, 3]
+    });
+    test.same(b, {
+        one: 2,
+        two: {
+            three: 'bar'
+        },
+        four: [1, 2, 3]
+    });
+    test.ok(a.four instanceof Array);
+    test.ok(b.four instanceof Array);
+    test.done();
+};
+
+exports['deepCopy - circular'] = function (test) {
+    var a = {one: 1, two: {three: 'foo'}};
+    a.two.four = a.two;
+
+    var b = utils.deepCopy(a);
+    b.one = 2;
+    b.two.three = 'bar';
+
+    test.same(a, {one: 1, two: {three: 'foo', four: a.two}});
+    test.same(b, {one: 2, two: {three: 'bar', four: b.two}});
+
+    test.done();
+};
+
+exports['deepCopy - constructorName'] = function (test) {
+    function Test() {
+        this.name = 'test';
+    };
+
+    var a = {one: new Test()};
+    var b = utils.deepCopy(a);
+
+    test.equal(utils.constructorName(a.one), 'Test');
+    test.equal(utils.constructorName(b.one), 'Test');
+
+    test.done();
+};
+
+exports['deepCopy - instanceof'] = function (test) {
+    function Test() {
+        this.name = 'test';
+    };
+
+    var a = {one: new Test()};
+    var b = utils.deepCopy(a);
+
+    test.ok(a.one instanceof Test);
+    test.ok(b.one instanceof Test);
+
+    test.done();
+};
+
+exports['deepCopy - limit'] = function (test) {
+    test.expect(1);
+    var a = {a: {b: {c: {d: {e: {f: {g: 'foo'}}}}}}};
+    try {
+        utils.deepCopy(a, 5);
+    }
+    catch (e) {
+        test.equal(e.message, 'deepCopy recursion limit reached');
+    }
+    test.done();
+};
