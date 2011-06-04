@@ -16,7 +16,8 @@
  * Module dependencies
  */
 
-var settings = require('./settings'); // settings module is auto-generated
+var settings = require('./settings'), // settings module is auto-generated
+    _ = require('./underscore')._;
 
 
 /**
@@ -120,17 +121,24 @@ exports.getBaseURL = function (req) {
  * Returns the value of the matched path, or undefined if the property does not
  * exist.
  *
+ * If a string if used for the path, it is assumed to be a path with a single
+ * key (the given string).
+ *
  * <pre>
  * getPropertyPath({a: {b: 'foo'}}, ['a','b']) -> 'foo'
+ * getPropertyPath({a: {b: 'foo'}}, 'a') -> {b: 'foo'}
  * </pre>
  *
  * @name getPropertyPath(obj, path)
  * @param {Object} obj
- * @param {Array} path
+ * @param {Array|String} path
  * @api public
  */
 
 exports.getPropertyPath = function (obj, path) {
+    if (!_.isArray(path)) {
+        path = [path];
+    }
     if (!path.length || !obj) {
         return obj;
     }
@@ -141,17 +149,24 @@ exports.getPropertyPath = function (obj, path) {
  * Traverses an object and its sub-objects using an array of property names.
  * Sets the value of the matched property.
  *
+ * If a string if used for the path, it is assumed to be a path with a single
+ * key (the given string).
+ *
  * <pre>
  * setPropertyPath({}, ['a','b'], 'foo') -> {a: {b: 'foo'}}
+ * setPropertyPath({}, 'a', 'foo') -> {a: 'foo'}
  * </pre>
  *
  * @name setPropertyPath(obj, path, val)
  * @param {Object} obj
- * @param {Array} path
+ * @param {Array|String} path
  * @api public
  */
 
 exports.setPropertyPath = function (obj, path, val) {
+    if (!_.isArray(path)) {
+        path = [path];
+    }
     if (!path.length) {
         throw new Error('No property path given');
     }
