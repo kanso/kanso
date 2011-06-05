@@ -148,15 +148,21 @@ exports['deepCopy - constructorName'] = function (test) {
 };
 
 exports['deepCopy - instanceof'] = function (test) {
-    function Test() {
-        this.name = 'test';
+    function Test(name) {
+        this.name = name;
+        this.hello = function () {
+            return 'hello ' + this.name;
+        };
     };
 
-    var a = {one: new Test()};
+    var a = {one: new Test('test')};
     var b = utils.deepCopy(a);
 
     test.ok(a.one instanceof Test);
     test.ok(b.one instanceof Test);
+
+    test.equal(a.one.hello(), 'hello test');
+    test.equal(b.one.hello(), 'hello test');
 
     test.done();
 };
@@ -170,5 +176,33 @@ exports['deepCopy - limit'] = function (test) {
     catch (e) {
         test.equal(e.message, 'deepCopy recursion limit reached');
     }
+    test.done();
+};
+
+exports['deepCopy - Date'] = function (test) {
+    var now = new Date();
+    var a = {time: now};
+    var b = utils.deepCopy(a);
+
+    test.equal(a.time.getTime(), b.time.getTime());
+
+    test.done();
+};
+
+exports['deepCopy - Array'] = function (test) {
+    var a = {one: [1, 2, 3]};
+    var b = utils.deepCopy(a);
+
+    test.ok(a.one instanceof Array);
+    test.ok(b.one instanceof Array);
+
+    a.one.pop();
+    test.same(a.one, [1, 2]);
+    test.same(b.one, [1, 2, 3]);
+
+    b.one.pop();
+    test.same(a.one, [1, 2]);
+    test.same(b.one, [1, 2]);
+
     test.done();
 };

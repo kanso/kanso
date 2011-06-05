@@ -341,7 +341,12 @@ exports.deepCopy = function (obj, limit) {
             throw new Error('deepCopy recursion limit reached');
         }
 
-        if (typeof obj === 'object') {
+        if (obj instanceof Date) {
+            var copy = new Date();
+            copy.setTime(obj.getTime());
+            return copy;
+        }
+        else if (typeof obj === 'object') {
 
             // check for a circular reference
             var i = seen.indexOf(obj);
@@ -349,10 +354,16 @@ exports.deepCopy = function (obj, limit) {
                 return clones[i];
             }
 
-            // to fix instanceof and constructorName checks
-            var F = function () {};
-            F.prototype = obj;
-            var newObj = new F();
+            var newObj;
+            if (obj instanceof Array) {
+                newObj = [];
+            }
+            else {
+                // to fix instanceof and constructorName checks
+                var F = function () {};
+                F.prototype = obj;
+                newObj = new F();
+            }
 
             // add cloned object to list of references, so we
             // can check for circular references later
