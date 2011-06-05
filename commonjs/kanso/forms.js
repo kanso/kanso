@@ -71,6 +71,8 @@ var Form = exports.Form = function Form(fields, doc, options) {
  */
 
 Form.prototype.validate = function (req) {
+    // TODO: change this to accept an object instead of a request?
+    // doing req.form isn't that difficult and would make more sense
     this.raw = req.form || {};
     var tree = exports.formValuesToTree(this.raw);
     this.values = exports.parseRaw(this.fields, tree);

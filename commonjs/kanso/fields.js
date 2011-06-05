@@ -522,6 +522,9 @@ var prependValidator = function (options, fn) {
 exports.string = function (options) {
     return new Field(_.defaults((options || {}), {
         parse: function (raw) {
+            if (raw === null || raw === undefined) {
+                return '';
+            }
             return '' + raw;
         }
     }));

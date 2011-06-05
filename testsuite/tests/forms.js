@@ -553,19 +553,19 @@ exports['Form.validate - empty strings'] = function (test) {
     test.expect(4);
     var f = new forms.Form({
         foo: fields.string({required: true}),
-        bar: fields.string()
+        bar: fields.string({required: false})
     });
 
-    f.validate({ });
+    f.validate({form: {}});
     test.strictEqual(f.isValid(), false);
 
-    f.validate({ foo: null });
+    f.validate({form: {foo: null }});
     test.strictEqual(f.isValid(), false);
 
-    f.validate({ foo: 'baz' });
+    f.validate({form: {foo: 'baz' }});
     test.strictEqual(f.isValid(), true);
 
-    f.validate({ foo: 'baz', bar: null });
+    f.validate({form: {foo: 'baz', bar: null}});
     test.strictEqual(f.isValid(), true);
 
     test.done();
@@ -597,7 +597,7 @@ exports['Form.validate - options.exclude'] = function (test) {
     f.validate(req);
     test.strictEqual(f.isValid(), false); // broken
 
-    req = { foo: 'hi' };
+    req = {form: {foo: 'hi'}};
     f.validate(req);
     test.strictEqual(f.isValid(), true);
 
@@ -606,7 +606,7 @@ exports['Form.validate - options.exclude'] = function (test) {
 
 exports['Form.validate - options.fields'] = function (test) {
     test.expect(2);
-    var req = {};
+    var req = {form: {}};
     var f = new forms.Form({
         foo: fields.string(),
         bar: fields.number(),
@@ -616,7 +616,7 @@ exports['Form.validate - options.fields'] = function (test) {
     f.validate(req);
     test.strictEqual(f.isValid(), false);
 
-    req = { foo: 'hi' };
+    req = {form: {foo: 'hi'}};
     f.validate(req);
     test.strictEqual(f.isValid(), true);
 
