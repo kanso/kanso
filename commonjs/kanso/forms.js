@@ -26,38 +26,20 @@ var utils = require('./utils'),
  */
 
 var Form = exports.Form = function Form(fields, doc, options) {
+    this.options = options || {};
+    this.values = doc;
 
     this.fields = (fields && fields.fields) ? fields.fields: fields;
-
-    if (options) {
-        if (options.exclude) {
-            for (k in this.fields) {
-                if (_.contains(options.exclude, k)) {
-                    delete this.fields[k];
-                }
-            }
-        }
-        if (options.fields) {
-            for (k in this.fields) {
-                if (!_.contains(options.fields, k)) {
-                    delete this.fields[k];
-                }
-            }
-        }
-    }
 
     /*
     if (utils.constructorName(fields) === 'Type') {
         this.type = fields;
-        this.fields = fields.field;
+        this.fields = this.type.field;
     }
     else {
         this.fields = fields;
     }
     */
-    if (doc) {
-        this.values = doc;
-    }
 };
 
 /**
@@ -75,7 +57,11 @@ Form.prototype.validate = function (req) {
     // doing req.form isn't that difficult and would make more sense
     this.raw = req.form || {};
     var tree = exports.formValuesToTree(this.raw);
-    this.values = exports.parseRaw(this.fields, tree);
+
+    this.values = utils.override(
+        this.values || fieldset.createDefaults(this.fields, req.userCtx),
+        exports.parseRaw(this.fields, tree)
+    );
     this.errors = fieldset.validate(
         this.fields, this.values, this.values, this.raw, [], false
     );
@@ -165,11 +151,25 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
     path = path || [];
 
     var that = this;
+    var excludes = this.options.exclude;
+    var field_subset = this.options.fields;
     var keys = _.keys(fields);
 
     return _.reduce(keys, function (html, k) {
 
         var f_path = path.concat([k]);
+
+        if (excludes) {
+            if (_.indexOf(excludes, f_path.join('.')) !== -1) {
+                return html;
+            }
+        }
+        if (field_subset) {
+            if (_.indexOf(field_subset, f_path.join('.')) === -1) {
+                return html;
+            }
+        }
+
         var f_errs = errsBelowPath(errs, f_path);
         var cname = utils.constructorName(fields[k]);
 
@@ -260,8 +260,11 @@ exports.parseRaw = function (fields, raw) {
         var cname = utils.constructorName(f);
 
         if (cname === 'Field') {
-            if (!f.isEmpty(r) || !f.omit_empty) {
+            if (!f.isEmpty(r)) {
                 doc[k] = f.parse(r);
+            }
+            else if (!f.omit_empty) {
+                doc[k] = undefined;
             }
         }
         else if (cname === 'Embedded') {

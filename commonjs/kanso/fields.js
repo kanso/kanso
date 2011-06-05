@@ -77,7 +77,7 @@ Field.prototype.parse = function (raw) {
 
 Field.prototype.isEmpty = function (value, raw) {
     if (raw === undefined) {
-        if (isNaN(value)) {
+        if (typeof value === 'number' && isNaN(value)) {
             return true;
         }
         raw = value;

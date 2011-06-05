@@ -398,7 +398,9 @@ exports.deepCopy = function (obj, limit) {
 exports.override = function (a, b) {
     if (a instanceof Object && b instanceof Object) {
         for (var k in b) {
-            a[k] = exports.override(a[k], b[k]);
+            if (b[k] !== undefined) {
+                a[k] = exports.override(a[k], b[k]);
+            }
         }
         return a;
     }
