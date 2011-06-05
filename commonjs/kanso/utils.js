@@ -349,7 +349,7 @@ exports.deepCopy = function (obj, limit) {
         else if (typeof obj === 'object') {
 
             // check for a circular reference
-            var i = seen.indexOf(obj);
+            var i = _.indexOf(seen, obj);
             if (i !== -1) {
                 return clones[i];
             }
