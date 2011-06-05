@@ -142,15 +142,15 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
     raw = raw || {};
     errs = errs || [];
     path = path || [];
-    var that = this;
 
+    var that = this;
     var keys = _.keys(fields);
+
     return _.reduce(keys, function (html, k) {
 
         var f_path = path.concat([k]);
         var f_errs = errsBelowPath(errs, f_path);
         var cname = utils.constructorName(fields[k]);
-        var new_renderer;
 
         if (cname === 'Field') {
             return html + renderer.field(
@@ -162,70 +162,23 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
             );
         }
         else if (cname === 'Embedded') {
-            new_renderer = renderer.embed(
-                fields[k].type,
+            html += renderer.embed(
+                fields[k],
                 f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
             );
-            if (typeof new_renderer === 'string') {
-                html += new_renderer;
-            }
-            else {
-                html += new_renderer.start();
-                html += that.renderFields(
-                    new_renderer,
-                    fields[k].type.fields,
-                    values[k],
-                    (raw[k] === undefined) ? values[k]: raw[k],
-                    f_errs,
-                    f_path
-                );
-                html += new_renderer.end();
-            }
             return html;
         }
         else if (cname === 'EmbeddedList') {
-            var type = fields[k].type;
-            new_renderer = renderer.embedList(
-                type,
+            html += renderer.embedList(
+                fields[k],
                 f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
             );
-            if (typeof new_renderer === 'string') {
-                html += new_renderer;
-            }
-            else {
-                html += new_renderer.start();
-                if (new_renderer.each) {
-                    html += _.reduce(values[k], function (html, v, i) {
-                        var f_path2 = f_path.concat([i]);
-                        var f_errs2 = errsBelowPath(f_errs, f_path2);
-                        var v_renderer = new_renderer.each(
-                            type,
-                            f_path2,
-                            v,
-                            (raw[k] === undefined || raw[k][i] === undefined) ? v[i]: raw[k][i],
-                            f_errs2
-                        );
-                        html += v_renderer.start();
-                        html += that.renderFields(
-                            v_renderer,
-                            type.fields,
-                            v,
-                            (raw[k] === undefined || raw[k][i] === undefined) ? v[i]: raw[k][i],
-                            f_errs2,
-                            f_path2
-                        );
-                        html += v_renderer.end();
-                        return html;
-                    }, '');
-                }
-                html += new_renderer.end();
-            }
             return html;
         }
         else if (cname === 'Object') {

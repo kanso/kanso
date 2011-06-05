@@ -197,6 +197,32 @@ exports.hidden = function (options) {
 };
 
 /**
+ * Creates a new field for storing/displaying an embedded object.
+ * This is automatically added to embed and embedList field types
+ * that don't specify a widget.
+ *
+ * @name embedded([options])
+ * @param options
+ * @returns {Widget Object}
+ * @api public
+ */
+
+exports.embedded = function (options) {
+    var w = new Widget('embedded', options);
+    w.toHTML = function (name, value, raw, field) {
+        var display_name = (value ? value._id: '');
+        var fval = utils.escapeHTML(JSON.stringify(value));
+        var html = (
+            '<input type="hidden" ' +
+                'value="' + fval + '" name="' + name + '" />' +
+            '<span class="value">' + display_name + '</span>'
+        );
+        return html;
+    };
+    return w;
+};
+
+/**
  * Creates a new textarea widget.
  *
  * @name textarea([options])
@@ -208,7 +234,7 @@ exports.hidden = function (options) {
 exports.textarea = function (options) {
     options = options || {};
     var w = new Widget('textarea', options);
-    w.toHTML = function (name, value, raw) {
+    w.toHTML = function (name, value, raw, field) {
         if (raw === undefined) {
             raw = (value === undefined) ? '': '' + value;
         }
@@ -242,7 +268,7 @@ exports.textarea = function (options) {
 
 exports.checkbox = function (options) {
     var w = new Widget('checkbox', options);
-    w.toHTML = function (name, value, raw) {
+    w.toHTML = function (name, value, raw, field) {
         var html = '<input type="checkbox"';
         html += this._attrs(name);
         html += value ? ' checked="checked"': '';
@@ -263,7 +289,7 @@ exports.checkbox = function (options) {
 exports.select = function (options) {
     var w = new Widget('select', options);
     w.values = options.values;
-    w.toHTML = function (name, value, raw) {
+    w.toHTML = function (name, value, raw, field) {
         if (value === null || value === undefined) {
             value = '';
         }
@@ -296,7 +322,7 @@ exports.select = function (options) {
 
 exports.computed = function (options) {
     var w = new Widget('computed', options);
-    w.toHTML = function (name, value, raw) {
+    w.toHTML = function (name, value, raw, field) {
         if (raw === undefined) {
             raw = (value === undefined) ? '': '' + value;
         }
@@ -323,7 +349,7 @@ exports.computed = function (options) {
 exports.selector = function (options) {
     var w = new Widget('selector', options);
     w.options = options;
-    w.toHTML = function (name, value, raw) {
+    w.toHTML = function (name, value, raw, field) {
         var input_html = (
             '<input class="backing" type="hidden" ' + (
                 this.options.storeValue ?

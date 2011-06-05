@@ -268,7 +268,7 @@ Type.prototype.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path) {
 
 /**
  * Create's a new object for this Type. Pre-filling any default values and
- * providing a new _id value. This is a convenient funciton to use when creating
+ * providing a new _id value. This is a convenient function to use when creating
  * a type to embed within another.
  *
  * @name Type.create(userCtx, callback)
