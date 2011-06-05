@@ -206,3 +206,20 @@ exports['deepCopy - Array'] = function (test) {
 
     test.done();
 };
+
+exports['override'] = function (test) {
+    var a = {a: 123, b: {c: 'foo', d: 'bar'}, e: 456};
+    utils.override(a, {
+        a: 123,
+        b: {c: 'asdf'},
+        e: {hello: 'world'},
+        f: 'test'
+    });
+    test.same(a, {
+        a: 123,
+        b: {c: 'asdf', d: 'bar'},
+        e: {hello: 'world'},
+        f: 'test'
+    });
+    test.done();
+};

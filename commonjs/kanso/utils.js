@@ -380,3 +380,27 @@ exports.deepCopy = function (obj, limit) {
     };
     return fn(obj, limit || 1000);
 };
+
+
+/**
+ * A destructive merge of two JSON objects. The values in 'b' override the
+ * values already existing in 'a'. If a value existing in 'b', but not in 'a',
+ * it is added. If a value exists in 'a', but not 'b', it is retained.
+ *
+ * The 'a' object is updated in-place.
+ *
+ * @name override(a, b)
+ * @param {Object} a
+ * @param {Object} b
+ * @api public
+ */
+
+exports.override = function (a, b) {
+    if (a instanceof Object && b instanceof Object) {
+        for (var k in b) {
+            a[k] = exports.override(a[k], b[k]);
+        }
+        return a;
+    }
+    return b;
+};
