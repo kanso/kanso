@@ -207,11 +207,16 @@ exports.hidden = function (options) {
  * @api public
  */
 
-exports.embedded = function (options) {
+exports.defaultEmbedded = function (options) {
     var w = new Widget('embedded', options);
     w.toHTML = function (name, value, raw, field) {
-        var display_name = (value ? value._id: '');
+
         var fval = utils.escapeHTML(JSON.stringify(value));
+        var display_name = (value ? value._id: '');
+
+        if (field.type.display_name && v) {
+            display_name = field.type.display_name(v);
+        }
         var html = (
             '<input type="hidden" ' +
                 'value="' + fval + '" name="' + name + '" />' +
@@ -339,15 +344,15 @@ exports.computed = function (options) {
 
 
 /**
- * Creates a new selector widget. This widget allows the user
- * to select a document from a CouchDB view (specified in options).
+ * Creates a new document selector widget. This widget allows the
+ * user to select a document from a CouchDB view (specified in options).
  *
  * @param options
  * @returns {Widget Object}
  */
 
-exports.selector = function (options) {
-    var w = new Widget('selector', options);
+exports.documentSelector = function (options) {
+    var w = new Widget('documentSelector', options);
     w.options = options;
     w.toHTML = function (name, value, raw, field) {
         var input_html = (
@@ -382,7 +387,7 @@ exports.selector = function (options) {
  * Selector widget: client-side initialization function.
  */
 
-exports.init.selector = function (_singleton_elt, _json_options) {
+exports.init.documentSelector = function (_singleton_elt, _json_options) {
 
     var container_elt = _singleton_elt.first().parent();
     var hidden_elt = $('input.backing', container_elt);
