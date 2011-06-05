@@ -311,21 +311,9 @@ exports['Form.toHTML - embedded'] = function (test) {
         this.endGroup = function () {
             return;
         };
-        this.embed = function (type, path, value, raw, errors) {
-            calls.push(['embed', type, path.join('.'), value, raw, errors]);
-            return {
-                start: function () {
-                    calls.push('start2');
-                    return '';
-                },
-                field: function (field, path, value, raw, errors) {
-                    calls.push(['field', field, path.join('.'), value, raw, errors]);
-                },
-                end: function () {
-                    calls.push('end2');
-                    return '';
-                }
-            };
+        this.embed = function (field, path, value, raw, errors) {
+            calls.push(['embed', field.type, path.join('.'), value, raw, errors]);
+            return '';
         };
         this.end = function () {
             calls.push('end');
@@ -336,14 +324,6 @@ exports['Form.toHTML - embedded'] = function (test) {
     test.same(calls, [
         'start',
         ['embed', t, 'embed', undefined, undefined, []],
-        'start2',
-        ['field', t.fields._id, 'embed._id', undefined, undefined, []],
-        ['field', t.fields._rev, 'embed._rev', undefined, undefined, []],
-        ['field', t.fields._deleted, 'embed._deleted', undefined, undefined, []],
-        ['field', t.fields.type, 'embed.type', undefined, undefined, []],
-        ['field', t.fields.one, 'embed.one', undefined, undefined, []],
-        ['field', t.fields.two, 'embed.two', undefined, undefined, []],
-        'end2',
         'end'
     ]);
     test.done();
@@ -378,34 +358,9 @@ exports['Form.toHTML - embeddedList'] = function (test) {
         this.endGroup = function () {
             return;
         };
-        this.embedList = function (type, path, value, raw, errors) {
-            calls.push(['embedList', type, path.join('.'), value, raw, errors]);
-            return {
-                start: function () {
-                    calls.push('start2');
-                    return '';
-                },
-                each: function (type, path, value, raw, errors) {
-                    calls.push(['each', type, path.join('.'), value, raw, errors]);
-                    return {
-                        start: function () {
-                            calls.push('start3');
-                            return '';
-                        },
-                        field: function (field, path, value, raw, errors) {
-                            calls.push(['field', field, path.join('.'), value, raw, errors]);
-                        },
-                        end: function () {
-                            calls.push('end3');
-                            return '';
-                        }
-                    };
-                },
-                end: function () {
-                    calls.push('end2');
-                    return '';
-                }
-            };
+        this.embedList = function (field, path, value, raw, errors) {
+            calls.push(['embedList', field.type, path.join('.'), value, raw, errors]);
+            return '';
         };
         this.end = function () {
             calls.push('end');
@@ -416,8 +371,6 @@ exports['Form.toHTML - embeddedList'] = function (test) {
     test.same(calls, [
         'start',
         ['embedList', t, 'embed', undefined, undefined, []],
-        'start2',
-        'end2',
         'end'
     ]);
     test.done();
@@ -452,34 +405,9 @@ exports['Form.toHTML - embeddedList - with values'] = function (test) {
         this.endGroup = function () {
             return;
         };
-        this.embedList = function (type, path, value, raw, errors) {
-            calls.push(['embedList', type, path.join('.'), value, raw, errors]);
-            return {
-                start: function () {
-                    calls.push('start2');
-                    return '';
-                },
-                each: function (type, path, value, raw, errors) {
-                    calls.push(['each', type, path.join('.'), value, raw, errors]);
-                    return {
-                        start: function () {
-                            calls.push('start3');
-                            return '';
-                        },
-                        field: function (field, path, value, raw, errors) {
-                            calls.push(['field', field, path.join('.'), value, raw, errors]);
-                        },
-                        end: function () {
-                            calls.push('end3');
-                            return '';
-                        }
-                    };
-                },
-                end: function () {
-                    calls.push('end2');
-                    return '';
-                }
-            };
+        this.embedList = function (field, path, value, raw, errors) {
+            calls.push(['embedList', field.type, path.join('.'), value, raw, errors]);
+            return '';
         };
         this.end = function () {
             calls.push('end');
@@ -496,17 +424,6 @@ exports['Form.toHTML - embeddedList - with values'] = function (test) {
     test.same(calls, [
         'start',
         ['embedList', t, 'embed', f.values.embed, f.raw.embed, []],
-        'start2',
-        ['each', t, 'embed.0', f.values.embed[0], f.raw.embed[0], []],
-        'start3',
-        ['field', t.fields._id, 'embed.0._id', '_id', '_idraw', []],
-        ['field', t.fields._rev, 'embed.0._rev', undefined, undefined, []],
-        ['field', t.fields._deleted, 'embed.0._deleted', undefined, undefined, []],
-        ['field', t.fields.type, 'embed.0.type', 't', 't', []],
-        ['field', t.fields.one, 'embed.0.one', '1', '1raw', []],
-        ['field', t.fields.two, 'embed.0.two', '2', '2raw', []],
-        'end3',
-        'end2',
         'end'
     ]);
     test.done();

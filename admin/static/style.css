@@ -86,7 +86,7 @@ table.viewlist {
     border-spacing: 0;
     margin: 0 0 18px 0;
     line-height: 0;
-    /*width: 100%;*/
+    /* width: 100%; */
 }
 
 .typelist th,
@@ -377,3 +377,29 @@ td.actions .button {
     color: red;
     font-weight: bold;
 }
+
+.spinner {
+    display: inline;
+    background: url("images/spinner-small.gif");
+    background-repeat: no-repeat;
+    background-position: center;
+    line-height: 1em;
+    padding: 1em;
+}
+
+.widget .selector select {
+    min-width: 10em;
+}
+
+.right {
+    float: right;
+}
+
+.left {
+    float: left;
+}
+
+.layout {
+    overflow: hidden;
+}
+

@@ -241,12 +241,12 @@ exports.getErrors = function (fn, args) {
  */
 
 exports.escapeHTML = function (s) {
-    // coerce to string
-    s = '' + s;
+    s = '' + s; /* Coerce to string */
     s = s.replace(/&/g, '&amp;');
     s = s.replace(/</g, '&lt;');
     s = s.replace(/>/g, '&gt;');
     s = s.replace(/"/g, '&quot;');
+    s = s.replace(/'/g, '&#39;');
     return s;
 };
 

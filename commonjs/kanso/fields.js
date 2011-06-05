@@ -745,7 +745,9 @@ exports.numberChoice = function (options) {
  */
 
 exports.embed = function (options) {
-    return new Embedded(options);
+    return new Embedded(_.defaults((options || {}), {
+        widget: widgets.defaultEmbedded()
+    }));
 };
 
 
@@ -760,7 +762,9 @@ exports.embed = function (options) {
  */
 
 exports.embedList = function (options) {
-    return new EmbeddedList(options);
+    return new EmbeddedList(_.defaults((options || {}), {
+        widget: widgets.defaultEmbedded()
+    }));
 };
 
 

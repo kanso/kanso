@@ -324,19 +324,36 @@ exports.removeDoc = function (doc, /*optional*/options, callback) {
  * @api public
  */
 
-exports.getView = function (view, /*optional*/q, callback) {
+exports.getView = function (view, /*optional*/q, /*optional*/options, callback) {
     if (!utils.isBrowser) {
         throw new Error('getView cannot be called server-side');
     }
     if (!callback) {
-        callback = q;
-        q = {};
+        if (!options) {
+            /* Arity = 2: Omits q, options */
+            callback = q;
+            options = {};
+            q = {};
+        } else {
+          /* Arity = 3: Omits options */
+            callback = options;
+            options = {};
+        }
     }
-    var base = utils.getBaseURL();
+    var base;
+    if (options.db) {
+        /* Force leading slash; make absolute path */
+        base = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db;
+    } else {
+        base = utils.getBaseURL();
+    }
     var name = exports.encode(settings.name);
     var viewname = exports.encode(view);
     var req = {
-        url: base + '/_db/_design/' + name + '/_view/' + viewname,
+        url: (
+            base + (options.db ? '' : '/_db') + '/_design/' +
+                (options.db || name) + '/_view/' + viewname
+        ),
         data: exports.stringifyQuery(q),
         expect_json: true
     };

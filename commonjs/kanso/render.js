@@ -25,7 +25,7 @@ exports.errorHTML = function (errors) {
     if (errors && errors.length) {
         var html = '<ul class="errors">';
         for (var i = 0; i < errors.length; i++) {
-            /* Fix me: XSS if a portion of the error string is user input. */
+            /* Fix me: XSS if any portion of the error string is user input. */
             html += '<li class="error_msg">' +
                 (errors[i].message || errors[i].toString()) +
             '</li>';
@@ -129,11 +129,17 @@ exports.classes = function (field, errors) {
 };
 
 /**
- *  Renders a form using a single table, with <tbody> tags to represent
- *  nested field groups. The <tbody>s are labelled with specific CSS
- *  classes, including depth information. See style.css for details
- *  on how to style this output.
+ * The default table renderer class, passed to the toHTML method of a
+ * form. Renders a form using a single table, with <tbody> tags to
+ * represent nested field groups. The <tbody>s are labelled with
+ * specific CSS classes, including depth information. See style.css
+ * for details on how to style this output.
+ *
+ * @name table
+ * @constructor
+ * @api public
  */
+
 exports.table = function () {
 
     /**
@@ -193,7 +199,7 @@ exports.table = function () {
      * Called by the forms layer when it encounters any regular
      * field -- i.e. one that is neither an embed nor an embedList.
      *
-     * @param {String} field
+     * @param {Object} field
      * @param {Array} path
      * @param {Object} value
      * @param {String} raw
@@ -203,7 +209,7 @@ exports.table = function () {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         if (field.widget.type === 'hidden') {
-            return field.widget.toHTML(name, value, raw);
+            return field.widget.toHTML(name, value, raw, field);
         }
         return '<tr class="' + exports.classes(field, errors).join(' ') + '">' +
             '<th>' +
@@ -211,7 +217,7 @@ exports.table = function () {
                 exports.descriptionHTML(field) +
             '</th>' +
             '<td>' +
-                field.widget.toHTML(name, value, raw) +
+                field.widget.toHTML(name, value, raw, field) +
                 exports.hintHTML(field) +
             '</td>' +
             '<td class="errors">' +
@@ -225,29 +231,23 @@ exports.table = function () {
      * An embed field contains either zero documents (if required is
      * false) or a single document.
      *
-     * @param {String} field
+     * @param {Object} field
      * @param {Array} path
      * @param {Object} value
      * @param {String} raw
      * @param {Array} errors
     */
-    this.embed = function (type, path, value, raw, errors) {
+    this.embed = function (field, path, value, raw, errors) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
-        var fval = value ? JSON.stringify(value).replace(/"/g, '&#34;'): '';
-        var display_name = value ? value._id: '';
-        if (type.display_name && value) {
-            display_name = type.display_name(value);
-        }
         return '<tr class="embedded">' +
             '<th>' +
-                exports.labelHTML(type, caption) +
-                exports.descriptionHTML(type) +
+                exports.labelHTML(field.type, caption) +
+                exports.descriptionHTML(field.type) +
             '</th>' +
-            '<td class="field" rel="' + type.name + '">' +
+            '<td class="field" rel="' + field.type.name + '">' +
             '<table rel="' + name + '"><tbody><tr><td>' +
-            '<input type="hidden" value="' + fval + '" name="' + name + '" />' +
-            '<span class="value">' + display_name + '</span>' +
+                field.widget.toHTML(name, value, raw, field) +
             '</td>' +
             '<td class="actions"></td>' +
             '</tr></tbody></table>' +
@@ -261,34 +261,29 @@ exports.table = function () {
      * Called by the forms layer when it encounters any embedList field.
      * An embedList field can contain any number of documents.
      *
-     * @param {String} field
+     * @param {Object} field
      * @param {Array} path
      * @param {Object} value
      * @param {String} raw
      * @param {Array} errors
     */
-    this.embedList = function (type, path, value, raw, errors) {
+    this.embedList = function (field, path, value, raw, errors) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         var html = '<tr class="embeddedlist">' +
             '<th>' +
-                exports.labelHTML(type, caption) +
-                exports.descriptionHTML(type) +
+                exports.labelHTML(field.type, caption) +
+                exports.descriptionHTML(field.type) +
             '</th>' +
-            '<td class="field" rel="' + type.name + '">' +
+            '<td class="field" rel="' + field.type.name + '">' +
             '<table rel="' + name + '"><tbody>';
         _.each(value, function (v, i) {
-            var fval = v ? JSON.stringify(v).replace(/"/g, '&#34;'): '';
-            var display_name = v ? v._id: '';
-            if (type.display_name && v) {
-                display_name = type.display_name(v);
-            }
-            html += '<tr><td>' +
-                '<input type="hidden" value="' + fval + '" ' +
-                       'name="' + name + '.' + i + '" />' +
-                '<span class="value">' + display_name + '</span>' +
+            html += (
+                '<tr><td>' +
+                    field.widget.toHTML(name, v, raw, field) +
                 '</td><td class="actions">' +
-                '</td></tr>';
+                '</td></tr>'
+            );
         });
         html += '</tbody></table></td>' +
             '<td class="errors">' +
@@ -373,7 +368,7 @@ exports.div = function () {
      * Called by the forms layer when it encounters any regular
      * field -- i.e. one that is neither an embed nor an embedList.
      *
-     * @param {String} field
+     * @param {Object} field
      * @param {Array} path
      * @param {Object} value
      * @param {String} raw
@@ -383,7 +378,7 @@ exports.div = function () {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         if (field.widget.type === 'hidden') {
-            return field.widget.toHTML(name, value, raw);
+            return field.widget.toHTML(name, value, raw, field);
         }
         return (
             '<div class="' +
@@ -397,7 +392,7 @@ exports.div = function () {
                 '</div>' +
                 '<div class="content">' +
                     '<div class="inner">' +
-                        field.widget.toHTML(name, value, raw) +
+                        field.widget.toHTML(name, value, raw, field) +
                     '</div>' +
                     '<div class="hint">' +
                         exports.hintHTML(field) +
@@ -416,35 +411,28 @@ exports.div = function () {
      * An embed field contains either zero documents (if required is
      * false) or a single document.
      *
-     * @param {String} field
+     * @param {Object} field
      * @param {Array} path
      * @param {Object} value
      * @param {String} raw
      * @param {Array} errors
     */
-    this.embed = function (type, path, value, raw, errors) {
+    this.embed = function (field, path, value, raw, errors) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
-        var fval = value ? JSON.stringify(value).replace(/"/g, '&#34;'): '';
-        var display_name = value ? value._id: '';
-        if (type.display_name && value) {
-            display_name = type.display_name(value);
-        }
         return (
             '<div class="' +
-                exports.classes(type, errors).join(' ') + '">' +
+                exports.classes(field.type, errors).join(' ') + '">' +
             '<div class="embedded">' +
                 '<div class="label">' +
                     '<label for="' + name + '">' +
-                        exports.labelHTML(type, caption) +
-                        exports.descriptionHTML(type) +
+                        exports.labelHTML(field.type, caption) +
+                        exports.descriptionHTML(field.type) +
                     '</label>' +
                 '</div>' +
-                '<div class="content" rel="' + type.name + '">' +
+                '<div class="content" rel="' + field.type.name + '">' +
                     '<div class="inner" rel="' + name + '">' +
-                        '<input type="hidden" value="' +
-                            fval + '" name="' + name + '" />' +
-                        '<span class="value">' + display_name + '</span>' +
+                        field.widget.toHTML(name, value, raw, field) +
                     '</div>' +
                     '<div class="actions">' +
                     '</div>' +
@@ -460,39 +448,32 @@ exports.div = function () {
      * Called by the forms layer when it encounters any embedList field.
      * An embedList field can contain any number of documents.
      *
-     * @param {String} field
+     * @param {Object} field
      * @param {Array} path
      * @param {Object} value
      * @param {String} raw
      * @param {Array} errors
     */
-    this.embedList = function (type, path, value, raw, errors) {
+    this.embedList = function (field, path, value, raw, errors) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         var html = (
             '<div class="' +
-                exports.classes(type, errors).join(' ') + '">' +
+                exports.classes(field.type, errors).join(' ') + '">' +
             '<div class="embeddedlist">' +
                 '<div class="label">' +
                     '<label for="' + name + '">' +
-                        exports.labelHTML(type, caption) +
-                        exports.descriptionHTML(type) +
+                        exports.labelHTML(field.type, caption) +
+                        exports.descriptionHTML(field.type) +
                     '</label>' +
                 '</div>' +
-                '<div class="content" rel="' + type.name + '">'
+                '<div class="content" rel="' + field.type.name + '">'
         );
         _.each(value, function (v, i) {
-            var fval = v ? JSON.stringify(v).replace(/"/g, '&#34;'): '';
-            var display_name = v ? v._id: '';
-            if (type.display_name && v) {
-                display_name = type.display_name(v);
-            }
             html += (
                 '<div class="item" rel="' + name + '">' +
                     '<div class="inner">' +
-                        '<input type="hidden" value="' + fval + '" ' +
-                            'name="' + name + '.' + i + '" />' +
-                        '<span class="value">' + display_name + '</span>' +
+                        field.widget.toHTML(name, value, raw, field) +
                     '</div>' +
                     '<div class="actions">' +
                     '</div>' +
