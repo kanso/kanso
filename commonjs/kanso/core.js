@@ -192,7 +192,7 @@ exports.init = function () {
             if (curr &&
                 curr.url === url &&
                 curr.timestamp === state.timestamp &&
-                curr.method === state.method) {
+                (curr.method || 'GET') === (state.method || 'GET')) {
                 // duplicate popstate event
                 // console.log('duplicate popstate event');
                 return;
