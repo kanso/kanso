@@ -504,22 +504,22 @@ exports['Form.validate - error on string field'] = function (test) {
 };
 
 exports['Form.validate - options.exclude'] = function (test) {
-    var type = {fields: {
+    var fieldset = {
         foo: fields.string(),
         bar: fields.number(),
         baz: fields.number({required: false})
-    }};
+    };
 
     var f;
 
-    f = new forms.Form(type, null, { exclude: ['bar', 'baz'] });
+    f = new forms.Form(fieldset, null, { exclude: ['bar', 'baz'] });
     f.validate({form: {foo: 'foo'}});
     // Although 'bar' is excluded, its required for the fieldset to validate
     // overall. Unless the form was initialized with a document containing
     // a value for 'bar', validation should fail.
     test.strictEqual(f.isValid(), false);
 
-    f = new forms.Form(type, null, { exclude: ['bar', 'baz'] });
+    f = new forms.Form(fieldset, null, { exclude: ['bar', 'baz'] });
     f.validate({form: {foo: 'foo', bar: 123}});
     test.strictEqual(f.isValid(), true);
 
@@ -538,26 +538,26 @@ exports['Form.validate - options.exclude'] = function (test) {
     test.same(calls, ['foo']);
 
     // with initial values
-    f = new forms.Form(type, {bar: 123}, { exclude: ['bar', 'baz'] });
+    f = new forms.Form(fieldset, {bar: 123}, { exclude: ['bar', 'baz'] });
     f.validate({form: {foo: 'foo'}});
     test.strictEqual(f.isValid(), true);
     test.same(f.values, {foo: 'foo', bar: 123});
 
-    f = new forms.Form(type, {bar: 123}, { exclude: ['baz'] });
+    f = new forms.Form(fieldset, {bar: 123}, { exclude: ['baz'] });
     f.validate({form: {foo: 'foo', bar: 456}});
     test.strictEqual(f.isValid(), true);
     test.same(f.values, {foo: 'foo', bar: 456});
 
     // with field's default values
-    type = {fields: {
+    fieldset = {
         one: fields.string({
             default_value: function (userCtx) {
                 return 'default value';
             }
         }),
         two: fields.string()
-    }};
-    f = new forms.Form(type, null, { exclude: ['one'] });
+    };
+    f = new forms.Form(fieldset, null, { exclude: ['one'] });
     f.validate({form: {two: 'asdf'}});
     test.strictEqual(f.isValid(), true);
     test.same(f.values, {one: 'default value', two: 'asdf'});
@@ -566,19 +566,19 @@ exports['Form.validate - options.exclude'] = function (test) {
 };
 
 exports['Form.validate - options.fields'] = function (test) {
-    var type = {fields: {
+    var fieldset = {
         foo: fields.string(),
         bar: fields.number(),
         baz: fields.number({required: false})
-    }};
+    };
 
     var f;
 
-    f = new forms.Form(type, null, { fields: ['bar', 'baz'] });
+    f = new forms.Form(fieldset, null, { fields: ['bar', 'baz'] });
     f.validate({form: {bar: 123}});
     test.strictEqual(f.isValid(), false);
 
-    f = new forms.Form(type, null, { fields: ['bar', 'baz'] });
+    f = new forms.Form(fieldset, null, { fields: ['bar', 'baz'] });
     f.validate({form: {foo: 'foo', bar: 123}});
     test.strictEqual(f.isValid(), true);
 
@@ -594,29 +594,29 @@ exports['Form.validate - options.fields'] = function (test) {
         this.end = function () {};
     }
     f.toHTML({}, TestRenderer);
-    test.same(calls, ['bar','baz']);
+    test.same(calls, ['bar', 'baz']);
 
     // with initial values
-    f = new forms.Form(type, {bar: 123}, { fields: ['foo'] });
+    f = new forms.Form(fieldset, {bar: 123}, { fields: ['foo'] });
     f.validate({form: {foo: 'foo'}});
     test.strictEqual(f.isValid(), true);
     test.same(f.values, {foo: 'foo', bar: 123});
 
-    f = new forms.Form(type, {bar: 123}, { fields: ['foo', 'bar'] });
+    f = new forms.Form(fieldset, {bar: 123}, { fields: ['foo', 'bar'] });
     f.validate({form: {foo: 'foo', bar: 456}});
     test.strictEqual(f.isValid(), true);
     test.same(f.values, {foo: 'foo', bar: 456});
 
     // with field's default values
-    type = {fields: {
+    fieldset = {
         one: fields.string({
             default_value: function (userCtx) {
                 return 'default value';
             }
         }),
         two: fields.string()
-    }};
-    f = new forms.Form(type, null, { fields: ['two'] });
+    };
+    f = new forms.Form(fieldset, null, { fields: ['two'] });
     f.validate({form: {two: 'asdf'}});
     test.strictEqual(f.isValid(), true);
     test.same(f.values, {one: 'default value', two: 'asdf'});

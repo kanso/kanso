@@ -17,10 +17,27 @@ var utils = require('./utils'),
 /**
  * Form object, presents fields and parses responses.
  *
+ * #### Options ####
+ *
+ * <table class="options">
+ *   <tr>
+ *      <td class="name">exclude</td>
+ *      <td class="type">Array</td>
+ *      <td class="description">a list of field names to exclude</td>
+ *   </tr>
+ *   <tr>
+ *      <td class="name">fields</td>
+ *      <td class="type">Array</td>
+ *      <td class="description">
+ *          a subset of fields to use (inverse of excluded)
+ *      </td>
+ *   </tr>
+ * </table>
+ *
  * @name Form(fields | type, [doc])
- * @param {Object} fields
- * @param {Object} doc (optional)
- * @param {Object} options
+ * @param {Object} fields  - an object literal containing fields or a Type
+ * @param {Object} doc     - (optional) the original document being edited
+ * @param {Object} options - (optional) see available options above
  * @constructor
  * @api public
  */
@@ -29,9 +46,6 @@ var Form = exports.Form = function Form(fields, doc, options) {
     this.options = options || {};
     this.values = doc;
 
-    this.fields = (fields && fields.fields) ? fields.fields: fields;
-
-    /*
     if (utils.constructorName(fields) === 'Type') {
         this.type = fields;
         this.fields = this.type.field;
@@ -39,7 +53,6 @@ var Form = exports.Form = function Form(fields, doc, options) {
     else {
         this.fields = fields;
     }
-    */
 };
 
 /**
