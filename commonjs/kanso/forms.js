@@ -135,7 +135,6 @@ var errsBelowPath = function (errs, path) {
  * @api public
  */
 
-// TODO: this method is fugly, refactor!
 Form.prototype.renderFields = function (renderer, fields, values, raw, errs, path) {
     fields = fields || {};
     values = values || {};
