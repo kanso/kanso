@@ -1061,7 +1061,14 @@ exports['numberChoice'] = function (test) {
     test.equal(f.validate({}, 3).length, 0);
     // should return errors
     test.equal(f.validate({}, 4).length, 1);
-    test.equal(f.validate({}, NaN).length, 2);
+    // required field
+    test.equal(f.validate({}, NaN).length, 1);
+    f = fields.numberChoice({
+        values: [1, 2, 3],
+        required: false
+    });
+    // invalid choice and not a number
+    test.equal(f.validate({}, 'asfd').length, 2);
     test.done();
 };
 
