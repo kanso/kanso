@@ -588,16 +588,22 @@ exports['Form.validate - error on string field'] = function (test) {
 
 exports['Form.validate - options.exclude'] = function (test) {
     test.expect(2);
-    var req = {};
-    var f = new forms.Form(
-        { foo: fields.string(), bar: fields.number(), baz: fields.number() },
-        null, { exclude: ['bar', 'baz'] }
-    );
+    var type = {fields: {
+        foo: fields.string(),
+        bar: fields.number(),
+        baz: fields.number({required: false})
+    }};
+    var f = new forms.Form(type, null, { exclude: ['bar', 'baz'] });
+
+    var req = {form: {foo: 'foo'}};
 
     f.validate(req);
-    test.strictEqual(f.isValid(), false); // broken
+    // Although 'bar' is excluded, its required for the fieldset to validate
+    // overall. Unless the form was initialized with a document containing
+    // a value for 'bar', validation should fail.
+    test.strictEqual(f.isValid(), false);
 
-    req = {form: {foo: 'hi'}};
+    req = {form: {foo: 'foo', bar: 123}};
     f.validate(req);
     test.strictEqual(f.isValid(), true);
 
