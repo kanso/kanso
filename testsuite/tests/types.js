@@ -274,7 +274,7 @@ exports['validate Embedded - optional'] = function (test) {
 
     var t1 = new Type('t1', {
         fields: {
-            one: new Field(),
+            one: new Field()
         }
     });
 
@@ -420,7 +420,7 @@ exports['authorize Embedded - optional'] = function (test) {
 
     var t1 = new Type('t1', {
         fields: {
-            one: new Field(),
+            one: new Field()
         }
     });
 

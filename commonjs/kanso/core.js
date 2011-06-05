@@ -1,5 +1,5 @@
 /*global window: false, getRow: true, start: true, $: false, pageTracker: true,
-  kanso: true, log: true, console: true */
+  kanso: true, log: true, console: true, send: true */
 
 /**
  * The core module contains functions used by kanso to facilitate the running

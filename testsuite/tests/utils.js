@@ -136,7 +136,7 @@ exports['deepCopy - circular'] = function (test) {
 exports['deepCopy - constructorName'] = function (test) {
     function Test() {
         this.name = 'test';
-    };
+    }
 
     var a = {one: new Test()};
     var b = utils.deepCopy(a);
@@ -153,7 +153,7 @@ exports['deepCopy - instanceof'] = function (test) {
         this.hello = function () {
             return 'hello ' + this.name;
         };
-    };
+    }
 
     var a = {one: new Test('test')};
     var b = utils.deepCopy(a);
