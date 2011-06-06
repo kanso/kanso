@@ -190,6 +190,15 @@ code {
     margin: 0;
 }
 
+img.diagram {
+    border: none !important;
+    box-shadow: none !important;
+    -moz-box-shadow: none !important;
+    -webkit-box-shadow: none !important;
+    margin: 4.618em 1.618em !important;
+}
+
+
 #contributors img {
     margin: 0;
 }
