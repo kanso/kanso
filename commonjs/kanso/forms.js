@@ -8,7 +8,8 @@
  * Module dependencies
  */
 
-var utils = require('./utils'),
+var core = require('./core'),
+    utils = require('./utils'),
     fieldset = require('./fieldset'),
     render = require('./render'),
     _ = require('./underscore')._;
@@ -50,7 +51,10 @@ var Form = exports.Form = function Form(fields, doc) {
  * @api public
  */
 
-Form.prototype.validate = function (req) {
+Form.prototype.validate = function (/*optional*/req) {
+    if (!req) {
+        req = core.currentRequest();
+    }
     this.raw = req.form || {};
     var tree = exports.formValuesToTree(this.raw);
     this.values = exports.parseRaw(this.fields, tree);
@@ -77,17 +81,15 @@ Form.prototype.isValid = function () {
  * Converts current form to a HTML string, using an optional renderer class.
  *
  * @name Form.toHTML(req, [RendererClass])
- * @param {Object} req
+ * @param {Object} req Kanso request object; null for most recent. (optional)
  * @param {Renderer} RendererClass (optional)
  * @returns {String}
  * @api public
  */
 
-Form.prototype.toHTML = function (req, /*optional*/RendererClass) {
+Form.prototype.toHTML = function (/*optional*/req, /*optional*/RendererClass) {
     if (!req) {
-        throw new Error(
-            'Form\'s toHTML method requires request object as first argument'
-        );
+        req = core.currentRequest();
     }
     var values = this.values || fieldset.createDefaults(
         this.fields,

@@ -16,7 +16,8 @@
  * Module dependencies
  */
 
-var settings = require('./settings'); // settings module is auto-generated
+var core = require('./core'),
+    settings = require('./settings'); // settings module is auto-generated
 
 
 /**
@@ -96,7 +97,10 @@ exports.getWindowLocation = function () {
 // couchdb's commonjs implementation are fixed it can be moved back into
 // core.js. For now, this is also exported from core.js and should
 // be accessed from there.
-exports.getBaseURL = function (req) {
+exports.getBaseURL = function (/*optional*/req) {
+    if (!req) {
+        req = core.currentRequest();
+    }
     if ('baseURL' in settings) {
         return settings.baseURL;
     }
@@ -298,7 +302,12 @@ exports.parseCSV = function (csvString) {
  * @api public
  */
 
-exports.redirect = function (req, url) {
+exports.redirect = function (/*optional*/req, url) {
+    if (!url) {
+        /* Arity = 1: url only */
+        url = req;
+        req = core.currentRequest();
+    }
     var baseURL = exports.getBaseURL(req);
     return {code: 302, headers: {'Location': baseURL + url}};
 };
