@@ -488,12 +488,12 @@ exports['Form.validate - empty strings'] = function (test) {
     test.done();
 };
 
-exports['Form.validate - error on string field'] = function (test) {
+exports['Form.validate - throw error on string field'] = function (test) {
     test.expect(1);
     var req = {};
     var f = new forms.Form({
         baz: fields.string(),
-        type: 'test'
+        foo: 'test'
     });
     try {
         f.validate(req);
