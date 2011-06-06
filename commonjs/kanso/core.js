@@ -129,12 +129,15 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
  * this value to see if they should continue rendering the result or not.
  */
 
+/* global __kansojs_current_request; */
+
 exports.currentRequest = function (v) {
-    /* global __kansojs_current_request; */
     if (v) {
         __kansojs_current_request = v;
+    } else if (typeof(__kansojs_current_request) == 'undefined') {
+        __kansojs_current_request = {};
     }
-    return (__kansojs_current_request || {});
+    return __kansojs_current_request;
 };
 
 
