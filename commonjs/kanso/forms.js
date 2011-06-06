@@ -46,6 +46,8 @@ var Form = exports.Form = function Form(fields, doc, options) {
     this.options = options || {};
     this.values = doc;
 
+    this.fields = (fields && fields.fields) ? fields.fields: fields;
+    /*
     if (utils.constructorName(fields) === 'Type') {
         this.type = fields;
         this.fields = this.type.field;
@@ -53,6 +55,7 @@ var Form = exports.Form = function Form(fields, doc, options) {
     else {
         this.fields = fields;
     }
+    */
 };
 
 /**
