@@ -157,17 +157,17 @@ form.delete_form {
     padding: 0;
 }
 
-.form_table th {
+.render-table th {
     text-align: left;
     padding-right: 20px;
     vertical-align: top;
 }
 
-.form_table td {
+.render-table td {
     vertical-align: top;
 }
 
-.form_table tbody.head th {
+.render-table tbody.head th {
     color: #555;
     font-weight: bold;
     font-size: 1.1em;
@@ -186,17 +186,17 @@ p.description {
     margin-bottom: 2em;
 }
 
-.form_table td.errors {
+.render-table td.errors {
     padding-left: 10px;
 }
 
-.form_table td.errors ul {
+.render-table td.errors ul {
     list-style-type: none;
     padding: 0;
     margin: 0;
 }
 
-.form_table td.errors ul li {
+.render-table td.errors ul li {
     padding: 0;
     margin: 0;
     color: red;

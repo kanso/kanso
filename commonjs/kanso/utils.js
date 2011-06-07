@@ -17,7 +17,7 @@
  */
 
 var core = require('./core'),
-    settings = require('./settings'); // settings module is auto-generated
+    settings = require('./settings'), // settings module is auto-generated
     _ = require('./underscore')._;
 
 
@@ -415,3 +415,22 @@ exports.override = function (a, b) {
     }
     return b;
 };
+
+/**
+ * Resizes a simplemodal control to match the dimensions of the
+ * specified div.
+ *
+ * @name resizeModal(div)
+ * @param {Element} The element from which to read width/height.
+ * @api public
+ */
+
+exports.resizeModal = function (div) {
+    $('#simplemodal-container').css({height: 'none', width: 'none'});
+    $('#simplemodal-container').css({
+        height: (div.height() + 20) + 'px',
+        width: (div.width() + 40) + 'px'
+    });
+    $.modal.setPosition();
+};
+

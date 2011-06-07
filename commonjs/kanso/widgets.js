@@ -10,7 +10,6 @@
  */
 
 var db = require('./db'),
-    forms = require('./forms'),
     utils = require('./utils'),
     _ = require('./underscore')._;
 
@@ -118,8 +117,10 @@ exports.scriptTagForInit = function(module, method, options, args)
     return (
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
+            'console.log("before");' +
             "require('" + module + "')." + method + '(' +
                 (args ? args + ', ' : '') + "'" + json_options + "');\n" +
+            'console.log("after");' +
         "// ]]>" +
         '</script>'
     );
@@ -242,8 +243,8 @@ exports.defaultEmbedded = function (options) {
     var w = new Widget('embedded', options);
     w.toHTML = function (name, value, raw, field) {
 
-        var fval = utils.escapeHTML(JSON.stringify(value));
         var display_name = (value ? value._id: '');
+        var fval = (value ? utils.escapeHTML(JSON.stringify(value)) : '');
 
         if (field.type.display_name && v) {
             display_name = field.type.display_name(v);
