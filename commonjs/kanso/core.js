@@ -129,7 +129,16 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
  * this value to see if they should continue rendering the result or not.
  */
 
-var current_request_uuid = null;
+/* global __kansojs_current_request; */
+
+exports.currentRequest = function (v) {
+    if (v) {
+        __kansojs_current_request = v;
+    } else if (typeof(__kansojs_current_request) == 'undefined') {
+        __kansojs_current_request = {};
+    }
+    return __kansojs_current_request;
+};
 
 
 /**
@@ -481,7 +490,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            if (current_request_uuid === req.uuid) {
+            if (exports.currentRequest().uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -580,7 +589,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            if (current_request_uuid === req.uuid) {
+            if (exports.currentRequest().uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -706,7 +715,7 @@ exports.runListBrowser = function (req, name, view, callback) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
         db.getView(view, req.query, function (err, data) {
-            if (current_request_uuid === req.uuid) {
+            if (exports.currentRequest().uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -858,7 +867,7 @@ exports.handle = function (method, url, data) {
             }
 
             console.log(msg);
-            current_request_uuid = req.uuid;
+            exports.currentRequest(req);
 
             var after = function () {
                 if (parsed.hash) {

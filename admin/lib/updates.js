@@ -3,11 +3,11 @@
 
 var utils = require('./utils'),
     admin_forms = require('./forms'),
+    forms = require('kanso/forms'),
     core = require('kanso/core'),
     templates = require('kanso/templates'),
     db = require('kanso/db'),
     flashmessages = require('kanso/flashmessages');
-
 
 exports.addtype = function (doc, req) {
     if (!req.client) {
@@ -25,7 +25,7 @@ exports.addtype = function (doc, req) {
         var forms = utils.appRequire(ddoc, 'kanso/forms'),
             form = new forms.Form(type);
 
-        form.validate(req);
+        form.validate(req.form);
 
         if (form.isValid()) {
             db.saveDoc(form.values, function (err, resp) {
@@ -72,10 +72,11 @@ exports.addtype = function (doc, req) {
                 form: form.toHTML(req)
             });
 
+            content += widgets.scriptTagForInit('./forms', 'bind');
             $('#content').html(content);
+
             document.title = settings.name + ' - Types - ' + req.query.type;
         }
-        admin_forms.bind(req);
     });
 };
 
@@ -94,7 +95,7 @@ exports.updatetype = function (doc, req) {
         var forms = utils.appRequire(ddoc, 'kanso/forms'),
             form = new forms.Form(type);
 
-        form.validate(req);
+        form.validate(req.form);
 
         if (form.isValid()) {
             db.saveDoc(form.values, function (err, resp) {
@@ -141,10 +142,11 @@ exports.updatetype = function (doc, req) {
                 form: form.toHTML(req)
             });
 
+            content += widgets.scriptTagForInit('bind', null, './forms');
             $('#content').html(content);
+
             document.title = settings.name + ' - Types - ' + doc.type;
         }
-        admin_forms.bind(req);
     });
 };
 

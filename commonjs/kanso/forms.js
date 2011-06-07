@@ -8,7 +8,8 @@
  * Module dependencies
  */
 
-var utils = require('./utils'),
+var core = require('./core'),
+    utils = require('./utils'),
     fieldset = require('./fieldset'),
     render = require('./render'),
     _ = require('./underscore')._;
@@ -63,15 +64,16 @@ var Form = exports.Form = function Form(fields, doc, options) {
  * the form instance.
  *
  * @name Form.validate(req)
- * @param {Object} req
+ * @param {Object} form
  * @returns {Form}
  * @api public
  */
 
-Form.prototype.validate = function (req) {
-    // TODO: change this to accept an object instead of a request?
-    // doing req.form isn't that difficult and would make more sense
-    this.raw = req.form || {};
+Form.prototype.validate = function (/*optional*/form) {
+    if (!form) {
+        form = core.currentRequest().form;
+    }
+    this.raw = form || {};
     var tree = exports.formValuesToTree(this.raw);
 
     this.values = utils.override(
@@ -101,17 +103,15 @@ Form.prototype.isValid = function () {
  * Converts current form to a HTML string, using an optional renderer class.
  *
  * @name Form.toHTML(req, [RendererClass])
- * @param {Object} req
+ * @param {Object} req Kanso request object; null for most recent. (optional)
  * @param {Renderer} RendererClass (optional)
  * @returns {String}
  * @api public
  */
 
-Form.prototype.toHTML = function (req, /*optional*/RendererClass) {
+Form.prototype.toHTML = function (/*optional*/req, /*optional*/RendererClass) {
     if (!req) {
-        throw new Error(
-            'Form\'s toHTML method requires request object as first argument'
-        );
+        req = core.currentRequest();
     }
     var values = this.values || fieldset.createDefaults(
         this.fields,

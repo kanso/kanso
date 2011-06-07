@@ -4,14 +4,15 @@
 var utils = require('./utils'),
     kanso_utils = require('kanso/utils'),
     db = require('kanso/db'),
+    core = require('kanso/core'),
     admin_forms = require('./forms'),
     templates = require('kanso/templates'),
     querystring = require('kanso/querystring'),
     _ = require('kanso/underscore');
 
 
-var adminShow = function (fn) {
-    return function (doc, req) {
+var adminShow = function (fn, req) {
+    return function (doc) {
         if (!req.client) {
             return templates.render('base.html', req, {
                 title: 'Admin',
@@ -94,7 +95,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         form = new forms.Form(type);
 
     if (req.method === 'POST') {
-        form.validate(req);
+        form.validate(req.form);
     }
     var content = templates.render('add_type.html', req, {
         app: req.query.app,
@@ -105,9 +106,11 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         description: type.description,
         form: form.toHTML(req)
     });
+
+    content += widgets.scriptTagForInit('./forms', 'bind');
     $('#content').html(content);
+
     document.title = settings.name + ' - Types - ' + req.query.type;
-    admin_forms.bind(req);
 });
 
 exports.edittype = adminShow(function (doc, ddoc, req) {
@@ -128,9 +131,10 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
         form: form.toHTML(req)
     });
 
+    content += widgets.scriptTagForInit('./forms', 'bind');
     $('#content').html(content);
+
     document.title = settings.name + ' - Types - ' + doc.type;
-    admin_forms.bind(req);
 });
 
 exports.fieldPairs = function (fields, doc, path) {

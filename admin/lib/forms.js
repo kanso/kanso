@@ -1,27 +1,28 @@
 /*global $: false */
 
 var utils = require('./utils'),
+    core = require('kanso/core'),
     db = require('kanso/db'),
     kanso_utils = require('kanso/utils'),
     querystring = require('kanso/querystring');
 
 
-exports.bind = function (req) {
+exports.bind = function () {
     $('form').each(function () {
         $('.embedded, .embeddedlist', this).each(function () {
-            exports.createAddBtn(req, this);
+            exports.createAddBtn(this);
             $('tr', this).each(function () {
-                exports.updateRow(req, this);
+                exports.updateRow(this);
             });
         });
     });
 };
 
-exports.updateRow = function (req, row) {
+exports.updateRow = function (row) {
     var val = exports.getRowValue(row);
     var field_td = $(row).parent().parent().parent();
     if (val) {
-        exports.addRowControls(req, row);
+        exports.addRowControls(row);
     }
     else {
         $(row).remove();
@@ -46,26 +47,31 @@ exports.getRowValue = function (row) {
     return JSON.parse(str);
 };
 
-exports.addRowControls = function (req, row) {
+exports.addRowControls = function (row) {
     if (exports.getRowValue(row)) {
         var container = $('td.actions', row).html('');
         var editbtn = $('<input type="button" class="editbtn" value="Edit" />');
         var delbtn  = $('<input type="button" class="delbtn" value="Delete" />');
-        editbtn.click(exports.editbtnHandler(req));
-        delbtn.click(exports.delbtnHandler(req));
+        editbtn.click(exports.editbtnHandler());
+        delbtn.click(exports.delbtnHandler());
         container.append(editbtn, delbtn);
     }
 };
 
-exports.createAddBtn = function (req, field_row) {
+exports.createAddBtn = function (field_row) {
     var addbtn = $('<input type="button" class="addbtn" value="Add" />');
-    addbtn.click(exports.addbtnHandler(req));
+    addbtn.click(exports.addbtnHandler());
     // remove any existing add buttons
     $('.field .addbtn', field_row).remove();
     $('.field', field_row).append(addbtn);
 };
 
-exports.getModules = function (req, callback) {
+exports.getModules = function (/*optional*/req, callback) {
+    if (!callback) {
+        /* Arity = 1: callback only */
+        callback = req;
+        req = core.currentRequest();
+    }
     utils.getDesignDoc(req.query.app, function (err, ddoc) {
         if (err) {
             throw err;
@@ -77,18 +83,18 @@ exports.getModules = function (req, callback) {
     });
 };
 
-exports.showModal = function (div, field_td, row, req, typename, val, rawval) {
-    exports.getModules(req, function (settings, app, forms) {
+exports.showModal = function (div, field_td, row, typename, val, rawval) {
+    exports.getModules(function (settings, app, forms) {
         var type = app.types[typename];
         var form = new forms.Form(type, val);
 
         if (rawval) {
-            form.validate({form: rawval});
+            form.validate(rawval);
         }
 
         div.html('<h2>' + (val ? 'Edit ': 'Add ') + typename + '</h2>');
         var divform = $('<form><table class="form_table"><tbody>' +
-            form.toHTML(req) +
+            form.toHTML() +
         '</tbody></table></form>');
         div.append(divform);
 
@@ -97,7 +103,7 @@ exports.showModal = function (div, field_td, row, req, typename, val, rawval) {
         okbtn.click(function () {
             var qs = $('form', div).serialize().replace(/\+/g, '%20');
             var rawval = querystring.parse(qs);
-            form.validate({form: rawval});
+            form.validate(rawval);
             if (form.isValid()) {
                 if (!val) {
                     row = exports.addRow(field_td);
@@ -107,11 +113,11 @@ exports.showModal = function (div, field_td, row, req, typename, val, rawval) {
                 var jsonval = JSON.stringify(form.values);
                 $('input:hidden', row).val(jsonval);
                 $('span.value', row).text(form.values._id);
-                exports.updateRow(req, row);
+                exports.updateRow(row);
                 $.modal.close();
             }
             else {
-                exports.showModal(div, field_td, row, req, typename, val, rawval);
+                exports.showModal(div, field_td, row, typename, val, rawval);
             }
         });
         div.append(okbtn);
@@ -172,12 +178,12 @@ exports.addRow = function (field_td) {
     return tr;
 };
 
-exports.addbtnHandler = function (req) {
+exports.addbtnHandler = function () {
     return function (ev) {
         var field_td = $(this).parent();
         var typename = field_td.attr('rel');
         var div = $('<div/>');
-        exports.showModal(div, field_td, null, req, typename);
+        exports.showModal(div, field_td, null, typename);
     };
 };
 
@@ -186,22 +192,22 @@ exports.getRowType = function (row) {
     return field_td.attr('rel');
 };
 
-exports.editbtnHandler = function (req) {
+exports.editbtnHandler = function () {
     return function (ev) {
         var row = $(this).parent().parent();
         var field_td = row.parent().parent().parent();
         var val = exports.getRowValue(row);
         var typename = exports.getRowType(row);
         var div = $('<div/>');
-        exports.showModal(div, field_td, row, req, typename, val);
+        exports.showModal(div, field_td, row, typename, val);
     };
 };
 
-exports.delbtnHandler = function (req) {
+exports.delbtnHandler = function () {
     return function (ev) {
         var row = $(this).parent().parent();
         $('input:hidden', row).val('');
         $('span.value', row).html('');
-        exports.updateRow(req, row);
+        exports.updateRow(row);
     };
 };
