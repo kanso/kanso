@@ -22,12 +22,12 @@ Install the most recent _stable_ version of
 [kanso](https://github.com/caolan/kanso) from GitHub.
 Fetch the relevant submodules by doing the following in the cloned directory:
 
-    git submodule init
-    git submodule update
+<pre><code class="no-highlight">git submodule init
+git submodule update</code></pre>
 
 You are then ready to install:
 
-    make && sudo make install
+<pre><code class="no-highlight">make && sudo make install</code></pre>
 
 
 ### Using NPM
@@ -35,7 +35,7 @@ You are then ready to install:
 If you already have node.js installed, and you're using npm
 (Node Package Manager), then you can install by simply doing the following:
 
-    sudo npm install -g kanso
+<pre><code class="no-highlight">sudo npm install -g kanso</code></pre>
 
 
 ### Why does Kanso need node.js?
@@ -54,17 +54,17 @@ try to explain the concepts as we go.
 
 To create a new project skeleton, enter the following command:
 
-    kanso create myblog
+<pre><code class="no-highlight">kanso create myblog</code></pre>
 
 This creates a number of files and directories representing a basic
 project structure. We'll look more closely at the generated files later,
 but for a brief overview, the directories fall into the following categories:
 
-    myblog
-      |- lib             CommonJS modules which define your app
-      |- static          Static files such as jQuery and CSS
-      |- templates       HTML templates used by the app
-      |- kanso.json      Project configuration
+<pre><code class="no-highlight">myblog
+  |- lib             CommonJS modules which define your app
+  |- static          Static files such as jQuery and CSS
+  |- templates       HTML templates used by the app
+  |- kanso.json      Project configuration</code></pre>
 
 This structure is a merely a guide and you are free to place files
 wherever it makes sense, provided you update the configuration settings in
@@ -95,7 +95,7 @@ help on any of the commands used in this tutorial by typing <code>kanso help</co
 Let's push the new project to your CouchDB instance, and check that everthing
 works. To do this, enter the following command from your project directory:
 
-    kanso push http://localhost:5984/myblog
+<pre><code class="no-highlight">kanso push http://localhost:5984/myblog</code></pre>
 
 <img src="images/deployment1.png" alt="pushing myblog" />
 
@@ -139,13 +139,13 @@ widgets = require('kanso/widgets');
 
 
 exports.blogpost = new Type('blogpost', {
-fields: {
-    created: fields.timestamp(),
-    title: fields.string(),
-    text: fields.string({
-        widget: widgets.textarea({cols: 40, rows: 10})
-    })
-}
+    fields: {
+        created: fields.timestamp(),
+        title: fields.string(),
+        text: fields.string({
+            widget: widgets.textarea({cols: 40, rows: 10})
+        })
+    }
 });
 </code></pre>
 
@@ -164,7 +164,7 @@ As a useful way to play with data types, kanso provides a basic admin app.
 You can push this app to the same database you pushed the 'myblog' project to
 by using the following command:
 
-    kanso pushadmin http://localhost:5984/myblog
+<pre><code class="no-highlight">kanso pushadmin http://localhost:5984/myblog</code></pre>
 
 <img src="images/describing_the_data1.png" alt="push the admin app" />
 
@@ -214,11 +214,11 @@ Adding a view to a kanso app couldn't be simpler. Just open up the
 <code>lib/views.js</code> file and add the following example view:
 
 <pre><code class="javascript">exports.blogposts_by_created = {
-map: function (doc) {
-    if (doc.type === 'blogpost') {
-        emit(doc.created, doc.title);
+    map: function (doc) {
+        if (doc.type === 'blogpost') {
+            emit(doc.created, doc.title);
+        }
     }
-}
 };</code></pre>
 
 **Push the app**, then revisit the admin interface at
@@ -260,31 +260,31 @@ date they were created. Add the following to <code>lib/lists.js</code>:
 
 exports.homepage = function (head, req) {
 
-start({code: 200, headers: {'Content-Type': 'text/html'}});
+    start({code: 200, headers: {'Content-Type': 'text/html'}});
 
-// fetch all the rows
-var row, rows = [];
-while (row = getRow()) {
-    rows.push(row);
-}
+    // fetch all the rows
+    var row, rows = [];
+    while (row = getRow()) {
+        rows.push(row);
+    }
 
-// generate the markup for a list of blog posts
-var content = templates.render('blogposts.html', req, {
-    rows: rows
-});
-
-if (req.client) {
-    // being run client-side, update the current page
-    $('#content').html(content);
-    document.title = 'MyBlog';
-}
-else {
-    // being run server-side, return a complete rendered page
-    return templates.render('base.html', req, {
-        content: content,
-        title: 'MyBlog'
+    // generate the markup for a list of blog posts
+    var content = templates.render('blogposts.html', req, {
+        rows: rows
     });
-}
+
+    if (req.client) {
+        // being run client-side, update the current page
+        $('#content').html(content);
+        document.title = 'MyBlog';
+    }
+    else {
+        // being run server-side, return a complete rendered page
+        return templates.render('base.html', req, {
+            content: content,
+            title: 'MyBlog'
+        });
+    }
 
 };</code></pre>
 
@@ -303,13 +303,13 @@ the following content:
 <pre><code>&lt;h1&gt;My Blog&lt;/h1&gt;
 
 {?rows}
-&lt;ul&gt;
-{#rows}
-  &lt;li&gt;&lt;a href="{baseURL}/{id}"&gt;{value}&lt;/a&gt;&lt;/li&gt;
-{/rows}
-&lt;/ul&gt;
-{:else}
-&lt;p&gt;No blog posts&lt;/p&gt;
+  &lt;ul&gt;
+  {#rows}
+    &lt;li&gt;&lt;a href="{baseURL}/{id}"&gt;{value}&lt;/a&gt;&lt;/li&gt;
+  {/rows}
+    &lt;/ul&gt;
+  {:else}
+  &lt;p&gt;No blog posts&lt;/p&gt;
 {/rows}</code></pre>
 
 For more information on the template format used by kanso, see the
@@ -333,8 +333,8 @@ Let's change the root URL from the welcome page to our new list of blog posts.
 Edit <code>lib/rewrites.js</code> to look like the following:
 
 <pre><code class="javascript">module.exports = [
-{from: '/static/*', to: 'static/*'},
-{from: '/', to: '_list/homepage/blogposts_by_created'}
+    {from: '/static/*', to: 'static/*'},
+    {from: '/', to: '_list/homepage/blogposts_by_created'}
 ];</code></pre>
 
 This uses our new list function in combination with the view query we created
@@ -360,20 +360,20 @@ rewrite rules. You can now remove that, and replace it with the following:
 
 exports.blogpost = function (doc, req) {
 
-// render the markup for a single blog post
-var content = templates.render('blogpost.html', req, doc);
+    // render the markup for a single blog post
+    var content = templates.render('blogpost.html', req, doc);
 
-if (req.client) {
-    // being run client-side
-    $('#content').html(content);
-    document.title = doc.title;
-}
-else {
-    return templates.render('base.html', req, {
-        content: content,
-        title: doc.title
-    });
-}
+    if (req.client) {
+        // being run client-side
+        $('#content').html(content);
+        document.title = doc.title;
+    }
+    else {
+        return templates.render('base.html', req, {
+            content: content,
+            title: doc.title
+        });
+    }
 
 };</code></pre>
 
@@ -386,9 +386,9 @@ Then we need to add the <code>blogpost.html</code> template:
 And update the rewrite rules:
 
 <pre><code class="javascript">module.exports = [
-{from: '/static/*', to: 'static/*'},
-{from: '/', to: '_list/homepage/blogposts_by_created'},
-{from: '/:id', to: '_show/blogpost/:id'}
+    {from: '/static/*', to: 'static/*'},
+    {from: '/', to: '_list/homepage/blogposts_by_created'},
+    {from: '/:id', to: '_show/blogpost/:id'}
 ];</code></pre>
 
 __Push the app__ and try clicking the blog post link now.
@@ -455,7 +455,7 @@ app_types = require('./types');
 
 
 module.exports = function (newDoc, oldDoc, userCtx) {
-types.validate_doc_update(app_types, newDoc, oldDoc, userCtx);
+    types.validate_doc_update(app_types, newDoc, oldDoc, userCtx);
 };</code></pre>
 
 
@@ -485,18 +485,18 @@ permissions = require('kanso/permissions');
 
 
 exports.blogpost = new Type('blogpost', {
-permissions: {
-    add:    permissions.hasRole('_admin'),
-    update: permissions.hasRole('_admin'),
-    remove: permissions.hasRole('_admin')
-},
-fields: {
-    created: fields.timestamp(),
-    title: fields.string(),
-    text: fields.string({
-        widget: widgets.textarea({cols: 40, rows: 10})
-    })
-}
+    permissions: {
+        add:    permissions.hasRole('_admin'),
+        update: permissions.hasRole('_admin'),
+        remove: permissions.hasRole('_admin')
+    },
+    fields: {
+        created: fields.timestamp(),
+        title: fields.string(),
+        text: fields.string({
+            widget: widgets.textarea({cols: 40, rows: 10})
+        })
+    }
 });</code></pre>
 
 __Push the app__ (you may now be prompted for a username and
@@ -513,8 +513,8 @@ as an admin user should allow you to complete all of these operations again.
 A short note on pushing as a user: if you include a username or both a username
 and password in the database URL, these credentials will be used to push the app.
 
-<pre>kanso push http://user:password@localhost:5984/dbname
-kanso push http://user@localhost:5984/dbname</pre>
+<pre><code class="no-highlight">kanso push http://user:password@localhost:5984/dbname
+kanso push http://user@localhost:5984/dbname</code></pre>
 
 You may not want to expose the password in your shell history so I'd
 recommend just putting the username in the URL, and kanso will know to
@@ -558,17 +558,17 @@ the comment type itself. Add the following to <code>lib/types.js</code>,
 __BEFORE__ the blogpost type:
 
 <pre><code class="javascript">exports.comment = new Type('comment', {
-permissions: {
-    add: permissions.loggedIn(),
-    update: permissions.usernameMatchesField('creator'),
-    remove: permissions.usernameMatchesField('creator')
-},
-fields: {
-    creator: fields.creator(),
-    text: fields.string({
-        widget: widgets.textarea({cols: 40, rows: 10})
-    })
-}
+    permissions: {
+        add: permissions.loggedIn(),
+        update: permissions.usernameMatchesField('creator'),
+        remove: permissions.usernameMatchesField('creator')
+    },
+    fields: {
+        creator: fields.creator(),
+        text: fields.string({
+            widget: widgets.textarea({cols: 40, rows: 10})
+        })
+    }
 });</code></pre>
 
 You'll notice we're using some new permissions for this type,
@@ -589,21 +589,21 @@ To embed a list of comments in a blogpost, update the blogpost type definition
 to include the following comments field:
 
 <pre><code type="javascript">exports.blogpost = new Type('blogpost', {
-permissions: {
-    add:    permissions.hasRole('_admin'),
-    update: permissions.hasRole('_admin'),
-    remove: permissions.hasRole('_admin')
-},
-fields: {
-    created: fields.timestamp(),
-    title: fields.string(),
-    text: fields.string({
-        widget: widgets.textarea({cols: 40, rows: 10})
-    }),
-    comments: fields.embedList({
-        type: exports.comment
-    })
-}
+    permissions: {
+        add:    permissions.hasRole('_admin'),
+        update: permissions.hasRole('_admin'),
+        remove: permissions.hasRole('_admin')
+    },
+    fields: {
+        created: fields.timestamp(),
+        title: fields.string(),
+        text: fields.string({
+            widget: widgets.textarea({cols: 40, rows: 10})
+        }),
+        comments: fields.embedList({
+            type: exports.comment
+        })
+    }
 });</code></pre>
 
 __Push the app__, and visit the admin page for adding blogposts:
@@ -632,16 +632,16 @@ Edit <code>templates/blogpost.html</code> to look like the following:
 &lt;p&gt;{text}&lt;/p&gt;
 
 {?comments}
-&lt;h2&gt;Comments&lt;/h2&gt;
+  &lt;h2&gt;Comments&lt;/h2&gt;
 
-&lt;ul&gt;
-{#comments}
-  &lt;li&gt;
-    &lt;strong&gt;{creator} says: &lt;/strong&gt;
-    {text}
-  &lt;/li&gt;
-{/comments}
-&lt;/ul&gt;
+  &lt;ul&gt;
+  {#comments}
+    &lt;li&gt;
+      &lt;strong&gt;{creator} says: &lt;/strong&gt;
+      {text}
+    &lt;/li&gt;
+  {/comments}
+  &lt;/ul&gt;
 {/comments}</code></pre>
 
 __Push the app__, and visit it's home page:
