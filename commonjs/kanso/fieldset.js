@@ -10,7 +10,8 @@
  */
 
 var _ = require('./underscore'),
-    utils = require('./utils');
+    utils = require('./utils'),
+    core = require('./core');
 
 
 /**
@@ -22,7 +23,10 @@ var _ = require('./underscore'),
  * @api public
  */
 
-exports.createDefaults = function (fields, userCtx) {
+exports.createDefaults = function (fields, /*optional*/userCtx) {
+    if (!userCtx) {
+        userCtx = core.currentRequest().userCtx;
+    }
     return _.reduce(_.keys(fields), function (result, k) {
         var f = fields[k];
         var cname = utils.constructorName(f);

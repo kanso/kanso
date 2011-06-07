@@ -467,7 +467,7 @@ exports['Form.validate - strings'] = function (test) {
 };
 
 exports['Form.validate - empty strings'] = function (test) {
-    test.expect(4);
+    test.expect(5);
     var f = new forms.Form({
         foo: fields.string({required: true}),
         bar: fields.string({required: false})

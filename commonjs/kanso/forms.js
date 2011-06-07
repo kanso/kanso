@@ -77,7 +77,7 @@ Form.prototype.validate = function (/*optional*/form) {
     var tree = exports.formValuesToTree(this.raw);
 
     this.values = utils.override(
-        this.values || fieldset.createDefaults(this.fields, req.userCtx),
+        this.values || fieldset.createDefaults(this.fields),
         exports.parseRaw(this.fields, tree)
     );
     this.errors = fieldset.validate(
