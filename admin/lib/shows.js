@@ -5,14 +5,14 @@ var utils = require('./utils'),
     kanso_utils = require('kanso/utils'),
     db = require('kanso/db'),
     core = require('kanso/core'),
-    admin_forms = require('./forms'),
+    widgets = require('kanso/widgets'),
     templates = require('kanso/templates'),
     querystring = require('kanso/querystring'),
     _ = require('kanso/underscore');
 
 
-var adminShow = function (fn, req) {
-    return function (doc) {
+var adminShow = function (fn) {
+    return function (doc, req) {
         if (!req.client) {
             return templates.render('base.html', req, {
                 title: 'Admin',
@@ -107,7 +107,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         form: form.toHTML(req)
     });
 
-    content += widgets.scriptTagForInit('./forms', 'bind');
+    content += widgets.scriptTagForInit('lib/forms', 'bind');
     $('#content').html(content);
 
     document.title = settings.name + ' - Types - ' + req.query.type;
@@ -131,7 +131,7 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
         form: form.toHTML(req)
     });
 
-    content += widgets.scriptTagForInit('./forms', 'bind');
+    content += widgets.scriptTagForInit('lib/forms', 'bind');
     $('#content').html(content);
 
     document.title = settings.name + ' - Types - ' + doc.type;

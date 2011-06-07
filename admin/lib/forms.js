@@ -3,8 +3,8 @@
 var utils = require('./utils'),
     core = require('kanso/core'),
     db = require('kanso/db'),
-    kanso_utils = require('kanso/utils'),
-    querystring = require('kanso/querystring');
+    querystring = require('kanso/querystring'),
+    _ = require('kanso/underscore')._;
 
 
 exports.bind = function () {
@@ -19,21 +19,21 @@ exports.bind = function () {
 };
 
 exports.initRow = function (row, action_callbacks) {
-    action_callbacks = (_.defaults(action_callbacks, {
+    action_callbacks = (_.defaults(action_callbacks || {}, {
         add: exports.showModal
-    });
-    return exports.createAddBtn(field_td, action_callbacks.add);
+    }));
+    return exports.createAddBtn(row, action_callbacks.add);
 };
 
 exports.updateRow = function (row, action_callbacks) {
-    action_callbacks = (_.defaults(action_callbacks, {
+    action_callbacks = (_.defaults(action_callbacks || {}, {
         edit: exports.showModal, del: null
-    })
+    }));
     var val = exports.getRowValue(row);
     var field_td = $(row).parent().parent().parent();
     if (val) {
         exports.addRowControls(
-            row, action_handlers.add, action_handlers.del
+            row, action_callbacks.edit, action_callbacks.del
         );
     }
     else {

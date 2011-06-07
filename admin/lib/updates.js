@@ -2,7 +2,6 @@
   $: false*/
 
 var utils = require('./utils'),
-    admin_forms = require('./forms'),
     forms = require('kanso/forms'),
     core = require('kanso/core'),
     templates = require('kanso/templates'),
@@ -44,9 +43,10 @@ exports.addtype = function (doc, req) {
                         form: form.toHTML(req)
                     });
 
+                    content += widgets.scriptTagForInit('lib/forms', 'bind');
                     $('#content').html(content);
+
                     document.title = settings.name + ' - Types - ' + req.query.type;
-                    admin_forms.bind(req);
                 }
                 else {
                     flashmessages.addMessage(req, {
@@ -72,7 +72,7 @@ exports.addtype = function (doc, req) {
                 form: form.toHTML(req)
             });
 
-            content += widgets.scriptTagForInit('./forms', 'bind');
+            content += widgets.scriptTagForInit('lib/forms', 'bind');
             $('#content').html(content);
 
             document.title = settings.name + ' - Types - ' + req.query.type;
@@ -114,9 +114,10 @@ exports.updatetype = function (doc, req) {
                         form: form.toHTML(req)
                     });
 
+                    content += widgets.scriptTagForInit('lib/forms', 'bind');
                     $('#content').html(content);
+
                     document.title = settings.name + ' - Types - ' + doc.type;
-                    admin_forms.bind(req);
                 }
                 else {
                     flashmessages.addMessage(req, {
@@ -142,7 +143,7 @@ exports.updatetype = function (doc, req) {
                 form: form.toHTML(req)
             });
 
-            content += widgets.scriptTagForInit('bind', null, './forms');
+            content += widgets.scriptTagForInit('lib/forms', 'bind');
             $('#content').html(content);
 
             document.title = settings.name + ' - Types - ' + doc.type;
