@@ -666,4 +666,5 @@ to write web-apps. If you create something cool, please share it on the
 You can <strong>report issues</strong> using the
 <a href="https://github.com/caolan/kanso/issues">GitHub issues page</a>.
 
-Don't forget to check out the <a href="docs.html">Docs</a>.
+Don't forget to check out the <a href="../api/index.html">Docs</a> and other
+available <a href="index.html">Guides</a>.
