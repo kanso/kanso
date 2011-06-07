@@ -856,3 +856,4 @@ exports.getDesignDoc = function (name, callback, no_cache) {
         return callback(null, exports.design_docs[name]);
     });
 };
+
