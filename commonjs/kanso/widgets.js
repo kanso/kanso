@@ -79,51 +79,82 @@ Widget.prototype._attrs = function (name, id_extension) {
 
 
 /**
- * Generates a script tag that invokes the widget's init() function
- * within the client's web browser. This function uses the widget's
- * type attribute to resolve the widget's (js) class, and the widget's
- * id to resolve a particular instance of the widget's markup on the page.
+ * Generate a script tag, containing code to invoke a function
+ * in a CommonJS module. This is a general-purpose dispatch method
+ * for client-side initialization functions. If you're writing a
+ * widget, please use the version found in the Widget prototype.
  *
- * @param {String} name - field name on the HTML form
- * @param {Object} options - optional; data to be passed to init function.
- * @param {String} module - optional; the commonjs module to call in to.
- *                  By default, this is 'kanso/widgets', i.e. this module.
- * @param {String} ns - optional; the namespace containing the widget
- *                  initialization functions. By default, this is 'init'.
+ * @param {String} module - the commonjs module to call in to.
+ * @param {String} method - the function to invoke in the module; this
+ *                  argument can be a dotted path to traverse objects
+ *                  in the module. This string is substituted directly.
+ *                  Javascript injection warning: it is the caller's
+ *                  responsibility to construct this string safely.
+ * @param {Object} options - optional; additional argument data to
+ *                  be passed to the init function. This data will be
+ *                  passed to the method as a single argument, and will
+ *                  undergo serialization. It is *not* possible to pass
+ *                  functions or closures using this mechanism. All
+ *                  data in options will be copied and serialized.
+ * @param {Object} args - optional; a string consisting of literal
+ *                  arguments to the method. This will be directly
+ *                  substituted in to the argument list at its beginning.
+ *                  Javascript injection warning: it is the caller's
+ *                  responsibility to construct this string safely.
  * @returns {String}
+ * @api public
  */
 
-Widget.prototype.scriptTagForInit = function (name, options, module, ns)
+exports.scriptTagForInit = function(module, method, options, args)
 {
-    if (module === undefined) {
-        module = 'kanso/widgets';
-    }
-    if (ns === undefined) {
-        ns = 'init';
-    }
-    if (options === undefined) {
-        options = {};
-    }
-
     /* XSS Prevention:
         Prevent escape from (i) the javascript string, and then (ii)
         the CDATA block. Use a JSON string to keep these rules simple. */
 
     var json_options = (
-        JSON.stringify(options).replace(/'/g, "\\'").replace(']]>', '')
+        JSON.stringify(options || {}).replace(/'/g, "\\'").replace(']]>', '')
     );
 
     return (
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
-            "require('" + module + "')." + ns + '.' +
-                this.type + "($('#" + this._id(name) + "'), " +
-                "'" + json_options + "');\n" +
+            "require('" + module + "')." + method + '(' +
+                (args ? args + ', ' : '') + "'" + json_options + "');\n" +
         "// ]]>" +
         '</script>'
     );
 };
 
+/**
+ * A specialized version of scriptTagForInit, for use with custom widgets.
+ * This function generates a script tag, which invokes a client-side
+ * initialization function -- within the client's web browser -- for the
+ * widget. This function uses the widget's type attribute to resolve the
+ * name of the widget's initialization function; it uses the widget's
+ * id to locate the widget's markup on the page.
+ *
+ * @param {String} name - field name on the HTML form
+ * @param {Object} options - data to be passed to init function.
+ * @param {String} module - optional; the commonjs module to load. This
+ *                  module should export an object named identically to the
+ *                  value you pass for namespace; that object should contain
+ *                  initialization functions, with names matching each
+ *                  widget type. By default, this is 'kanso/widgets'.
+ * @param {String} namespace - optional; the namespace (an object) that
+ *                  contains widget initialization functions for the module.
+ *                  By default, this namespace is called 'init'.
+ * @returns {String}
+ * @api public
+ */
+
+Widget.prototype.scriptTagForInit = function (name, options, module, namespace)
+{
+    return exports.scriptTagForInit(
+        (module || 'kanso/widgets'), 
+            ((namespace ? namespace : 'init') + '.' + this.type),
+            options, ("$('#" + this._id(name) + "')")
+    );
+}
 
 /**
  * Converts a widget to HTML using the provided name and parsed and raw values
@@ -152,7 +183,7 @@ Widget.prototype.toHTML = function (name, value, raw) {
 
 /**
  * Storage for client-side widget initialization functions.
- * For more information, see initScriptTag's documentation.
+ * For more information, see scriptTagForInit's documentation.
  */
 
 exports.init = {};

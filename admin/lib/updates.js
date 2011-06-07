@@ -9,7 +9,6 @@ var utils = require('./utils'),
     db = require('kanso/db'),
     flashmessages = require('kanso/flashmessages');
 
-
 exports.addtype = function (doc, req) {
     if (!req.client) {
         return [null, templates.render('base.html', req, {
@@ -72,12 +71,11 @@ exports.addtype = function (doc, req) {
                 form: form.toHTML(req)
             });
 
-            log([ 'lib/updates addtype req:', req ]);
-            //content += forms.initScriptTag();
+            content += widgets.scriptTagForInit('./forms', 'bind');
             $('#content').html(content);
+
             document.title = settings.name + ' - Types - ' + req.query.type;
         }
-        admin_forms.bind();
     });
 };
 
@@ -142,12 +140,11 @@ exports.updatetype = function (doc, req) {
                 form: form.toHTML(req)
             });
 
-            log([ 'lib/updates updatetype req:', req ]);
-            //content += forms.initScriptTag();
+            content += widgets.scriptTagForInit('bind', null, './forms');
             $('#content').html(content);
+
             document.title = settings.name + ' - Types - ' + doc.type;
         }
-        admin_forms.bind();
     });
 };
 

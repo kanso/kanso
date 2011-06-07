@@ -107,10 +107,10 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         form: form.toHTML(req)
     });
 
-    //content += forms.initScriptTag();
+    content += widgets.scriptTagForInit('./forms', 'bind');
     $('#content').html(content);
+
     document.title = settings.name + ' - Types - ' + req.query.type;
-    admin_forms.bind();
 });
 
 exports.edittype = adminShow(function (doc, ddoc, req) {
@@ -131,10 +131,10 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
         form: form.toHTML(req)
     });
 
-    //content += forms.initScriptTag();
+    content += widgets.scriptTagForInit('./forms', 'bind');
     $('#content').html(content);
+
     document.title = settings.name + ' - Types - ' + doc.type;
-    admin_forms.bind();
 });
 
 exports.fieldPairs = function (fields, doc, path) {
