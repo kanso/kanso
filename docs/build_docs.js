@@ -110,7 +110,8 @@ function create_api_index_page(modules, path, callback) {
     var context = {
         content: content,
         rootURL: '..',
-        nav: {api: true}
+        nav: {api: true},
+        title: 'API'
     };
     dust.render('base.html', context, function (err, result) {
         if (err) {
@@ -125,7 +126,8 @@ function create_api_module_page(module, path, callback) {
     var context = {
         content: content,
         rootURL: '..',
-        nav: {api: true}
+        nav: {api: true},
+        title: 'API - ' + module.name
     };
     dust.render('base.html', context, function (err, result) {
         if (err) {
@@ -141,7 +143,8 @@ function create_api_all_page(modules, path, callback) {
     var context = {
         content: content,
         rootURL: '..',
-        nav: {api: true}
+        nav: {api: true},
+        title: 'API - all'
     };
     dust.render('base.html', context, function (err, result) {
         if (err) {
@@ -152,7 +155,7 @@ function create_api_all_page(modules, path, callback) {
 }
 
 
-function create_page(infile, outfile, nav, rootURL, callback) {
+function create_page(infile, outfile, nav, title, rootURL, callback) {
     if (!callback) {
         callback = rootURL;
         rootURL = '.';
@@ -162,13 +165,17 @@ function create_page(infile, outfile, nav, rootURL, callback) {
             return callback(err);
         }
         var converter = new Showdown.converter();
-        var content = converter.makeHtml(content.toString());
+        var html = converter.makeHtml(content.toString());
+        if (!title && title !== '') {
+            title = content.toString().replace(/^\s*# /, '').replace(/\n.*/g, '');
+        }
         var navobj = {};
         navobj[nav] = true;
         var context = {
-            content: content,
+            content: html,
             rootURL: rootURL,
-            nav: navobj
+            nav: navobj,
+            title: title
         };
         dust.render('base.html', context, function (err, result) {
             if (err) {
@@ -187,6 +194,7 @@ function create_guides(dir, outdir, callback) {
                 f,
                 outdir + '/' + name + '.html',
                 'guides',
+                null,
                 '..',
                 callback
             );
@@ -232,25 +240,29 @@ function (err, results) {
             create_page,
             __dirname + '/index.md',
             output_dir + '/index.html',
-            'about'
+            'about',
+            ''
         ),
         async.apply(
             create_page,
             __dirname + '/community.md',
             output_dir + '/community.html',
-            'community'
+            'community',
+            'Community'
         ),
         async.apply(
             create_page,
             __dirname + '/docs.md',
             output_dir + '/docs.html',
-            'api'
+            'api',
+            'API'
         ),
         async.apply(
             create_page,
             __dirname + '/tutorial.md',
             output_dir + '/tutorial.html',
-            'guides'
+            'guides',
+            'Guides'
         ),
         async.apply(
             create_guides,
