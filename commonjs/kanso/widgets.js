@@ -151,7 +151,7 @@ Widget.prototype.scriptTagForInit = function (name, options, module, namespace)
 {
     return exports.scriptTagForInit(
         (module || 'kanso/widgets'), 
-            ((namespace ? namespace : 'init') + '.' + this.type),
+            ((namespace || 'init') + '.' + this.type),
             options, ("$('#" + this._id(name) + "')")
     );
 }
