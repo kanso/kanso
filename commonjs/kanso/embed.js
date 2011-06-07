@@ -1,8 +1,9 @@
-/*global $: false */
+/* global $: false */
 
-var utils = require('./utils'),
-    core = require('kanso/core'),
+var core = require('kanso/core'),
     db = require('kanso/db'),
+    loader= require('kanso/loader'),
+    utils = require('kanso/utils'),
     querystring = require('kanso/querystring'),
     _ = require('kanso/underscore')._;
 
@@ -84,13 +85,13 @@ exports.getModules = function (/*optional*/req, callback) {
         callback = req;
         req = core.currentRequest();
     }
-    utils.getDesignDoc(req.query.app, function (err, ddoc) {
+    db.getDesignDoc(req.query.app, function (err, ddoc) {
         if (err) {
             throw err;
         }
-        var settings = utils.appRequire(ddoc, 'kanso/settings');
-        var app = utils.appRequire(ddoc, settings.load);
-        var forms = utils.appRequire(ddoc, 'kanso/forms');
+        var settings = loader.appRequire(ddoc, 'kanso/settings');
+        var app = loader.appRequire(ddoc, settings.load);
+        var forms = loader.appRequire(ddoc, 'kanso/forms');
         callback(settings, app, forms);
     });
 };

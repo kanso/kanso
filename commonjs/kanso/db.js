@@ -34,6 +34,13 @@ var last_session_check = 0;
 
 
 /**
+ * Cache for design documents fetched via getDesignDoc.
+ */
+
+exports.design_docs = {};
+
+
+/**
  * Taken from jQuery 1.4.4 so we can support more recent versions of jQuery.
  */
 
@@ -825,3 +832,27 @@ exports.deleteUser = function (username, callback) {
     });
 };
 
+/**
+ * Fetch a design document from CouchDB. By default, the
+ * results of this function are cached within the javascript
+ * engine. To avoid this, pass true for the no_cache argument.
+ *
+ * @name getDesignDoc(name, callback, no_cache)
+ * @param name The name of (i.e. path to) the design document.
+ * @param callback The callback to invoke when the request completes.
+ * @param no_cache optional; true to force a cache miss for this request.
+ * @api public
+ */
+
+exports.getDesignDoc = function (name, callback, no_cache) {
+    if (!no_cache && exports.design_docs[name]) {
+        return callback(null, exports.design_docs[name]);
+    }
+    exports.getDoc('_design/' + name, {}, function (err, ddoc) {
+        if (err) {
+            return callback(err);
+        }
+        exports.design_docs[name] = ddoc;
+        return callback(null, exports.design_docs[name]);
+    });
+};

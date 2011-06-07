@@ -3,6 +3,7 @@
 
 var utils = require('./utils'),
     db = require('kanso/db'),
+    loader = require('kanso/loader'),
     kanso_utils = require('kanso/utils'),
     templates = require('kanso/templates'),
     flashmessages = require('kanso/flashmessages'),
@@ -28,7 +29,7 @@ var adminList = function (fn) {
             rows.push(row);
             row = getRow();
         }
-        utils.getDesignDoc(req.query.app, function (err, ddoc) {
+        db.getDesignDoc(req.query.app, function (err, ddoc) {
             if (err) {
                 return alert(err);
             }
@@ -59,9 +60,9 @@ exports.applist = function (head, req) {
 };
 
 exports.typelist = adminList(function (rows, ddoc, req) {
-    var settings = utils.appRequire(ddoc, 'kanso/settings'),
-        fields = utils.appRequire(ddoc, 'kanso/fields'),
-        app = utils.appRequire(ddoc, settings.load),
+    var settings = loader.appRequire(ddoc, 'kanso/settings'),
+        fields = loader.appRequire(ddoc, 'kanso/fields'),
+        app = loader.appRequire(ddoc, settings.load),
         type = app.types ? app.types[req.query.type]: undefined;
 
     var f = _.map(rows, function (r) {
