@@ -2,10 +2,11 @@
   $: false*/
 
 var utils = require('./utils'),
+    db = require('kanso/db'),
     forms = require('kanso/forms'),
     core = require('kanso/core'),
     templates = require('kanso/templates'),
-    db = require('kanso/db'),
+    widgets = require('kanso/widgets'),
     flashmessages = require('kanso/flashmessages');
 
 exports.addtype = function (doc, req) {
