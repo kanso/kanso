@@ -3,6 +3,7 @@
 
 var utils = require('./utils'),
     admin_forms = require('./forms'),
+    forms = require('kanso/forms'),
     core = require('kanso/core'),
     templates = require('kanso/templates'),
     db = require('kanso/db'),
@@ -25,7 +26,7 @@ exports.addtype = function (doc, req) {
         var forms = utils.appRequire(ddoc, 'kanso/forms'),
             form = new forms.Form(type);
 
-        form.validate(req);
+        form.validate(req.form);
 
         if (form.isValid()) {
             db.saveDoc(form.values, function (err, resp) {
@@ -71,6 +72,8 @@ exports.addtype = function (doc, req) {
                 form: form.toHTML(req)
             });
 
+            log([ 'lib/updates addtype req:', req ]);
+            //content += forms.initScriptTag();
             $('#content').html(content);
             document.title = settings.name + ' - Types - ' + req.query.type;
         }
@@ -93,7 +96,7 @@ exports.updatetype = function (doc, req) {
         var forms = utils.appRequire(ddoc, 'kanso/forms'),
             form = new forms.Form(type);
 
-        form.validate(req);
+        form.validate(req.form);
 
         if (form.isValid()) {
             db.saveDoc(form.values, function (err, resp) {
@@ -139,6 +142,8 @@ exports.updatetype = function (doc, req) {
                 form: form.toHTML(req)
             });
 
+            log([ 'lib/updates updatetype req:', req ]);
+            //content += forms.initScriptTag();
             $('#content').html(content);
             document.title = settings.name + ' - Types - ' + doc.type;
         }

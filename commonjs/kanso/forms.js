@@ -46,16 +46,16 @@ var Form = exports.Form = function Form(fields, doc) {
  * the form instance.
  *
  * @name Form.validate(req)
- * @param {Object} req
+ * @param {Object} form
  * @returns {Form}
  * @api public
  */
 
-Form.prototype.validate = function (/*optional*/req) {
-    if (!req) {
-        req = core.currentRequest();
+Form.prototype.validate = function (/*optional*/form) {
+    if (!form) {
+        form = core.currentRequest().form;
     }
-    this.raw = req.form || {};
+    this.raw = form || {};
     var tree = exports.formValuesToTree(this.raw);
     this.values = exports.parseRaw(this.fields, tree);
     this.errors = fieldset.validate(
