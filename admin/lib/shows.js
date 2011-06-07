@@ -11,8 +11,8 @@ var utils = require('./utils'),
     _ = require('kanso/underscore');
 
 
-var adminShow = function (fn) {
-    return function (doc, req) {
+var adminShow = function (fn, req) {
+    return function (doc) {
         if (!req.client) {
             return templates.render('base.html', req, {
                 title: 'Admin',
@@ -110,7 +110,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
     //content += forms.initScriptTag();
     $('#content').html(content);
     document.title = settings.name + ' - Types - ' + req.query.type;
-    admin_forms.bind(req);
+    admin_forms.bind();
 });
 
 exports.edittype = adminShow(function (doc, ddoc, req) {
@@ -134,7 +134,7 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
     //content += forms.initScriptTag();
     $('#content').html(content);
     document.title = settings.name + ' - Types - ' + doc.type;
-    admin_forms.bind(req);
+    admin_forms.bind();
 });
 
 exports.fieldPairs = function (fields, doc, path) {

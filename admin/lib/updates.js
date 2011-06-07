@@ -77,7 +77,7 @@ exports.addtype = function (doc, req) {
             $('#content').html(content);
             document.title = settings.name + ' - Types - ' + req.query.type;
         }
-        admin_forms.bind(req);
+        admin_forms.bind();
     });
 };
 
@@ -147,7 +147,7 @@ exports.updatetype = function (doc, req) {
             $('#content').html(content);
             document.title = settings.name + ' - Types - ' + doc.type;
         }
-        admin_forms.bind(req);
+        admin_forms.bind();
     });
 };
 

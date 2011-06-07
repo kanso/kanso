@@ -479,6 +479,9 @@ exports['Form.validate - empty strings'] = function (test) {
     f.validate({ foo: null });
     test.strictEqual(f.isValid(), false);
 
+    f.validate({ foo: '' });
+    test.strictEqual(f.isValid(), false);
+
     f.validate({ foo: 'baz' });
     test.strictEqual(f.isValid(), true);
 
@@ -492,8 +495,8 @@ exports['Form.validate - error on string field'] = function (test) {
     test.expect(1);
     var req = {};
     var f = new forms.Form({
-        baz: fields.string(),
-        type: 'test'
+        bar: 'test',
+        baz: fields.string()
     });
     try {
         f.validate(req);
