@@ -241,7 +241,9 @@ exports.init = function () {
 exports.rewriteGroups = function (pattern, url) {
     var pathname = urlParse(url).pathname;
     var re = new RegExp(
-        '^' + pattern.replace(/:\w+/g, '([^/]+)').replace(/\*/g, '.*') + '$'
+        '^' + pattern.replace(/:\w+/g, '([^/]+)')
+                     .replace(/\*/g, '.*')
+                     .replace(/<[^>]+>/g, '(.+?)') + '$'
     );
     var m = re.exec(pathname);
     if (!m) {
@@ -249,9 +251,9 @@ exports.rewriteGroups = function (pattern, url) {
     }
     var values = m.slice(1);
     var keys = [];
-    var matches = pattern.match(/:\w+/g) || [];
+    var matches = pattern.match(/:\w+|<[^>]+>/g) || [];
     for (var i = 0; i < matches.length; i++) {
-        keys.push(matches[i].substr(1));
+        keys.push(matches[i].replace(/^:/, '').replace(/^<|>$/g, ''));
     }
     var groups = {};
     for (var j = 0; j < keys.length; j++) {
@@ -302,6 +304,7 @@ exports.matchURL = function (method, url) {
             var from = r.from;
             from = from.replace(/\*$/, '(.*)');
             from = from.replace(/:\w+/g, '([^/]+)');
+            from = from.replace(/<\w+>/g, '(.+?)');
             var re = new RegExp('^' + from + '$');
             if (re.test(pathname)) {
                 return r;
@@ -332,6 +335,12 @@ exports.replaceGroups = function (val, groups, splat) {
             for (k in groups) {
                 if (result[i] === ':' + k) {
                     result[i] = decodeURIComponent(groups[k]);
+                    match = true;
+                }
+                else if (result[i].indexOf('<' + k + '>') !== -1) {
+                    result[i] = result[i].replace(
+                        '<' + k + '>', decodeURIComponent(groups[k])
+                    );
                     match = true;
                 }
             }

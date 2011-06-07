@@ -15,6 +15,10 @@ exports['rewriteGroups'] = function (test) {
         core.rewriteGroups('/path/:name', '/path/foo?test=123'),
         {name: 'foo'}
     );
+    test.same(
+        core.rewriteGroups('/<year>-<month>-<day>', '/2011-06-07'),
+        {year: '2011', month: '06', day: '07'}
+    );
     test.done();
 };
 
@@ -45,6 +49,21 @@ exports['replaceGroups'] = function (test) {
         core.replaceGroups('static/*', {}, 'splat/value'),
         'static/splat/value'
     );
+    test.equal(
+        core.replaceGroups(
+            '/<year>-<month>-<day>',
+            {year: '2011', month: '06', day: '07'}
+        ),
+        '/2011-06-07'
+    );
+    test.equal(
+        core.replaceGroups(
+            '/<year>-<month>-<day>/:group/*',
+            {year: '2011', month: '06', day: '07', group: 'val'},
+            'splat/value'
+        ),
+        '/2011-06-07/val/splat/value'
+    );
     test.done();
 };
 
@@ -61,5 +80,25 @@ exports['rewriteSplat'] = function (test) {
         core.rewriteSplat('/some/path/*', '/some/path/splat/value'),
         'splat/value'
     );
+    test.done();
+};
+
+exports['matchURL'] = function (test) {
+    var _rewrites = kanso.app.rewrites;
+    var r = kanso.app.rewrites = [
+        {from: '/foo', to: '/bar', method: 'POST'},
+        {from: '/foo', to: '/bar'},
+        {from: '/:group/test', to: '/bar/:group'},
+        {from: '/<year>-<month>-<day>', to: '/<year>:<month>:<day>'},
+        {from: '/*', to: '_show/not_found'}
+    ];
+
+    test.equal(core.matchURL('POST', '/foo'), r[0]);
+    test.equal(core.matchURL('GET', '/foo'), r[1]);
+    test.equal(core.matchURL('GET', '/val/test'), r[2]);
+    test.equal(core.matchURL('GET', '/2011-06-07'), r[3]);
+    test.equal(core.matchURL('GET', '/asdf'), r[4]);
+
+    kanso.app.rewrites = _rewrites;
     test.done();
 };
