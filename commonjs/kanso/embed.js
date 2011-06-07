@@ -8,12 +8,14 @@ var core = require('kanso/core'),
     _ = require('kanso/underscore')._;
 
 
-exports.bind = function () {
+exports.bind = function (options) {
+    var action_callbacks = (options || {});
+
     $('form').each(function () {
         $('.embedded, .embeddedlist', this).each(function () {
-            exports.initRow(this);
+            exports.initRow(this, action_callbacks);
             $('tr', this).each(function () {
-                exports.updateRow(this);
+                exports.updateRow(this, action_callbacks);
             });
         });
     });
@@ -27,11 +29,13 @@ exports.initRow = function (row, action_callbacks) {
 };
 
 exports.updateRow = function (row, action_callbacks) {
+    var val = exports.getRowValue(row);
+    var field_td = $(row).parent().parent().parent();
+
     action_callbacks = (_.defaults(action_callbacks || {}, {
         edit: exports.showModal, del: null
     }));
-    var val = exports.getRowValue(row);
-    var field_td = $(row).parent().parent().parent();
+
     if (val) {
         exports.addRowControls(
             row, action_callbacks.edit, action_callbacks.del
@@ -106,10 +110,7 @@ exports.showModal = function (div, field_td, row, typename, val, rawval) {
         }
 
         div.html('<h2>' + (val ? 'Edit ': 'Add ') + typename + '</h2>');
-        var divform = $('<form><table class="form_table"><tbody>' +
-            form.toHTML() +
-        '</tbody></table></form>');
-        div.append(divform);
+        div.append(form.toHTML());
 
         var action = (val ? 'Update': 'Add');
         var okbtn = $('<input type="button" value="' + action  + '" />"');

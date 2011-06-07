@@ -122,7 +122,7 @@ Form.prototype.toHTML = function (/*optional*/req, /*optional*/RendererClass) {
     return renderer.start() +
         this.renderFields(
             renderer, this.fields, values, this.raw, this.errors, []
-        ) + renderer.end();
+        ) + renderer.end() + '<b>here</b>';
 };
 
 /**

@@ -150,7 +150,7 @@ exports.table = function () {
     */
     this.start = function () {
         this.depth = 0;
-        return '';
+        return '<form><table class="render-table">';
     };
 
     /**
@@ -304,7 +304,7 @@ exports.table = function () {
      * @param {Array} errors
     */
     this.end = function () {
-        return '';
+        return '</table></form>';
     };
 };
 
@@ -323,7 +323,7 @@ exports.div = function () {
     */
     this.start = function () {
         this.depth = 0;
-        return '';
+        return '<form><div class="render-div">';
     };
 
     /**
@@ -503,6 +503,6 @@ exports.div = function () {
      * @param {Array} errors
     */
     this.end = function () {
-        return '';
+        return '</div></form>';
     };
 };
