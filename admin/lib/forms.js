@@ -10,7 +10,7 @@ var utils = require('./utils'),
 exports.bind = function () {
     $('form').each(function () {
         $('.embedded, .embeddedlist', this).each(function () {
-            exports.createAddBtn(this);
+            exports.initRow(this);
             $('tr', this).each(function () {
                 exports.updateRow(this);
             });
@@ -18,11 +18,23 @@ exports.bind = function () {
     });
 };
 
-exports.updateRow = function (row) {
+exports.initRow = function (row, action_callbacks) {
+    action_callbacks = (_.defaults(action_callbacks, {
+        add: exports.showModal
+    });
+    return exports.createAddBtn(field_td, action_callbacks.add);
+};
+
+exports.updateRow = function (row, action_callbacks) {
+    action_callbacks = (_.defaults(action_callbacks, {
+        edit: exports.showModal, del: null
+    })
     var val = exports.getRowValue(row);
     var field_td = $(row).parent().parent().parent();
     if (val) {
-        exports.addRowControls(row);
+        exports.addRowControls(
+            row, action_handlers.add, action_handlers.del
+        );
     }
     else {
         $(row).remove();
@@ -47,20 +59,20 @@ exports.getRowValue = function (row) {
     return JSON.parse(str);
 };
 
-exports.addRowControls = function (row) {
+exports.addRowControls = function (row, edit_callback, del_callback) {
     if (exports.getRowValue(row)) {
         var container = $('td.actions', row).html('');
         var editbtn = $('<input type="button" class="editbtn" value="Edit" />');
         var delbtn  = $('<input type="button" class="delbtn" value="Delete" />');
-        editbtn.click(exports.editbtnHandler());
-        delbtn.click(exports.delbtnHandler());
+        editbtn.click(exports.editbtnHandler(edit_callback));
+        delbtn.click(exports.delbtnHandler(del_callback));
         container.append(editbtn, delbtn);
     }
 };
 
-exports.createAddBtn = function (field_row) {
+exports.createAddBtn = function (field_row, add_callback) {
     var addbtn = $('<input type="button" class="addbtn" value="Add" />');
-    addbtn.click(exports.addbtnHandler());
+    addbtn.click(exports.addbtnHandler(add_callback));
     // remove any existing add buttons
     $('.field .addbtn', field_row).remove();
     $('.field', field_row).append(addbtn);
@@ -108,8 +120,6 @@ exports.showModal = function (div, field_td, row, typename, val, rawval) {
                 if (!val) {
                     row = exports.addRow(field_td);
                 }
-                console.log('row');
-                console.log(row);
                 var jsonval = JSON.stringify(form.values);
                 $('input:hidden', row).val(jsonval);
                 $('span.value', row).text(form.values._id);
@@ -164,7 +174,6 @@ exports.renumberRows = function (field_td) {
 };
 
 exports.addRow = function (field_td) {
-    console.log('addRow');
     var tr = $(
         '<tr>' +
             '<td>' +
@@ -178,36 +187,43 @@ exports.addRow = function (field_td) {
     return tr;
 };
 
-exports.addbtnHandler = function () {
-    return function (ev) {
-        var field_td = $(this).parent();
-        var typename = field_td.attr('rel');
-        var div = $('<div/>');
-        exports.showModal(div, field_td, null, typename);
-    };
-};
-
 exports.getRowType = function (row) {
     var field_td = row.parent().parent().parent();
     return field_td.attr('rel');
 };
 
-exports.editbtnHandler = function () {
+exports.addbtnHandler = function (action_callback) {
+    return function (ev) {
+        var field_td = $(this).parent();
+        var typename = field_td.attr('rel');
+        var div = $('<div/>');
+        if (action_callback) {
+            action_callback(div, field_td, null, typename);
+        }
+    };
+};
+
+exports.editbtnHandler = function (action_callback) {
     return function (ev) {
         var row = $(this).parent().parent();
         var field_td = row.parent().parent().parent();
         var val = exports.getRowValue(row);
         var typename = exports.getRowType(row);
         var div = $('<div/>');
-        exports.showModal(div, field_td, row, typename, val);
+        if (action_callback) {
+            action_callback(div, field_td, row, typename, val);
+        }
     };
 };
 
-exports.delbtnHandler = function () {
+exports.delbtnHandler = function (action_callback) {
     return function (ev) {
         var row = $(this).parent().parent();
         $('input:hidden', row).val('');
         $('span.value', row).html('');
         exports.updateRow(row);
+        if (action_callback) {
+            action_callback(row);
+        }
     };
 };
