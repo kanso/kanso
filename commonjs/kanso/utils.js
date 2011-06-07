@@ -18,6 +18,7 @@
 
 var core = require('./core'),
     settings = require('./settings'); // settings module is auto-generated
+    _ = require('./underscore')._;
 
 
 /**
@@ -124,17 +125,24 @@ exports.getBaseURL = function (/*optional*/req) {
  * Returns the value of the matched path, or undefined if the property does not
  * exist.
  *
+ * If a string if used for the path, it is assumed to be a path with a single
+ * key (the given string).
+ *
  * <pre>
  * getPropertyPath({a: {b: 'foo'}}, ['a','b']) -> 'foo'
+ * getPropertyPath({a: {b: 'foo'}}, 'a') -> {b: 'foo'}
  * </pre>
  *
  * @name getPropertyPath(obj, path)
  * @param {Object} obj
- * @param {Array} path
+ * @param {Array|String} path
  * @api public
  */
 
 exports.getPropertyPath = function (obj, path) {
+    if (!_.isArray(path)) {
+        path = [path];
+    }
     if (!path.length || !obj) {
         return obj;
     }
@@ -145,17 +153,24 @@ exports.getPropertyPath = function (obj, path) {
  * Traverses an object and its sub-objects using an array of property names.
  * Sets the value of the matched property.
  *
+ * If a string if used for the path, it is assumed to be a path with a single
+ * key (the given string).
+ *
  * <pre>
  * setPropertyPath({}, ['a','b'], 'foo') -> {a: {b: 'foo'}}
+ * setPropertyPath({}, 'a', 'foo') -> {a: 'foo'}
  * </pre>
  *
  * @name setPropertyPath(obj, path, val)
  * @param {Object} obj
- * @param {Array} path
+ * @param {Array|String} path
  * @api public
  */
 
 exports.setPropertyPath = function (obj, path, val) {
+    if (!_.isArray(path)) {
+        path = [path];
+    }
     if (!path.length) {
         throw new Error('No property path given');
     }
@@ -310,4 +325,93 @@ exports.redirect = function (/*optional*/req, url) {
     }
     var baseURL = exports.getBaseURL(req);
     return {code: 302, headers: {'Location': baseURL + url}};
+};
+
+
+/**
+ * Recursively copies properties of an object, handling circular references
+ * and returning a new object completely seperate from the original.
+ *
+ * Modifications to the new object will not affect the original copy.
+ *
+ * @name deepCopy(obj, [limit])
+ * @param obj - the object to copy
+ * @param {Number} limit - the recursion depth before throwing (optional)
+ * @api public
+ */
+
+exports.deepCopy = function (obj, limit) {
+    // for handling circular references:
+    var seen = [];   // store references to original objects
+    var clones = []; // store references to copied objects
+
+    var fn = function (obj, limit) {
+        if (!limit) {
+            throw new Error('deepCopy recursion limit reached');
+        }
+
+        if (obj instanceof Date) {
+            var copy = new Date();
+            copy.setTime(obj.getTime());
+            return copy;
+        }
+        else if (typeof obj === 'object') {
+
+            // check for a circular reference
+            var i = _.indexOf(seen, obj);
+            if (i !== -1) {
+                return clones[i];
+            }
+
+            var newObj;
+            if (obj instanceof Array) {
+                newObj = [];
+            }
+            else {
+                // to fix instanceof and constructorName checks
+                var F = function () {};
+                F.prototype = obj;
+                newObj = new F();
+            }
+
+            // add cloned object to list of references, so we
+            // can check for circular references later
+            seen.push(obj);
+            clones.push(newObj);
+
+            // deepCopy all properties
+            for (var k in obj) {
+                newObj[k] = fn(obj[k], limit - 1);
+            }
+            return newObj;
+        }
+        return obj;
+    };
+    return fn(obj, limit || 1000);
+};
+
+
+/**
+ * A destructive merge of two JSON objects. The values in 'b' override the
+ * values already existing in 'a'. If a value existing in 'b', but not in 'a',
+ * it is added. If a value exists in 'a', but not 'b', it is retained.
+ *
+ * The 'a' object is updated in-place.
+ *
+ * @name override(a, b)
+ * @param {Object} a
+ * @param {Object} b
+ * @api public
+ */
+
+exports.override = function (a, b) {
+    if (a instanceof Object && b instanceof Object) {
+        for (var k in b) {
+            if (b[k] !== undefined) {
+                a[k] = exports.override(a[k], b[k]);
+            }
+        }
+        return a;
+    }
+    return b;
 };

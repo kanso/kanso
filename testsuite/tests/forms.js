@@ -467,16 +467,16 @@ exports['Form.validate - strings'] = function (test) {
 };
 
 exports['Form.validate - empty strings'] = function (test) {
-    test.expect(1);
+    test.expect(4);
     var f = new forms.Form({
         foo: fields.string({required: true}),
-        bar: fields.string()
+        bar: fields.string({required: false})
     });
 
-    f.validate({ });
+    f.validate({form: {}});
     test.strictEqual(f.isValid(), false);
 
-    f.validate({ foo: null });
+    f.validate({form: {foo: null }});
     test.strictEqual(f.isValid(), false);
 
     f.validate({ foo: '' });
@@ -485,7 +485,7 @@ exports['Form.validate - empty strings'] = function (test) {
     f.validate({ foo: 'baz' });
     test.strictEqual(f.isValid(), true);
 
-    f.validate({ foo: 'baz', bar: null });
+    f.validate({form: {foo: 'baz', bar: null}});
     test.strictEqual(f.isValid(), true);
 
     test.done();
@@ -507,38 +507,122 @@ exports['Form.validate - error on string field'] = function (test) {
 };
 
 exports['Form.validate - options.exclude'] = function (test) {
-    test.expect(2);
-    var req = {};
-    var f = new forms.Form(
-        { foo: fields.string(), bar: fields.number(), baz: fields.number() },
-        null, { exclude: ['bar', 'baz'] }
-    );
+    var fieldset = {
+        foo: fields.string(),
+        bar: fields.number(),
+        baz: fields.number({required: false})
+    };
 
-    f.validate(req);
-    test.strictEqual(f.isValid(), false); // broken
+    var f;
 
-    req = { foo: 'hi' };
-    f.validate(req);
+    f = new forms.Form(fieldset, null, { exclude: ['bar', 'baz'] });
+    f.validate({form: {foo: 'foo'}});
+    // Although 'bar' is excluded, its required for the fieldset to validate
+    // overall. Unless the form was initialized with a document containing
+    // a value for 'bar', validation should fail.
+    test.strictEqual(f.isValid(), false);
+
+    f = new forms.Form(fieldset, null, { exclude: ['bar', 'baz'] });
+    f.validate({form: {foo: 'foo', bar: 123}});
     test.strictEqual(f.isValid(), true);
+
+    // only render fields not excluded
+    var calls = [];
+    function TestRenderer() {
+        this.start = function () {};
+        this.beginGroup = function () {};
+        this.endGroup = function () {};
+        this.field = function (field, path, value, raw, errors) {
+            calls.push(path.join('.'));
+        };
+        this.end = function () {};
+    }
+    f.toHTML({}, TestRenderer);
+    test.same(calls, ['foo']);
+
+    // with initial values
+    f = new forms.Form(fieldset, {bar: 123}, { exclude: ['bar', 'baz'] });
+    f.validate({form: {foo: 'foo'}});
+    test.strictEqual(f.isValid(), true);
+    test.same(f.values, {foo: 'foo', bar: 123});
+
+    f = new forms.Form(fieldset, {bar: 123}, { exclude: ['baz'] });
+    f.validate({form: {foo: 'foo', bar: 456}});
+    test.strictEqual(f.isValid(), true);
+    test.same(f.values, {foo: 'foo', bar: 456});
+
+    // with field's default values
+    fieldset = {
+        one: fields.string({
+            default_value: function (userCtx) {
+                return 'default value';
+            }
+        }),
+        two: fields.string()
+    };
+    f = new forms.Form(fieldset, null, { exclude: ['one'] });
+    f.validate({form: {two: 'asdf'}});
+    test.strictEqual(f.isValid(), true);
+    test.same(f.values, {one: 'default value', two: 'asdf'});
 
     test.done();
 };
 
 exports['Form.validate - options.fields'] = function (test) {
-    test.expect(2);
-    var req = {};
-    var f = new forms.Form({
+    var fieldset = {
         foo: fields.string(),
         bar: fields.number(),
-        baz: fields.number()
-    }, null, { fields: ['foo'] });
+        baz: fields.number({required: false})
+    };
 
-    f.validate(req);
+    var f;
+
+    f = new forms.Form(fieldset, null, { fields: ['bar', 'baz'] });
+    f.validate({form: {bar: 123}});
     test.strictEqual(f.isValid(), false);
 
-    req = { foo: 'hi' };
-    f.validate(req);
+    f = new forms.Form(fieldset, null, { fields: ['bar', 'baz'] });
+    f.validate({form: {foo: 'foo', bar: 123}});
     test.strictEqual(f.isValid(), true);
+
+    // only render fields included in fields list
+    var calls = [];
+    function TestRenderer() {
+        this.start = function () {};
+        this.beginGroup = function () {};
+        this.endGroup = function () {};
+        this.field = function (field, path, value, raw, errors) {
+            calls.push(path.join('.'));
+        };
+        this.end = function () {};
+    }
+    f.toHTML({}, TestRenderer);
+    test.same(calls, ['bar', 'baz']);
+
+    // with initial values
+    f = new forms.Form(fieldset, {bar: 123}, { fields: ['foo'] });
+    f.validate({form: {foo: 'foo'}});
+    test.strictEqual(f.isValid(), true);
+    test.same(f.values, {foo: 'foo', bar: 123});
+
+    f = new forms.Form(fieldset, {bar: 123}, { fields: ['foo', 'bar'] });
+    f.validate({form: {foo: 'foo', bar: 456}});
+    test.strictEqual(f.isValid(), true);
+    test.same(f.values, {foo: 'foo', bar: 456});
+
+    // with field's default values
+    fieldset = {
+        one: fields.string({
+            default_value: function (userCtx) {
+                return 'default value';
+            }
+        }),
+        two: fields.string()
+    };
+    f = new forms.Form(fieldset, null, { fields: ['two'] });
+    f.validate({form: {two: 'asdf'}});
+    test.strictEqual(f.isValid(), true);
+    test.same(f.values, {one: 'default value', two: 'asdf'});
 
     test.done();
 };
@@ -551,30 +635,3 @@ exports['Form.isValid'] = function (test) {
     test.strictEqual(f.isValid(), false);
     test.done();
 };
-
-exports['Form parse options.exclude param'] = function (test) {
-    test.expect(3);
-    var options = { exclude: ['baz'] };
-    var form = new forms.Form(
-        { foo: fields.string(), bar: fields.string(), baz: fields.number() },
-        null, options
-    );
-    test.strictEqual('foo' in form.fields, true);
-    test.strictEqual('bar' in form.fields, true);
-    test.strictEqual('baz' in form.fields, false);
-    test.done();
-};
-
-exports['Form parse options.fields param'] = function (test) {
-    test.expect(3);
-    var options = { fields: [ 'bar', 'baz' ] };
-    var form = new forms.Form(
-        { foo: fields.string(), bar: fields.string(), baz: fields.number() },
-        null, options
-    );
-    test.strictEqual('foo' in form.fields, false);
-    test.strictEqual('bar' in form.fields, true);
-    test.strictEqual('baz' in form.fields, true);
-    test.done();
-};
-

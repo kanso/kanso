@@ -18,27 +18,45 @@ var core = require('./core'),
 /**
  * Form object, presents fields and parses responses.
  *
+ * #### Options ####
+ *
+ * <table class="options">
+ *   <tr>
+ *      <td class="name">exclude</td>
+ *      <td class="type">Array</td>
+ *      <td class="description">a list of field names to exclude</td>
+ *   </tr>
+ *   <tr>
+ *      <td class="name">fields</td>
+ *      <td class="type">Array</td>
+ *      <td class="description">
+ *          a subset of fields to use (inverse of excluded)
+ *      </td>
+ *   </tr>
+ * </table>
+ *
  * @name Form(fields | type, [doc])
- * @param {Object} fields
- * @param {Object} doc (optional)
+ * @param {Object} fields  - an object literal containing fields or a Type
+ * @param {Object} doc     - (optional) the original document being edited
+ * @param {Object} options - (optional) see available options above
  * @constructor
  * @api public
  */
 
-var Form = exports.Form = function Form(fields, doc) {
+var Form = exports.Form = function Form(fields, doc, options) {
+    this.options = options || {};
+    this.values = doc;
+
     this.fields = (fields && fields.fields) ? fields.fields: fields;
     /*
     if (utils.constructorName(fields) === 'Type') {
         this.type = fields;
-        this.fields = fields.field;
+        this.fields = this.type.field;
     }
     else {
         this.fields = fields;
     }
     */
-    if (doc) {
-        this.values = doc;
-    }
 };
 
 /**
@@ -57,7 +75,11 @@ Form.prototype.validate = function (/*optional*/form) {
     }
     this.raw = form || {};
     var tree = exports.formValuesToTree(this.raw);
-    this.values = exports.parseRaw(this.fields, tree);
+
+    this.values = utils.override(
+        this.values || fieldset.createDefaults(this.fields, req.userCtx),
+        exports.parseRaw(this.fields, tree)
+    );
     this.errors = fieldset.validate(
         this.fields, this.values, this.values, this.raw, [], false
     );
@@ -145,11 +167,25 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
     path = path || [];
 
     var that = this;
+    var excludes = this.options.exclude;
+    var field_subset = this.options.fields;
     var keys = _.keys(fields);
 
     return _.reduce(keys, function (html, k) {
 
         var f_path = path.concat([k]);
+
+        if (excludes) {
+            if (_.indexOf(excludes, f_path.join('.')) !== -1) {
+                return html;
+            }
+        }
+        if (field_subset) {
+            if (_.indexOf(field_subset, f_path.join('.')) === -1) {
+                return html;
+            }
+        }
+
         var f_errs = errsBelowPath(errs, f_path);
         var cname = utils.constructorName(fields[k]);
 
@@ -240,8 +276,11 @@ exports.parseRaw = function (fields, raw) {
         var cname = utils.constructorName(f);
 
         if (cname === 'Field') {
-            if (!f.isEmpty(r) || !f.omit_empty) {
+            if (!f.isEmpty(r)) {
                 doc[k] = f.parse(r);
+            }
+            else if (!f.omit_empty) {
+                doc[k] = undefined;
             }
         }
         else if (cname === 'Embedded') {

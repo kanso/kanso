@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   version="1.1"
+   width="247"
+   height="50"
+   id="svg2"
+   inkscape:version="0.48.0 r9654"
+   sodipodi:docname="kanso.svg">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="947"
+     inkscape:window-height="521"
+     id="namedview16"
+     showgrid="false"
+     showborder="false"
+     inkscape:showpageshadow="false"
+     inkscape:zoom="1.0072578"
+     inkscape:cx="169.09454"
+     inkscape:cy="4.0870934"
+     inkscape:window-x="176"
+     inkscape:window-y="309"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg2" />
+  <defs
+     id="defs4">
+    <linearGradient
+       id="linearGradient3247">
+      <stop
+         id="stop3249"
+         style="stop-color:#e1e1e1;stop-opacity:1"
+         offset="0" />
+      <stop
+         id="stop3809"
+         style="stop-color:#f0f0f0;stop-opacity:1"
+         offset="0.25" />
+      <stop
+         id="stop3807"
+         style="stop-color:#fafafa;stop-opacity:1"
+         offset="0.5" />
+      <stop
+         id="stop3251"
+         style="stop-color:#ffffff;stop-opacity:1"
+         offset="1" />
+    </linearGradient>
+    <linearGradient
+       x1="155.71428"
+       y1="34.03484"
+       x2="155.71428"
+       y2="24.533754"
+       id="linearGradient3253"
+       xlink:href="#linearGradient3247"
+       gradientUnits="userSpaceOnUse"
+       gradientTransform="matrix(1,0,0,1.05,0.71428573,0.27489207)" />
+  </defs>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     id="layer1"
+     transform="matrix(0.98687721,0,0,0.98687658,-197.31294,-248.98628)">
+    <path
+       d="m 200,252.36211 0,49.99008 c 13.24341,0 23.84781,0 35.96928,0 L 250,286.63806 l 0,-34.27595 z"
+       id="rect3055-5"
+       style="fill:#d40000;fill-opacity:1;stroke:#5e5e5e;stroke-width:0.0833884;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       inkscape:connector-curvature="0" />
+    <text
+       x="269"
+       y="302.36218"
+       id="text3031-4"
+       xml:space="preserve"
+       style="font-size:74.99925232px;font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;line-height:125%;letter-spacing:-6.5px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;font-family:Maven Pro;-inkscape-font-specification:Maven Pro"
+       sodipodi:linespacing="125%"><tspan
+         x="269"
+         y="302.36218"
+         id="tspan3033-7"
+         style="font-weight:bold;letter-spacing:-6.5px;fill:#000000;-inkscape-font-specification:Maven Pro Bold">Kanso</tspan></text>
+    <path
+       d="m 249.97662,252.36061 -44.62573,50.00157 30.62434,0 14.03119,-15.72244 0,-34.27913 -0.0298,0 z"
+       id="rect3055-5-6"
+       style="fill:#aa0000;fill-opacity:1;stroke:#5e5e5e;stroke-width:0.0833884;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-opacity:1;stroke-dasharray:none;stroke-dashoffset:0"
+       inkscape:connector-curvature="0" />
+  </g>
+</svg>

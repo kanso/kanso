@@ -77,6 +77,9 @@ Field.prototype.parse = function (raw) {
 
 Field.prototype.isEmpty = function (value, raw) {
     if (raw === undefined) {
+        if (typeof value === 'number' && isNaN(value)) {
+            return true;
+        }
         raw = value;
     }
     return (raw === '' || raw === null || raw === undefined);
@@ -522,6 +525,9 @@ var prependValidator = function (options, fn) {
 exports.string = function (options) {
     return new Field(_.defaults((options || {}), {
         parse: function (raw) {
+            if (raw === null || raw === undefined) {
+                return '';
+            }
             return '' + raw;
         }
     }));
@@ -544,7 +550,7 @@ exports.number = function (options) {
     });
     return new Field(_.defaults((options || {}), {
         parse: function (raw) {
-            if (raw === null || raw === '') {
+            if (raw === '' || raw === null || raw === undefined) {
                 return NaN;
             }
             return Number(raw);
