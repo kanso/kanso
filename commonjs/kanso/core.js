@@ -18,12 +18,13 @@ var settings = require('./settings'), // module auto-generated
     url = require('./url'),
     db = require('./db'),
     utils = require('./utils'),
+    flashmessages = require('./flashmessages'),
     session = require('./session'),
     cookies = require('./cookies'),
-    flashmessages = require('./flashmessages'),
     events = require('./events'),
     urlParse = url.parse,
-    urlFormat = url.format;
+    urlFormat = url.format,
+    _ = require('./underscore')._;
 
 
 /**
@@ -135,7 +136,7 @@ exports.currentRequest = function (v) {
     if (v) {
         __kansojs_current_request = v;
     } else if (typeof(__kansojs_current_request) == 'undefined') {
-        __kansojs_current_request = {};
+        __kansojs_current_request = null;
     }
     return __kansojs_current_request;
 };
@@ -490,7 +491,8 @@ exports.runShowBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            if (exports.currentRequest().uuid === req.uuid) {
+            var current_req = (exports.currentRequest() || {});
+            if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -532,13 +534,11 @@ exports.runShowBrowser = function (req, name, docid, callback) {
 };
 
 /**
- * Runs a show function with the given document and request object,
- * emitting relevant events. This function runs both server and client-side.
+ * Helper for runShow/runList.
  *
- * @name runShow(fn, doc, req)
- * @param {Function} fn
- * @param {Object} doc
+ * @name parseResponse(req, res)
  * @param {Object} req
+ * @param {Object} res
  * @api public
  */
 
@@ -573,8 +573,20 @@ exports.parseResponse = function (req, res) {
     };
 };
 
+/**
+ * Runs a show function with the given document and request object,
+ * emitting relevant events. This function runs both server and client-side.
+ *
+ * @name runShow(fn, doc, req)
+ * @param {Function} fn
+ * @param {Object} doc
+ * @param {Object} req
+ * @api public
+ */
+
 exports.runShow = function (fn, doc, req) {
     req = flashmessages.updateRequest(req);
+    exports.currentRequest(req);
     var info = {
         type: 'show',
         name: req.path[1],
@@ -625,7 +637,8 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            if (exports.currentRequest().uuid === req.uuid) {
+            var current_req = (exports.currentRequest() || {});
+            if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -678,7 +691,8 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
  */
 
 exports.runUpdate = function (fn, doc, req) {
-    flashmessages.updateRequest(req);
+    req = flashmessages.updateRequest(req);
+    exports.currentRequest(req);
     var info = {
         type: 'update',
         name: req.path[1],
@@ -756,7 +770,8 @@ exports.runListBrowser = function (req, name, view, callback) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
         db.getView(view, req.query, function (err, data) {
-            if (exports.currentRequest().uuid === req.uuid) {
+            var current_req = (exports.currentRequest() || {});
+            if (current_request.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -816,7 +831,8 @@ exports.runListBrowser = function (req, name, view, callback) {
  */
 
 exports.runList = function (fn, head, req) {
-    flashmessages.updateRequest(req);
+    req = flashmessages.updateRequest(req);
+    exports.currentRequest(req);
     var info = {
         type: 'list',
         name: req.path[1],

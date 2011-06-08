@@ -1,5 +1,7 @@
 var forms = require('kanso/forms'),
     types = require('kanso/types'),
+    db = require('kanso/db'),
+    core = require('kanso/core'),
     fields = require('kanso/fields');
 
 
@@ -427,6 +429,15 @@ exports['Form.toHTML - embeddedList - with values'] = function (test) {
         'end'
     ]);
     test.done();
+};
+
+exports['Form.toHTML - request autodiscovery'] = function (test) {
+    test.expect(2);
+    db.getShow('test', null, function (err, rv) {
+        test.equals(err, undefined, 'Requested show successfully');
+        test.notEqual(rv, undefined, 'Received output from show');
+        test.done();
+    });
 };
 
 exports['Form.validate - numbers'] = function (test) {
