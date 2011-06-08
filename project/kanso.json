@@ -3,5 +3,6 @@
     "load": "lib/app",
     "modules": "lib",
     "templates": "templates",
-    "attachments": "static"
+    "attachments": "static",
+    "base_template": "base.html"
 }
