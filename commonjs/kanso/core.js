@@ -542,8 +542,39 @@ exports.runShowBrowser = function (req, name, docid, callback) {
  * @api public
  */
 
+exports.parseResponse = function (req, res) {
+    var ids = _.without(_.keys(res), 'title', 'code', 'headers', 'body');
+    if (req.client) {
+        if (res.title) {
+            document.title = res.title;
+        }
+        _.each(ids, function (id) {
+            $('#' + id).html(res[id]);
+        });
+    }
+    else if (!res.body) {
+        var context = {title: res.title || ''};
+        _.each(ids, function (id) {
+            context[id] = res[id];
+        });
+        var body = templates.render(
+            settings.base_template || 'base.html', req, context
+        );
+        res = {
+            body: body,
+            code: res.code || 200,
+            headers: res.headers
+        }
+    }
+    return {
+        body: res.body,
+        code: res.code,
+        headers: res.headers
+    };
+};
+
 exports.runShow = function (fn, doc, req) {
-    flashmessages.updateRequest(req);
+    req = flashmessages.updateRequest(req);
     var info = {
         type: 'show',
         name: req.path[1],
@@ -553,14 +584,19 @@ exports.runShow = function (fn, doc, req) {
     };
     events.emit('beforeRequest', info, req);
     var res = fn(doc, req);
-    req.response_received = true;
 
     if (!(res instanceof Object)) {
         res = {code: 200, body: res};
     }
+    else {
+        res = exports.parseResponse(req, res);
+    }
     events.emit('beforeResponseStart', info, req, res);
     events.emit('beforeResponseData', info, req, res, res.body || '');
-    return flashmessages.updateResponse(req, res);
+
+    res = flashmessages.updateResponse(req, res);
+    req.response_received = true;
+    return res;
 };
 
 /**
@@ -652,18 +688,23 @@ exports.runUpdate = function (fn, doc, req) {
     };
     events.emit('beforeRequest', info, req);
     var val = fn(doc, req);
-    req.response_received = true;
 
     var res = val ? val[1]: null;
     if (!(res instanceof Object)) {
         res = {code: 200, body: res};
     }
+    else {
+        res = exports.parseResponse(req, res);
+    }
     events.emit('beforeResponseStart', info, req, res);
     events.emit('beforeResponseData', info, req, res, res.body || '');
 
-    if (val) {
-        return [val[0], flashmessages.updateResponse(req, res)];
-    }
+    var r = [
+        val ? val[0]: null,
+        flashmessages.updateResponse(req, res)
+    ];
+    req.response_received = true;
+    return r;
 };
 
 
@@ -807,32 +848,24 @@ exports.runList = function (fn, head, req) {
     };
     events.emit('beforeRequest', info, req);
     var val = fn(head, req);
-    req.response_received = true;
 
     if (val instanceof Object) {
-        if (!start_res) {
-            start_res = val;
-            events.emit('beforeResponseStart', info, req, start_res);
-        }
-        var data = start_res.body || '';
-        events.emit('beforeResponseData', info, req, start_res, data);
+        val = exports.parseResponse(req, val).body;
+    }
+    if (!start_res) {
+        start_res = {code: 200, body: val};
+        events.emit('beforeResponseStart', info, req, start_res);
+        events.emit('beforeResponseData', info, req, start_res, val);
+        start = _start;
+        send = _send;
     }
     else {
-        if (!start_res) {
-            start_res = {code: 200, body: val};
-            events.emit('beforeResponseStart', info, req, start_res);
-            events.emit('beforeResponseData', info, req, start_res, val);
-            start = _start;
-            send = _send;
-            return start_res;
-        }
-        else {
-            start_res.body = start_res.body ? start_res.body + val: val;
-            events.emit('beforeResponseData', info, req, start_res, val);
-        }
+        start_res.body = start_res.body ? start_res.body + val: val;
+        events.emit('beforeResponseData', info, req, start_res, val);
     }
     start = _start;
     send = _send;
+    req.response_received = true;
     return val;
 };
 
