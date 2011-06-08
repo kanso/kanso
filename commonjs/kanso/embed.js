@@ -2,14 +2,15 @@
 
 var core = require('kanso/core'),
     db = require('kanso/db'),
-    loader= require('kanso/loader'),
+    loader = require('kanso/loader'),
     utils = require('kanso/utils'),
     querystring = require('kanso/querystring'),
     _ = require('kanso/underscore')._;
 
 
-exports.bind = function (options) {
-    var action_callbacks = (options || {});
+exports.bind = function (json_options) {
+    var options = (json_options ? JSON.parse(json_options) : {});
+    var action_callbacks = {};
 
     $('form').each(function () {
         $('.embedded, .embeddedlist', this).each(function () {
@@ -110,7 +111,7 @@ exports.showModal = function (div, field_td, row, typename, val, rawval) {
         }
 
         div.html('<h2>' + (val ? 'Edit ': 'Add ') + typename + '</h2>');
-        div.append(form.toHTML());
+        div.append('<form>' + form.toHTML() + '</form>');
 
         var action = (val ? 'Update': 'Add');
         var okbtn = $('<input type="button" value="' + action  + '" />"');
@@ -133,7 +134,7 @@ exports.showModal = function (div, field_td, row, typename, val, rawval) {
             }
         });
         div.append(okbtn);
-        divform.submit(function (ev) {
+        div.submit(function (ev) {
             ev.preventDefault();
             okbtn.click();
             return false;

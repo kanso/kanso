@@ -119,10 +119,14 @@ Form.prototype.toHTML = function (/*optional*/req, /*optional*/RendererClass) {
     );
     RendererClass = RendererClass || render.table;
     var renderer = new RendererClass();
-    return renderer.start() +
+    return (
+        renderer.start() +
         this.renderFields(
             renderer, this.fields, values, this.raw, this.errors, []
-        ) + renderer.end();
+        ) +
+        renderer.end() +
+        render.generateInitializationMarkup()
+    );
 };
 
 /**
@@ -135,7 +139,7 @@ Form.prototype.toHTML = function (/*optional*/req, /*optional*/RendererClass) {
 
 var errsBelowPath = function (errs, path) {
     return _.filter(errs, function (e) {
-        for (var i = 0, len = path.length; i < len; i++) {
+        for (var i = 0, len = path.length; i < len; ++i) {
             if (path[i] !== e.field[i]) {
                 return false;
             }
@@ -324,4 +328,3 @@ exports.parseRaw = function (fields, raw) {
     return doc;
 };
 
-exports.render = require('./render');

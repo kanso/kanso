@@ -117,10 +117,8 @@ exports.scriptTagForInit = function(module, method, options, args)
     return (
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
-            'console.log("before");' +
             "require('" + module + "')." + method + '(' +
                 (args ? args + ', ' : '') + "'" + json_options + "');\n" +
-            'console.log("after");' +
         "// ]]>" +
         '</script>'
     );

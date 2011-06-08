@@ -9,8 +9,8 @@
  * Module dependencies
  */
 
-var _ = require('./underscore')._;
-
+var widgets = require('./widgets'),
+    _ = require('./underscore')._;
 
 /**
  * Renders HTML for error messages.
@@ -129,6 +129,68 @@ exports.classes = function (field, errors) {
 };
 
 /**
+ * Storage for use by registerInitializationMarkup and
+ * generateInitializationMarkup. These functions allow external
+ * callers (e.g. widgets) to register markup, or markup-generating
+ * functions, to be run at the conclusion of the form rendering
+ * process.
+ */
+
+exports._initialization_markup = {};
+
+/**
+ * Register a markup-generating function (or a string of static
+ * markup) for output at the conclusion of each form rendering.
+ * Background: Widgets can schedule functions to be run at the end
+ * of every form rendering operation. These functions emit markup --
+ * specifically, script tags containing javascript code -- that
+ * (i) identifies all DOM elements that belong to a particular
+ * widget, and (ii) performs any necessary initialization steps,
+ * including XHR requests and/or event binding. The scriptTagForInit()
+ * helper can be used to make the generation of this code simpler.
+ * 
+ * @name registerInitializationMarkup(m)
+ * @param name A unique name for the markup or markup generator
+ *          specified in value.
+ * @param value A markup-generating function that takes zero arguments,
+ *          or, alternatively, a string of static HTML markup.
+ * @returns {String}
+ */
+
+exports.registerInitializationMarkup = function (name, value) {
+    console.log([ 'register', name, value ]);
+    if (!exports._initialization_markup[name]) {
+        exports._initialization_markup[name] = value;
+    }
+};
+
+/**
+ * Emit all initialization code/markup that was registered via
+ * registerInitializationMarkup(). This function is non-destructive
+ * and can be called multiple times.
+ * 
+ * @name generateInitializationMarkup()
+ * @returns {String}
+ */
+
+exports.generateInitializationMarkup = function () {
+    var rv = '';
+    var markup_list = exports._initialization_markup;
+    console.log(exports._initialization_markup);
+    for (var key in exports._initialization_markup) {
+        var m = markup_list[key];
+        if (m instanceof Function) {
+            m = m();
+        } else {
+            m += ''; /* Coerce to string */
+        }
+        rv += ("\n" + m);
+    }
+    console.log([ 'x', rv ]);
+    return rv;
+};
+
+/**
  * The default table renderer class, passed to the toHTML method of a
  * form. Renders a form using a single table, with <tbody> tags to
  * represent nested field groups. The <tbody>s are labelled with
@@ -150,7 +212,7 @@ exports.table = function () {
     */
     this.start = function () {
         this.depth = 0;
-        return '<form><table class="render-table">';
+        return '<table class="render-table">';
     };
 
     /**
@@ -240,6 +302,9 @@ exports.table = function () {
     this.embed = function (field, path, value, raw, errors) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
+        exports.registerInitializationMarkup(
+            'built-in embed/embedList', this.initializationMarkupForEmbed
+        );
         return '<tr class="embedded">' +
             '<th>' +
                 exports.labelHTML(field.type, caption) +
@@ -270,6 +335,9 @@ exports.table = function () {
     this.embedList = function (field, path, value, raw, errors) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
+        exports.registerInitializationMarkup(
+            'built-in embed/embedList', this.initializationMarkupForEmbed
+        );
         var html = '<tr class="embeddedlist">' +
             '<th>' +
                 exports.labelHTML(field.type, caption) +
@@ -304,8 +372,19 @@ exports.table = function () {
      * @param {Array} errors
     */
     this.end = function () {
-        return '</table></form>';
+        return '</table>';
     };
+
+    /**
+     * Helper function to generate client-side initialization
+     * instructions for the embed and embedList widgets. The
+     * result is a string that contains a script tag.
+     */
+
+    this.initializationMarkupForEmbed = function () {
+        return widgets.scriptTagForInit('kanso/embed', 'bind');
+    };
+
 };
 
 /**
@@ -323,7 +402,7 @@ exports.div = function () {
     */
     this.start = function () {
         this.depth = 0;
-        return '<form><div class="render-div">';
+        return '<div class="render-div">';
     };
 
     /**
@@ -503,6 +582,6 @@ exports.div = function () {
      * @param {Array} errors
     */
     this.end = function () {
-        return '</div></form>';
+        return '</div>';
     };
 };
