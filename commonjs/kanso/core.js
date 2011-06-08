@@ -18,10 +18,9 @@ var settings = require('./settings'), // module auto-generated
     url = require('./url'),
     db = require('./db'),
     utils = require('./utils'),
+    flashmessages = require('./flashmessages'),
     session = require('./session'),
     cookies = require('./cookies'),
-    flashmessages = require('./flashmessages'),
-    templates = require('./templates'),
     events = require('./events'),
     urlParse = url.parse,
     urlFormat = url.format,
@@ -137,7 +136,7 @@ exports.currentRequest = function (v) {
     if (v) {
         __kansojs_current_request = v;
     } else if (typeof(__kansojs_current_request) == 'undefined') {
-        __kansojs_current_request = {};
+        __kansojs_current_request = null;
     }
     return __kansojs_current_request;
 };
@@ -497,7 +496,8 @@ exports.runShowBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            if (exports.currentRequest().uuid === req.uuid) {
+            var current_req = (exports.currentRequest() || {});
+            if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -536,6 +536,46 @@ exports.runShowBrowser = function (req, name, docid, callback) {
         }
         callback();
     }
+};
+
+/**
+ * Helper for runShow/runList.
+ *
+ * @name parseResponse(req, res)
+ * @param {Object} req
+ * @param {Object} res
+ * @api public
+ */
+
+exports.parseResponse = function (req, res) {
+    var ids = _.without(_.keys(res), 'title', 'code', 'headers', 'body');
+    if (req.client) {
+        if (res.title) {
+            document.title = res.title;
+        }
+        _.each(ids, function (id) {
+            $('#' + id).html(res[id]);
+        });
+    }
+    else if (!res.body) {
+        var context = {title: res.title || ''};
+        _.each(ids, function (id) {
+            context[id] = res[id];
+        });
+        var body = templates.render(
+            settings.base_template || 'base.html', req, context
+        );
+        res = {
+            body: body,
+            code: res.code || 200,
+            headers: res.headers
+        }
+    }
+    return {
+        body: res.body,
+        code: res.code,
+        headers: res.headers
+    };
 };
 
 /**
@@ -632,7 +672,8 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            if (exports.currentRequest().uuid === req.uuid) {
+            var current_req = (exports.currentRequest() || {});
+            if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -694,8 +735,9 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
  * @api public
  */
 
-exports.runUpdate = function (fn, doc, req, cb) {
-    flashmessages.updateRequest(req);
+exports.runUpdate = function (fn, doc, req) {
+    req = flashmessages.updateRequest(req);
+    exports.currentRequest(req);
     var info = {
         type: 'update',
         name: req.path[1],
@@ -720,19 +762,8 @@ exports.runUpdate = function (fn, doc, req, cb) {
         val ? val[0]: null,
         flashmessages.updateResponse(req, res)
     ];
-    if (req.client && r[0]) {
-        db.saveDoc(r[0], function (err, res) {
-            if (err) {
-                return cb(err);
-            }
-            req.response_received = true;
-            cb(null, r);
-        });
-    }
-    else {
-        req.response_received = true;
-        cb(null, r);
-    }
+    req.response_received = true;
+    return r;
 };
 
 
@@ -784,7 +815,8 @@ exports.runListBrowser = function (req, name, view, callback) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
         db.getView(view, req.query, function (err, data) {
-            if (exports.currentRequest().uuid === req.uuid) {
+            var current_req = (exports.currentRequest() || {});
+            if (current_request.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -842,7 +874,8 @@ exports.runListBrowser = function (req, name, view, callback) {
  */
 
 exports.runList = function (fn, head, req) {
-    flashmessages.updateRequest(req);
+    req = flashmessages.updateRequest(req);
+    exports.currentRequest(req);
     var info = {
         type: 'list',
         name: req.path[1],

@@ -158,7 +158,6 @@ exports._initialization_markup = {};
  */
 
 exports.registerInitializationMarkup = function (name, value) {
-    console.log([ 'register', name, value ]);
     if (!exports._initialization_markup[name]) {
         exports._initialization_markup[name] = value;
     }
@@ -176,7 +175,6 @@ exports.registerInitializationMarkup = function (name, value) {
 exports.generateInitializationMarkup = function () {
     var rv = '';
     var markup_list = exports._initialization_markup;
-    console.log(exports._initialization_markup);
     for (var key in exports._initialization_markup) {
         var m = markup_list[key];
         if (m instanceof Function) {
@@ -186,7 +184,6 @@ exports.generateInitializationMarkup = function () {
         }
         rv += ("\n" + m);
     }
-    console.log([ 'x', rv ]);
     return rv;
 };
 
