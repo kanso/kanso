@@ -438,21 +438,26 @@ exports.createRequest = function (method, url, data, match, callback) {
  * Handles return values from show / list / update functions
  */
 
-exports.handleResponse = function (res) {
+exports.handleResponse = function (req, res) {
     //console.log('response');
     //console.log(res);
-    if (typeof res === 'object') {
+    if (req && typeof res === 'object') {
         if (res.headers) {
-            exports.handleResponseHeaders(res.headers);
+            if (res.headers['Set-Cookie']) {
+                document.cookie = res.headers['Set-Cookie'];
+            }
+            var loc = res.headers['Location'];
+            if (loc && _.indexOf([301, 302, 303, 307], res.code) !== -1) {
+                if (exports.isAppURL(loc)) {
+                    // reset method to GET unless response is a 307
+                    var method = res.code === 307 ? req.method || 'GET': 'GET';
+                    exports.setURL(method, exports.appPath(loc));
+                }
+                else {
+                    document.location = loc;
+                }
+            }
         }
-    }
-};
-
-exports.handleResponseHeaders = function (headers) {
-    //console.log('headers');
-    //console.log(headers);
-    if (headers['Set-Cookie']) {
-        document.cookie = headers['Set-Cookie'];
     }
 };
 
@@ -490,7 +495,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
                 var res = exports.runShow(fn, doc, req);
                 events.emit('afterResponse', info, req, res);
                 if (res) {
-                    exports.handleResponse(res);
+                    exports.handleResponse(req, res);
                 }
                 else {
                     // returned without response, meaning cookies won't be set
@@ -509,7 +514,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
         var res = exports.runShow(fn, null, req);
         events.emit('afterResponse', info, req, res);
         if (res) {
-            exports.handleResponse(res);
+            exports.handleResponse(req, res);
         }
         else {
             // returned without response, meaning cookies won't be set by
@@ -625,7 +630,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
                 var res = exports.runUpdate(fn, doc, req);
                 events.emit('afterResponse', info, req, res);
                 if (res) {
-                    exports.handleResponse(res[1]);
+                    exports.handleResponse(req, res[1]);
                 }
                 else {
                     // returned without response, meaning cookies won't be set
@@ -644,7 +649,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
         var res = exports.runUpdate(fn, null, req);
         events.emit('afterResponse', info, req, res);
         if (res) {
-            exports.handleResponse(res[1]);
+            exports.handleResponse(req, res[1]);
         }
         else {
             // returned without response, meaning cookies won't be set by
@@ -759,15 +764,13 @@ exports.runListBrowser = function (req, name, view, callback) {
                 start = function (res) {
                     //console.log('start');
                     //console.log(res);
-                    if (res && res.headers) {
-                        exports.handleResponseHeaders(res.headers);
-                    }
+                    exports.handleResponse(req, res);
                 };
                 var head = exports.createHead(data);
                 var res = exports.runList(fn, head, req);
                 events.emit('afterResponse', info, req, res);
                 if (res) {
-                    exports.handleResponse(res);
+                    exports.handleResponse(req, res);
                 }
                 else {
                     // returned without response, meaning cookies won't be set
