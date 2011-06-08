@@ -46,7 +46,6 @@ exports.addtype = function (doc, req) {
                         form: form.toHTML(req)
                     });
 
-                    content += widgets.scriptTagForInit('kanso/embed', 'bind');
                     $('#content').html(content);
 
                     document.title = settings.name + ' - Types - ' + req.query.type;
@@ -75,7 +74,6 @@ exports.addtype = function (doc, req) {
                 form: form.toHTML(req)
             });
 
-            content += widgets.scriptTagForInit('kanso/embed', 'bind');
             $('#content').html(content);
 
             document.title = settings.name + ' - Types - ' + req.query.type;
@@ -117,7 +115,6 @@ exports.updatetype = function (doc, req) {
                         form: form.toHTML(req)
                     });
 
-                    content += widgets.scriptTagForInit('kanso/embed', 'bind');
                     $('#content').html(content);
 
                     document.title = settings.name + ' - Types - ' + doc.type;
@@ -146,7 +143,6 @@ exports.updatetype = function (doc, req) {
                 form: form.toHTML(req)
             });
 
-            content += widgets.scriptTagForInit('kanso/embed', 'bind');
             $('#content').html(content);
 
             document.title = settings.name + ' - Types - ' + doc.type;
