@@ -627,40 +627,50 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
                 if (err) {
                     return callback(err);
                 }
-                var res = exports.runUpdate(fn, doc, req);
-                events.emit('afterResponse', info, req, res);
-                if (res) {
-                    exports.handleResponse(req, res[1]);
-                }
-                else {
-                    // returned without response, meaning cookies won't be set
-                    // by handleResponseHeaders
-                    if (req.outgoing_flash_messages) {
-                        flashmessages.setCookieBrowser(
-                            req, req.outgoing_flash_messages
-                        );
+                exports.runUpdate(fn, doc, req, function (err, res) {
+                    if (err) {
+                        events.emit('updateFailure', err, info, req, res, doc);
+                        return callback(err);
                     }
-                }
-                callback();
+                    events.emit('afterResponse', info, req, res);
+                    if (res) {
+                        exports.handleResponse(req, res[1]);
+                    }
+                    else {
+                        // returned without response, meaning cookies won't be
+                        // set by handleResponseHeaders
+                        if (req.outgoing_flash_messages) {
+                            flashmessages.setCookieBrowser(
+                                req, req.outgoing_flash_messages
+                            );
+                        }
+                    }
+                    callback();
+                });
             }
         });
     }
     else {
-        var res = exports.runUpdate(fn, null, req);
-        events.emit('afterResponse', info, req, res);
-        if (res) {
-            exports.handleResponse(req, res[1]);
-        }
-        else {
-            // returned without response, meaning cookies won't be set by
-            // handleResponseHeaders
-            if (req.outgoing_flash_messages) {
-                flashmessages.setCookieBrowser(
-                    req, req.outgoing_flash_messages
-                );
+        exports.runUpdate(fn, null, req, function (err, res) {
+            if (err) {
+                events.emit('updateFailure', err, info, req, res, null);
+                return callback(err);
             }
-        }
-        callback();
+            events.emit('afterResponse', info, req, res);
+            if (res) {
+                exports.handleResponse(req, res[1]);
+            }
+            else {
+                // returned without response, meaning cookies won't be set by
+                // handleResponseHeaders
+                if (req.outgoing_flash_messages) {
+                    flashmessages.setCookieBrowser(
+                        req, req.outgoing_flash_messages
+                    );
+                }
+            }
+            callback();
+        });
     }
 };
 
@@ -675,7 +685,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
  * @api public
  */
 
-exports.runUpdate = function (fn, doc, req) {
+exports.runUpdate = function (fn, doc, req, cb) {
     flashmessages.updateRequest(req);
     var info = {
         type: 'update',
@@ -701,8 +711,19 @@ exports.runUpdate = function (fn, doc, req) {
         val ? val[0]: null,
         flashmessages.updateResponse(req, res)
     ];
-    req.response_received = true;
-    return r;
+    if (req.client && r[0]) {
+        db.saveDoc(r[0], function (err, res) {
+            if (err) {
+                return cb(err);
+            }
+            req.response_received = true;
+            cb(null, r);
+        });
+    }
+    else {
+        req.response_received = true;
+        cb(null, r);
+    }
 };
 
 
