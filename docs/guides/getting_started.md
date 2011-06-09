@@ -11,6 +11,7 @@
     <li><a href="#rendering_pages">Rendering pages</a></li>
     <li><a href="#users_and_permissions">Users and permissions</a></li>
     <li><a href="#embedded_types">Embedded types</a></li>
+    <li><a href="#adding_forms">Adding forms</a></li>
     <li><a href="#going_it_alone">Going it alone</a></li>
 </ul>
 
@@ -654,6 +655,122 @@ Clicking on it should show it using the new template, complete with the
 comments you added earlier:
 
 <img src="images/embedded_types5.png" alt="showing blog post with comments" />
+
+
+<h2 id="adding_forms">Adding forms</h2>
+
+It's all well and good using the Kanso admin app to add documents, but let's
+assume we want to write our own interface and forms. Kanso provides some useful
+form-rendering code (also used by the admin app) which allows you to quickly
+and easily create forms based on Type definitions.
+
+Add the following to the end of <code>templates/blogposts.html</code>:
+
+    <p><a href="{baseURL}/add">Add new</a></p>
+
+Then update <code>lib/rewrites.js</code> to look like this:
+
+<pre><code class="javascript">module.exports = [
+    {from: '/static/*', to: 'static/*'},
+    {from: '/', to: '_list/homepage/blogposts_by_created'},
+    {from: '/add', to: '_show/add_blogpost'},
+    {from: '/:id', to: '_show/blogpost/:id'}
+];</code></pre>
+
+Let's create a new show function to display the form. Update
+<code>lib/shows.js</code> as follows:
+
+<pre><code class="javascript">exports.add_blogpost = function (doc, req) {
+    // render the markup for a blog post form
+    var content = templates.render('blogpost_form.html', req, {
+        form_title: 'Add new blogpost'
+    });
+
+    if (req.client) {
+        // being run client-side
+        $('#content').html(content);
+        document.title = 'Add new blogpost';
+    }
+    else {
+        return templates.render('base.html', req, {
+            content: content,
+            title: 'Add new blogpost'
+        });
+    }
+
+};</code></pre>
+
+And add a new template for the page at <code>templates/blogpost_form.html</code>.
+
+    <h1>{form_title}</h1>
+
+__Push the app__, and visit it's home page:
+<a href="http://localhost:5984/myblog/_design/myblog/_rewrite/">http://localhost:5984/myblog/\_design/myblog/\_rewrite/</a>
+
+<img src="images/adding_forms1.png" alt="Check the add new link" />
+
+Clicking 'Add new' should display the following page:
+
+<img src="images/adding_forms2.png" alt="Check the add new rewrite" />
+
+So far so good. Let's add a form to the page. In <code>lib/shows.js</code>
+add the following new modules to the requires at the top:
+
+<pre><code class="javascript">var templates = require('kanso/templates'),
+    forms = require('kanso/forms'),
+    types = require('./types');</code></pre>
+
+Then update <code>exports.add_blogpost</code> to look like this:
+
+<pre><code class="javascript">exports.add_blogpost = function (doc, req) {
+    var form = new forms.Form(types.blogpost, null, {
+        exclude: ['created', 'comments']
+    });
+
+    // render the markup for a blog post form
+    var content = templates.render('blogpost_form.html', req, {
+        form_title: 'Add new blogpost',
+        form: form.toHTML(req)
+    });
+
+    if (req.client) {
+        // being run client-side
+        $('#content').html(content);
+        document.title = 'Add new blogpost';
+    }
+    else {
+        return templates.render('base.html', req, {
+            content: content,
+            title: 'Add new blogpost'
+        });
+    }
+
+};</code></pre>
+
+You'll notice we're using the new <code>forms</code> module to construct a
+form object using the blogpost Type definition we created earlier. We are
+excluding the created and comments fields, and just displaying the fields we need.
+
+Next we render the form as HTML using <code>form.toHTML(req)</code>, and pass it
+to the template. In <code>templates/blogpost_form.html</code> we need to add the
+following:
+
+    <h1>{form_title}</h1>
+
+    <form method="POST" action="">
+      <table>
+        {form|s}
+      </table>
+      <input type="submit" value="Add" />
+    </form>
+
+__Push the app__, and visit the add blogpost page:
+<a href="http://localhost:5984/myblog/_design/myblog/_rewrite/add">http://localhost:5984/myblog/\_design/myblog/\_rewrite/add</a>
+
+<img src="images/adding_forms3.png" alt="Viewing the new form" />
+
+Great, but if you try submitting the form, nothing happens! Thats because we need
+to add an <a href="http://wiki.apache.org/couchdb/Document_Update_Handlers">update function</a> for saving changes to a document.
 
 
 <h2 id="going_it_alone">Going it alone</h2>
