@@ -21,9 +21,11 @@ var settings = require('./settings'), // module auto-generated
     session = require('./session'),
     cookies = require('./cookies'),
     flashmessages = require('./flashmessages'),
+    templates = require('./templates'),
     events = require('./events'),
     urlParse = url.parse,
-    urlFormat = url.format;
+    urlFormat = url.format,
+    _ = require('./underscore')._;
 
 
 /**
@@ -464,21 +466,26 @@ exports.createRequest = function (method, url, data, match, callback) {
  * Handles return values from show / list / update functions
  */
 
-exports.handleResponse = function (res) {
+exports.handleResponse = function (req, res) {
     //console.log('response');
     //console.log(res);
-    if (typeof res === 'object') {
+    if (req && typeof res === 'object') {
         if (res.headers) {
-            exports.handleResponseHeaders(res.headers);
+            if (res.headers['Set-Cookie']) {
+                document.cookie = res.headers['Set-Cookie'];
+            }
+            var loc = res.headers['Location'];
+            if (loc && _.indexOf([301, 302, 303, 307], res.code) !== -1) {
+                if (exports.isAppURL(loc)) {
+                    // reset method to GET unless response is a 307
+                    var method = res.code === 307 ? req.method || 'GET': 'GET';
+                    exports.setURL(method, exports.appPath(loc));
+                }
+                else {
+                    document.location = loc;
+                }
+            }
         }
-    }
-};
-
-exports.handleResponseHeaders = function (headers) {
-    //console.log('headers');
-    //console.log(headers);
-    if (headers['Set-Cookie']) {
-        document.cookie = headers['Set-Cookie'];
     }
 };
 
@@ -516,7 +523,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
                 var res = exports.runShow(fn, doc, req);
                 events.emit('afterResponse', info, req, res);
                 if (res) {
-                    exports.handleResponse(res);
+                    exports.handleResponse(req, res);
                 }
                 else {
                     // returned without response, meaning cookies won't be set
@@ -535,7 +542,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
         var res = exports.runShow(fn, null, req);
         events.emit('afterResponse', info, req, res);
         if (res) {
-            exports.handleResponse(res);
+            exports.handleResponse(req, res);
         }
         else {
             // returned without response, meaning cookies won't be set by
@@ -561,8 +568,39 @@ exports.runShowBrowser = function (req, name, docid, callback) {
  * @api public
  */
 
+exports.parseResponse = function (req, res) {
+    var ids = _.without(_.keys(res), 'title', 'code', 'headers', 'body');
+    if (req.client) {
+        if (res.title) {
+            document.title = res.title;
+        }
+        _.each(ids, function (id) {
+            $('#' + id).html(res[id]);
+        });
+    }
+    else if (!res.body) {
+        var context = {title: res.title || ''};
+        _.each(ids, function (id) {
+            context[id] = res[id];
+        });
+        var body = templates.render(
+            settings.base_template || 'base.html', req, context
+        );
+        res = {
+            body: body,
+            code: res.code || 200,
+            headers: res.headers
+        }
+    }
+    return {
+        body: res.body,
+        code: res.code,
+        headers: res.headers
+    };
+};
+
 exports.runShow = function (fn, doc, req) {
-    flashmessages.updateRequest(req);
+    req = flashmessages.updateRequest(req);
     var info = {
         type: 'show',
         name: req.path[1],
@@ -572,14 +610,19 @@ exports.runShow = function (fn, doc, req) {
     };
     events.emit('beforeRequest', info, req);
     var res = fn(doc, req);
-    req.response_received = true;
 
     if (!(res instanceof Object)) {
         res = {code: 200, body: res};
     }
+    else {
+        res = exports.parseResponse(req, res);
+    }
     events.emit('beforeResponseStart', info, req, res);
     events.emit('beforeResponseData', info, req, res, res.body || '');
-    return flashmessages.updateResponse(req, res);
+
+    res = flashmessages.updateResponse(req, res);
+    req.response_received = true;
+    return res;
 };
 
 /**
@@ -612,40 +655,50 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
                 if (err) {
                     return callback(err);
                 }
-                var res = exports.runUpdate(fn, doc, req);
-                events.emit('afterResponse', info, req, res);
-                if (res) {
-                    exports.handleResponse(res[1]);
-                }
-                else {
-                    // returned without response, meaning cookies won't be set
-                    // by handleResponseHeaders
-                    if (req.outgoing_flash_messages) {
-                        flashmessages.setCookieBrowser(
-                            req, req.outgoing_flash_messages
-                        );
+                exports.runUpdate(fn, doc, req, function (err, res) {
+                    if (err) {
+                        events.emit('updateFailure', err, info, req, res, doc);
+                        return callback(err);
                     }
-                }
-                callback();
+                    events.emit('afterResponse', info, req, res);
+                    if (res) {
+                        exports.handleResponse(req, res[1]);
+                    }
+                    else {
+                        // returned without response, meaning cookies won't be
+                        // set by handleResponseHeaders
+                        if (req.outgoing_flash_messages) {
+                            flashmessages.setCookieBrowser(
+                                req, req.outgoing_flash_messages
+                            );
+                        }
+                    }
+                    callback();
+                });
             }
         });
     }
     else {
-        var res = exports.runUpdate(fn, null, req);
-        events.emit('afterResponse', info, req, res);
-        if (res) {
-            exports.handleResponse(res[1]);
-        }
-        else {
-            // returned without response, meaning cookies won't be set by
-            // handleResponseHeaders
-            if (req.outgoing_flash_messages) {
-                flashmessages.setCookieBrowser(
-                    req, req.outgoing_flash_messages
-                );
+        exports.runUpdate(fn, null, req, function (err, res) {
+            if (err) {
+                events.emit('updateFailure', err, info, req, res, null);
+                return callback(err);
             }
-        }
-        callback();
+            events.emit('afterResponse', info, req, res);
+            if (res) {
+                exports.handleResponse(req, res[1]);
+            }
+            else {
+                // returned without response, meaning cookies won't be set by
+                // handleResponseHeaders
+                if (req.outgoing_flash_messages) {
+                    flashmessages.setCookieBrowser(
+                        req, req.outgoing_flash_messages
+                    );
+                }
+            }
+            callback();
+        });
     }
 };
 
@@ -660,7 +713,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
  * @api public
  */
 
-exports.runUpdate = function (fn, doc, req) {
+exports.runUpdate = function (fn, doc, req, cb) {
     flashmessages.updateRequest(req);
     var info = {
         type: 'update',
@@ -671,17 +724,33 @@ exports.runUpdate = function (fn, doc, req) {
     };
     events.emit('beforeRequest', info, req);
     var val = fn(doc, req);
-    req.response_received = true;
 
     var res = val ? val[1]: null;
     if (!(res instanceof Object)) {
         res = {code: 200, body: res};
     }
+    else {
+        res = exports.parseResponse(req, res);
+    }
     events.emit('beforeResponseStart', info, req, res);
     events.emit('beforeResponseData', info, req, res, res.body || '');
 
-    if (val) {
-        return [val[0], flashmessages.updateResponse(req, res)];
+    var r = [
+        val ? val[0]: null,
+        flashmessages.updateResponse(req, res)
+    ];
+    if (req.client && r[0]) {
+        db.saveDoc(r[0], function (err, res) {
+            if (err) {
+                return cb(err);
+            }
+            req.response_received = true;
+            cb(null, r);
+        });
+    }
+    else {
+        req.response_received = true;
+        cb(null, r);
     }
 };
 
@@ -744,15 +813,13 @@ exports.runListBrowser = function (req, name, view, callback) {
                 start = function (res) {
                     //console.log('start');
                     //console.log(res);
-                    if (res && res.headers) {
-                        exports.handleResponseHeaders(res.headers);
-                    }
+                    exports.handleResponse(req, res);
                 };
                 var head = exports.createHead(data);
                 var res = exports.runList(fn, head, req);
                 events.emit('afterResponse', info, req, res);
                 if (res) {
-                    exports.handleResponse(res);
+                    exports.handleResponse(req, res);
                 }
                 else {
                     // returned without response, meaning cookies won't be set
@@ -826,32 +893,24 @@ exports.runList = function (fn, head, req) {
     };
     events.emit('beforeRequest', info, req);
     var val = fn(head, req);
-    req.response_received = true;
 
     if (val instanceof Object) {
-        if (!start_res) {
-            start_res = val;
-            events.emit('beforeResponseStart', info, req, start_res);
-        }
-        var data = start_res.body || '';
-        events.emit('beforeResponseData', info, req, start_res, data);
+        val = exports.parseResponse(req, val).body;
+    }
+    if (!start_res) {
+        start_res = {code: 200, body: val};
+        events.emit('beforeResponseStart', info, req, start_res);
+        events.emit('beforeResponseData', info, req, start_res, val);
+        start = _start;
+        send = _send;
     }
     else {
-        if (!start_res) {
-            start_res = {code: 200, body: val};
-            events.emit('beforeResponseStart', info, req, start_res);
-            events.emit('beforeResponseData', info, req, start_res, val);
-            start = _start;
-            send = _send;
-            return start_res;
-        }
-        else {
-            start_res.body = start_res.body ? start_res.body + val: val;
-            events.emit('beforeResponseData', info, req, start_res, val);
-        }
+        start_res.body = start_res.body ? start_res.body + val: val;
+        events.emit('beforeResponseData', info, req, start_res, val);
     }
     start = _start;
     send = _send;
+    req.response_received = true;
     return val;
 };
 

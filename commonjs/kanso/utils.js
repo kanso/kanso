@@ -314,6 +314,14 @@ exports.parseCSV = function (csvString) {
  */
 
 exports.redirect = function (req, url) {
+    if (!url) {
+        if (typeof req === 'string') {
+            throw new Error(
+                'First argument to redirect should be a request object'
+            );
+        }
+        throw new Error('No redirect URL specified');
+    }
     var baseURL = exports.getBaseURL(req);
     return {code: 302, headers: {'Location': baseURL + url}};
 };
