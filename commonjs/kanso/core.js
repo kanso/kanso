@@ -198,6 +198,7 @@ exports.init = function () {
             var state = ev.state || {};
             var method = state.method || 'GET';
             var data = state.data;
+            var count = state.history_count;
 
             if (method !== 'GET' && method !== 'HEAD') {
                 // unsafe method, unless caused by an explicit call to setURL
@@ -211,6 +212,8 @@ exports.init = function () {
                         'Re-send information?'
                     );
                     if (!resend) {
+                        var curr_count = exports.current_state.history_count;
+                        window.history.go(curr_count - count);
                         return;
                     }
                 }
@@ -231,7 +234,8 @@ exports.init = function () {
                 method: method,
                 url: url,
                 data: data,
-                timestamp: ev.timestamp
+                timestamp: ev.timestamp,
+                history_count: count
             };
             exports.handle(method, url, data);
         };
@@ -1029,7 +1033,8 @@ exports.setURL = function (method, url, data) {
     var state = {
         method: method,
         data: data,
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime(),
+        history_count: window.history.length + 1
     };
     exports.set_called = true;
     window.history.pushState(state, document.title, fullurl);
