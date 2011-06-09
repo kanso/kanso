@@ -771,7 +771,7 @@ exports.runListBrowser = function (req, name, view, callback) {
         req.query.update_seq = true;
         db.getView(view, req.query, function (err, data) {
             var current_req = (exports.currentRequest() || {});
-            if (current_request.uuid === req.uuid) {
+            if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }

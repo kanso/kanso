@@ -9,8 +9,7 @@
  * Module dependencies
  */
 
-var widgets = require('./widgets'),
-    _ = require('./underscore')._;
+var _ = require('./underscore')._;
 
 /**
  * Renders HTML for error messages.
@@ -129,6 +128,54 @@ exports.classes = function (field, errors) {
 };
 
 /**
+ * Generate a script tag, containing code to invoke a function
+ * in a CommonJS module. This is a general-purpose dispatch method
+ * for client-side initialization functions. If you're writing a
+ * widget, please use the version found in the Widget prototype.
+ *
+ * @param {String} module - the commonjs module to call in to.
+ * @param {String} method - the function to invoke in the module; this
+ *                  argument can be a dotted path to traverse objects
+ *                  in the module. This string is substituted directly.
+ *                  Javascript injection warning: it is the caller's
+ *                  responsibility to construct this string safely.
+ * @param {Object} options - optional; additional argument data to
+ *                  be passed to the init function. This data will be
+ *                  passed to the method as a single argument, and will
+ *                  undergo serialization. It is *not* possible to pass
+ *                  functions or closures using this mechanism. All
+ *                  data in options will be copied and serialized.
+ * @param {Object} args - optional; a string consisting of literal
+ *                  arguments to the method. This will be directly
+ *                  substituted in to the argument list at its beginning.
+ *                  Javascript injection warning: it is the caller's
+ *                  responsibility to construct this string safely.
+ * @returns {String}
+ * @api public
+ */
+
+exports.scriptTagForInit = function(module, method, options, args)
+{
+    /* XSS Prevention:
+        Prevent escape from (i) the javascript string, and then (ii)
+        the CDATA block. Use a JSON string to keep these rules simple. */
+
+    var json_options = (
+        JSON.stringify(options || {}).replace(/'/g, "\\'").replace(']]>', '')
+    );
+
+    return (
+        '<script type="text/javascript">' +
+        "// <![CDATA[\n" +
+            "require('" + module + "')." +
+                method + '(' + (args ? args + ', ' : '') +
+                    "JSON.parse('" + json_options + "'));\n" +
+        "// ]]>" +
+        '</script>'
+    );
+};
+
+/**
  * Storage for use by registerInitializationMarkup and
  * generateInitializationMarkup. These functions allow external
  * callers (e.g. widgets) to register markup, or markup-generating
@@ -159,7 +206,9 @@ exports._initialization_markup = {};
 
 exports.registerInitializationMarkup = function (name, value) {
     if (!exports._initialization_markup[name]) {
-        exports._initialization_markup[name] = value;
+        exports._initialization_markup[name] = {
+            value: value, args: Array.prototype.slice.call(arguments, 2)
+        }
     }
 };
 
@@ -177,10 +226,10 @@ exports.generateInitializationMarkup = function () {
     var markup_list = exports._initialization_markup;
     for (var key in exports._initialization_markup) {
         var m = markup_list[key];
-        if (m instanceof Function) {
-            m = m();
+        if (m.value instanceof Function) {
+            m = m.value.apply(m.value, m.args);
         } else {
-            m += ''; /* Coerce to string */
+            m = (m.value + ''); /* Coerce to string */
         }
         rv += ("\n" + m);
     }
@@ -300,7 +349,8 @@ exports.table = function () {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         exports.registerInitializationMarkup(
-            'built-in embed/embedList', this.initializationMarkupForEmbed
+            'built-in embed/embedList',
+                this.initializationMarkupForEmbed, field
         );
         return '<tr class="embedded">' +
             '<th>' +
@@ -333,7 +383,8 @@ exports.table = function () {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         exports.registerInitializationMarkup(
-            'built-in embed/embedList', this.initializationMarkupForEmbed
+            'built-in embed/embedList',
+                this.initializationMarkupForEmbed, field
         );
         var html = '<tr class="embeddedlist">' +
             '<th>' +
@@ -378,8 +429,10 @@ exports.table = function () {
      * result is a string that contains a script tag.
      */
 
-    this.initializationMarkupForEmbed = function () {
-        return widgets.scriptTagForInit('kanso/embed', 'bind');
+    this.initializationMarkupForEmbed = function (field) {
+        return exports.scriptTagForInit(
+            'kanso/embed', 'bind', field.actions
+        );
     };
 
 };

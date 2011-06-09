@@ -7,11 +7,55 @@ var core = require('kanso/core'),
     querystring = require('kanso/querystring'),
     _ = require('kanso/underscore')._;
 
+exports.test = function()
+{
+    alert('test');
+};
 
-exports.bind = function (json_options) {
-    var options = (json_options ? JSON.parse(json_options) : {});
-    var action_callbacks = {};
+/**
+ * Convert an object containing several [ module, callback ] or
+ * { module: x, callback: y } items in to an object containing
+ * several native javascript functions, by using require.
+ *
+ * @param actions An object, containing items describing a
+ *          function that can be obtained via require().
+ */
+exports.parseActionCallbacks = function(actions) {
+    var rv = {};
+    for (var k in actions) {
+        var module, callback, action = actions[k];
+        if (action instanceof Array) {
+            module = action[0];
+            callback = action[1];
+        } else if (action instanceof Object) {
+            module = action.module;
+            callback = action.callback;
+        } else if (action instanceof Function) {
+            rv[k] = action;
+            continue;
+        } else {
+            throw new Error(
+                'Action `' + k + '` is of type `' + typeof(action) + '`, ' +
+                    "which this function doesn't know how to interpret"
+            );
+        }
+        /* Resolve function description to actual function */
+        rv[k] = require(module)[callback];
+    }
+    return rv;
+}
 
+/**
+ * Bind all events necessary to manage add, edit, and delete operations
+ * on embed and embedList fields. If you wish to override the default
+ * actions, you can pass an actions option (i.e. an object of the form
+ * { add: x, edit: y, del: z }), where x, y, and z are items as described
+ * in parseActionCallbacks.
+ */
+exports.bind = function (actions) {
+    var action_callbacks = exports.parseActionCallbacks(
+        typeof(actions) === 'object' ? actions : {}
+    );
     $('form').each(function () {
         $('.embedded, .embeddedlist', this).each(function () {
             exports.initRow(this, action_callbacks);
@@ -22,18 +66,24 @@ exports.bind = function (json_options) {
     });
 };
 
+/**
+ * initRow
+ */
 exports.initRow = function (row, action_callbacks) {
-    action_callbacks = (_.defaults(action_callbacks || {}, {
+    var action_callbacks = (_.defaults(action_callbacks || {}, {
         add: exports.showModal
     }));
     return exports.createAddBtn(row, action_callbacks.add);
 };
 
+/**
+ * updateRow
+ */
 exports.updateRow = function (row, action_callbacks) {
     var val = exports.getRowValue(row);
     var field_td = $(row).parent().parent().parent();
 
-    action_callbacks = (_.defaults(action_callbacks || {}, {
+    var action_callbacks = (_.defaults(action_callbacks || {}, {
         edit: exports.showModal, del: null
     }));
 
@@ -57,6 +107,9 @@ exports.updateRow = function (row, action_callbacks) {
     exports.renumberRows(field_td);
 };
 
+/**
+ * getRowValue
+ */
 exports.getRowValue = function (row) {
     var str = $('input:hidden', row).val();
     if (!str) {
@@ -65,6 +118,9 @@ exports.getRowValue = function (row) {
     return JSON.parse(str);
 };
 
+/**
+ * addRowControls
+ */
 exports.addRowControls = function (row, edit_callback, del_callback) {
     if (exports.getRowValue(row)) {
         var container = $('td.actions', row).html('');
@@ -76,6 +132,9 @@ exports.addRowControls = function (row, edit_callback, del_callback) {
     }
 };
 
+/**
+ * createAddBtn
+ */
 exports.createAddBtn = function (field_row, add_callback) {
     var addbtn = $('<input type="button" class="addbtn" value="Add" />');
     addbtn.click(exports.addbtnHandler(add_callback));
@@ -84,6 +143,9 @@ exports.createAddBtn = function (field_row, add_callback) {
     $('.field', field_row).append(addbtn);
 };
 
+/**
+ * getModules
+ */
 exports.getModules = function (/*optional*/req, callback) {
     if (!callback) {
         /* Arity = 1: callback only */
@@ -101,6 +163,9 @@ exports.getModules = function (/*optional*/req, callback) {
     });
 };
 
+/**
+ * showModal
+ */
 exports.showModal = function (div, field_td, row, typename, val, rawval) {
     exports.getModules(function (settings, app, forms) {
         var type = app.types[typename];
@@ -163,6 +228,9 @@ exports.showModal = function (div, field_td, row, typename, val, rawval) {
     });
 };
 
+/**
+ * renumberRows
+ */
 exports.renumberRows = function (field_td) {
     var field_row = field_td.parent();
     var name = $('table', field_td).attr('rel');
@@ -176,6 +244,9 @@ exports.renumberRows = function (field_td) {
     }
 };
 
+/**
+ * addRow
+ */
 exports.addRow = function (field_td) {
     var tr = $(
         '<tr>' +
@@ -190,11 +261,17 @@ exports.addRow = function (field_td) {
     return tr;
 };
 
+/**
+ * getRowType
+ */
 exports.getRowType = function (row) {
     var field_td = row.parent().parent().parent();
     return field_td.attr('rel');
 };
 
+/**
+ * addbtnHandler
+ */
 exports.addbtnHandler = function (action_callback) {
     return function (ev) {
         var field_td = $(this).parent();
@@ -206,6 +283,9 @@ exports.addbtnHandler = function (action_callback) {
     };
 };
 
+/**
+ * editbtnHandler
+ */
 exports.editbtnHandler = function (action_callback) {
     return function (ev) {
         var row = $(this).parent().parent();
@@ -219,6 +299,9 @@ exports.editbtnHandler = function (action_callback) {
     };
 };
 
+/**
+ * delbtnHandler
+ */
 exports.delbtnHandler = function (action_callback) {
     return function (ev) {
         var row = $(this).parent().parent();

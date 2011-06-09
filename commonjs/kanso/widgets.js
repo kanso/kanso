@@ -10,6 +10,7 @@
  */
 
 var db = require('./db'),
+    render = require('./render'),
     utils = require('./utils'),
     _ = require('./underscore')._;
 
@@ -78,53 +79,6 @@ Widget.prototype._attrs = function (name, id_extension) {
 
 
 /**
- * Generate a script tag, containing code to invoke a function
- * in a CommonJS module. This is a general-purpose dispatch method
- * for client-side initialization functions. If you're writing a
- * widget, please use the version found in the Widget prototype.
- *
- * @param {String} module - the commonjs module to call in to.
- * @param {String} method - the function to invoke in the module; this
- *                  argument can be a dotted path to traverse objects
- *                  in the module. This string is substituted directly.
- *                  Javascript injection warning: it is the caller's
- *                  responsibility to construct this string safely.
- * @param {Object} options - optional; additional argument data to
- *                  be passed to the init function. This data will be
- *                  passed to the method as a single argument, and will
- *                  undergo serialization. It is *not* possible to pass
- *                  functions or closures using this mechanism. All
- *                  data in options will be copied and serialized.
- * @param {Object} args - optional; a string consisting of literal
- *                  arguments to the method. This will be directly
- *                  substituted in to the argument list at its beginning.
- *                  Javascript injection warning: it is the caller's
- *                  responsibility to construct this string safely.
- * @returns {String}
- * @api public
- */
-
-exports.scriptTagForInit = function(module, method, options, args)
-{
-    /* XSS Prevention:
-        Prevent escape from (i) the javascript string, and then (ii)
-        the CDATA block. Use a JSON string to keep these rules simple. */
-
-    var json_options = (
-        JSON.stringify(options || {}).replace(/'/g, "\\'").replace(']]>', '')
-    );
-
-    return (
-        '<script type="text/javascript">' +
-        "// <![CDATA[\n" +
-            "require('" + module + "')." + method + '(' +
-                (args ? args + ', ' : '') + "'" + json_options + "');\n" +
-        "// ]]>" +
-        '</script>'
-    );
-};
-
-/**
  * A specialized version of scriptTagForInit, for use with custom widgets.
  * This function generates a script tag, which invokes a client-side
  * initialization function -- within the client's web browser -- for the
@@ -148,7 +102,7 @@ exports.scriptTagForInit = function(module, method, options, args)
 
 Widget.prototype.scriptTagForInit = function (name, options, module, namespace)
 {
-    return exports.scriptTagForInit(
+    return render.scriptTagForInit(
         (module || 'kanso/widgets'), 
             ((namespace || 'init') + '.' + this.type),
             options, ("$('#" + this._id(name) + "')")
@@ -417,14 +371,14 @@ exports.documentSelector = function (options) {
  * Selector widget: client-side initialization function.
  */
 
-exports.init.documentSelector = function (_singleton_elt, _json_options) {
+exports.init.documentSelector = function (_singleton_elt, _options) {
 
     var container_elt = _singleton_elt.first().parent();
     var hidden_elt = $('input.backing', container_elt);
     var select_elt = $('input.backing ~ select.selector', container_elt);
     var spinner_elt = $('input.backing ~ .spinner', container_elt);
 
-    var options = JSON.parse(_json_options);
+    var options = (_options || {});
     var value = options.value;
 
     if (options.storeValue) {
