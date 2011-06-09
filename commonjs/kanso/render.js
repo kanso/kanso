@@ -396,7 +396,7 @@ exports.table = function () {
         _.each(value, function (v, i) {
             html += (
                 '<tr><td>' +
-                    field.widget.toHTML(name, v, raw, field) +
+                    field.widget.toHTML(name, v, raw, field, i) +
                 '</td><td class="actions">' +
                 '</td></tr>'
             );
@@ -602,7 +602,7 @@ exports.div = function () {
             html += (
                 '<div class="item" rel="' + name + '">' +
                     '<div class="inner">' +
-                        field.widget.toHTML(name, value, raw, field) +
+                        field.widget.toHTML(name, value, raw, field, i) +
                     '</div>' +
                     '<div class="actions">' +
                     '</div>' +

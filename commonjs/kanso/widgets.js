@@ -46,7 +46,7 @@ var Widget = exports.Widget = function Widget(type, options) {
 
 Widget.prototype._id = function (name, extension) {
     return (
-        this.id ? this.id : 'id_' + name.replace(/[^\w]+/, '_')
+        this.id ? this.id : 'id_' + name.replace(/[^A-Za-z0-9_]+/, '_')
     ) + (
         extension ? ('_' + extension) : ''
     );
@@ -57,7 +57,7 @@ Widget.prototype._id = function (name, extension) {
  * Generates a string for common widget attributes.
  *
  * @param {String} name - field name on the HTML form
- * @param {String} id_extension - optional; a string to be added
+ * @param {String} extension - optional; a string to be added
  *                  to the generated DOM identifier. Use this when you
  *                  want to make an identifier that is related to
  *                  an existing identifier, but is still unique. The
@@ -66,10 +66,10 @@ Widget.prototype._id = function (name, extension) {
  * @api private
  */
 
-Widget.prototype._attrs = function (name, id_extension) {
+Widget.prototype._attrs = function (name, extension) {
     var html = (
-        ' name="' + name + '" id="' +
-            this._id(name, id_extension) + '"'
+        ' name="' + name + (extension ? '.' + extension : '') +
+            '" id="' + this._id(name, extension) + '"'
     );
     if (this.classes.length) {
         html += ' class="' + this.classes.join(' ') + '"';
@@ -86,7 +86,7 @@ Widget.prototype._attrs = function (name, id_extension) {
  * name of the widget's initialization function; it uses the widget's
  * id to locate the widget's markup on the page.
  *
- * @param {String} name - field name on the HTML form
+ * @param {String} id - element id on the HTML form
  * @param {Object} options - data to be passed to init function.
  * @param {String} module - optional; the commonjs module to load. This
  *                  module should export an object named identically to the
@@ -100,12 +100,12 @@ Widget.prototype._attrs = function (name, id_extension) {
  * @api public
  */
 
-Widget.prototype.scriptTagForInit = function (name, options, module, namespace)
+Widget.prototype.scriptTagForInit = function (id, options, module, namespace)
 {
     return render.scriptTagForInit(
         (module || 'kanso/widgets'), 
             ((namespace || 'init') + '.' + this.type),
-            options, ("$('#" + this._id(name) + "')")
+            options, ("$('#" + id + "')")
     );
 }
 
@@ -340,17 +340,17 @@ exports.computed = function (options) {
 exports.documentSelector = function (options) {
     var w = new Widget('documentSelector', options);
     w.options = options;
-    w.toHTML = function (name, value, raw, field) {
+    w.toHTML = function (name, value, raw, field, offset) {
         var html_value = utils.escapeHTML(
             (value instanceof Object ? JSON.stringify(value) : value)
         );
         var input_html = (
             '<input class="backing" type="hidden"' +
-                'value="' + html_value + '" ' + this._attrs(name) + ' />'
+                'value="' + html_value + '" ' + this._attrs(name, offset) + ' />'
         );
         var select_html = (
             '<select class="selector"' +
-                ' id="' + this._id(name, 'visible') + '"' +
+                ' id="' + this._id(name, 'visible' + offset) + '"' +
             '></select>'
         );
         var html = (
@@ -360,9 +360,11 @@ exports.documentSelector = function (options) {
                 '<div class="spinner" style="display: none;"></div>' +
             '</div>' +
             '</div>' + 
-            this.scriptTagForInit(name, _.extend(this.options, {
-                name: name, value: value
-            }))
+            this.scriptTagForInit(
+                this._id(name, offset), _.extend(this.options, {
+                    value: value
+                })
+            )
         );
         return html;
     };
