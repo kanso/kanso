@@ -296,7 +296,8 @@ checking the client property on the request object. When run client-side,
 it will update the DOM instead of returning a new HTML document.
 
 Since this is such a common pattern when writing Kanso apps, you can use a
-convenient short-hand of returning an object with title and content properties:
+convenient short-hand of returning an object with title and content properties,
+Kanso will then do the appropriate thing for the current environment:
 
 <pre><code class="javascript">var templates = require('kanso/templates');
 
