@@ -295,10 +295,36 @@ You'll notice this list function detects if its running client-side by
 checking the client property on the request object. When run client-side,
 it will update the DOM instead of returning a new HTML document.
 
-We also reference two templates: 'base.html' and 'blogposts.html'. The first
-was created as part of the project skeleton, but the second we need to create
-ourselves. Create a new template at <code>templates/blogposts.html</code> with
-the following content:
+Since this is such a common pattern when writing Kanso apps, you can use a
+convenient short-hand of returning an object with title and content properties:
+
+<pre><code class="javascript">var templates = require('kanso/templates');
+
+
+exports.homepage = function (head, req) {
+
+    start({code: 200, headers: {'Content-Type': 'text/html'}});
+
+    // fetch all the rows
+    var row, rows = [];
+    while (row = getRow()) {
+        rows.push(row);
+    }
+
+    // generate the markup for a list of blog posts
+    var content = templates.render('blogposts.html', req, {
+        rows: rows
+    });
+
+    return {title: 'MyBlog', content: content};
+
+};</code></pre>
+
+We referenced two templates in the first example: 'base.html' and
+'blogposts.html'. The first was created as part of the project skeleton,
+but the second we need to create ourselves.
+Create a new template at <code>templates/blogposts.html</code> with the
+following content:
 
 <pre><code>&lt;h1&gt;My Blog&lt;/h1&gt;
 
@@ -359,25 +385,15 @@ rewrite rules. You can now remove that, and replace it with the following:
 
 
 exports.blogpost = function (doc, req) {
-
-    // render the markup for a single blog post
-    var content = templates.render('blogpost.html', req, doc);
-
-    if (req.client) {
-        // being run client-side
-        $('#content').html(content);
-        document.title = doc.title;
-    }
-    else {
-        return templates.render('base.html', req, {
-            content: content,
-            title: doc.title
-        });
-    }
-
+    return {
+        title: doc.title,
+        content: templates.render('blogpost.html', req, doc)
+    };
 };</code></pre>
 
-Then we need to add the <code>blogpost.html</code> template:
+You'll notice we're using the short-hand method used in the list function
+earlier, by returning an object with title and content properties.
+Next we need to add the <code>blogpost.html</code> template:
 
 <pre><code>&lt;h1&gt;{title}&lt;/h1&gt;
 
