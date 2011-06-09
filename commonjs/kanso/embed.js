@@ -7,10 +7,6 @@ var core = require('kanso/core'),
     querystring = require('kanso/querystring'),
     _ = require('kanso/underscore')._;
 
-exports.test = function()
-{
-    alert('test');
-};
 
 /**
  * Convert an object containing several [ module, callback ] or
