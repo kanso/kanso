@@ -198,13 +198,13 @@ exports.defaultEmbedded = function (options) {
         var display_name = (value ? value._id: '');
         var fval = (value ? utils.escapeHTML(JSON.stringify(value)) : '');
 
-        if (field.type.display_name && v) {
-            display_name = field.type.display_name(v);
+        if (field && field.type.display_name && value) {
+            display_name = field.type.display_name(value);
         }
         var html = (
             '<div class="defaultEmbedded">' + 
                 '<input type="hidden" ' +
-                    'value="' + fval + '" name="' + name + '" />' +
+                    'value="' + fval + '" name="' + (name || '') + '" />' +
                 '<span class="value">' + display_name + '</span>' +
             '</div>'
         );

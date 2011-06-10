@@ -4,6 +4,7 @@ var core = require('kanso/core'),
     db = require('kanso/db'),
     loader = require('kanso/loader'),
     utils = require('kanso/utils'),
+    widgets = require('kanso/widgets'),
     querystring = require('kanso/querystring'),
     _ = require('kanso/underscore')._;
 
@@ -67,9 +68,11 @@ exports.bind = function (actions) {
  */
 exports.initRow = function (row, action_callbacks) {
     var action_callbacks = (_.defaults(action_callbacks || {}, {
-        add: exports.showModal
+        add: exports.showModal, create: exports.defaultWidgetFactory
     }));
-    return exports.createAddBtn(row, action_callbacks.add);
+    return exports.createAddBtn(
+        row, action_callbacks.add, action_callbacks.create
+    );
 };
 
 /**
@@ -80,7 +83,7 @@ exports.updateRow = function (row, action_callbacks) {
     var field_td = $(row).parent().parent().parent();
 
     var action_callbacks = (_.defaults(action_callbacks || {}, {
-        edit: exports.showModal, del: null
+        edit: exports.showModal
     }));
 
     if (val) {
@@ -117,13 +120,17 @@ exports.getRowValue = function (row) {
 /**
  * addRowControls
  */
-exports.addRowControls = function (row, edit_callback, del_callback) {
+exports.addRowControls = function (row, edit_callback, delete_callback) {
     if (exports.getRowValue(row)) {
         var container = $('td.actions', row).html('');
-        var editbtn = $('<input type="button" class="editbtn" value="Edit" />');
-        var delbtn  = $('<input type="button" class="delbtn" value="Delete" />');
+        var editbtn = $(
+            '<input type="button" class="editbtn" value="Edit" />'
+        );
+        var delbtn  = $(
+            '<input type="button" class="delbtn" value="Delete" />'
+        );
         editbtn.click(exports.editbtnHandler(edit_callback));
-        delbtn.click(exports.delbtnHandler(del_callback));
+        delbtn.click(exports.delbtnHandler(delete_callback));
         container.append(editbtn, delbtn);
     }
 };
@@ -131,10 +138,16 @@ exports.addRowControls = function (row, edit_callback, del_callback) {
 /**
  * createAddBtn
  */
-exports.createAddBtn = function (field_row, add_callback) {
-    var addbtn = $('<input type="button" class="addbtn" value="Add" />');
-    addbtn.click(exports.addbtnHandler(add_callback));
-    // remove any existing add buttons
+exports.createAddBtn = function (field_row, add_callback, widget_factory) {
+
+    var addbtn = $(
+        '<input type="button" class="addbtn" value="Add" />'
+    );
+
+    addbtn.click(
+        exports.addbtnHandler(add_callback, widget_factory)
+    );
+
     $('.field .addbtn', field_row).remove();
     $('.field', field_row).append(addbtn);
 };
@@ -162,7 +175,9 @@ exports.getModules = function (/*optional*/req, callback) {
 /**
  * showModal
  */
-exports.showModal = function (div, field_td, row, typename, val, rawval) {
+exports.showModal = function (div, field_td, row,
+                              typename, val, rawval, widget_factory) {
+
     exports.getModules(function (settings, app, forms) {
         var type = app.types[typename];
         var form = new forms.Form(type, val);
@@ -182,7 +197,9 @@ exports.showModal = function (div, field_td, row, typename, val, rawval) {
             form.validate(rawval);
             if (form.isValid()) {
                 if (!val) {
-                    row = exports.addRow(field_td);
+                    row = exports.addRow(
+                        field_td, widget_factory, val, rawval, type
+                    );
                 }
                 var jsonval = JSON.stringify(form.values);
                 $('input:hidden', row).val(jsonval);
@@ -201,7 +218,9 @@ exports.showModal = function (div, field_td, row, typename, val, rawval) {
             return false;
         });
 
-        var cancelbtn = $('<input type="button" value="Cancel" />');
+        var cancelbtn = $(
+            '<input type="button" value="Cancel" />'
+        );
         cancelbtn.click(function () {
             $.modal.close();
         });
@@ -241,18 +260,31 @@ exports.renumberRows = function (field_td) {
 };
 
 /**
+ * defaultWidgetFactory:
+ */
+exports.defaultWidgetFactory = function () {
+    return widgets.defaultEmbedded();
+};
+
+/**
  * addRow
  */
-exports.addRow = function (field_td) {
+exports.addRow = function (field_td, widget_factory, val, rawval) {
+
+    /* FIXME:
+        We need to discover the field name and field descriptor,
+        so that it can be passed to the widget's rendering function. */
+
+    var widget = widget_factory();
     var tr = $(
         '<tr>' +
             '<td>' +
-                '<input type="hidden" value="" name="" />' +
-                '<span class="value"></span>' +
+                widget.toHTML('', val) +
             '</td>' +
             '<td class="actions"></td>' +
         '</tr>'
     );
+
     $('tbody', field_td).append(tr);
     return tr;
 };
@@ -268,13 +300,15 @@ exports.getRowType = function (row) {
 /**
  * addbtnHandler
  */
-exports.addbtnHandler = function (action_callback) {
+exports.addbtnHandler = function (add_callback, widget_factory) {
     return function (ev) {
         var field_td = $(this).parent();
         var typename = field_td.attr('rel');
         var div = $('<div/>');
-        if (action_callback) {
-            action_callback(div, field_td, null, typename);
+        if (add_callback) {
+            add_callback(
+                div, field_td, null, typename, null, null, widget_factory
+            );
         }
     };
 };
@@ -282,15 +316,15 @@ exports.addbtnHandler = function (action_callback) {
 /**
  * editbtnHandler
  */
-exports.editbtnHandler = function (action_callback) {
+exports.editbtnHandler = function (edit_callback) {
     return function (ev) {
         var row = $(this).parent().parent();
         var field_td = row.parent().parent().parent();
         var val = exports.getRowValue(row);
         var typename = exports.getRowType(row);
         var div = $('<div/>');
-        if (action_callback) {
-            action_callback(div, field_td, row, typename, val);
+        if (edit_callback) {
+            edit_callback(div, field_td, row, typename, val);
         }
     };
 };
@@ -298,14 +332,14 @@ exports.editbtnHandler = function (action_callback) {
 /**
  * delbtnHandler
  */
-exports.delbtnHandler = function (action_callback) {
+exports.delbtnHandler = function (delete_callback) {
     return function (ev) {
         var row = $(this).parent().parent();
         $('input:hidden', row).val('');
         $('span.value', row).html('');
         exports.updateRow(row);
-        if (action_callback) {
-            action_callback(row);
+        if (delete_callback) {
+            delete_callback(row);
         }
     };
 };
