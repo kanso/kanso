@@ -18,9 +18,10 @@ var settings = require('./settings'), // module auto-generated
     url = require('./url'),
     db = require('./db'),
     utils = require('./utils'),
-    flashmessages = require('./flashmessages'),
     session = require('./session'),
     cookies = require('./cookies'),
+    flashmessages = require('./flashmessages'),
+    templates = require('./templates'),
     events = require('./events'),
     urlParse = url.parse,
     urlFormat = url.format,
@@ -66,6 +67,15 @@ exports.history_support = false;
  */
 
 exports.current_state = null;
+
+/**
+ * Set to true when setURL is called so the onpopstate which fires afterwards
+ * knows it is the result of an explicit call to setURL (as opposed to clicking
+ * the back, forward or reload buttons). This means we can avoid showing a
+ * confirmation dialog for POST requests in these circumstances.
+ */
+
+exports.set_called = false;
 
 
 if (typeof window !== 'undefined') {
@@ -197,6 +207,28 @@ exports.init = function () {
             var state = ev.state || {};
             var method = state.method || 'GET';
             var data = state.data;
+            var count = state.history_count;
+
+            if (method !== 'GET' && method !== 'HEAD') {
+                // unsafe method, unless caused by an explicit call to setURL
+                // show a confirmation dialog
+                if (!exports.set_called) {
+                    // TODO: at this point is it too late to undo the popstate?
+                    var resend = confirm(
+                        'In order to complete this request the browser will ' +
+                        'have to re-send information, repeating any ' +
+                        'previous action (such as creating a document).\n\n' +
+                        'Re-send information?'
+                    );
+                    if (!resend) {
+                        var curr_count = exports.current_state.history_count;
+                        window.history.go(curr_count - count);
+                        return;
+                    }
+                }
+            }
+            // reset set_called
+            exports.set_called = false;
 
             var curr = exports.current_state;
             if (curr &&
@@ -211,7 +243,8 @@ exports.init = function () {
                 method: method,
                 url: url,
                 data: data,
-                timestamp: ev.timestamp
+                timestamp: ev.timestamp,
+                history_count: count
             };
             exports.handle(method, url, data);
         };
@@ -446,21 +479,26 @@ exports.createRequest = function (method, url, data, match, callback) {
  * Handles return values from show / list / update functions
  */
 
-exports.handleResponse = function (res) {
+exports.handleResponse = function (req, res) {
     //console.log('response');
     //console.log(res);
-    if (typeof res === 'object') {
+    if (req && typeof res === 'object') {
         if (res.headers) {
-            exports.handleResponseHeaders(res.headers);
+            if (res.headers['Set-Cookie']) {
+                document.cookie = res.headers['Set-Cookie'];
+            }
+            var loc = res.headers['Location'];
+            if (loc && _.indexOf([301, 302, 303, 307], res.code) !== -1) {
+                if (exports.isAppURL(loc)) {
+                    // reset method to GET unless response is a 307
+                    var method = res.code === 307 ? req.method || 'GET': 'GET';
+                    exports.setURL(method, exports.appPath(loc));
+                }
+                else {
+                    document.location = loc;
+                }
+            }
         }
-    }
-};
-
-exports.handleResponseHeaders = function (headers) {
-    //console.log('headers');
-    //console.log(headers);
-    if (headers['Set-Cookie']) {
-        document.cookie = headers['Set-Cookie'];
     }
 };
 
@@ -499,7 +537,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
                 var res = exports.runShow(fn, doc, req);
                 events.emit('afterResponse', info, req, res);
                 if (res) {
-                    exports.handleResponse(res);
+                    exports.handleResponse(req, res);
                 }
                 else {
                     // returned without response, meaning cookies won't be set
@@ -518,7 +556,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
         var res = exports.runShow(fn, null, req);
         events.emit('afterResponse', info, req, res);
         if (res) {
-            exports.handleResponse(res);
+            exports.handleResponse(req, res);
         }
         else {
             // returned without response, meaning cookies won't be set by
@@ -584,6 +622,37 @@ exports.parseResponse = function (req, res) {
  * @api public
  */
 
+exports.parseResponse = function (req, res) {
+    var ids = _.without(_.keys(res), 'title', 'code', 'headers', 'body');
+    if (req.client) {
+        if (res.title) {
+            document.title = res.title;
+        }
+        _.each(ids, function (id) {
+            $('#' + id).html(res[id]);
+        });
+    }
+    else if (!res.body) {
+        var context = {title: res.title || ''};
+        _.each(ids, function (id) {
+            context[id] = res[id];
+        });
+        var body = templates.render(
+            settings.base_template || 'base.html', req, context
+        );
+        res = {
+            body: body,
+            code: res.code || 200,
+            headers: res.headers
+        }
+    }
+    return {
+        body: res.body,
+        code: res.code,
+        headers: res.headers
+    };
+};
+
 exports.runShow = function (fn, doc, req) {
     req = flashmessages.updateRequest(req);
     exports.currentRequest(req);
@@ -642,40 +711,50 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
                 if (err) {
                     return callback(err);
                 }
-                var res = exports.runUpdate(fn, doc, req);
-                events.emit('afterResponse', info, req, res);
-                if (res) {
-                    exports.handleResponse(res[1]);
-                }
-                else {
-                    // returned without response, meaning cookies won't be set
-                    // by handleResponseHeaders
-                    if (req.outgoing_flash_messages) {
-                        flashmessages.setCookieBrowser(
-                            req, req.outgoing_flash_messages
-                        );
+                exports.runUpdate(fn, doc, req, function (err, res) {
+                    if (err) {
+                        events.emit('updateFailure', err, info, req, res, doc);
+                        return callback(err);
                     }
-                }
-                callback();
+                    events.emit('afterResponse', info, req, res);
+                    if (res) {
+                        exports.handleResponse(req, res[1]);
+                    }
+                    else {
+                        // returned without response, meaning cookies won't be
+                        // set by handleResponseHeaders
+                        if (req.outgoing_flash_messages) {
+                            flashmessages.setCookieBrowser(
+                                req, req.outgoing_flash_messages
+                            );
+                        }
+                    }
+                    callback();
+                });
             }
         });
     }
     else {
-        var res = exports.runUpdate(fn, null, req);
-        events.emit('afterResponse', info, req, res);
-        if (res) {
-            exports.handleResponse(res[1]);
-        }
-        else {
-            // returned without response, meaning cookies won't be set by
-            // handleResponseHeaders
-            if (req.outgoing_flash_messages) {
-                flashmessages.setCookieBrowser(
-                    req, req.outgoing_flash_messages
-                );
+        exports.runUpdate(fn, null, req, function (err, res) {
+            if (err) {
+                events.emit('updateFailure', err, info, req, res, null);
+                return callback(err);
             }
-        }
-        callback();
+            events.emit('afterResponse', info, req, res);
+            if (res) {
+                exports.handleResponse(req, res[1]);
+            }
+            else {
+                // returned without response, meaning cookies won't be set by
+                // handleResponseHeaders
+                if (req.outgoing_flash_messages) {
+                    flashmessages.setCookieBrowser(
+                        req, req.outgoing_flash_messages
+                    );
+                }
+            }
+            callback();
+        });
     }
 };
 
@@ -690,7 +769,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
  * @api public
  */
 
-exports.runUpdate = function (fn, doc, req) {
+exports.runUpdate = function (fn, doc, req, cb) {
     req = flashmessages.updateRequest(req);
     exports.currentRequest(req);
     var info = {
@@ -717,8 +796,19 @@ exports.runUpdate = function (fn, doc, req) {
         val ? val[0]: null,
         flashmessages.updateResponse(req, res)
     ];
-    req.response_received = true;
-    return r;
+    if (req.client && r[0]) {
+        db.saveDoc(r[0], function (err, res) {
+            if (err) {
+                return cb(err);
+            }
+            req.response_received = true;
+            cb(null, r);
+        });
+    }
+    else {
+        req.response_received = true;
+        cb(null, r);
+    }
 };
 
 
@@ -781,15 +871,13 @@ exports.runListBrowser = function (req, name, view, callback) {
                 start = function (res) {
                     //console.log('start');
                     //console.log(res);
-                    if (res && res.headers) {
-                        exports.handleResponseHeaders(res.headers);
-                    }
+                    exports.handleResponse(req, res);
                 };
                 var head = exports.createHead(data);
                 var res = exports.runList(fn, head, req);
                 events.emit('afterResponse', info, req, res);
                 if (res) {
-                    exports.handleResponse(res);
+                    exports.handleResponse(req, res);
                 }
                 else {
                     // returned without response, meaning cookies won't be set
@@ -1000,8 +1088,10 @@ exports.setURL = function (method, url, data) {
     var state = {
         method: method,
         data: data,
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime(),
+        history_count: window.history.length + 1
     };
+    exports.set_called = true;
     window.history.pushState(state, document.title, fullurl);
     window.onpopstate({state: state});
 };
