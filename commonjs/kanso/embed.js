@@ -68,7 +68,8 @@ exports.bind = function (actions) {
  */
 exports.initRow = function (row, action_callbacks) {
     var action_callbacks = (_.defaults(action_callbacks || {}, {
-        add: exports.showModal, create: exports.defaultWidgetFactory
+        add: exports.adminShowModal,
+        create: exports.defaultWidgetFactory
     }));
     return exports.createAddBtn(
         row, action_callbacks.add, action_callbacks.create
@@ -83,7 +84,7 @@ exports.updateRow = function (row, action_callbacks) {
     var field_td = $(row).parent().parent().parent();
 
     var action_callbacks = (_.defaults(action_callbacks || {}, {
-        edit: exports.showModal
+        edit: exports.adminShowModal
     }));
 
     if (val) {
@@ -118,6 +119,21 @@ exports.getRowValue = function (row) {
 };
 
 /**
+ * Generate a document identifier for use in an "add" operation,
+ * and place it in the correct hidden input control under div.
+ */
+exports.generateNewDocumentIdentifier = function(div) {
+    db.newUUID(100, function (err, uuid) {
+        if (err) {
+            throw err;
+        }
+        $('input[name="_id"]', div).attr({
+            value: uuid
+        });
+    });
+}
+
+/**
  * addRowControls
  */
 exports.addRowControls = function (row, edit_callback, delete_callback) {
@@ -139,15 +155,12 @@ exports.addRowControls = function (row, edit_callback, delete_callback) {
  * createAddBtn
  */
 exports.createAddBtn = function (field_row, add_callback, widget_factory) {
-
     var addbtn = $(
         '<input type="button" class="addbtn" value="Add" />'
     );
-
     addbtn.click(
         exports.addbtnHandler(add_callback, widget_factory)
     );
-
     $('.field .addbtn', field_row).remove();
     $('.field', field_row).append(addbtn);
 };
@@ -173,74 +186,91 @@ exports.getModules = function (/*optional*/req, callback) {
 };
 
 /**
- * showModal
+ * A showModal wrapper, containing functionality specific to the
+ * administrative interface. This function retrieves information
+ * from a second application instance, and then calls the usual
+ * showModal implementation.
  */
-exports.showModal = function (div, field_td, row,
-                              typename, val, rawval, widget_factory) {
+exports.adminShowModal = function (div, field_td, row,
+                                   typename, val, rawval, widget_factory) {
 
     exports.getModules(function (settings, app, forms) {
         var type = app.types[typename];
         var form = new forms.Form(type, val);
 
-        if (rawval) {
-            form.validate(rawval);
-        }
-
-        div.html('<h2>' + (val ? 'Edit ': 'Add ') + typename + '</h2>');
-        div.append('<form>' + form.toHTML() + '</form>');
-
-        var action = (val ? 'Update': 'Add');
-        var okbtn = $('<input type="button" value="' + action  + '" />"');
-        okbtn.click(function () {
-            var qs = $('form', div).serialize().replace(/\+/g, '%20');
-            var rawval = querystring.parse(qs);
-            form.validate(rawval);
-            if (form.isValid()) {
-                if (!val) {
-                    row = exports.addRow(
-                        field_td, widget_factory, val, rawval, type
-                    );
-                }
-                var jsonval = JSON.stringify(form.values);
-                $('input:hidden', row).val(jsonval);
-                $('span.value', row).text(form.values._id);
-                exports.updateRow(row);
-                $.modal.close();
-            }
-            else {
-                exports.showModal(div, field_td, row, typename, val, rawval);
-            }
-        });
-        div.append(okbtn);
-        div.submit(function (ev) {
-            ev.preventDefault();
-            okbtn.click();
-            return false;
-        });
-
-        var cancelbtn = $(
-            '<input type="button" value="Cancel" />'
+        return exports.showModal(
+            type, form, div, field_td, row,
+            typename, val, rawval, widget_factory
         );
-        cancelbtn.click(function () {
-            $.modal.close();
-        });
-        div.append(cancelbtn);
-
-        // generate ids when adding documents
-        if (!val) {
-            db.newUUID(100, function (err, uuid) {
-                if (err) {
-                    throw err;
-                }
-                $('input[name="_id"]', div).attr({
-                    value: uuid
-                });
-            });
-        }
-
-        div.modal();
-        utils.resizeModal(div);
     });
+};
+
+/**
+ * Show a modal dialog containing an editable form. Once the
+ * editing is completed, call addRow and pass along the JSON-encoded
+ * form data.
+ */
+exports.showModal = function (type, form, div, field_td, row,
+                              typename, val, rawval, widget_factory) {
+    if (rawval) {
+        form.validate(rawval);
+    }
+
+    div.html('<h2>' + (val ? 'Edit ': 'Add ') + typename + '</h2>');
+    div.append('<form>' + form.toHTML() + '</form>');
+
+    var action = (val ? 'Update': 'Add');
+    var okbtn = $(
+        '<input type="button" value="' + action  + '" />"'
+    );
+
+    okbtn.click(function () {
+        var qs = $('form', div).serialize().replace(/\+/g, '%20');
+        var rawval = querystring.parse(qs);
+        form.validate(rawval);
+
+        if (form.isValid()) {
+            if (!val) {
+                row = exports.addRow(
+                    field_td, widget_factory, val, rawval, type
+                );
+            }
+            /* Stash JSON-encoded form data in hidden input */
+            console.log([ 'here', form.values ]);
+            var jsonval = JSON.stringify(form.values);
+            $('input:hidden', row).val(jsonval);
+            $('span.value', row).text(form.values._id);
+            exports.updateRow(row);
+            $.modal.close();
+        }
+        else {
+            /* Repost form showing errors */
+            exports.showModal(
+                div, field_td, row, typename, val, rawval
+            );
+        }
+    });
+    div.append(okbtn);
+    div.submit(function (ev) {
+        ev.preventDefault();
+        okbtn.click();
+        return false;
+    });
+
+    var cancelbtn = $(
+        '<input type="button" value="Cancel" />'
+    );
+    cancelbtn.click(function () {
+        $.modal.close();
+    });
+    div.append(cancelbtn);
+
+    div.modal();
+    utils.resizeModal(div);
+
+    if (!val) {
+        exports.generateNewDocumentIdentifier(div);
+    }
 };
 
 /**
@@ -249,6 +279,7 @@ exports.showModal = function (div, field_td, row,
 exports.renumberRows = function (field_td) {
     var field_row = field_td.parent();
     var name = $('table', field_td).attr('rel');
+
     if (field_row.hasClass('embeddedlist')) {
         $('tr', field_td).each(function (i) {
             $('input:hidden', this).attr({'name': name + '.' + i});
@@ -272,7 +303,7 @@ exports.defaultWidgetFactory = function () {
 exports.addRow = function (field_td, widget_factory, val, rawval) {
 
     /* FIXME:
-        We need to discover the field name and field descriptor,
+        We need to discover the field name and field descriptor here,
         so that it can be passed to the widget's rendering function. */
 
     var widget = widget_factory();
