@@ -664,6 +664,7 @@ assume we want to write our own interface and forms. Kanso provides some useful
 form-rendering code (also used by the admin app) which allows you to quickly
 and easily create forms based on Type definitions.
 
+First, we're going to create a form for adding new blog posts.
 Add the following to the end of <code>templates/blogposts.html</code>:
 
     <p><a href="{baseURL}/add">Add new</a></p>
@@ -686,18 +687,7 @@ Let's create a new show function to display the form. Update
         form_title: 'Add new blogpost'
     });
 
-    if (req.client) {
-        // being run client-side
-        $('#content').html(content);
-        document.title = 'Add new blogpost';
-    }
-    else {
-        return templates.render('base.html', req, {
-            content: content,
-            title: 'Add new blogpost'
-        });
-    }
-
+    return {title: 'Add new blogpost', content: content};
 };</code></pre>
 
 And add a new template for the page at <code>templates/blogpost_form.html</code>.
@@ -733,18 +723,7 @@ Then update <code>exports.add_blogpost</code> to look like this:
         form: form.toHTML(req)
     });
 
-    if (req.client) {
-        // being run client-side
-        $('#content').html(content);
-        document.title = 'Add new blogpost';
-    }
-    else {
-        return templates.render('base.html', req, {
-            content: content,
-            title: 'Add new blogpost'
-        });
-    }
-
+    return {title: 'Add new blogpost', content: content};
 };</code></pre>
 
 You'll notice we're using the new <code>forms</code> module to construct a
