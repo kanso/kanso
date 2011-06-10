@@ -163,8 +163,7 @@ exports.scriptTagForInit = function(module, method, options, args)
     var json_options = (
         JSON.stringify(options || {}).replace(/'/g, "\\'").replace(']]>', '')
     );
-
-    return (
+    var rv = (
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
             "require('" + module + "')." +
@@ -173,6 +172,8 @@ exports.scriptTagForInit = function(module, method, options, args)
         "// ]]>" +
         '</script>'
     );
+
+    return rv;
 };
 
 /**
@@ -183,7 +184,7 @@ exports.scriptTagForInit = function(module, method, options, args)
  * process.
  */
 
-exports._initialization_markup = {};
+exports._initialization_markup = [];
 
 /**
  * Register a markup-generating function (or a string of static
@@ -197,19 +198,15 @@ exports._initialization_markup = {};
  * helper can be used to make the generation of this code simpler.
  * 
  * @name registerInitializationMarkup(m)
- * @param name A unique name for the markup or markup generator
- *          specified in value.
- * @param value A markup-generating function that takes zero arguments,
+ * @param v A markup-generating function that takes zero arguments,
  *          or, alternatively, a string of static HTML markup.
  * @returns {String}
  */
 
-exports.registerInitializationMarkup = function (name, value) {
-    if (!exports._initialization_markup[name]) {
-        exports._initialization_markup[name] = {
-            value: value, args: Array.prototype.slice.call(arguments, 2)
-        }
-    }
+exports.registerInitializationMarkup = function (v) {
+    exports._initialization_markup.push({
+        value: v, args: Array.prototype.slice.call(arguments, 1)
+    });
 };
 
 /**
@@ -222,10 +219,12 @@ exports.registerInitializationMarkup = function (name, value) {
  */
 
 exports.generateInitializationMarkup = function () {
+
     var rv = '';
     var markup_list = exports._initialization_markup;
-    for (var key in exports._initialization_markup) {
-        var m = markup_list[key];
+
+    for (var i = 0, len = markup_list.length; i < len; ++i) {
+        var m = markup_list[i];
         if (m.value instanceof Function) {
             m = m.value.apply(m.value, m.args);
         } else {
@@ -233,7 +232,17 @@ exports.generateInitializationMarkup = function () {
         }
         rv += ("\n" + m);
     }
+
     return rv;
+};
+
+/**
+ * @name clearInitializationMarkup()
+ * @returns {String}
+ */
+
+exports.clearInitializationMarkup = function () {
+    exports._initialization_markup = [];
 };
 
 /**
@@ -275,6 +284,7 @@ exports.table = function () {
         this.depth += 1;
         var name = _.last(path);
         var css_class = 'level-' + this.depth;
+
         return (
             '<tbody class="head ' + css_class + '">' +
             '<tr>' +
@@ -316,9 +326,11 @@ exports.table = function () {
     this.field = function (field, path, value, raw, errors) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
+
         if (field.widget.type === 'hidden') {
             return field.widget.toHTML(name, value, raw, field);
         }
+
         return '<tr class="' + exports.classes(field, errors).join(' ') + '">' +
             '<th>' +
                 exports.labelHTML(field, caption) +
@@ -348,11 +360,13 @@ exports.table = function () {
     this.embed = function (field, path, value, raw, errors) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
+        var id = (path.join('_') + '_embed');
+
         exports.registerInitializationMarkup(
-            'built-in embed/embedList',
-                this.initializationMarkupForEmbed, field
+            this.initializationMarkupForEmbed, id, field.actions
         );
-        return '<tr class="embedded">' +
+
+        return '<tr id="' + id + '" class="embedded">' +
             '<th>' +
                 exports.labelHTML(field.type, caption) +
                 exports.descriptionHTML(field.type) +
@@ -382,11 +396,13 @@ exports.table = function () {
     this.embedList = function (field, path, value, raw, errors) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
+        var id = (path.join('_') + '_embedlist');
+
         exports.registerInitializationMarkup(
-            'built-in embed/embedList',
-                this.initializationMarkupForEmbed, field
+            this.initializationMarkupForEmbed, id, field.actions
         );
-        var html = '<tr class="embeddedlist">' +
+
+        var html = '<tr id="' + id + '" class="embeddedlist">' +
             '<th>' +
                 exports.labelHTML(field.type, caption) +
                 exports.descriptionHTML(field.type) +
@@ -429,9 +445,9 @@ exports.table = function () {
      * result is a string that contains a script tag.
      */
 
-    this.initializationMarkupForEmbed = function (field) {
+    this.initializationMarkupForEmbed = function (id, actions) {
         return exports.scriptTagForInit(
-            'kanso/embed', 'bind', field.actions
+            'kanso/embed', 'bindEmbed', { id: id, actions: actions }
         );
     };
 

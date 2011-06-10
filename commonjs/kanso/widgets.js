@@ -339,7 +339,7 @@ exports.computed = function (options) {
 
 exports.documentSelector = function (options) {
     var w = new Widget('documentSelector', options);
-    w.options = options;
+    w.options = (options || {});
     w.toHTML = function (name, value, raw, field, offset) {
         var html_value = utils.escapeHTML(
             (value instanceof Object ? JSON.stringify(value) : value)

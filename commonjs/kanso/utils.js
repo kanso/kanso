@@ -34,7 +34,9 @@ var core = require('./core'),
 // couchdb's commonjs implementation are fixed it can be moved back into
 // core.js. For now, this is also exported from core.js and should
 // be accessed from there.
+
 exports.isBrowser = false;
+
 if (typeof window !== 'undefined') {
     exports.isBrowser = true;
 }
@@ -49,6 +51,7 @@ if (typeof window !== 'undefined') {
 
 // TODO: this was moved to this module from core.js to avoid a circular
 // dependency between core.js and session.js
+
 exports.initial_hit = true;
 
 
@@ -59,6 +62,7 @@ exports.initial_hit = true;
  */
 
 // TODO: added to utils to avoid circular dependency bug in couchdb
+
 exports.userCtx = null;
 
 /**
@@ -98,6 +102,7 @@ exports.getWindowLocation = function () {
 // couchdb's commonjs implementation are fixed it can be moved back into
 // core.js. For now, this is also exported from core.js and should
 // be accessed from there.
+
 exports.getBaseURL = function (/*optional*/req) {
     if (!req) {
         req = core.currentRequest();
@@ -118,6 +123,17 @@ exports.getBaseURL = function (/*optional*/req) {
     }
     return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
 };
+
+
+/**
+ * A named empty function. Use this when you wish to take
+ * no action for a callback or markup-generator function.
+ */
+
+exports.emptyFunction = function()
+{
+    return '';
+}
 
 
 /**

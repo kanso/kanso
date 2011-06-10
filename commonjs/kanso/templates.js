@@ -62,8 +62,6 @@ exports.render = function (name, req, context) {
     if (!context.flashMessages) {
         context.flashMessages = flashmessages.getMessages(req);
     }
-    //log('flashMessages');
-    //log(context.flashMessages);
     var r = '';
     dust.render(name, context, function (err, result) {
         if (err) {

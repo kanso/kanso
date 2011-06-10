@@ -49,16 +49,17 @@ exports.parseActionCallbacks = function(actions) {
  * { add: x, edit: y, del: z }), where x, y, and z are items as described
  * in parseActionCallbacks.
  */
-exports.bind = function (actions) {
-    var action_callbacks = exports.parseActionCallbacks(
-        typeof(actions) === 'object' ? actions : {}
-    );
-    $('form').each(function () {
-        $('.embedded, .embeddedlist', this).each(function () {
-            exports.initRow(this, action_callbacks);
-            $('tr', this).each(function () {
-                exports.updateRow(this, action_callbacks);
-            });
+exports.bindEmbed = function (options) {
+
+    var options = (options || {});
+    var row_id = options.id;
+    var actions = (options.actions || {});
+    var action_callbacks = exports.parseActionCallbacks(actions);
+
+    $('#' + row_id).each(function () {
+        exports.initRow(this, action_callbacks);
+        $('tr', this).each(function () {
+            exports.updateRow(this, action_callbacks);
         });
     });
 };
@@ -236,7 +237,6 @@ exports.showModal = function (type, form, div, field_td, row,
                 );
             }
             /* Stash JSON-encoded form data in hidden input */
-            console.log([ 'here', form.values ]);
             var jsonval = JSON.stringify(form.values);
             $('input:hidden', row).val(jsonval);
             $('span.value', row).text(form.values._id);
@@ -246,7 +246,8 @@ exports.showModal = function (type, form, div, field_td, row,
         else {
             /* Repost form showing errors */
             exports.showModal(
-                div, field_td, row, typename, val, rawval
+                type, form, div, field_td, row,
+                    typename, val, rawval, widget_factory
             );
         }
     });
