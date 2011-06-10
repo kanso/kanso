@@ -68,6 +68,15 @@ exports.history_support = false;
 
 exports.current_state = null;
 
+/**
+ * Set to true when setURL is called so the onpopstate which fires afterwards
+ * knows it is the result of an explicit call to setURL (as opposed to clicking
+ * the back, forward or reload buttons). This means we can avoid showing a
+ * confirmation dialog for POST requests in these circumstances.
+ */
+
+exports.set_called = false;
+
 
 if (typeof window !== 'undefined') {
     if (!window.console) {
@@ -189,6 +198,28 @@ exports.init = function () {
             var state = ev.state || {};
             var method = state.method || 'GET';
             var data = state.data;
+            var count = state.history_count;
+
+            if (method !== 'GET' && method !== 'HEAD') {
+                // unsafe method, unless caused by an explicit call to setURL
+                // show a confirmation dialog
+                if (!exports.set_called) {
+                    // TODO: at this point is it too late to undo the popstate?
+                    var resend = confirm(
+                        'In order to complete this request the browser will ' +
+                        'have to re-send information, repeating any ' +
+                        'previous action (such as creating a document).\n\n' +
+                        'Re-send information?'
+                    );
+                    if (!resend) {
+                        var curr_count = exports.current_state.history_count;
+                        window.history.go(curr_count - count);
+                        return;
+                    }
+                }
+            }
+            // reset set_called
+            exports.set_called = false;
 
             var curr = exports.current_state;
             if (curr &&
@@ -203,7 +234,8 @@ exports.init = function () {
                 method: method,
                 url: url,
                 data: data,
-                timestamp: ev.timestamp
+                timestamp: ev.timestamp,
+                history_count: count
             };
             exports.handle(method, url, data);
         };
@@ -1001,8 +1033,10 @@ exports.setURL = function (method, url, data) {
     var state = {
         method: method,
         data: data,
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime(),
+        history_count: window.history.length + 1
     };
+    exports.set_called = true;
     window.history.pushState(state, document.title, fullurl);
     window.onpopstate({state: state});
 };
