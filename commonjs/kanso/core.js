@@ -16,8 +16,8 @@
 
 var settings = require('./settings'), // module auto-generated
     url = require('./url'),
-    db = require('./db'),
-    utils = require('./utils'),
+    db = require('./db');
+    utils = require('./utils');
     session = require('./session'),
     cookies = require('./cookies'),
     flashmessages = require('./flashmessages'),
@@ -124,7 +124,7 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
  * this value to see if they should continue rendering the result or not.
  */
 
-/* global */ __kansojs_current_request = [];
+/* global __kansojs_current_request; */
 
 exports.currentRequest = function (v) {
     if (v) {

@@ -38,8 +38,8 @@
  * Module dependencies
  */
 
-var utils = require('./utils'),
-    flashmessages = require('./flashmessages');
+utils = require('./utils');
+var flashmessages = require('./flashmessages');
 
 
 /**

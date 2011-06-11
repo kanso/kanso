@@ -10,9 +10,9 @@
  */
 
 var db = require('./db'),
-    render = require('./render'),
-    utils = require('./utils'),
-    _ = require('./underscore')._;
+    render = require('./render');
+    utils = require('./utils');
+var _ = require('./underscore')._;
 
 
 /**
@@ -335,10 +335,10 @@ exports.documentSelector = function (options) {
     var w = new Widget('documentSelector', options);
     w.options = (options || {});
 
-    w.clientInit = function(field, path, value, raw, offset) {
+    w.clientInit = function(field, path, value, raw, errors, offset) {
 
         var name = path.join('.');
-        var container_elt = $('#' + this._id(name, offset));
+        var container_elt = $('#' + this._id(name, (offset || ''))).parent();
         var hidden_elt = $('input.backing', container_elt);
         var select_elt = $('input.backing ~ select.selector', container_elt);
         var spinner_elt = $('input.backing ~ .spinner', container_elt);
@@ -359,7 +359,6 @@ exports.documentSelector = function (options) {
             options.viewName,
             { include_docs: is_embedded }, { db: options.db },
             function (err, rv) {
-                log('*** in cb');
                 /* Error handling */
                 if (err) {
                     throw new Error(
@@ -407,7 +406,7 @@ exports.documentSelector = function (options) {
         );
         var select_html = (
             '<select class="selector"' +
-                ' id="' + this._id(name, 'visible' + offset) + '"' +
+                ' id="' + this._id(name, 'visible' + (offset || '')) + '"' +
             '></select>'
         );
         var html = (

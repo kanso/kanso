@@ -8,9 +8,9 @@
  * Module dependencies
  */
 
-var core = require('./core'),
-    utils = require('./utils'),
-    fieldset = require('./fieldset'),
+var core = require('./core');
+    utils = require('./utils');
+var fieldset = require('./fieldset'),
     render = require('./render'),
     _ = require('./underscore')._;
 

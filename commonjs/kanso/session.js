@@ -11,7 +11,7 @@
 var db = require('./db'),
     sha1 = require('./sha1'),
     cookies = require('./cookies'),
-    events = require('./events'),
+    events = require('./events');
     utils = require('./utils');
 
 

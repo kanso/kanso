@@ -2,9 +2,9 @@
 
 var core = require('kanso/core'),
     db = require('kanso/db'),
-    loader = require('kanso/loader'),
-    utils = require('kanso/utils'),
-    widgets = require('kanso/widgets'),
+    loader = require('kanso/loader');
+    utils = require('kanso/utils');
+var widgets = require('kanso/widgets'),
     querystring = require('kanso/querystring'),
     _ = require('kanso/underscore')._;
 
@@ -49,14 +49,14 @@ exports.parseActionCallbacks = function(actions) {
  * { add: x, edit: y, del: z }), where x, y, and z are items as described
  * in parseActionCallbacks.
  */
-exports.bindEmbed = function (widget, field, path, value, raw, errors, id) {
+exports.bindEmbed = function (field, path, value, raw, errors, id) {
 
     var action_callbacks = exports.parseActionCallbacks(
-        (widget.actions || {})
+        (field.widget.actions || {})
     );
 
     $('#' + id).each(function () {
-        exports.initRow(this, action_callbacks);
+        exports.initRow(this, action_callbacks, field);
         $('tr', this).each(function () {
             exports.updateRow(this, action_callbacks);
         });
@@ -66,13 +66,12 @@ exports.bindEmbed = function (widget, field, path, value, raw, errors, id) {
 /**
  * initRow
  */
-exports.initRow = function (row, action_callbacks) {
+exports.initRow = function (row, action_callbacks, field) {
     var action_callbacks = (_.defaults(action_callbacks || {}, {
-        add: exports.adminShowModal,
-        create: exports.defaultWidgetFactory
+        add: exports.adminShowModal
     }));
     return exports.createAddBtn(
-        row, action_callbacks.add, action_callbacks.create
+        row, action_callbacks.add, field
     );
 };
 
@@ -154,12 +153,12 @@ exports.addRowControls = function (row, edit_callback, delete_callback) {
 /**
  * createAddBtn
  */
-exports.createAddBtn = function (field_row, add_callback, widget_factory) {
+exports.createAddBtn = function (field_row, add_callback, field) {
     var addbtn = $(
         '<input type="button" class="addbtn" value="Add" />'
     );
     addbtn.click(
-        exports.addbtnHandler(add_callback, widget_factory)
+        exports.addbtnHandler(add_callback, field)
     );
     $('.field .addbtn', field_row).remove();
     $('.field', field_row).append(addbtn);
@@ -192,7 +191,7 @@ exports.getModules = function (/*optional*/req, callback) {
  * showModal implementation.
  */
 exports.adminShowModal = function (div, field_td, row,
-                                   typename, val, rawval, widget_factory) {
+                                   typename, val, rawval, field) {
 
     exports.getModules(function (settings, app, forms) {
         var type = app.types[typename];
@@ -200,7 +199,7 @@ exports.adminShowModal = function (div, field_td, row,
 
         return exports.showModal(
             type, form, div, field_td, row,
-            typename, val, rawval, widget_factory
+            typename, val, rawval, field
         );
     });
 };
@@ -211,7 +210,7 @@ exports.adminShowModal = function (div, field_td, row,
  * form data.
  */
 exports.showModal = function (type, form, div, field_td, row,
-                              typename, val, rawval, widget_factory) {
+                              typename, val, rawval, field) {
     if (rawval) {
         form.validate(rawval);
     }
@@ -232,7 +231,7 @@ exports.showModal = function (type, form, div, field_td, row,
         if (form.isValid()) {
             if (!val) {
                 row = exports.addRow(
-                    field_td, widget_factory, val, rawval, type
+                    field_td, field, val, rawval, type
                 );
             }
             /* Stash JSON-encoded form data in hidden input */
@@ -246,7 +245,7 @@ exports.showModal = function (type, form, div, field_td, row,
             /* Repost form showing errors */
             exports.showModal(
                 type, form, div, field_td, row,
-                    typename, val, rawval, widget_factory
+                    typename, val, rawval, field
             );
         }
     });
@@ -291,26 +290,13 @@ exports.renumberRows = function (field_td) {
 };
 
 /**
- * defaultWidgetFactory:
- */
-exports.defaultWidgetFactory = function () {
-    return widgets.defaultEmbedded();
-};
-
-/**
  * addRow
  */
-exports.addRow = function (field_td, widget_factory, val, rawval) {
-
-    /* FIXME:
-        We need to discover the field name and field descriptor here,
-        so that it can be passed to the widget's rendering function. */
-
-    var widget = widget_factory();
+exports.addRow = function (field_td, field, val, rawval) {
     var tr = $(
         '<tr>' +
             '<td>' +
-                widget.toHTML('', val) +
+                field.widget.toHTML('', val) +
             '</td>' +
             '<td class="actions"></td>' +
         '</tr>'
@@ -331,14 +317,14 @@ exports.getRowType = function (row) {
 /**
  * addbtnHandler
  */
-exports.addbtnHandler = function (add_callback, widget_factory) {
+exports.addbtnHandler = function (add_callback, field) {
     return function (ev) {
         var field_td = $(this).parent();
         var typename = field_td.attr('rel');
         var div = $('<div/>');
         if (add_callback) {
             add_callback(
-                div, field_td, null, typename, null, null, widget_factory
+                div, field_td, null, typename, null, null, field
             );
         }
     };

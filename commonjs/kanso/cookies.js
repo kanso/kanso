@@ -6,7 +6,7 @@
  * @module
  */
 
-var utils = require('./utils');
+utils = require('./utils');
 
 
 /**

@@ -20,12 +20,12 @@ exports.scriptTagForEvent = function (name) {
         Prevent escape from (i) the javascript string, and then
         (ii) the CDATA block. Don't use ]]> inside of a script. */
 
-    var escaped_name = name.replace(/'/g, "\\'").replace(']]>', '');
+    name = name.replace(/'/g, "\\'").replace(']]>', '');
 
     var rv = (
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
-             "require('kanso/events').emit('" + escaped_name + "');" +
+             "require('kanso/events').emit('" + name + "');" +
         "// ]]>" +
         '</script>'
     );
@@ -279,8 +279,9 @@ exports.table = function () {
         var caption = path.slice(this.depth).join(' ');
 
         events.once('renderFinish', function () {
+            console.log(field);
             return embed.bindEmbed(
-                this, field, path, value, raw, errors, id
+                field, path, value, raw, errors, id
             );
         });
 
@@ -326,7 +327,7 @@ exports.table = function () {
 
         events.once('renderFinish', function () {
             return embed.bindEmbed(
-                this, field, path, value, raw, errors, id
+                field, path, value, raw, errors, id
             );
         });
 

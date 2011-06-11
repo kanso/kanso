@@ -10,8 +10,8 @@
  * Module dependencies
  */
 
-var utils = require('./utils'),
-    kanso_utils = require('kanso/utils'),
+utils = require('./utils');
+var kanso_utils = require('kanso/utils'),
     db = require('./db'),
     fields = require('./fields'),
     fieldset = require('./fieldset'),

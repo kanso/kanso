@@ -9,9 +9,9 @@
  * Module dependencies
  */
 
-var _ = require('./underscore'),
-    utils = require('./utils'),
-    core = require('./core');
+var _ = require('./underscore');
+    utils = require('./utils');
+var core = require('./core');
 
 
 /**

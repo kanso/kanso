@@ -11,8 +11,8 @@
  * Module dependencies
  */
 
-var utils = require('./utils'),
-    settings = require('./settings'),
+utils = require('./utils');
+var settings = require('./settings'),
     session = null;
 
 /* Avoid a circular require in CouchDB */
