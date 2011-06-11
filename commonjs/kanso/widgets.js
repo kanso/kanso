@@ -135,13 +135,6 @@ Widget.prototype.toHTML = function (name, value, raw) {
 };
 
 /**
- * Storage for client-side widget initialization functions.
- * For more information, see scriptTagForInit's documentation.
- */
-
-exports.init = {};
-
-/**
  * Creates a new text input widget.
  *
  * @name text([options])
@@ -338,15 +331,79 @@ exports.computed = function (options) {
  */
 
 exports.documentSelector = function (options) {
+
     var w = new Widget('documentSelector', options);
     w.options = (options || {});
+
+    w.clientInit = function(field, path, value, raw, offset) {
+
+        var name = path.join('.');
+        var container_elt = $('#' + this._id(name, offset));
+        var hidden_elt = $('input.backing', container_elt);
+        var select_elt = $('input.backing ~ select.selector', container_elt);
+        var spinner_elt = $('input.backing ~ .spinner', container_elt);
+
+        var options = (field.widget.options || {});
+        var is_embedded = (value instanceof Object);
+
+        /* Start progress */
+        spinner_elt.show();
+
+        /* Copy data to backing element */
+        select_elt.bind('change', function () {
+            hidden_elt.val(select_elt.val());
+        });
+
+        /* Fetch contents */
+        db.getView(
+            options.viewName,
+            { include_docs: is_embedded }, { db: options.db },
+            function (err, rv) {
+                log('*** in cb');
+                /* Error handling */
+                if (err) {
+                    throw new Error(
+                        'Failed to request content from CouchDB view `' +
+                            options.viewName + '`'
+                    );
+                }
+                /* Option for 'no selection' */
+                var nil_option = $(document.createElement('option'));
+                if (!value) {
+                    nil_option.attr('selected', 'selected');
+                }
+                select_elt.append(nil_option);
+
+                /* All other options */
+                _.each(rv.rows || [], function(r) {
+                    var option = $(document.createElement('option'));
+                    var is_selected = (
+                        (is_embedded && value._id == r.id) || (value == r.id)
+                    );
+                    if (is_selected) {
+                        option.attr('selected', 'selected');
+                    }
+                    option.val(
+                        (is_embedded ? JSON.stringify(r.doc) : r.id)
+                    );
+                    option.text(r.value);
+                    select_elt.append(option);
+                });
+
+                /* Finished */
+                spinner_elt.hide();
+                select_elt.trigger('change');
+        });
+    };
+
     w.toHTML = function (name, value, raw, field, offset) {
+
         var html_value = utils.escapeHTML(
             (value instanceof Object ? JSON.stringify(value) : value)
         );
         var input_html = (
             '<input class="backing" type="hidden"' +
-                'value="' + html_value + '" ' + this._attrs(name, offset) + ' />'
+                ' value="' + html_value + '" ' + this._attrs(name, offset) + ' />'
         );
         var select_html = (
             '<select class="selector"' +
@@ -359,81 +416,11 @@ exports.documentSelector = function (options) {
                 input_html + select_html +
                 '<div class="spinner" style="display: none;"></div>' +
             '</div>' +
-            '</div>' + 
-            this.scriptTagForInit(
-                this._id(name, offset), _.extend(this.options, {
-                    value: value
-                })
-            )
+            '</div>'
         );
+
         return html;
     };
+
     return w;
 };
-
-/**
- * Selector widget: client-side initialization function.
- */
-
-exports.init.documentSelector = function (_singleton_elt, _options) {
-
-    var container_elt = _singleton_elt.first().parent();
-    var hidden_elt = $('input.backing', container_elt);
-    var select_elt = $('input.backing ~ select.selector', container_elt);
-    var spinner_elt = $('input.backing ~ .spinner', container_elt);
-
-    var options = (_options || {});
-
-    var value = options.value;
-    var is_embedded = (value instanceof Object);
-
-    /* Copy data to backing element */
-    select_elt.bind('change', function () {
-        hidden_elt.val(select_elt.val());
-    });
-
-    spinner_elt.show();
-
-    db.getView(
-        options.viewName,
-        { include_docs: is_embedded }, { db: options.db },
-        function (err, rv) {
-            /* Error handling */
-            if (err) {
-                throw new Error(
-                    'Failed to request content from CouchDB view `' +
-                        options.viewName + '`'
-                );
-            }
-            /* Option for 'no selection' */
-            var nil_option = $(document.createElement('option'));
-            if (!value) {
-                nil_option.attr('selected', 'selected');
-            }
-            select_elt.append(nil_option);
-
-            /* All other options */
-            _.each(rv.rows || [], function(r) {
-                var option = $(document.createElement('option'));
-                var is_selected = (
-                    (is_embedded && value._id == r.id) || (value == r.id)
-                );
-                if (is_selected) {
-                    option.attr('selected', 'selected');
-                }
-                option.val(
-                    (is_embedded ? JSON.stringify(r.doc) : r.id)
-                );
-                option.text(r.value);
-                select_elt.append(option);
-            });
-
-            spinner_elt.hide();
-        
-            if (options.storeValue) {
-                select_elt.trigger('change');
-            }
-    });
-};
-
-

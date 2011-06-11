@@ -119,14 +119,15 @@ Form.prototype.toHTML = function (/*optional*/req, /*optional*/RendererClass) {
     );
     RendererClass = RendererClass || render.table;
     var renderer = new RendererClass();
-    return (
+    var rv = (
         renderer.start() +
         this.renderFields(
             renderer, this.fields, values, this.raw, this.errors, []
         ) +
         renderer.end() +
-        render.generateInitializationMarkup()
+        render.scriptTagForEvent('renderFinish')
     );
+    return rv;
 };
 
 /**

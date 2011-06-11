@@ -49,14 +49,13 @@ exports.parseActionCallbacks = function(actions) {
  * { add: x, edit: y, del: z }), where x, y, and z are items as described
  * in parseActionCallbacks.
  */
-exports.bindEmbed = function (options) {
+exports.bindEmbed = function (widget, field, path, value, raw, errors, id) {
 
-    var options = (options || {});
-    var row_id = options.id;
-    var actions = (options.actions || {});
-    var action_callbacks = exports.parseActionCallbacks(actions);
+    var action_callbacks = exports.parseActionCallbacks(
+        (widget.actions || {})
+    );
 
-    $('#' + row_id).each(function () {
+    $('#' + id).each(function () {
         exports.initRow(this, action_callbacks);
         $('tr', this).each(function () {
             exports.updateRow(this, action_callbacks);

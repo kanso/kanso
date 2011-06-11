@@ -25,20 +25,10 @@ var core = require('./core'),
  * Some functions calculate results differently depending on the execution
  * environment. The isBrowser value is used to set the correct environment
  * for these functions, and is only exported to make unit testing easier.
- *
- * You should not need to change this value during normal usage.
  */
 
-// TODO: this was moved to this module from core.js to avoid a circular
-// dependency between core.js and db.js ...once circular dependencies in
-// couchdb's commonjs implementation are fixed it can be moved back into
-// core.js. For now, this is also exported from core.js and should
-// be accessed from there.
-
-exports.isBrowser = false;
-
-if (typeof window !== 'undefined') {
-    exports.isBrowser = true;
+exports.isBrowser = function() {
+    return (typeof(window) !== 'undefined');
 }
 
 /**
@@ -53,8 +43,6 @@ if (typeof window !== 'undefined') {
 // dependency between core.js and session.js
 
 exports.initial_hit = true;
-
-
 
 /**
  * Used to store userCtx, periodically updated like on session.login and
@@ -71,7 +59,6 @@ exports.userCtx = null;
  */
 exports.session = null;
 
-
 /**
  * This is used to make unit testing in the browser easier.
  * Because it can be overridden without actually changing the window's location.
@@ -81,7 +68,6 @@ exports.session = null;
 exports.getWindowLocation = function () {
     return window.location;
 };
-
 
 /**
  * Returns the path to prefix to any URLs. When running behind a
@@ -110,7 +96,7 @@ exports.getBaseURL = function (/*optional*/req) {
     if ('baseURL' in settings) {
         return settings.baseURL;
     }
-    if (exports.isBrowser) {
+    if (exports.isBrowser()) {
         var re = new RegExp('(.*\\/_rewrite).*$');
         var match = re.exec(exports.getWindowLocation().pathname);
         if (match) {
@@ -134,7 +120,6 @@ exports.emptyFunction = function()
 {
     return '';
 }
-
 
 /**
  * Traverses an object and its sub-objects using an array of property names.
@@ -226,7 +211,6 @@ exports.constructorName = function (obj) {
     var match = new RegExp('function (.+)\\(').exec(obj.constructor.toString());
     return (match && match.length > 1) ? match[1] : undefined;
 };
-
 
 /**
  * Call function with arguments, catch any errors and add to an array,

@@ -9,7 +9,29 @@
  * Module dependencies
  */
 
-var _ = require('./underscore')._;
+var embed = require('kanso/embed'),
+    events = require('kanso/events'),
+    _ = require('./underscore')._
+
+ 
+exports.scriptTagForEvent = function (name) {
+
+    /* XSS Prevention:
+        Prevent escape from (i) the javascript string, and then
+        (ii) the CDATA block. Don't use ]]> inside of a script. */
+
+    var escaped_name = name.replace(/'/g, "\\'").replace(']]>', '');
+
+    var rv = (
+        '<script type="text/javascript">' +
+        "// <![CDATA[\n" +
+             "require('kanso/events').emit('" + escaped_name + "');" +
+        "// ]]>" +
+        '</script>'
+    );
+
+    return rv;
+}; 
 
 /**
  * Renders HTML for error messages.
@@ -128,124 +150,6 @@ exports.classes = function (field, errors) {
 };
 
 /**
- * Generate a script tag, containing code to invoke a function
- * in a CommonJS module. This is a general-purpose dispatch method
- * for client-side initialization functions. If you're writing a
- * widget, please use the version found in the Widget prototype.
- *
- * @param {String} module - the commonjs module to call in to.
- * @param {String} method - the function to invoke in the module; this
- *                  argument can be a dotted path to traverse objects
- *                  in the module. This string is substituted directly.
- *                  Javascript injection warning: it is the caller's
- *                  responsibility to construct this string safely.
- * @param {Object} options - optional; additional argument data to
- *                  be passed to the init function. This data will be
- *                  passed to the method as a single argument, and will
- *                  undergo serialization. It is *not* possible to pass
- *                  functions or closures using this mechanism. All
- *                  data in options will be copied and serialized.
- * @param {Object} args - optional; a string consisting of literal
- *                  arguments to the method. This will be directly
- *                  substituted in to the argument list at its beginning.
- *                  Javascript injection warning: it is the caller's
- *                  responsibility to construct this string safely.
- * @returns {String}
- * @api public
- */
-
-exports.scriptTagForInit = function(module, method, options, args)
-{
-    /* XSS Prevention:
-        Prevent escape from (i) the javascript string, and then (ii)
-        the CDATA block. Use a JSON string to keep these rules simple. */
-
-    var json_options = (
-        JSON.stringify(options || {}).replace(/'/g, "\\'").replace(']]>', '')
-    );
-    var rv = (
-        '<script type="text/javascript">' +
-        "// <![CDATA[\n" +
-            "require('" + module + "')." +
-                method + '(' + (args ? args + ', ' : '') +
-                    "JSON.parse('" + json_options + "'));\n" +
-        "// ]]>" +
-        '</script>'
-    );
-
-    return rv;
-};
-
-/**
- * Storage for use by registerInitializationMarkup and
- * generateInitializationMarkup. These functions allow external
- * callers (e.g. widgets) to register markup, or markup-generating
- * functions, to be run at the conclusion of the form rendering
- * process.
- */
-
-exports._initialization_markup = [];
-
-/**
- * Register a markup-generating function (or a string of static
- * markup) for output at the conclusion of each form rendering.
- * Background: Widgets can schedule functions to be run at the end
- * of every form rendering operation. These functions emit markup --
- * specifically, script tags containing javascript code -- that
- * (i) identifies all DOM elements that belong to a particular
- * widget, and (ii) performs any necessary initialization steps,
- * including XHR requests and/or event binding. The scriptTagForInit()
- * helper can be used to make the generation of this code simpler.
- * 
- * @name registerInitializationMarkup(m)
- * @param v A markup-generating function that takes zero arguments,
- *          or, alternatively, a string of static HTML markup.
- * @returns {String}
- */
-
-exports.registerInitializationMarkup = function (v) {
-    exports._initialization_markup.push({
-        value: v, args: Array.prototype.slice.call(arguments, 1)
-    });
-};
-
-/**
- * Emit all initialization code/markup that was registered via
- * registerInitializationMarkup(). This function is non-destructive
- * and can be called multiple times.
- * 
- * @name generateInitializationMarkup()
- * @returns {String}
- */
-
-exports.generateInitializationMarkup = function () {
-
-    var rv = '';
-    var markup_list = exports._initialization_markup;
-
-    for (var i = 0, len = markup_list.length; i < len; ++i) {
-        var m = markup_list[i];
-        if (m.value instanceof Function) {
-            m = m.value.apply(m.value, m.args);
-        } else {
-            m = (m.value + ''); /* Coerce to string */
-        }
-        rv += ("\n" + m);
-    }
-
-    return rv;
-};
-
-/**
- * @name clearInitializationMarkup()
- * @returns {String}
- */
-
-exports.clearInitializationMarkup = function () {
-    exports._initialization_markup = [];
-};
-
-/**
  * The default table renderer class, passed to the toHTML method of a
  * form. Renders a form using a single table, with <tbody> tags to
  * represent nested field groups. The <tbody>s are labelled with
@@ -307,7 +211,7 @@ exports.table = function () {
      * for the corresponding beginGroup call; see beginGroup.
      *
      * @param {Array} path
-    */
+     */
     this.endGroup = function (path) {
         this.depth -= 1;
         return '</tbody>';
@@ -322,28 +226,40 @@ exports.table = function () {
      * @param {Object} value
      * @param {String} raw
      * @param {Array} errors
-    */
+     */
     this.field = function (field, path, value, raw, errors) {
         var name = path.join('.');
+        var id = (path.join('_') + '_field');
         var caption = path.slice(this.depth).join(' ');
+
+        events.once('renderFinish', function () {
+            if (field.widget.clientInit) {
+                field.widget.clientInit(
+                    field, path, value, raw, errors, null
+                );
+            }
+        });
 
         if (field.widget.type === 'hidden') {
             return field.widget.toHTML(name, value, raw, field);
         }
 
-        return '<tr class="' + exports.classes(field, errors).join(' ') + '">' +
-            '<th>' +
-                exports.labelHTML(field, caption) +
-                exports.descriptionHTML(field) +
-            '</th>' +
-            '<td>' +
-                field.widget.toHTML(name, value, raw, field) +
-                exports.hintHTML(field) +
-            '</td>' +
-            '<td class="errors">' +
-                exports.errorHTML(errors) +
-            '</td>' +
-        '</tr>';
+        return (
+            '<tr id="' + id + '" class="' +
+                exports.classes(field, errors).join(' ') + '">' +
+                '<th>' +
+                    exports.labelHTML(field, caption) +
+                    exports.descriptionHTML(field) +
+                '</th>' +
+                '<td>' +
+                    field.widget.toHTML(name, value, raw, field) +
+                    exports.hintHTML(field) +
+                '</td>' +
+                '<td class="errors">' +
+                    exports.errorHTML(errors) +
+                '</td>' +
+            '</tr>'
+        );
     };
 
     /**
@@ -359,12 +275,22 @@ exports.table = function () {
     */
     this.embed = function (field, path, value, raw, errors) {
         var name = path.join('.');
-        var caption = path.slice(this.depth).join(' ');
         var id = (path.join('_') + '_embed');
+        var caption = path.slice(this.depth).join(' ');
 
-        exports.registerInitializationMarkup(
-            this.initializationMarkupForEmbed, id, field.actions
-        );
+        events.once('renderFinish', function () {
+            return embed.bindEmbed(
+                this, field, path, value, raw, errors, id
+            );
+        });
+
+        events.once('renderFinish', function () {
+            if (field.widget.clientInit) {
+                field.widget.clientInit(
+                    field, path, value, raw, errors, null
+                );
+            }
+        });
 
         return '<tr id="' + id + '" class="embedded">' +
             '<th>' +
@@ -395,12 +321,14 @@ exports.table = function () {
     */
     this.embedList = function (field, path, value, raw, errors) {
         var name = path.join('.');
-        var caption = path.slice(this.depth).join(' ');
         var id = (path.join('_') + '_embedlist');
+        var caption = path.slice(this.depth).join(' ');
 
-        exports.registerInitializationMarkup(
-            this.initializationMarkupForEmbed, id, field.actions
-        );
+        events.once('renderFinish', function () {
+            return embed.bindEmbed(
+                this, field, path, value, raw, errors, id
+            );
+        });
 
         var html = '<tr id="' + id + '" class="embeddedlist">' +
             '<th>' +
@@ -416,6 +344,13 @@ exports.table = function () {
                 '</td><td class="actions">' +
                 '</td></tr>'
             );
+            events.once('renderFinish', function () {
+                if (field.widget.clientInit) {
+                    field.widget.clientInit(
+                        field, path, value, raw, errors, i
+                    );
+                }
+            });
         });
         html += '</tbody></table></td>' +
             '<td class="errors">' +
@@ -437,18 +372,6 @@ exports.table = function () {
     */
     this.end = function () {
         return '</table>';
-    };
-
-    /**
-     * Helper function to generate client-side initialization
-     * instructions for the embed and embedList widgets. The
-     * result is a string that contains a script tag.
-     */
-
-    this.initializationMarkupForEmbed = function (id, actions) {
-        return exports.scriptTagForInit(
-            'kanso/embed', 'bindEmbed', { id: id, actions: actions }
-        );
     };
 
 };

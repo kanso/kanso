@@ -57,7 +57,7 @@ var utils = require('./utils'),
 
 exports.render = function (name, req, context) {
     context.baseURL = utils.getBaseURL(req);
-    context.isBrowser = utils.isBrowser;
+    context.isBrowser = utils.isBrowser();
     context.userCtx = req.userCtx;
     if (!context.flashMessages) {
         context.flashMessages = flashmessages.getMessages(req);

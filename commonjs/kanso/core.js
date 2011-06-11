@@ -29,22 +29,6 @@ var settings = require('./settings'), // module auto-generated
 
 
 /**
- * Some functions calculate results differently depending on the execution
- * environment. The isBrowser value is used to set the correct environment
- * for these functions, and is only exported to make unit testing easier.
- *
- * You should not need to change this value during normal usage.
- *
- * This was moved to utils to avoid a circular dependency between
- * core.js and db.js... however, it should be accessed via the core.js module
- * as it may get moved back once circular dependencies are fixed in couchdb's
- * commonjs implementation.
- */
-
-//exports.isBrowser = utils.isBrowser;
-
-
-/**
  * This is because the first page hit also triggers kanso to handle the url
  * client-side. Knowing it is the first page being loaded means we can stop
  * the pageTracker code from submitting the URL twice. Exported because this
@@ -140,7 +124,7 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
  * this value to see if they should continue rendering the result or not.
  */
 
-/* global __kansojs_current_request; */
+/* global */ __kansojs_current_request = [];
 
 exports.currentRequest = function (v) {
     if (v) {
