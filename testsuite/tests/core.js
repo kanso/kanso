@@ -81,3 +81,9 @@ exports['script tag context'] = function (test) {
     '</script>');
     test.done();
 };
+
+exports['circular requires'] = function (test) {
+    test.equal(require('lib/module_a').b_name(), 'Module B');
+    test.equal(require('lib/module_b').a_name(), 'Module A');
+    test.done();
+};
