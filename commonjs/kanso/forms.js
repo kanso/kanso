@@ -9,8 +9,8 @@
  */
 
 var core = require('./core');
-    utils = require('./utils');
-var fieldset = require('./fieldset'),
+    utils = require('./utils'),
+    fieldset = require('./fieldset'),
     render = require('./render'),
     _ = require('./underscore')._;
 

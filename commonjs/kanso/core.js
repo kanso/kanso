@@ -16,8 +16,8 @@
 
 var settings = require('./settings'), // module auto-generated
     url = require('./url'),
-    db = require('./db');
-    utils = require('./utils');
+    db = require('./db'),
+    utils = require('./utils'),
     session = require('./session'),
     cookies = require('./cookies'),
     flashmessages = require('./flashmessages'),

@@ -10,9 +10,9 @@
  */
 
 var db = require('./db'),
-    render = require('./render');
-    utils = require('./utils');
-var _ = require('./underscore')._;
+    render = require('./render'),
+    utils = require('./utils'),
+    _ = require('./underscore')._;
 
 
 /**

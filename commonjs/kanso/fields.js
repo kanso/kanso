@@ -12,9 +12,9 @@
 
 var permissions = require('./permissions'),
     validators = require('./validators'),
-    widgets = require('./widgets');
-    utils = require('./utils');
-var _ = require('./underscore')._;
+    widgets = require('./widgets'),
+    utils = require('./utils'),
+    _ = require('./underscore')._;
 
 
 /**
