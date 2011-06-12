@@ -63,3 +63,21 @@ exports['rewriteSplat'] = function (test) {
     );
     test.done();
 };
+
+exports['script tag context'] = function (test) {
+    test.expect(2);
+    // a new script tag should access the same context as the originally loaded
+    // code, persisting module state between script tags.
+    var events = require('kanso/events');
+    events.on('_test_script_tag_context_event', function () {
+        test.ok(true, '_test_script_tag_context_event fired');
+    });
+    window._script_tag_context = function () {
+        test.ok(true, '_script_tag_context called');
+    };
+    $(document).append('<script>' +
+        'window._script_tag_context();' +
+        'require("kanso/events").emit("_test_script_tag_context_event");' +
+    '</script>');
+    test.done();
+};
