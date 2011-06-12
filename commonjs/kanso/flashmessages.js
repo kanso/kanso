@@ -20,8 +20,8 @@
  * Module dependencies
  */
 
-utils = require('./utils');
-var cookies = require('./cookies'),
+var utils = require('./utils'),
+    cookies = require('./cookies'),
     _ = require('./underscore');
 
 

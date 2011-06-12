@@ -2,9 +2,9 @@
 
 var core = require('kanso/core'),
     db = require('kanso/db'),
-    loader = require('kanso/loader');
-    utils = require('kanso/utils');
-var widgets = require('kanso/widgets'),
+    loader = require('kanso/loader'),
+    utils = require('kanso/utils'),
+    widgets = require('kanso/widgets'),
     querystring = require('kanso/querystring'),
     _ = require('kanso/underscore')._;
 
