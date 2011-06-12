@@ -10,8 +10,8 @@
  * Module dependencies
  */
 
-utils = require('./utils');
-var _ = require('./underscore')._;
+var utils = require('./utils'),
+    _ = require('./underscore')._;
 
 
 /**

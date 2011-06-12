@@ -8,9 +8,9 @@
  * Module dependencies
  */
 
-var core = require('./core');
-    utils = require('./utils');
-var fieldset = require('./fieldset'),
+var core = require('./core'),
+    utils = require('./utils'),
+    fieldset = require('./fieldset'),
     render = require('./render'),
     _ = require('./underscore')._;
 
@@ -194,7 +194,9 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
         var f_errs = errsBelowPath(errs, f_path);
         var cname = utils.constructorName(fields[k]);
 
-        if (cname === 'Field') {
+        if (cname === 'Field' ||
+            cname === 'Embedded' || cname == 'EmbeddedList') {
+
             return html + renderer.field(
                 fields[k],
                 f_path,
@@ -202,26 +204,6 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
                 (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
             );
-        }
-        else if (cname === 'Embedded') {
-            html += renderer.embed(
-                fields[k],
-                f_path,
-                values[k],
-                (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
-            );
-            return html;
-        }
-        else if (cname === 'EmbeddedList') {
-            html += renderer.embedList(
-                fields[k],
-                f_path,
-                values[k],
-                (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
-            );
-            return html;
         }
         else if (cname === 'Object') {
             return html + (k ? renderer.beginGroup(f_path) : '') +

@@ -10,10 +10,17 @@
  */
 
 var db = require('./db'),
-    render = require('./render');
+    render = require('./render'),
+    sanitize = require('./sanitize'),
+    _ = require('./underscore')._,
     utils = require('./utils');
-var _ = require('./underscore')._;
 
+/**
+ * Convenience aliases.
+ */
+
+var h = sanitize.escapeHtml,
+    js = sanitize.escapeJavascriptString;
 
 /**
  * Widget constructor, creates a new Widget object.
@@ -27,10 +34,11 @@ var _ = require('./underscore')._;
  */
 
 var Widget = exports.Widget = function Widget(type, options) {
-    options = options || {};
-    this.classes = options.classes || [];
+    options = (options || {});
+    this.classes = (options.classes || []);
     this.id = options.id;
     this.type = type;
+    this.options = options;
 };
 
 /**
@@ -44,14 +52,32 @@ var Widget = exports.Widget = function Widget(type, options) {
  * @returns {String}
  */
 
-Widget.prototype._id = function (name, extension) {
-    return (
-        this.id ? this.id : 'id_' + name.replace(/[^A-Za-z0-9_]+/, '_')
-    ) + (
-        extension ? ('_' + extension) : ''
+Widget.prototype._id = function (name /* , ... */) {
+    return sanitize.generateDomIdentifier.apply(
+        this, [ this.id || name ].concat(
+            Array.prototype.slice.call(arguments, 1)
+        )
     );
 };
 
+/**
+ * Generates a name string for a widget.
+ *
+ * @param {String} name - field name on the HTML form
+ * @param {String} extension - optional; a string to be added
+ *                  to the generated identifier. Use this when you
+ *                  want to make an identifier that is related to
+ *                  an existing identifier, but is still unique.
+ * @returns {String}
+ */
+
+Widget.prototype._name = function (name /* , ... */) {
+    return sanitize.generateDomName.apply(
+        this, [ name ].concat(
+            Array.prototype.slice.call(arguments, 1)
+        )
+    );
+};
 
 /**
  * Generates a string for common widget attributes.
@@ -66,48 +92,16 @@ Widget.prototype._id = function (name, extension) {
  * @api private
  */
 
-Widget.prototype._attrs = function (name, extension) {
+Widget.prototype._attrs = function (name) {
     var html = (
-        ' name="' + name + (extension ? '.' + extension : '') +
-            '" id="' + this._id(name, extension) + '"'
+        ' name="' + h(this._name.apply(this, arguments)) +
+            '" id="' + h(this._id.apply(this, arguments)) + '"'
     );
-    if (this.classes.length) {
-        html += ' class="' + this.classes.join(' ') + '"';
+    if (this.classes.length > 0) {
+        html += ' class="' + h(this.classes.join(' ')) + '"';
     }
     return html;
 };
-
-
-/**
- * A specialized version of scriptTagForInit, for use with custom widgets.
- * This function generates a script tag, which invokes a client-side
- * initialization function -- within the client's web browser -- for the
- * widget. This function uses the widget's type attribute to resolve the
- * name of the widget's initialization function; it uses the widget's
- * id to locate the widget's markup on the page.
- *
- * @param {String} id - element id on the HTML form
- * @param {Object} options - data to be passed to init function.
- * @param {String} module - optional; the commonjs module to load. This
- *                  module should export an object named identically to the
- *                  value you pass for namespace; that object should contain
- *                  initialization functions, with names matching each
- *                  widget type. By default, this is 'kanso/widgets'.
- * @param {String} namespace - optional; the namespace (an object) that
- *                  contains widget initialization functions for the module.
- *                  By default, this namespace is called 'init'.
- * @returns {String}
- * @api public
- */
-
-Widget.prototype.scriptTagForInit = function (id, options, module, namespace)
-{
-    return render.scriptTagForInit(
-        (module || 'kanso/widgets'), 
-            ((namespace || 'init') + '.' + this.type),
-            options, ("$('#" + id + "')")
-    );
-}
 
 /**
  * Converts a widget to HTML using the provided name and parsed and raw values
@@ -171,39 +165,6 @@ exports.password = function (options) {
 
 exports.hidden = function (options) {
     return new Widget('hidden', options);
-};
-
-/**
- * Creates a new field for storing/displaying an embedded object.
- * This is automatically added to embed and embedList field types
- * that don't specify a widget.
- *
- * @name embedded([options])
- * @param options
- * @returns {Widget Object}
- * @api public
- */
-
-exports.defaultEmbedded = function (options) {
-    var w = new Widget('embedded', options);
-    w.toHTML = function (name, value, raw, field) {
-
-        var display_name = (value ? value._id: '');
-        var fval = (value ? utils.escapeHTML(JSON.stringify(value)) : '');
-
-        if (field && field.type.display_name && value) {
-            display_name = field.type.display_name(value);
-        }
-        var html = (
-            '<div class="defaultEmbedded">' + 
-                '<input type="hidden" ' +
-                    'value="' + fval + '" name="' + (name || '') + '" />' +
-                '<span class="value">' + display_name + '</span>' +
-            '</div>'
-        );
-        return html;
-    };
-    return w;
 };
 
 /**
@@ -321,6 +282,238 @@ exports.computed = function (options) {
     return w;
 };
 
+/**
+ * Creates a new field for storing/displaying an embedded object.
+ * This is automatically added to embed and embedList field types
+ * that don't specify a widget.
+ *
+ * @name embedded([options])
+ * @param options
+ * @returns {Widget Object}
+ * @api public
+ */
+
+exports.embedList = function (options) {
+    var w = new Widget('embedList', options);
+
+    w.actions = options.actions;
+    w.singleton = options.singleton;
+    w.widget = (options.widget || exports.defaultEmbedded());
+
+    w.toHTML = function (name, value, raw, field) {
+        var i = 0, id = this._id(name, 'list');
+        var html = (
+            '<div class="list" rel="' +
+                h(field.type.name) + '" id="' + h(id) + '">'
+        );
+        html += '<div class="items" rel="' + h(name) + '">';
+        _.each(value, function(v) {
+            html += this.htmlForListItem(field, {
+                name: name, value: v, raw: raw, offset: null
+            });
+        });
+        html += '</div>';
+        html += '<div class="actions">';
+
+        if (i == 0 || !this.singleton) {
+            html += this.htmlForAddButton();
+        }
+        html += (
+                '</div>' +
+            '</div>'
+        );
+        return html;
+    };
+
+    w.clientInit = function(field, path, value, raw, errors, offset) {
+        var name = this._name.apply(this, path);
+        this.bindEventsForList(field, name);
+    };
+
+    /** private: **/
+
+    w.discoverListElement = function(list_name) {
+        return $('#' + this._id(list_name, 'list'));
+    };
+
+    w.discoverListName = function (list_elt) {
+        var actions_elt = $(list_elt).closestChild('.');
+        return actions_elt.attr('rel');
+    };
+
+    w.discoverListType = function (list_elt) {
+        return list_elt.attr('rel');
+    };
+
+    w.bindEventsForList = function(field, name) {
+        var that = this;
+        var list_elt = this.discoverListElement(name);
+        var add_elt = $(list_elt).closestChild('.actions > .add');
+
+        add_elt.bind('click', function(ev) {
+            (function(ev) {
+                return this.handleAddButtonClick(ev, field, name);
+            }).apply(that, [ ev ]);
+        });
+    };
+
+    w.bindEventsForListItem = function (field, name, item_elt) {
+        var that = this;
+        var edit_elt = $(item_elt).closestChild('.actions > .edit');
+        var delete_elt = $(item_elt).closestChild('.actions > .delete');
+
+        edit_elt.bind('click', function(ev) {
+            (function(ev) {
+                return this.handleEditButtonClick(ev, field, name);
+            }).apply(that, [ ev ]);
+        });
+        delete_elt.bind('click', function(ev) {
+            (function(ev) {
+                return this.handleDeleteButtonClick(ev, field, name);
+            }).apply(that, [ ev ]);
+        });
+    };
+
+    w.handleAddButtonClick = function (ev, field, name) {
+        this.insertItemAtEnd(field, name);
+    };
+
+    w.handleEditButtonClick = function (ev, field, name) {
+    };
+
+    w.handleDeleteButtonClick = function (ev, field, name) {
+        var list_elt = this.discoverListElement(name);
+        var item_elt = $(ev.target).closest('.item', this);
+
+        item_elt.remove();
+        this.renumberList(name);
+    };
+
+    w.renumberList = function (name) {
+        var i = 0;
+        var that = this;
+        var list_elt = this.discoverListElement(name);
+        var item_elts = list_elt.closestChild('.items').children('.item');
+
+        _.each(item_elts, function(e) {
+            that.renumberItem(e, name, i++);
+        });
+
+        var add_elt = list_elt.closestChild('.actions > .add');
+
+        if (this.singleton && i > 0) {
+            add_elt.hide();
+        } else {
+            add_elt.show();
+        }
+
+        return i;
+    };
+
+    w.renumberItem = function(elt, name, offset) {
+        var input_elt = $(elt).closestChild('input[type=hidden]');
+        input_elt.attr('name', this._name(name, offset));
+    }
+
+    w.insertItemAtEnd = function (field, name) {
+        var list_elt = this.discoverListElement(name);
+        var item_elts =  list_elt.closestChild('.items').children('.item');
+        var last_elt = item_elts.last();
+        this.insertItem(
+            field, name, item_elts.length, last_elt[0]
+        );
+    };
+
+    w.insertItem = function(field, name, offset, after_elt) {
+        var that = this;
+        var list_elt = this.discoverListElement(name);
+        var items_elt = list_elt.closestChild('.items');
+
+        db.newUUID(100, function (err, uuid) {
+            (function (err, uuid) {
+                var item_elt = $(this.htmlForListItem(field, {
+                    name: name, value: { _id: uuid }, offset: offset
+                }));
+
+                if (after_elt) {
+                    $(after_elt).after(item_elt);
+                } else {
+                    items_elt.append(item_elt);
+                }
+
+                that.renumberList(name);
+                this.bindEventsForListItem(field, name, item_elt);
+            }).apply(that, [ err, uuid ]);
+        })
+    };
+
+    w.htmlForAddButton = function() {
+        return (
+            '<input type="button" class="add" value="Add" />'
+        );
+    };
+
+    w.htmlForEditButton = function() {
+        return (
+            '<input type="button" class="edit" value="Edit" />'
+        );
+    };
+
+    w.htmlForDeleteButton = function() {
+        return (
+            '<input type="button" class="delete" value="Delete" />'
+        );
+    };
+
+    w.htmlForListItem = function(field, item) {
+        var html = (
+            '<div class="item">' +
+                this.widget.toHTML(
+                    item.name, item.value, item.raw, field, item.offset
+                ) +
+                '<div class="actions">' +
+                    this.htmlForEditButton() +
+                    this.htmlForDeleteButton() +
+                '</div>' +
+            '</div>'
+        );
+        return html;
+    };
+
+    return w;
+};
+
+/**
+ * Creates a new field for storing/displaying an embedded object.
+ * This is automatically added to embed and embedList field types
+ * that don't specify a widget.
+ *
+ * @name embedded([options])
+ * @param options
+ * @returns {Widget Object}
+ * @api public
+ */
+
+exports.defaultEmbedded = function (options) {
+    var w = new Widget('defaultEmbedded', options);
+    w.toHTML = function (name, value, raw, field, offset) {
+        var display_name = (value ? value._id: '');
+        var fval = (value ? utils.escapeHTML(JSON.stringify(value)) : '');
+
+        if (field && field.type.display_name && value) {
+            display_name = field.type.display_name(value);
+        }
+        var html = (
+            '<div class="embed">' + 
+                '<input type="hidden" value="' + fval + '" name="' +
+                    h(this._name(name, offset)) + '" />' +
+                '<span class="value">' + h(display_name) + '</span>' +
+            '</div>'
+        );
+        return html;
+    };
+    return w;
+};
 
 /**
  * Creates a new document selector widget. This widget allows the
@@ -331,17 +524,42 @@ exports.computed = function (options) {
  */
 
 exports.documentSelector = function (options) {
-
     var w = new Widget('documentSelector', options);
-    w.options = (options || {});
+    w.toHTML = function (name, value, raw, field, offset) {
+        var html_value = (
+            value instanceof Object ?
+                JSON.stringify(value) : value
+        );
+        var input_html = (
+            '<input class="backing"' +
+                ' type="hidden" value="' + h(html_value) +
+                '" ' + this._attrs(name, offset) + ' />'
+        );
+        var select_html = (
+            '<select class="selector"' +
+                ' id="' + h(this._id(name, 'visible', offset)) + '"' +
+            '></select>'
+        );
+        var html = (
+            '<div class="widget layout">' +
+            '<div class="selector">' +
+                input_html + select_html +
+                '<div class="spinner" style="display: none;"></div>' +
+            '</div>' +
+            '</div>'
+        );
 
+        return html;
+    };
     w.clientInit = function(field, path, value, raw, errors, offset) {
-
         var name = path.join('.');
-        var container_elt = $('#' + this._id(name, (offset || ''))).parent();
-        var hidden_elt = $('input.backing', container_elt);
-        var select_elt = $('input.backing ~ select.selector', container_elt);
-        var spinner_elt = $('input.backing ~ .spinner', container_elt);
+        var container_elt = $('#' + this._id(name, offset)).parent();
+
+        var hidden_elt = (
+            container_elt.closestChild('input[type=hidden].backing')
+        );
+        var select_elt = container_elt.closestChild('.selector');
+        var spinner_elt = container_elt.closestChild('.spinner');
 
         var options = (field.widget.options || {});
         var is_embedded = (value instanceof Object);
@@ -394,32 +612,6 @@ exports.documentSelector = function (options) {
                 select_elt.trigger('change');
         });
     };
-
-    w.toHTML = function (name, value, raw, field, offset) {
-
-        var html_value = utils.escapeHTML(
-            (value instanceof Object ? JSON.stringify(value) : value)
-        );
-        var input_html = (
-            '<input class="backing" type="hidden"' +
-                ' value="' + html_value + '" ' + this._attrs(name, offset) + ' />'
-        );
-        var select_html = (
-            '<select class="selector"' +
-                ' id="' + this._id(name, 'visible' + (offset || '')) + '"' +
-            '></select>'
-        );
-        var html = (
-            '<div class="widget layout">' +
-            '<div class="selector">' +
-                input_html + select_html +
-                '<div class="spinner" style="display: none;"></div>' +
-            '</div>' +
-            '</div>'
-        );
-
-        return html;
-    };
-
     return w;
 };
+
