@@ -114,26 +114,6 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
 //exports.userCtx = utils.userCtx;
 
 
-/**
- * Keeps track of the last *triggered* request. This is to avoid a race
- * condition where two link clicks in quick succession can cause the rendered
- * page to not match the current URL. If the first link's document or view takes
- * longer to return than the second, the URL was updated for the second link
- * click but the page for the first link will render last, overwriting the
- * correct page. Now, callbacks for fetching documents and views check against
- * this value to see if they should continue rendering the result or not.
- */
-
-/* global __kansojs_current_request; */
-
-exports.currentRequest = function (v) {
-    if (v) {
-        __kansojs_current_request = v;
-    } else if (typeof(__kansojs_current_request) == 'undefined') {
-        __kansojs_current_request = null;
-    }
-    return __kansojs_current_request;
-};
 
 
 /**
@@ -513,7 +493,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            var current_req = (exports.currentRequest() || {});
+            var current_req = (utils.currentRequest() || {});
             if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
@@ -639,7 +619,7 @@ exports.parseResponse = function (req, res) {
 
 exports.runShow = function (fn, doc, req) {
     req = flashmessages.updateRequest(req);
-    exports.currentRequest(req);
+    utils.currentRequest(req);
     var info = {
         type: 'show',
         name: req.path[1],
@@ -690,7 +670,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            var current_req = (exports.currentRequest() || {});
+            var current_req = (utils.currentRequest() || {});
             if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
@@ -755,7 +735,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
 
 exports.runUpdate = function (fn, doc, req, cb) {
     req = flashmessages.updateRequest(req);
-    exports.currentRequest(req);
+    utils.currentRequest(req);
     var info = {
         type: 'update',
         name: req.path[1],
@@ -844,7 +824,7 @@ exports.runListBrowser = function (req, name, view, callback) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
         db.getView(view, req.query, function (err, data) {
-            var current_req = (exports.currentRequest() || {});
+            var current_req = (utils.currentRequest() || {});
             if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
@@ -904,7 +884,7 @@ exports.runListBrowser = function (req, name, view, callback) {
 
 exports.runList = function (fn, head, req) {
     req = flashmessages.updateRequest(req);
-    exports.currentRequest(req);
+    utils.currentRequest(req);
     var info = {
         type: 'list',
         name: req.path[1],
@@ -988,7 +968,7 @@ exports.handle = function (method, url, data) {
             }
 
             console.log(msg);
-            exports.currentRequest(req);
+            utils.currentRequest(req);
 
             var after = function () {
                 if (parsed.hash) {

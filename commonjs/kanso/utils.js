@@ -16,8 +16,7 @@
  * Module dependencies
  */
 
-var core = require('./core'),
-    settings = require('./settings'), // settings module is auto-generated
+var settings = require('./settings'), // settings module is auto-generated
     _ = require('./underscore')._;
 
 
@@ -30,6 +29,27 @@ var core = require('./core'),
 exports.isBrowser = function() {
     return (typeof(window) !== 'undefined');
 }
+
+/**
+ * Keeps track of the last *triggered* request. This is to avoid a race
+ * condition where two link clicks in quick succession can cause the rendered
+ * page to not match the current URL. If the first link's document or view takes
+ * longer to return than the second, the URL was updated for the second link
+ * click but the page for the first link will render last, overwriting the
+ * correct page. Now, callbacks for fetching documents and views check against
+ * this value to see if they should continue rendering the result or not.
+ */
+
+/* global __kansojs_current_request; */
+
+exports.currentRequest = function (v) {
+    if (v) {
+        __kansojs_current_request = v;
+    } else if (typeof(__kansojs_current_request) == 'undefined') {
+        __kansojs_current_request = null;
+    }
+    return __kansojs_current_request;
+};
 
 /**
  * This is because the first page hit also triggers kanso to handle the url
@@ -91,7 +111,7 @@ exports.getWindowLocation = function () {
 
 exports.getBaseURL = function (/*optional*/req) {
     if (!req) {
-        req = core.currentRequest();
+        req = exports.currentRequest();
     }
     if ('baseURL' in settings) {
         return settings.baseURL;
@@ -321,7 +341,7 @@ exports.redirect = function (/*optional*/req, url) {
     if (!url) {
         /* Arity = 1: url only */
         url = req;
-        req = core.currentRequest();
+        req = exports.currentRequest();
     }
     var baseURL = exports.getBaseURL(req);
     return {code: 302, headers: {'Location': baseURL + url}};
