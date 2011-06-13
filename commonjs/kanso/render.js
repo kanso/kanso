@@ -11,21 +11,25 @@
 
 var embed = require('kanso/embed'),
     events = require('kanso/events'),
+    sanitize = require('kanso/sanitize'),
     _ = require('./underscore')._
 
- 
+var h = sanitize.escapeHtml;
+
+
+/**
+ * Generates a script tag that fires the event named {name}.
+ *
+ */
+
 exports.scriptTagForEvent = function (name) {
-
-    /* XSS Prevention:
-        Prevent escape from (i) the javascript string, and then
-        (ii) the CDATA block. Don't use ]]> inside of a script. */
-
-    name = name.replace(/'/g, "\\'").replace(']]>', '');
 
     var rv = (
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
-             "require('kanso/events').emit('" + name + "');" +
+            "require('kanso/events').emit('" +
+                sanitize.cdata(sanitize.js(name)) +
+            "');" +
         "// ]]>" +
         '</script>'
     );
@@ -46,10 +50,11 @@ exports.errorHTML = function (errors) {
     if (errors && errors.length) {
         var html = '<ul class="errors">';
         for (var i = 0; i < errors.length; i++) {
-            /* Fix me: XSS if any portion of the error string is user input. */
-            html += '<li class="error_msg">' +
-                (errors[i].message || errors[i].toString()) +
-            '</li>';
+            html += (
+                '<li class="error_msg">' +
+                    h(errors[i].message || errors[i].toString()) +
+                '</li>'
+            );
         }
         html += '</ul>';
         return html;
@@ -88,8 +93,8 @@ exports.labelText = function (field, name) {
  */
 
 exports.labelHTML = function (field, name, id) {
-    return '<label for="' + (id || 'id_' + name) + '">' +
-        exports.labelText(field, name, id) +
+    return '<label for="' + h(id || sanitize.id(name)) + '">' +
+        h(exports.labelText(field, name, id)) +
     '</label>';
 };
 
@@ -104,7 +109,7 @@ exports.labelHTML = function (field, name, id) {
 
 exports.descriptionHTML = function (obj) {
     if (obj.description) {
-        return '<div class="description">' + obj.description + '</div>';
+        return '<div class="description">' + h(obj.description) + '</div>';
     }
     return '';
 };
@@ -120,7 +125,7 @@ exports.descriptionHTML = function (obj) {
 
 exports.hintHTML = function (obj) {
     if (obj.hint) {
-        return '<div class="hint">' + obj.hint + '</div>';
+        return '<div class="hint">' + h(obj.hint) + '</div>';
     }
     return '';
 };
@@ -190,15 +195,15 @@ exports.table = function () {
         var css_class = 'level-' + this.depth;
 
         return (
-            '<tbody class="head ' + css_class + '">' +
+            '<tbody class="head ' + h(css_class) + '">' +
             '<tr>' +
                 '<th colspan="3">' +
-                (name.substr(0, 1).toUpperCase() +
-                    name.substr(1).replace(/_/g, ' ')) +
+                    h(name.substr(0, 1).toUpperCase() +
+                        name.substr(1).replace(/_/g, ' ')) +
                 '</th>' +
             '</tr>' +
             '</tbody>' +
-            '<tbody class="group ' + css_class + '">'
+            '<tbody class="group ' + h(css_class) + '">'
         );
     };
 
@@ -311,9 +316,9 @@ exports.div = function () {
         var name = _.last(path);
         var css_class = 'level-' + this.depth;
         return (
-            '<div class="group ' + css_class + '">' +
+            '<div class="group ' + h(css_class) + '">' +
             '<div class="heading">' +
-                (name.substr(0, 1).toUpperCase() +
+                h(name.substr(0, 1).toUpperCase() +
                     name.substr(1).replace(/_/g, ' ')) +
             '</div>'
         );
@@ -355,7 +360,7 @@ exports.div = function () {
                 exports.classes(field, errors).join(' ') + '">' +
             '<div class="scalar">' +
                 '<div class="label">' +
-                    '<label for="' + name + '">' +
+                    '<label for="' + h(name) + '">' +
                         exports.labelHTML(field, caption) +
                         exports.descriptionHTML(field) +
                     '</label>' +

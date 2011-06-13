@@ -16,12 +16,8 @@ var db = require('./db'),
     utils = require('./utils'),
     _ = require('./underscore')._;
 
-/**
- * Convenience aliases.
- */
+var h = sanitize.escapeHtml;
 
-var h = sanitize.escapeHtml,
-    js = sanitize.escapeJavascriptString;
 
 /**
  * Widget constructor, creates a new Widget object.
@@ -123,8 +119,8 @@ Widget.prototype.toHTML = function (name, value, raw) {
         raw = '';
     }
     var html = '<input';
-    html += this.type ? ' type="' + this.type + '"': '';
-    html += ' value="' + raw + '"';
+    html += (this.type ? ' type="' + h(this.type) + '"': '');
+    html += ' value="' + h(raw) + '"';
     html += this._attrs(name);
     return html + ' />';
 };
@@ -190,13 +186,12 @@ exports.textarea = function (options) {
         var html = '<textarea';
         html += this._attrs(name);
         if (options.hasOwnProperty('cols')) {
-            html += ' cols="' + options.cols + '"';
+            html += ' cols="' + h(options.cols) + '"';
         }
         if (options.hasOwnProperty('rows')) {
-            html += ' rows="' + options.rows + '"';
+            html += ' rows="' + h(options.rows) + '"';
         }
-        html += '>';
-        html += utils.escapeHTML(raw);
+        html += '>' + h(raw);
         html += '</textarea>';
         return html;
     };
@@ -217,8 +212,8 @@ exports.checkbox = function (options) {
     w.toHTML = function (name, value, raw, field) {
         var html = '<input type="checkbox"';
         html += this._attrs(name);
-        html += value ? ' checked="checked"': '';
-        return html + ' />';
+        html += (value ? ' checked="checked"': '');
+        return (html + ' />');
     };
     return w;
 };
@@ -242,12 +237,12 @@ exports.select = function (options) {
         var html = '<select' + this._attrs(name) + '>';
         for (var i = 0; i < this.values.length; i++) {
             var opt = this.values[i];
-            html += '<option value="' + opt[0] + '"';
+            html += '<option value="' + h(opt[0]) + '"';
             if (opt[0] === value) {
                 html += ' selected="selected"';
             }
             html += '>';
-            html += opt[1];
+            html += h(opt[1]);
             html += '</option>';
         }
         html += '</select>';
@@ -275,9 +270,9 @@ exports.computed = function (options) {
         if (raw === null || raw === undefined) {
             raw = '';
         }
-        var html = '<input type="hidden" value="' + raw + '"';
+        var html = '<input type="hidden" value="' + h(raw) + '"';
         html += this._attrs(name) + ' />';
-        html += '<span>' + utils.escapeHTML(raw) + '</span>';
+        html += '<span>' + h(raw) + '</span>';
         return html;
     };
     return w;

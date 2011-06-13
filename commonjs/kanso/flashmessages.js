@@ -229,3 +229,4 @@ exports.addMessage = function (req, msg) {
         req.flash_messages.push(message);
     }
 };
+

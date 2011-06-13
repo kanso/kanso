@@ -6,7 +6,10 @@ var core = require('kanso/core'),
     utils = require('kanso/utils'),
     widgets = require('kanso/widgets'),
     querystring = require('kanso/querystring'),
+    sanitize = require('kanso/sanitize'),
     _ = require('kanso/underscore')._;
+
+var h = sanitize.escapeHtml;
 
 
 /**
@@ -94,12 +97,12 @@ exports.showModal = function (type, form, div, field_td, row,
         form.validate(rawval);
     }
 
-    div.html('<h2>' + (val ? 'Edit ': 'Add ') + typename + '</h2>');
+    div.html('<h2>' + (val ? 'Edit ': 'Add ') + h(typename) + '</h2>');
     div.append('<form>' + form.toHTML() + '</form>');
 
     var action = (val ? 'Update': 'Add');
     var okbtn = $(
-        '<input type="button" value="' + action  + '" />"'
+        '<input type="button" value="' + h(action)  + '" />"'
     );
 
     okbtn.click(function () {

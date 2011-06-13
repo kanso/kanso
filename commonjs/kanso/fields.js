@@ -832,3 +832,4 @@ exports.numberArray = function (options) {
     });
     return exports.array(options);
 };
+
