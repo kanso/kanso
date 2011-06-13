@@ -148,8 +148,16 @@ exports.table = function () {
      *
      * @constructor
     */
-    this.start = function () {
+    this.start = function (errs) {
         this.depth = 0;
+        if (errs && errs.length) {
+            var html = '<ul class="form_errors">';
+            _.each(errs, function (e) {
+                html += '<li>' + (e.message || e.toString()) + '</li>';
+            });
+            html += '</ul>';
+            return html;
+        }
         return '';
     };
 
@@ -321,8 +329,16 @@ exports.div = function () {
      *
      * @constructor
     */
-    this.start = function () {
+    this.start = function (errs) {
         this.depth = 0;
+        if (errs && errs.length) {
+            var html = '<ul class="form_errors">';
+            _.each(errs, function (e) {
+                html += '<li>' + (e.message || e.toString()) + '</li>';
+            });
+            html += '</ul>';
+            return html;
+        }
         return '';
     };
 

@@ -44,18 +44,26 @@ var utils = require('./utils'),
 
 var Form = exports.Form = function Form(fields, doc, options) {
     this.options = options || {};
-    this.values = doc;
 
-    this.fields = (fields && fields.fields) ? fields.fields: fields;
-    /*
-    if (utils.constructorName(fields) === 'Type') {
+    this.values = null;
+    if (doc) {
+        this.values = doc;
+        this.old_doc = doc;
+    }
+    if (fields && fields.fields) {
+        this.type = fields;
+        this.fields = this.type.fields;
+    }
+    else {
+        this.fields = fields;
+    }
+    /*if (utils.constructorName(fields) === 'Type') {
         this.type = fields;
         this.fields = this.type.field;
     }
     else {
         this.fields = fields;
-    }
-    */
+    }*/
 };
 
 /**
@@ -81,6 +89,28 @@ Form.prototype.validate = function (req) {
     this.errors = fieldset.validate(
         this.fields, this.values, this.values, this.raw, [], false
     );
+
+    if (this.type) {
+        // run top level permissions first
+        var type_errs = this.type.authorizeTypeLevel(
+            this.values, this.old_doc, req.userCtx
+        );
+        if (type_errs.length) {
+            this.errors = this.errors.concat(type_errs);
+        }
+        else {
+            // if no top-level permissions errors, check each field
+            this.errors = this.errors.concat(
+                this.type.authorize(this.values, this.old_doc, req.userCtx)
+            );
+        }
+    }
+    else {
+        this.errors = this.errors.concat(fieldset.authFieldSet(
+            this.fields, this.values, this.old_doc, this.values, this.old_doc,
+            req.userCtx, [], true
+        ));
+    }
     return this;
 };
 
@@ -95,6 +125,46 @@ Form.prototype.validate = function (req) {
 
 Form.prototype.isValid = function () {
     return !(this.errors && this.errors.length);
+};
+
+/**
+ * Filters an array of errors, returning only those below a specific field path
+ *
+ * @param {Array} errs
+ * @param {Array} path
+ * @returns {Array}
+ */
+
+var errsBelowPath = function (errs, path) {
+    if (!path || !path.length) {
+        return errs;
+    }
+    return _.filter(errs, function (e) {
+        if (!e.field) {
+            return false;
+        }
+        for (var i = 0, len = path.length; i < len; i++) {
+            if (path[i] !== e.field[i]) {
+                return false;
+            }
+        }
+        return true;
+    });
+};
+
+/**
+ * Filters a list of errors, returning only those without a field property.
+ * This is used to populate the errors at the top of the form, which apply
+ * generally, or cannot be attributed to a single field.
+ *
+ * @param {Array} errs
+ * @returns {Array}
+ */
+
+var errsWithoutFields = function (errs) {
+    return _.filter(errs, function (e) {
+        return !e.field;
+    });
 };
 
 /**
@@ -119,29 +189,10 @@ Form.prototype.toHTML = function (req, /*optional*/RendererClass) {
     );
     RendererClass = RendererClass || render.table;
     var renderer = new RendererClass();
-    return renderer.start() +
+    return renderer.start(errsWithoutFields(this.errors)) +
         this.renderFields(
             renderer, this.fields, values, this.raw, this.errors, []
         ) + renderer.end();
-};
-
-/**
- * Filters an array of errors, returning only those below a specific field path
- *
- * @param {Array} errs
- * @param {Array} path
- * @returns {Array}
- */
-
-var errsBelowPath = function (errs, path) {
-    return _.filter(errs, function (e) {
-        for (var i = 0, len = path.length; i < len; i++) {
-            if (path[i] !== e.field[i]) {
-                return false;
-            }
-        }
-        return true;
-    });
 };
 
 /**
