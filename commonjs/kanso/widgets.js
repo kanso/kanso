@@ -333,21 +333,30 @@ exports.embedList = function (options) {
     };
 
     w.clientInit = function(field, path, value, raw, errors, offset) {
-        var name = this._name.apply(this, path);
-        var list_elt = this.discoverListElement(name);
+        var list_elt = this.discoverListElement(path);
         var item_elts = list_elt.closestChild('.items').children('.item');
 
         for (var i = 0, len = item_elts.length; i < len; ++i) {
-            this.bindEventsForListItem(field, name, item_elts[i]);
+            this.bindEventsForListItem(field, path, item_elts[i]);
+
+            if (this.widget.clientInit) {
+                this.widget.clientInit(
+                    field, path, value[i], value[i], [], i
+                );
+            }
         }
         
-        this.bindEventsForList(field, name);
+        this.bindEventsForList(field, path);
     };
 
     /** private: **/
 
-    w.discoverListElement = function(list_name) {
-        return $('#' + this._id(list_name, 'list'));
+    w.discoverListElement = function(list_name_or_path) {
+        var name = (
+            list_name_or_path instanceof Array ?
+                list_name_or_path.join('.') : list_name_or_path
+        );
+        return $('#' + this._id(name, 'list'));
     };
 
     w.discoverListName = function (list_elt) {
@@ -359,39 +368,35 @@ exports.embedList = function (options) {
         return list_elt.attr('rel');
     };
 
-    w.bindEventsForList = function(field, name) {
-        var that = this;
-        var list_elt = this.discoverListElement(name);
+    w.bindEventsForList = function(field, path) {
+        var list_elt = this.discoverListElement(path);
         var add_elt = $(list_elt).closestChild('.actions > .add');
 
         add_elt.bind('click', utils.bindContext(this, function (ev) {
-            return this.handleAddButtonClick(ev, field, name);
+            return this.handleAddButtonClick(ev, field, path);
         }));
     };
 
-    w.bindEventsForListItem = function (field, name, item_elt) {
-        var that = this;
+    w.bindEventsForListItem = function (field, path, item_elt) {
         var edit_elt = $(item_elt).closestChild('.actions > .edit');
         var delete_elt = $(item_elt).closestChild('.actions > .delete');
 
         edit_elt.bind('click', utils.bindContext(this, function(ev) {
-            return this.handleEditButtonClick(ev, field, name);
+            return this.handleEditButtonClick(ev, field, path);
         }));
 
         delete_elt.bind('click', utils.bindContext(this, function(ev) {
-            return this.handleDeleteButtonClick(ev, field, name);
+            return this.handleDeleteButtonClick(ev, field, path);
         }));
     };
 
-    w.renumberList = function (name) {
-        var i = 0;
-        var that = this;
-        var list_elt = this.discoverListElement(name);
+    w.renumberList = function (path) {
+        var list_elt = this.discoverListElement(path);
         var item_elts = list_elt.closestChild('.items').children('.item');
 
-        _.each(item_elts, utils.bindContext(this, function (e) {
-            this.renumberItem(e, name, i++);
-        }));
+        for (var i = 0, len = item_elts.length; i < len; ++i) {
+            this.renumberItem(item_elts[i], path, i);
+        };
 
         var add_elt = list_elt.closestChild('.actions > .add');
 
@@ -404,33 +409,36 @@ exports.embedList = function (options) {
         return i;
     };
 
-    w.renumberItem = function (elt, name, offset) {
+    w.renumberItem = function (elt, path, offset) {
         var input_elt = $(elt).closestChild('input[type=hidden]');
+        var name = path.join('.');
         input_elt.attr(
             'name', this._name(name, (this.singleton ? null : offset))
         );
     }
 
-    w.insertItemAtEnd = function (field, name) {
-        var list_elt = this.discoverListElement(name);
+    w.insertItemAtEnd = function (field, path) {
+        var list_elt = this.discoverListElement(path);
         var item_elts =  list_elt.closestChild('.items').children('.item');
         var last_elt = item_elts.last();
         this.insertItem(
-            field, name,
+            field, path,
             (this.singleton ? null : item_elts.length),
             last_elt[0]
         );
     };
 
-    w.insertItem = function(field, name, offset, after_elt) {
-        var list_elt = this.discoverListElement(name);
+    w.insertItem = function(field, path, offset, after_elt) {
+        var list_elt = this.discoverListElement(path);
         var items_elt = list_elt.closestChild('.items');
         var list_type = this.discoverListType(list_elt);
-        var that = this;
+
         db.newUUID(100, utils.bindContext(this, function (err, uuid) {
+            var value = { type: list_type, _id: uuid };
+
             var item_elt = $(this.htmlForListItem(field, {
-                name: name, offset: offset,
-                value: { type: list_type, _id: uuid }
+                name: path.join('.'),
+                offset: offset, value: value, raw: value
             }));
 
             if (after_elt) {
@@ -439,8 +447,14 @@ exports.embedList = function (options) {
                 items_elt.append(item_elt);
             }
 
-            that.renumberList(name);
-            this.bindEventsForListItem(field, name, item_elt);
+            this.renumberList(path);
+            this.bindEventsForListItem(field, path, item_elt);
+
+            if (this.widget.clientInit) {
+                this.widget.clientInit(
+                    field, path, value, value, [], offset
+                );
+            }
         }))
     };
 
@@ -477,19 +491,19 @@ exports.embedList = function (options) {
         );
     };
 
-    w.handleAddButtonClick = function (ev, field, name) {
-        this.insertItemAtEnd(field, name);
+    w.handleAddButtonClick = function (ev, field, path) {
+        this.insertItemAtEnd(field, path);
     };
 
-    w.handleEditButtonClick = function (ev, field, name) {
+    w.handleEditButtonClick = function (ev, field, path) {
     };
 
-    w.handleDeleteButtonClick = function (ev, field, name) {
-        var list_elt = this.discoverListElement(name);
+    w.handleDeleteButtonClick = function (ev, field, path) {
+        var list_elt = this.discoverListElement(path);
         var item_elt = $(ev.target).closest('.item', this);
 
         item_elt.remove();
-        this.renumberList(name);
+        this.renumberList(path);
     };
 
     return w;
@@ -566,14 +580,12 @@ exports.documentSelector = function (options) {
     w.clientInit = function(field, path, value, raw, errors, offset) {
         var name = path.join('.');
         var container_elt = $('#' + this._id(name, offset)).parent();
-
         var hidden_elt = (
             container_elt.closestChild('input[type=hidden].backing')
         );
         var select_elt = container_elt.closestChild('.selector');
         var spinner_elt = container_elt.closestChild('.spinner');
-
-        var options = (field.widget.options || {});
+        var options = (this.options || {});
         var is_embedded = (value instanceof Object);
 
         /* Start progress */
@@ -583,7 +595,6 @@ exports.documentSelector = function (options) {
         select_elt.bind('change', function () {
             hidden_elt.val(select_elt.val());
         });
-
         /* Fetch contents */
         db.getView(
             options.viewName,
@@ -607,7 +618,7 @@ exports.documentSelector = function (options) {
                 _.each(rv.rows || [], function(r) {
                     var option = $(document.createElement('option'));
                     var is_selected = (
-                        (is_embedded && value._id == r.id) || (value == r.id)
+                        is_embedded ? (value._id === r.id) : (value === r.id)
                     );
                     if (is_selected) {
                         option.attr('selected', 'selected');
