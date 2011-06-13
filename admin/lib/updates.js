@@ -23,7 +23,7 @@ exports.addtype = function (doc, req) {
             type = app.types ? app.types[req.query.type]: undefined;
 
         var forms = utils.appRequire(ddoc, 'kanso/forms'),
-            form = new forms.Form(type);
+            form = new forms.Form(type, doc);
 
         form.validate(req);
 
@@ -92,7 +92,7 @@ exports.updatetype = function (doc, req) {
             type = app.types ? app.types[doc.type]: undefined;
 
         var forms = utils.appRequire(ddoc, 'kanso/forms'),
-            form = new forms.Form(type);
+            form = new forms.Form(type, doc);
 
         form.validate(req);
 
