@@ -565,6 +565,44 @@ exports['Form.validate - options.exclude'] = function (test) {
     test.done();
 };
 
+exports['Form.validate - don\'t merge embedded'] = function (test) {
+    var Type = types.Type;
+    var t = new Type('t1', {
+        fields: {
+            name: fields.string({required: false})
+        }
+    });
+
+    var fieldset = {
+        t1_list: fields.embedList({type: t, required: false}),
+        t1_single: fields.embed({type: t, required: false})
+    };
+    var f, olddoc;
+
+    olddoc = {t1_single: {_id: 'id1', name: 'test'}, t1_list: []};
+    f = new forms.Form(fieldset, olddoc);
+    f.validate({form: {t1_single: '{"_id": "id1", "foo":"bar"}'}});
+
+    // check that the t1_single wasn't merged
+    test.same(f.values.t1_single, {_id: 'id1', foo: 'bar'});
+
+
+    olddoc = {t1_list: [
+        {_id: 'id1', name: 'test'},
+        {_id: 'id2', name: 'test2'}
+    ]};
+    f = new forms.Form(fieldset, olddoc);
+    f.validate({form: {
+        't1_list.0': '{"_id": "id1", "foo":"bar"}'
+    }});
+
+    // check that the t1_single wasn't merged
+    test.same(f.values.t1_list, [{_id: 'id1', foo: 'bar'}]);
+
+
+    test.done();
+};
+
 exports['Form.validate - options.fields'] = function (test) {
     var fieldset = {
         foo: fields.string(),
