@@ -83,7 +83,7 @@ exports.showModal = function (div, field_td, row, req, typename, val, rawval) {
         var form = new forms.Form(type, val);
 
         if (rawval) {
-            form.validate({form: rawval});
+            form.validate({form: rawval, userCtx: kanso_utils.userCtx});
         }
 
         div.html('<h2>' + (val ? 'Edit ': 'Add ') + typename + '</h2>');
@@ -97,7 +97,7 @@ exports.showModal = function (div, field_td, row, req, typename, val, rawval) {
         okbtn.click(function () {
             var qs = $('form', div).serialize().replace(/\+/g, '%20');
             var rawval = querystring.parse(qs);
-            form.validate({form: rawval});
+            form.validate({form: rawval, userCtx: kanso_utils.userCtx});
             if (form.isValid()) {
                 if (!val) {
                     row = exports.addRow(field_td);
