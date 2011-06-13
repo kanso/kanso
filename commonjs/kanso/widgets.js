@@ -305,7 +305,7 @@ exports.embedList = function (options) {
     w.toHTML = function (name, value, raw, field) {
         var id = this._id(name, 'list');
         var html = (
-            '<div class="list" rel="' +
+            '<div class="embedlist" rel="' +
                 h(field.type.name) + '" id="' + h(id) + '">'
         );
 
@@ -318,17 +318,20 @@ exports.embedList = function (options) {
                 name: name, value: value[i], raw: raw,
             });
         }
-
-        html += '</div>';
-        html += '<div class="actions">';
-
+        html += (
+                '</div>' +
+            '<div class="actions">'
+        );
+        
         if (i == 0 || !this.singleton) {
             html += this.htmlForAddButton();
         }
+
         html += (
                 '</div>' +
             '</div>'
         );
+
         return html;
     };
 
@@ -461,13 +464,13 @@ exports.embedList = function (options) {
     w.htmlForListItem = function(field, item) {
         var html = (
             '<div class="item">' +
-                this.widget.toHTML(
-                    item.name, item.value, item.raw, field, item.offset
-                ) +
                 '<div class="actions">' +
                     this.htmlForEditButton() +
                     this.htmlForDeleteButton() +
                 '</div>' +
+                this.widget.toHTML(
+                    item.name, item.value, item.raw, field, item.offset
+                ) +
             '</div>'
         );
         return html;
