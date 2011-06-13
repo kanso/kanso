@@ -282,6 +282,7 @@ exports.computed = function (options) {
     return w;
 };
 
+
 /**
  * Creates a new field for storing/displaying an embedded object.
  * This is automatically added to embed and embedList field types
@@ -301,17 +302,22 @@ exports.embedList = function (options) {
     w.widget = (options.widget || exports.defaultEmbedded());
 
     w.toHTML = function (name, value, raw, field) {
-        var i = 0, id = this._id(name, 'list');
+        var id = this._id(name, 'list');
         var html = (
             '<div class="list" rel="' +
                 h(field.type.name) + '" id="' + h(id) + '">'
         );
+
+        value = (value instanceof Array ? value : []);
         html += '<div class="items" rel="' + h(name) + '">';
-        _.each(value, function(v) {
+
+        for (var i = 0, len = value.length; i < len; ++i) { 
             html += this.htmlForListItem(field, {
-                name: name, value: v, raw: raw, offset: null
+                offset: (this.singleton ? null : i),
+                name: name, value: value[i], raw: raw,
             });
-        });
+        }
+
         html += '</div>';
         html += '<div class="actions">';
 
@@ -327,6 +333,13 @@ exports.embedList = function (options) {
 
     w.clientInit = function(field, path, value, raw, errors, offset) {
         var name = this._name.apply(this, path);
+        var list_elt = this.discoverListElement(name);
+        var item_elts = list_elt.closestChild('.items').children('.item');
+
+        for (var i = 0, len = item_elts.length; i < len; ++i) {
+            this.bindEventsForListItem(field, name, item_elts[i]);
+        }
+        
         this.bindEventsForList(field, name);
     };
 
@@ -350,11 +363,9 @@ exports.embedList = function (options) {
         var list_elt = this.discoverListElement(name);
         var add_elt = $(list_elt).closestChild('.actions > .add');
 
-        add_elt.bind('click', function(ev) {
-            (function(ev) {
-                return this.handleAddButtonClick(ev, field, name);
-            }).apply(that, [ ev ]);
-        });
+        add_elt.bind('click', utils.bindContext(this, function (ev) {
+            return this.handleAddButtonClick(ev, field, name);
+        }));
     };
 
     w.bindEventsForListItem = function (field, name, item_elt) {
@@ -362,31 +373,13 @@ exports.embedList = function (options) {
         var edit_elt = $(item_elt).closestChild('.actions > .edit');
         var delete_elt = $(item_elt).closestChild('.actions > .delete');
 
-        edit_elt.bind('click', function(ev) {
-            (function(ev) {
-                return this.handleEditButtonClick(ev, field, name);
-            }).apply(that, [ ev ]);
-        });
-        delete_elt.bind('click', function(ev) {
-            (function(ev) {
-                return this.handleDeleteButtonClick(ev, field, name);
-            }).apply(that, [ ev ]);
-        });
-    };
+        edit_elt.bind('click', utils.bindContext(this, function(ev) {
+            return this.handleEditButtonClick(ev, field, name);
+        }));
 
-    w.handleAddButtonClick = function (ev, field, name) {
-        this.insertItemAtEnd(field, name);
-    };
-
-    w.handleEditButtonClick = function (ev, field, name) {
-    };
-
-    w.handleDeleteButtonClick = function (ev, field, name) {
-        var list_elt = this.discoverListElement(name);
-        var item_elt = $(ev.target).closest('.item', this);
-
-        item_elt.remove();
-        this.renumberList(name);
+        delete_elt.bind('click', utils.bindContext(this, function(ev) {
+            return this.handleDeleteButtonClick(ev, field, name);
+        }));
     };
 
     w.renumberList = function (name) {
@@ -395,9 +388,9 @@ exports.embedList = function (options) {
         var list_elt = this.discoverListElement(name);
         var item_elts = list_elt.closestChild('.items').children('.item');
 
-        _.each(item_elts, function(e) {
-            that.renumberItem(e, name, i++);
-        });
+        _.each(item_elts, utils.bindContext(this, function (e) {
+            this.renumberItem(e, name, i++);
+        }));
 
         var add_elt = list_elt.closestChild('.actions > .add');
 
@@ -410,9 +403,11 @@ exports.embedList = function (options) {
         return i;
     };
 
-    w.renumberItem = function(elt, name, offset) {
+    w.renumberItem = function (elt, name, offset) {
         var input_elt = $(elt).closestChild('input[type=hidden]');
-        input_elt.attr('name', this._name(name, offset));
+        input_elt.attr(
+            'name', this._name(name, (this.singleton ? null : offset))
+        );
     }
 
     w.insertItemAtEnd = function (field, name) {
@@ -420,31 +415,47 @@ exports.embedList = function (options) {
         var item_elts =  list_elt.closestChild('.items').children('.item');
         var last_elt = item_elts.last();
         this.insertItem(
-            field, name, item_elts.length, last_elt[0]
+            field, name,
+            (this.singleton ? null : item_elts.length),
+            last_elt[0]
         );
     };
 
     w.insertItem = function(field, name, offset, after_elt) {
-        var that = this;
         var list_elt = this.discoverListElement(name);
         var items_elt = list_elt.closestChild('.items');
+        var list_type = this.discoverListType(list_elt);
+        var that = this;
+        db.newUUID(100, utils.bindContext(this, function (err, uuid) {
+            var item_elt = $(this.htmlForListItem(field, {
+                name: name, offset: offset,
+                value: { type: list_type, _id: uuid }
+            }));
 
-        db.newUUID(100, function (err, uuid) {
-            (function (err, uuid) {
-                var item_elt = $(this.htmlForListItem(field, {
-                    name: name, value: { _id: uuid }, offset: offset
-                }));
+            if (after_elt) {
+                $(after_elt).after(item_elt);
+            } else {
+                items_elt.append(item_elt);
+            }
 
-                if (after_elt) {
-                    $(after_elt).after(item_elt);
-                } else {
-                    items_elt.append(item_elt);
-                }
+            that.renumberList(name);
+            this.bindEventsForListItem(field, name, item_elt);
+        }))
+    };
 
-                that.renumberList(name);
-                this.bindEventsForListItem(field, name, item_elt);
-            }).apply(that, [ err, uuid ]);
-        })
+    w.htmlForListItem = function(field, item) {
+        var html = (
+            '<div class="item">' +
+                this.widget.toHTML(
+                    item.name, item.value, item.raw, field, item.offset
+                ) +
+                '<div class="actions">' +
+                    this.htmlForEditButton() +
+                    this.htmlForDeleteButton() +
+                '</div>' +
+            '</div>'
+        );
+        return html;
     };
 
     w.htmlForAddButton = function() {
@@ -465,19 +476,19 @@ exports.embedList = function (options) {
         );
     };
 
-    w.htmlForListItem = function(field, item) {
-        var html = (
-            '<div class="item">' +
-                this.widget.toHTML(
-                    item.name, item.value, item.raw, field, item.offset
-                ) +
-                '<div class="actions">' +
-                    this.htmlForEditButton() +
-                    this.htmlForDeleteButton() +
-                '</div>' +
-            '</div>'
-        );
-        return html;
+    w.handleAddButtonClick = function (ev, field, name) {
+        this.insertItemAtEnd(field, name);
+    };
+
+    w.handleEditButtonClick = function (ev, field, name) {
+    };
+
+    w.handleDeleteButtonClick = function (ev, field, name) {
+        var list_elt = this.discoverListElement(name);
+        var item_elt = $(ev.target).closest('.item', this);
+
+        item_elt.remove();
+        this.renumberList(name);
     };
 
     return w;
@@ -614,4 +625,38 @@ exports.documentSelector = function (options) {
     };
     return w;
 };
+
+/* 
+ * closestChild for jQuery
+ * Copyright 2011, Tobias Lindig 
+ * 
+ * Dual licensed under the MIT license and GPL licenses:
+ *   http://www.opensource.org/licenses/mit-license.php
+ *   http://www.opensource.org/licenses/gpl-license.php
+ * 
+ */
+
+if (utils.isBrowser()) {
+    (function($) {
+        $.fn.closestChild = function(selector) {
+            /* Breadth-first search for the first matched node */
+            if (selector && selector != '') {
+                var queue = [];
+                queue.push(this);
+                while(queue.length > 0) {
+                    var node = queue.shift();
+                    var children = node.children();
+                    for(var i = 0; i < children.length; ++i) {
+                        var child = $(children[i]);
+                        if (child.is(selector)) {
+                            return child;
+                        }
+                        queue.push(child);
+                    }
+                }
+            }
+            return $(); /* Nothing found */
+        };
+    })(jQuery);
+}
 

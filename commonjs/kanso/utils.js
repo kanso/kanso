@@ -454,36 +454,24 @@ exports.resizeModal = function (div) {
     $.modal.setPosition();
 };
 
-/* 
- * closestChild for jQuery
- * Copyright 2011, Tobias Lindig 
- * 
- * Dual licensed under the MIT (http://www.opensource.org/licenses/mit-license.php)
- * and GPL (http://www.opensource.org/licenses/gpl-license.php) licenses.
- * 
+
+
+/**
+ * Returns a function that executes {closure} in the context of {context}.
+ * Use this function if you'd like to preserve the current context
+ * across callbacks, event handlers, and other cases where the value of
+ * {this} is set for you.
+ *
+ * @name bindContext(context, closure)
+ * @param {Object} context The context to use when executing closure.
+ *          Usually, you will specify the current value of 'this'.
+ * @param {Function} closure The function to to bind to {context}.
+ * @api public
  */
 
-if (exports.isBrowser()) {
-    (function($) {
-        $.fn.closestChild = function(selector) {
-            /* Breadth-first search for the first matched node */
-            if (selector && selector != '') {
-                var queue = [];
-                queue.push(this);
-                while(queue.length > 0) {
-                    var node = queue.shift();
-                    var children = node.children();
-                    for(var i = 0; i < children.length; ++i) {
-                        var child = $(children[i]);
-                        if (child.is(selector)) {
-                            return child;
-                        }
-                        queue.push(child);
-                    }
-                }
-            }
-            return $(); /* Nothing found */
-        };
-    })(jQuery);
-}
+exports.bindContext = function (context, closure) {
+    return function () {
+        return closure.apply(context, arguments);
+    }
+};
 

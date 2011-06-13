@@ -171,7 +171,7 @@ exports.getModules = function (/*optional*/req, callback) {
     if (!callback) {
         /* Arity = 1: callback only */
         callback = req;
-        req = core.currentRequest();
+        req = utils.currentRequest();
     }
     db.getDesignDoc(req.query.app, function (err, ddoc) {
         if (err) {

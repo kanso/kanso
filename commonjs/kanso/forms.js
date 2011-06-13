@@ -71,7 +71,7 @@ var Form = exports.Form = function Form(fields, doc, options) {
 
 Form.prototype.validate = function (/*optional*/form) {
     if (!form) {
-        form = core.currentRequest().form;
+        form = utils.currentRequest().form;
     }
     this.raw = form || {};
     var tree = exports.formValuesToTree(this.raw);
@@ -111,7 +111,7 @@ Form.prototype.isValid = function () {
 
 Form.prototype.toHTML = function (/*optional*/req, /*optional*/RendererClass) {
     if (!req) {
-        req = core.currentRequest();
+        req = utils.currentRequest();
     }
     var values = this.values || fieldset.createDefaults(
         this.fields,
