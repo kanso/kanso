@@ -13,7 +13,8 @@ var db = require('./db'),
     render = require('./render'),
     sanitize = require('./sanitize'),
     _ = require('./underscore')._,
-    utils = require('./utils');
+    utils = require('./utils'),
+    _ = require('./underscore')._;
 
 /**
  * Convenience aliases.
