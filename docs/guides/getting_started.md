@@ -612,20 +612,47 @@ to include the following comments field:
 <pre><code type="javascript">exports.blogpost = new Type('blogpost', {
     permissions: {
         add:    permissions.hasRole('_admin'),
-        update: permissions.hasRole('_admin'),
+        update: permissions.loggedIn(),
         remove: permissions.hasRole('_admin')
     },
     fields: {
         created: fields.timestamp(),
-        title: fields.string(),
+        title: fields.string({
+            permissions: {
+                update: permissions.hasRole('_admin')
+            }
+        }),
         text: fields.string({
-            widget: widgets.textarea({cols: 40, rows: 10})
+            widget: widgets.textarea({cols: 40, rows: 10}),
+            permissions: {
+                update: permissions.hasRole('_admin')
+            }
         }),
         comments: fields.embedList({
-            type: exports.comment
+            type: exports.comment,
+            required: false
         })
     }
 });</code></pre>
+
+You'll notice we've changed the permissions a bit. Previously the type had add,
+update and remove permissions at the top-level which all checked for the '\_admin'
+role. That meant you couldn't create, delete or make any changes to a blogpost
+without being a CouchDB admin.
+
+Since we're embedding comments within the blogpost document, we need to give update
+access to any logged-in user, so they can add comments directly into it. However,
+we still don't want them to change the title or text of the blogpost, so we've
+added field-level permissions to protect those.
+
+The <code>embedList</code> field will use the permissions of the comment Type
+definition, meaning any logged-in user can add a comment, but you can only edit or
+delete comments you created.
+
+This is an example of the flexibility of the Kanso Types and permissions system.
+De-normalizing your data often means you'll need some fine-grained permissions
+to protect specific parts of a document. Because Kanso was written with CouchDB in
+mind, we can design specifically for these kinds of problems.
 
 __Push the app__, and visit the admin page for adding blogposts:
 <a href="http://localhost:5984/myblog/_design/admin/_rewrite/myblog/types/blogpost/add">http://localhost:5984/myblog/\_design/admin/\_rewrite/myblog/types/blogpost/add</a>
@@ -699,8 +726,8 @@ Then update <code>lib/rewrites.js</code> to look like this:
     {from: '*', to: '_show/not_found'}
 ];</code></pre>
 
-Let's create a new show function to display the form. Update
-<code>lib/shows.js</code> as follows:
+Let's create a new show function to display the form. Add the following to 
+<code>lib/shows.js</code>:
 
 <pre><code class="javascript">exports.add_blogpost = function (doc, req) {
     // render the markup for a blog post form
@@ -778,7 +805,8 @@ Add the following to <code>lib/updates.js</code>:
 
 <pre><code class="javascript">var templates = require('kanso/templates'),
     forms = require('kanso/forms'),
-    utils = require('kanso/utils');
+    utils = require('kanso/utils'),
+    types = require('./types');
 
 
 exports.add_blogpost = function (doc, req) {
@@ -834,7 +862,15 @@ We've added a new rewrite for <code>/add</code>, only this time we specify a HTT
 method to match. This means when we do <code>GET /add</code> we'll run the show
 function, and when we do <code>POST /add</code> we'll run the update function.
 
-Let's try submitting the form now...
+Let's try submitting the form now. Be sure to login as an admin user using either
+futon or the Kanso admin app (on the same hostname you're using with the app, no
+good logging in on localhost if your accessing the app on 127.0.0.1).
+
+__Push the app__, and visit the add blogpost page:
+<a href="http://localhost:5984/myblog/_design/myblog/_rewrite/add">http://localhost:5984/myblog/\_design/myblog/\_rewrite/add</a>
+
+After submitting the form you should be redirected to the list of blogposts and
+you should see your new blogpost added to the end.
 
 
 <h2 id="going_it_alone">Going it alone</h2>
