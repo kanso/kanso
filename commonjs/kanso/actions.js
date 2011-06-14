@@ -1,6 +1,21 @@
+/**
+ * Implementation of widget actions. These are procedures
+ * that can be referenced by widgets to present/collect information,
+ * manipulate the DOM, or otherwise affect the application state
+ * when a widget is acted upon.
+ *
+ * @module
+ */
+
+/**
+ * Module dependencies
+ */
 
 var widgets = require('./widgets'),
+    sanitize = require('./sanitize'),
     _ = require('./underscore')._;
+
+var h = sanitize.escapeHtml;
 
 
 /**
@@ -22,7 +37,7 @@ exports.parse = function(actions) {
         } else if (_.isFunction(action)) {
             rv[k] = action;
             continue;
-        } else if (action instanceof Object) {
+        } else if (typeof(action) == 'object') {
             module = action.module;
             callback = action.callback;
             options = action.options;
@@ -34,14 +49,14 @@ exports.parse = function(actions) {
         }
         /* Resolve function description to actual function */
         rv[k] = function () {
-            require(module)[callback].apply(
-                null, [ options ].concat(arguments)
+            var args = [ options ].concat(
+                Array.prototype.slice.apply(arguments)
             );
+            return require(module)[callback].apply(this, args);
         };
     }
     return rv;
 }
-
 
 /**
  * An action that produces a modal dialog box, with buttons along
@@ -52,13 +67,19 @@ exports.parse = function(actions) {
  * which does the actual form rendering and presentation.
  */
 
-exports.modalDialog = function (options, field, path,
-                                value, raw, errors, offset) {
-    options = $(options || {});
+exports.modalDialog = function (options, type_name, field, path,
+                                value, raw, errors, offset, callback) {
+    options = (options || {});
 
     var div = $('<div />');
-    var widget = (options.widget || {});
+    var widget = options.widget;
+    var name = sanitize.generateDomName.apply(null, path);
 
+    var widget_options = {
+        offset: offset, path_extra: [ 'modal' ]
+    };
+
+    /* Resolve widget */
     if (!widget && options.type) {
         widget = widgets.embedForm(
             _.defaults(options.options || {}, {
@@ -69,12 +90,24 @@ exports.modalDialog = function (options, field, path,
     if (!widget) {
         throw new Error(
             'modalDialog: Unable to determine the widget to' +
-            ' use for field named `' + path.join('.') + '`;' +
+            ' use for the field named `' + path.join('.') + '`;' +
             ' widget or field type was not correctly specified'
         );
     }
 
-    /* Event handlers */
+    /* Create elements for content */
+    var okbtn = $(
+        '<input type="button" value="' +
+            h(raw ? 'Modify Item' : 'Add Item')  + '" />"'
+    );
+    var cancelbtn = $(
+        '<input type="button" value="Cancel" />'
+    );
+    div.append(
+        widget.toHTML(name, value, raw, field, widget_options)
+    );
+
+    /* Register event handlers */
     okbtn.click(function () {
         $.modal.close();
     });
@@ -87,22 +120,36 @@ exports.modalDialog = function (options, field, path,
         return false;
     });
 
-    /* Markup */
-    var okbtn = $(
-        '<input type="button" value="' + h(action)  + '" />"'
-    );
-    var cancelbtn = $(
-        '<input type="button" value="Cancel" />'
-    );
-    div.append(
-        widget.toHTML(field, path, value, raw, errors, offset)
-    );
     div.append(okbtn);
     div.append(cancelbtn);
 
     /* Launch */
     div.modal();
-    utils.resizeModal(div);
+
+    /* Initialize widget */
+    widget.clientInit(
+        field, path, value, raw, errors, widget_options
+    );
 };
+
+/**
+ * Resizes a simplemodal control to match the dimensions of the
+ * specified div.
+ *
+ * @name resizeModal(div)
+ * @param {Element} The element from which to read width/height.
+ * @api public
+ */
+
+exports.resizeModal = function (div) {
+    $('#simplemodal-container').css({height: 'none', width: 'none'});
+    $('#simplemodal-container').css({
+        height: (div.height() + 20) + 'px',
+        width: (div.width() + 40) + 'px'
+    });
+    $.modal.setPosition();
+};
+
+
 
 

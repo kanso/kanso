@@ -437,26 +437,6 @@ exports.override = function (a, b) {
 };
 
 /**
- * Resizes a simplemodal control to match the dimensions of the
- * specified div.
- *
- * @name resizeModal(div)
- * @param {Element} The element from which to read width/height.
- * @api public
- */
-
-exports.resizeModal = function (div) {
-    $('#simplemodal-container').css({height: 'none', width: 'none'});
-    $('#simplemodal-container').css({
-        height: (div.height() + 20) + 'px',
-        width: (div.width() + 40) + 'px'
-    });
-    $.modal.setPosition();
-};
-
-
-
-/**
  * Returns a function that executes {closure} in the context of {context}.
  * Use this function if you'd like to preserve the current context
  * across callbacks, event handlers, and other cases where the value of

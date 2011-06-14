@@ -1,3 +1,15 @@
+/**
+ * Input sanitization, escaping, and construction functions
+ * covering security-sensitive areas.
+ *
+ * @module
+ */
+
+/**
+ * Module dependencies
+ */
+
+var _ = require('./underscore')._;
 
 
 /**
@@ -86,8 +98,16 @@ exports.generateDomIdentifier = exports.id = function (/* ... */)
 
     for (var i = 0, len = arguments.length; i < len; ++i) {
         if (arguments[i] != undefined) {
-            var arg = (arguments[i] + '')
-            rv.push(arg.replace(/[^A-Za-z0-9_]+/, '_'));
+            var arg = arguments[i];
+            if (_.isArray(arg)) {
+                /* Avoid recursion; limit to one level deep */
+                for (var j = 0, lenj = arguments.length; j < lenj; ++j) {
+                    if (arg[j] != undefined) {
+                        rv.concat(arg[j])
+                    }
+                }
+            }
+            rv.push((arg + '').replace(/[^A-Za-z0-9_]+/, '_'));
         }
     }
 
@@ -116,8 +136,16 @@ exports.generateDomName = exports.name = function (/* ... */)
 
     for (var i = 0, len = arguments.length; i < len; ++i) {
         if (arguments[i] != undefined) {
-            var arg = (arguments[i] + '')
-            rv.push(arg.replace(/[\'\"]+/, '_'))
+            var arg = arguments[i];
+            if (_.isArray(arg)) {
+                /* Avoid recursion; limit to one level deep */
+                for (var j = 0, lenj = arguments.length; j < lenj; ++j) {
+                    if (arg[j] != undefined) {
+                        rv.concat(arg[j] + '')
+                    }
+                }
+            }
+            rv.push((arg + '').replace(/[\'\"]+/, '_'))
         }
     }
 

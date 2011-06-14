@@ -240,13 +240,13 @@ exports.table = function () {
         events.once('renderFinish', function () {
             if (field.widget.clientInit) {
                 field.widget.clientInit(
-                    field, path, value, raw, errors, null
+                    field, path, value, raw, errors, {}
                 );
             }
         });
 
         if (field.widget.type === 'hidden') {
-            return field.widget.toHTML(name, value, raw, field);
+            return field.widget.toHTML(name, value, raw, field, {});
         }
 
         return (
@@ -257,7 +257,7 @@ exports.table = function () {
                     exports.descriptionHTML(field) +
                 '</th>' +
                 '<td>' +
-                    field.widget.toHTML(name, value, raw, field) +
+                    field.widget.toHTML(name, value, raw, field, {}) +
                     exports.hintHTML(field) +
                 '</td>' +
                 '<td class="errors">' +
@@ -353,7 +353,7 @@ exports.div = function () {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         if (field.widget.type === 'hidden') {
-            return field.widget.toHTML(name, value, raw, field);
+            return field.widget.toHTML(name, value, raw, field, {});
         }
         return (
             '<div class="' +
@@ -367,7 +367,7 @@ exports.div = function () {
                 '</div>' +
                 '<div class="content">' +
                     '<div class="inner">' +
-                        field.widget.toHTML(name, value, raw, field) +
+                        field.widget.toHTML(name, value, raw, field, {}) +
                     '</div>' +
                     '<div class="hint">' +
                         exports.hintHTML(field) +
