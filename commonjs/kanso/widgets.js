@@ -295,22 +295,24 @@ exports.embedList = function (options) {
 
     w.sortable = options.sortable;
     w.singleton = options.singleton;
-    w.widget = (options.widget || exports.defaultEmbedded());
     w.actions = actions.parse(options.actions || {});
+    w.widget = (options.widget || exports.defaultEmbedded());
 
     w.toHTML = function (name, value, raw, field) {
         this.cacheInit();
+        this.field = field;
         var id = this._id(name, 'list');
 
         var html = (
             '<div class="embedlist" rel="' +
-                h(field.type.name) + '" id="' + h(id) + '">'
+                h(this.field.type.name) + '" id="' + h(id) + '">'
         );
+
         value = (value instanceof Array ? value : []);
         html += '<div class="items" rel="' + h(name) + '">';
 
         for (var i = 0, len = value.length; i < len; ++i) { 
-            html += this.htmlForListItem(field, name, {
+            html += this.htmlForListItem(name, {
                 offset: (this.singleton ? null : i),
                 name: name, value: value[i], raw: raw,
             });
@@ -331,21 +333,23 @@ exports.embedList = function (options) {
 
     w.clientInit = function(field, path, value, raw, errors, offset) {
         this.cacheInit();
-        var list_elt = this.discoverListElement(path);
-        var item_elts = list_elt.closestChild('.items').children('.item');
+        this.field = field;
 
+        var item_elts = (
+            this.discoverListItemsElement(path).children('.item')
+        );
         for (var i = 0, len = item_elts.length; i < len; ++i) {
-            this.bindEventsForListItem(field, path, item_elts[i]);
+            this.bindEventsForListItem(path, item_elts[i]);
 
             if (this.widget.clientInit) {
                 this.widget.clientInit(
-                    field, path, value[i], value[i], [], i
+                    this.field, path, value[i], value[i], [], i
                 );
             }
         }
 
         this.renumberList(path);
-        this.bindEventsForList(field, path);
+        this.bindEventsForList(path);
     };
 
     /** private: **/
@@ -358,7 +362,10 @@ exports.embedList = function (options) {
     };
 
     w._discoverListElement = function (path) {
-        var name = (path instanceof Array ? this._name(path) : path);
+        var name = (
+            path instanceof Array ?
+                this._name.apply(this, path) : path
+        );
         return $('#' + this._id(name, 'list'));
     };
 
@@ -386,26 +393,26 @@ exports.embedList = function (options) {
         return this.discoverListItems(path).length;
     },
 
-    w.bindEventsForList = function(field, path) {
+    w.bindEventsForList = function(path) {
         var list_elt = this.discoverListElement(path);
         var add_elt = $(list_elt).closestChild('.actions .add');
 
         add_elt.bind('click', utils.bindContext(this, function (ev) {
-            return this.handleAddButtonClick(ev, field, path);
+            return this.handleAddButtonClick(ev, this.field, path);
         }));
     };
 
-    w.bindEventsForListItem = function (field, path, item_elt) {
+    w.bindEventsForListItem = function (path, item_elt) {
         item_elt = $(item_elt);
         var edit_elt = item_elt.closestChild('.actions .edit');
         var delete_elt = item_elt.closestChild('.actions .delete');
 
         edit_elt.bind('click', utils.bindContext(this, function(ev) {
-            return this.handleEditButtonClick(ev, field, path);
+            return this.handleEditButtonClick(ev, this.field, path);
         }));
 
         delete_elt.bind('click', utils.bindContext(this, function(ev) {
-            return this.handleDeleteButtonClick(ev, field, path);
+            return this.handleDeleteButtonClick(ev, this.field, path);
         }));
 
         if (this.sortable) {
@@ -413,18 +420,18 @@ exports.embedList = function (options) {
             var down_elt = item_elt.closestChild('.actions .down');
 
             up_elt.bind('click', utils.bindContext(this, function(ev) {
-                return this.handleUpButtonClick(ev, field, path);
+                return this.handleUpButtonClick(ev, this.field, path);
             }));
 
             down_elt.bind('click', utils.bindContext(this, function(ev) {
-                return this.handleDownButtonClick(ev, field, path);
+                return this.handleDownButtonClick(ev, this.field, path);
             }));
         }
     };
 
     w.renumberList = function (path) {
-        var list_elt = this.discoverListElement(path);
-        var item_elts = list_elt.closestChild('.items').children('.item');
+        var item_elts =
+            this.discoverListItemsElement(path).children('.item');
 
         for (var i = 0, len = item_elts.length; i < len; ++i) {
             var item = $(item_elts[i]);
@@ -440,8 +447,8 @@ exports.embedList = function (options) {
         if (this.widget.updateName)
             this.widget.updateName(elt, path, offset);
 
-        var name = this._name(path);
-        var input_elt = $(elt).closestChild('input[name=' + name + ']');
+        var name = this._name.apply(this, path);
+        var input_elt = $(elt).closestChild('input.backing');
 
         offset = (this.singleton ? null : offset);
         input_elt.attr('id', this._id(name, offset));
@@ -478,7 +485,7 @@ exports.embedList = function (options) {
         }
     };
 
-    w.moveExistingItem = function (field, path, after_elt, item_elt) {
+    w.moveExistingItem = function (path, after_elt, item_elt) {
         if (after_elt) {
             $(after_elt).after(item_elt);
         } else {
@@ -486,54 +493,54 @@ exports.embedList = function (options) {
             items_elt.append(item_elt);
         }
         this.renumberList(path);
-        this.bindEventsForListItem(field, path, item_elt);
+        this.bindEventsForListItem(path, item_elt);
     };
 
-    w.insertNewItemAtEnd = function (field, path) {
+    w.insertNewItemAtEnd = function (path) {
         var list_elt = this.discoverListElement(path);
-        var item_elts = this.discoverListItemsElement(path).children('.item');
+
+        var item_elts =
+            this.discoverListItemsElement(path).children('.item');
+
         var last_elt = item_elts.last();
         return this.insertNewItem(
-            field, path, (this.singleton ? null : item_elts.length),
+            path, (this.singleton ? null : item_elts.length),
                 last_elt[0]
         );
     };
 
-    w.insertNewItem = function(field, path, offset, after_elt) {
+    w.insertNewItem = function(path, offset, after_elt) {
         var list_elt = this.discoverListElement(path);
         var list_type = this.discoverListType(path);
 
         db.newUUID(100, utils.bindContext(this, function (err, uuid) {
             var value = { type: list_type, _id: uuid };
 
-            var item_elt = $(this.htmlForListItem(field, path, {
-                name: path.join('.'),
+            var item_elt = $(this.htmlForListItem(path, {
+                name: this._name.apply(this, path),
                 offset: offset, value: value, raw: value
             }));
 
-            this.moveExistingItem(field, path, after_elt, item_elt);
+            this.moveExistingItem(path, after_elt, item_elt);
 
             if (this.widget.clientInit) {
                 this.widget.clientInit(
-                    field, path, value, value, [], offset
+                    this.field, path, value, value, [], offset
                 );
             }
         }))
     };
 
-    w.htmlForListItem = function(field, path, item) {
+    w.htmlForListItem = function(path, item) {
         var html = (
             '<div class="item">' +
                 '<div class="actions">' +
-                    (this.options.sortable ?
-                        this.htmlForDownButton() : '') +
-                    (this.options.sortable ?
-                        this.htmlForUpButton() : '') +
-                    this.htmlForEditButton() +
-                    this.htmlForDeleteButton() +
+                    (this.options.sortable ? this.htmlForDownButton() : '') +
+                    (this.options.sortable ? this.htmlForUpButton() : '') +
+                    this.htmlForEditButton() + this.htmlForDeleteButton() +
                 '</div>' +
                 this.widget.toHTML(
-                    item.name, item.value, item.raw, field, item.offset
+                    item.name, item.value, item.raw, this.field, item.offset
                 ) +
             '</div>'
         );
@@ -583,14 +590,14 @@ exports.embedList = function (options) {
     };
 
     w.handleAddButtonClick = function (ev, field, path) {
-        this.insertNewItemAtEnd(field, path);
+        this.insertNewItemAtEnd(path);
     };
 
     w.handleEditButtonClick = function (ev, field, path) {
-        var name = this._name(path);
+        var name = this._name.apply(this, path);
         var type_name = this.discoverListType(path);
         var item_elt = $(ev.target).closest('.item', this);
-        var input_elt = $(item_elt).closestChild('input[name=' + name + ']');
+        var input_elt = $(item_elt).closestChild('input.backing');
 
         console.log([
             field, path, input_elt.val()
@@ -701,7 +708,7 @@ exports.documentSelector = function (options) {
         return html;
     };
     w.clientInit = function(field, path, value, raw, errors, offset) {
-        var name = path.join('.');
+        var name = this._name(path);
         var container_elt = $('#' + this._id(name, offset)).parent();
         var hidden_elt = (
             container_elt.closestChild('input[type=hidden].backing')
