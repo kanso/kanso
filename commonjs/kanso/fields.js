@@ -140,14 +140,18 @@ Field.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, userCtx) {
         );
     }
     // on update
-    var fn = perms.update;
+    var fn;
     // on add
     if (newDoc && !oldDoc) {
         fn = perms.add;
     }
     // on remove
-    else if (newDoc._deleted) {
+    else if (!newDoc || newDoc._deleted) {
         fn = perms.remove;
+    }
+    // on update
+    else if (newVal !== oldVal) {
+        fn = perms.update;
     }
     if (fn) {
         errors = errors.concat(
@@ -476,8 +480,7 @@ EmbeddedList.prototype.authorize = function (nDoc, oDoc, nVal, oVal, user) {
         if (_.isFunction(perms)) {
             curr_errs = utils.getErrors(perms, args);
         }
-        // on update
-        var fn = perms.update;
+        var fn;
         // on add
         if (nd && !od) {
             fn = perms.add;
@@ -485,6 +488,10 @@ EmbeddedList.prototype.authorize = function (nDoc, oDoc, nVal, oVal, user) {
         // on remove
         else if (nd._deleted) {
             fn = perms.remove;
+        }
+        // on update
+        else if (JSON.stringify(nd) !== JSON.stringify(od)) {
+            fn = perms.update;
         }
         if (fn) {
             curr_errs = curr_errs.concat(utils.getErrors(fn, args));

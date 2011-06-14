@@ -339,6 +339,7 @@ exports.redirect = function (req, url) {
  * @api public
  */
 
+// TODO: is this unused now?
 exports.deepCopy = function (obj, limit) {
     // for handling circular references:
     var seen = [];   // store references to original objects
@@ -403,6 +404,7 @@ exports.deepCopy = function (obj, limit) {
  * @api public
  */
 
+// TODO: is this unused now?
 exports.override = function (a, b) {
     if (a instanceof Object && b instanceof Object) {
         for (var k in b) {

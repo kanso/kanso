@@ -11,6 +11,7 @@
     <li><a href="#rendering_pages">Rendering pages</a></li>
     <li><a href="#users_and_permissions">Users and permissions</a></li>
     <li><a href="#embedded_types">Embedded types</a></li>
+    <li><a href="#adding_forms">Adding forms</a></li>
     <li><a href="#going_it_alone">Going it alone</a></li>
 </ul>
 
@@ -134,8 +135,8 @@ Let's create a type for describing blog posts. Add the following to
 <code>lib/types.js</code>.
 
 <pre><code class="javascript">var Type = require('kanso/types').Type,
-fields = require('kanso/fields'),
-widgets = require('kanso/widgets');
+    fields = require('kanso/fields'),
+    widgets = require('kanso/widgets');
 
 
 exports.blogpost = new Type('blogpost', {
@@ -361,7 +362,8 @@ Edit <code>lib/rewrites.js</code> to look like the following:
 
 <pre><code class="javascript">module.exports = [
     {from: '/static/*', to: 'static/*'},
-    {from: '/', to: '_list/homepage/blogposts_by_created'}
+    {from: '/', to: '_list/homepage/blogposts_by_created'},
+    {from: '*', to: '_show/not_found'}
 ];</code></pre>
 
 This uses our new list function in combination with the view query we created
@@ -405,7 +407,8 @@ And update the rewrite rules:
 <pre><code class="javascript">module.exports = [
     {from: '/static/*', to: 'static/*'},
     {from: '/', to: '_list/homepage/blogposts_by_created'},
-    {from: '/:id', to: '_show/blogpost/:id'}
+    {from: '/:id', to: '_show/blogpost/:id'},
+    {from: '*', to: '_show/not_found'}
 ];</code></pre>
 
 __Push the app__ and try clicking the blog post link now.
@@ -446,15 +449,15 @@ this is that our authentication system is already set-up and ready to go!
 
 CouchDB authorizes changes to a document using the
 <a href="http://guide.couchdb.org/draft/validation.html">validate\_doc\_update</a>
-function defined in your app. Of course, Kanso also supports this system as
-the underlying way to authorize changes. However, this method is quite
-low-level, simply accepting a new document, an old document and throwing
-an exception if the changes should be denied.
+function defined in your app. This function accepts the new document,
+the previous version of the document (if available), and the user's details as
+arguments and throws an Error if the update should be rejected.
 
-The simplicity of this approach is both its attraction and its downfall. With
-complex applications comprising of many types, each with it's own
-validation and authorization requirements, your validate\_doc\_update function
-quickly becomes unwieldy.
+Kanso also supports this system as the underlying way to authorize
+changes. However, this method is quite low-level. The simplicity of this approach
+is both its attraction and its downfall. With complex applications comprising of
+many types, each with it's own validation and authorization requirements, your
+validate\_doc\_update function quickly becomes unwieldy.
 
 Kanso allows you to mix-and-match, by providing powerful tools
 on a type or even field-level, while still
@@ -475,12 +478,15 @@ module.exports = function (newDoc, oldDoc, userCtx) {
     types.validate_doc_update(app_types, newDoc, oldDoc, userCtx);
 };</code></pre>
 
+If you also want to add permissions directly into this validate\_doc\_update
+function, you can do that too.
+
 
 ### End of the admin-party
 
 By default, CouchDB has no users and everyone has the special "\_admin" role.
-This makes playing around with CouchDB (and Kanso!) easy when you first
-install but obviously isn't very secure. If you haven't done so already,
+This makes playing around with CouchDB (and Kanso) easy when you first
+install, but obviously isn't very secure. If you haven't done so already,
 put an end to the
 [admin party](http://guide.couchdb.org/draft/security.html#party)
 by visiting the [Futon admin interface](http://localhost:5984/_utils/)
@@ -496,9 +502,9 @@ blogpost type. To do this we simply update our type definition to include a
 permissions section:
 
 <pre><code class="javascript">var Type = require('kanso/types').Type,
-fields = require('kanso/fields'),
-widgets = require('kanso/widgets'),
-permissions = require('kanso/permissions');
+    fields = require('kanso/fields'),
+    widgets = require('kanso/widgets'),
+    permissions = require('kanso/permissions');
 
 
 exports.blogpost = new Type('blogpost', {
@@ -517,10 +523,8 @@ exports.blogpost = new Type('blogpost', {
 });</code></pre>
 
 __Push the app__ (you may now be prompted for a username and
-password), if you then __logout__ and go to the blogposts page
-in the admin app
-<a href="http://localhost:5984/myblog/_design/admin/_rewrite/myblog/types/blogpost">http://localhost:5984/myblog/\_design/admin/\_rewrite/myblog/types/blogpost</a>
-then try to delete a blogpost, you should see the following:
+password), if you then __logout__ and go to the [blogposts page](http://localhost:5984/myblog/_design/admin/_rewrite/myblog/types/blogpost)
+in the admin app. When you try to delete a blogpost, you should see the following:
 
 <img src="images/users_and_permissions1.png" alt="admin app - role required" />
 
@@ -608,20 +612,47 @@ to include the following comments field:
 <pre><code type="javascript">exports.blogpost = new Type('blogpost', {
     permissions: {
         add:    permissions.hasRole('_admin'),
-        update: permissions.hasRole('_admin'),
+        update: permissions.loggedIn(),
         remove: permissions.hasRole('_admin')
     },
     fields: {
         created: fields.timestamp(),
-        title: fields.string(),
+        title: fields.string({
+            permissions: {
+                update: permissions.hasRole('_admin')
+            }
+        }),
         text: fields.string({
-            widget: widgets.textarea({cols: 40, rows: 10})
+            widget: widgets.textarea({cols: 40, rows: 10}),
+            permissions: {
+                update: permissions.hasRole('_admin')
+            }
         }),
         comments: fields.embedList({
-            type: exports.comment
+            type: exports.comment,
+            required: false
         })
     }
 });</code></pre>
+
+You'll notice we've changed the permissions a bit. Previously the type had add,
+update and remove permissions at the top-level which all checked for the '\_admin'
+role. That meant you couldn't create, delete or make any changes to a blogpost
+without being a CouchDB admin.
+
+Since we're embedding comments within the blogpost document, we need to give update
+access to any logged-in user, so they can add comments directly into it. However,
+we still don't want them to change the title or text of the blogpost, so we've
+added field-level permissions to protect those.
+
+The <code>embedList</code> field will use the permissions of the comment Type
+definition, meaning any logged-in user can add a comment, but you can only edit or
+delete comments you created.
+
+This is an example of the flexibility of the Kanso Types and permissions system.
+De-normalizing your data often means you'll need some fine-grained permissions
+to protect specific parts of a document. Because Kanso was written with CouchDB in
+mind, we can design specifically for these kinds of problems.
 
 __Push the app__, and visit the admin page for adding blogposts:
 <a href="http://localhost:5984/myblog/_design/admin/_rewrite/myblog/types/blogpost/add">http://localhost:5984/myblog/\_design/admin/\_rewrite/myblog/types/blogpost/add</a>
@@ -671,6 +702,175 @@ Clicking on it should show it using the new template, complete with the
 comments you added earlier:
 
 <img src="images/embedded_types5.png" alt="showing blog post with comments" />
+
+
+<h2 id="adding_forms">Adding forms</h2>
+
+So far, we've been using the Kanso admin app to add documents, but let's
+assume we want to write our own interface and forms. Kanso provides some useful
+form-rendering code (also used by the admin app) which allows you to quickly
+and easily create forms based on Type definitions.
+
+First, we're going to create a form for adding new blog posts.
+Add the following to the end of <code>templates/blogposts.html</code>:
+
+    <p><a href="{baseURL}/add">Add new</a></p>
+
+Then update <code>lib/rewrites.js</code> to look like this:
+
+<pre><code class="javascript">module.exports = [
+    {from: '/static/*', to: 'static/*'},
+    {from: '/', to: '_list/homepage/blogposts_by_created'},
+    {from: '/add', to: '_show/add_blogpost'},
+    {from: '/:id', to: '_show/blogpost/:id'},
+    {from: '*', to: '_show/not_found'}
+];</code></pre>
+
+Let's create a new show function to display the form. Add the following to 
+<code>lib/shows.js</code>:
+
+<pre><code class="javascript">exports.add_blogpost = function (doc, req) {
+    // render the markup for a blog post form
+    var content = templates.render('blogpost_form.html', req, {
+        form_title: 'Add new blogpost'
+    });
+
+    return {title: 'Add new blogpost', content: content};
+};</code></pre>
+
+And add a new template for the page at <code>templates/blogpost_form.html</code>.
+
+    <h1>{form_title}</h1>
+
+__Push the app__, and visit it's home page:
+<a href="http://localhost:5984/myblog/_design/myblog/_rewrite/">http://localhost:5984/myblog/\_design/myblog/\_rewrite/</a>
+
+<img src="images/adding_forms1.png" alt="Check the add new link" />
+
+Clicking 'Add new' should display the following page:
+
+<img src="images/adding_forms2.png" alt="Check the add new rewrite" />
+
+So far so good. Let's add a form to the page. In <code>lib/shows.js</code>
+add the following new modules to the requires at the top:
+
+<pre><code class="javascript">var templates = require('kanso/templates'),
+    forms = require('kanso/forms'),
+    types = require('./types');</code></pre>
+
+Then update <code>exports.add_blogpost</code> to look like this:
+
+<pre><code class="javascript">exports.add_blogpost = function (doc, req) {
+    var form = new forms.Form(types.blogpost, null, {
+        exclude: ['created', 'comments']
+    });
+
+    // render the markup for a blog post form
+    var content = templates.render('blogpost_form.html', req, {
+        form_title: 'Add new blogpost',
+        form: form.toHTML(req)
+    });
+
+    return {title: 'Add new blogpost', content: content};
+};</code></pre>
+
+You'll notice we're using the new <code>forms</code> module to construct a
+form object using the blogpost Type definition we created earlier. We are
+excluding the created and comments fields, and just displaying the fields we need.
+
+Next we render the form as HTML using <code>form.toHTML(req)</code>, and pass it
+to the template. In <code>templates/blogpost_form.html</code> we need to add the
+following:
+
+    <h1>{form_title}</h1>
+
+    <form method="POST" action="">
+      <table>
+        {form|s}
+      </table>
+      <input type="submit" value="Add" />
+    </form>
+
+__Push the app__, and visit the add blogpost page:
+<a href="http://localhost:5984/myblog/_design/myblog/_rewrite/add">http://localhost:5984/myblog/\_design/myblog/\_rewrite/add</a>
+
+<img src="images/adding_forms3.png" alt="Viewing the new form" />
+
+Great, but if you try submitting the form, nothing happens! Thats because we need
+to add an <a href="http://wiki.apache.org/couchdb/Document_Update_Handlers">update function</a> for saving changes to a document.
+
+<h3>Update functions</h3>
+
+Add the following to <code>lib/updates.js</code>:
+
+<pre><code class="javascript">var templates = require('kanso/templates'),
+    forms = require('kanso/forms'),
+    utils = require('kanso/utils'),
+    types = require('./types');
+
+
+exports.add_blogpost = function (doc, req) {
+    var form = new forms.Form(types.blogpost, null, {
+        exclude: ['created', 'comments']
+    });
+
+    // parse the request data and check validation and permission functions
+    form.validate(req);
+
+    if (form.isValid()) {
+        // the form is valid, save the document and redirect to homepage
+        return [form.values, utils.redirect(req, '/')];
+    }
+    else {
+        // the form is not valid, so render it again with error messages
+        var content = templates.render('blogpost_form.html', req, {
+            form_title: 'Add new blogpost',
+            form: form.toHTML(req)
+        });
+        // return null as the first argument so the document isn't saved
+        return [null, {content: content, title: 'Add new blogpost'}];
+    }
+};</code></pre>
+
+Update functions expect an array as the return value, the first argument is the
+document to create or update, the second argument is the response to send to the
+client. This function should look similar to the show function we created for
+displaying the add blog post form, only with the addition of form validation.
+
+After creating the form, we call <code>form.validate</code> with the request
+object. This will populate the form with the request data and any relevant error
+messages if the data is invalid.
+
+We then check the validity of the form and either reject or accept the new document.
+Note, that this is mostly to provide a nice response to the user and is not
+required for security. Ultimately, an unacceptable document would be rejected by
+validate\_doc\_update, even if this function were to accept it.
+
+Next, we need to hook this update function up to a URL using rewrites. Edit
+<code>lib/rewrites.js</code> to look like the following:
+
+<pre><code class="javascript">module.exports = [
+    {from: '/static/*', to: 'static/*'},
+    {from: '/', to: '_list/homepage/blogposts_by_created'},
+    {from: '/add', to: '_update/add_blogpost', method: 'POST'},
+    {from: '/add', to: '_show/add_blogpost'},
+    {from: '/:id', to: '_show/blogpost/:id'},
+    {from: '*', to: '_show/not_found'}
+];</code></pre>
+
+We've added a new rewrite for <code>/add</code>, only this time we specify a HTTP
+method to match. This means when we do <code>GET /add</code> we'll run the show
+function, and when we do <code>POST /add</code> we'll run the update function.
+
+Let's try submitting the form now. Be sure to login as an admin user using either
+futon or the Kanso admin app (on the same hostname you're using with the app, no
+good logging in on localhost if your accessing the app on 127.0.0.1).
+
+__Push the app__, and visit the add blogpost page:
+<a href="http://localhost:5984/myblog/_design/myblog/_rewrite/add">http://localhost:5984/myblog/\_design/myblog/\_rewrite/add</a>
+
+After submitting the form you should be redirected to the list of blogposts and
+you should see your new blogpost added to the end.
 
 
 <h2 id="going_it_alone">Going it alone</h2>

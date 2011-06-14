@@ -515,12 +515,10 @@ exports['EmbeddedList.authorize - type permissions as a function'] = function (t
 
     errs = t2.authorize(newDoc, oldDoc, 'user');
     test.same(calls, [
-        [newDoc.embedded[0], oldDoc.embedded[0], null, null, 'user'],
         [{_deleted: true}, oldDoc.embedded[1], null, null, 'user']
     ]);
-    test.equal(errs.length, 2);
-    test.same(errs[0].field, ['embedded', '0']);
-    test.same(errs[1].field, ['embedded', '1']);
+    test.equal(errs.length, 1);
+    test.same(errs[0].field, ['embedded', '1']);
 
     // One add
     calls = [];
@@ -534,12 +532,10 @@ exports['EmbeddedList.authorize - type permissions as a function'] = function (t
 
     errs = t2.authorize(newDoc, oldDoc, 'user');
     test.same(calls, [
-        [newDoc.embedded[0], oldDoc.embedded[0], null, null, 'user'],
         [newDoc.embedded[1], oldDoc.embedded[1], null, null, 'user']
     ]);
-    test.equal(errs.length, 2);
-    test.same(errs[0].field, ['embedded', '0']);
-    test.same(errs[1].field, ['embedded', '1']);
+    test.equal(errs.length, 1);
+    test.same(errs[0].field, ['embedded', '1']);
 
     test.done();
 };
@@ -598,7 +594,7 @@ exports['EmbeddedList.authorize - type permissions as an object'] = function (te
     ]};
 
     errs = t2.authorize(newDoc, oldDoc, 'user');
-    test.same(calls, ['update', 'remove']);
+    test.same(calls, ['remove']);
 
     // One add
     calls = [];
@@ -611,7 +607,7 @@ exports['EmbeddedList.authorize - type permissions as an object'] = function (te
     ]};
 
     errs = t2.authorize(newDoc, oldDoc, 'user');
-    test.same(calls, ['update', 'add']);
+    test.same(calls, ['add']);
 
     test.done();
 };

@@ -519,7 +519,7 @@ exports['Form.validate - options.exclude'] = function (test) {
     // a value for 'bar', validation should fail.
     test.strictEqual(f.isValid(), false);
 
-    f = new forms.Form(fieldset, null, { exclude: ['bar', 'baz'] });
+    f = new forms.Form(fieldset, null, { exclude: ['baz'] });
     f.validate({form: {foo: 'foo', bar: 123}});
     test.strictEqual(f.isValid(), true);
 
@@ -535,7 +535,7 @@ exports['Form.validate - options.exclude'] = function (test) {
         this.end = function () {};
     }
     f.toHTML({}, TestRenderer);
-    test.same(calls, ['foo']);
+    test.same(calls, ['foo', 'bar']);
 
     // with initial values
     f = new forms.Form(fieldset, {bar: 123}, { exclude: ['bar', 'baz'] });
@@ -561,6 +561,44 @@ exports['Form.validate - options.exclude'] = function (test) {
     f.validate({form: {two: 'asdf'}});
     test.strictEqual(f.isValid(), true);
     test.same(f.values, {one: 'default value', two: 'asdf'});
+
+    test.done();
+};
+
+exports['Form.validate - don\'t merge embedded'] = function (test) {
+    var Type = types.Type;
+    var t = new Type('t1', {
+        fields: {
+            name: fields.string({required: false})
+        }
+    });
+
+    var fieldset = {
+        t1_list: fields.embedList({type: t, required: false}),
+        t1_single: fields.embed({type: t, required: false})
+    };
+    var f, olddoc;
+
+    olddoc = {t1_single: {_id: 'id1', name: 'test'}, t1_list: []};
+    f = new forms.Form(fieldset, olddoc);
+    f.validate({form: {t1_single: '{"_id": "id1", "foo":"bar"}'}});
+
+    // check that the t1_single wasn't merged
+    test.same(f.values.t1_single, {_id: 'id1', foo: 'bar'});
+
+
+    olddoc = {t1_list: [
+        {_id: 'id1', name: 'test'},
+        {_id: 'id2', name: 'test2'}
+    ]};
+    f = new forms.Form(fieldset, olddoc);
+    f.validate({form: {
+        't1_list.0': '{"_id": "id1", "foo":"bar"}'
+    }});
+
+    // check that the t1_single wasn't merged
+    test.same(f.values.t1_list, [{_id: 'id1', foo: 'bar'}]);
+
 
     test.done();
 };
