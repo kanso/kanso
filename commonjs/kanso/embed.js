@@ -12,39 +12,6 @@ var core = require('kanso/core'),
 var h = sanitize.escapeHtml;
 
 
-/**
- * Convert an object containing several [ module, callback ] or
- * { module: x, callback: y } items in to an object containing
- * several native javascript functions, by using require.
- *
- * @param actions An object, containing items describing a
- *          function that can be obtained via require().
- */
-exports.parseActionCallbacks = function(actions) {
-    var rv = {};
-    for (var k in actions) {
-        var module, callback, action = actions[k];
-        if (action instanceof Array) {
-            module = action[0];
-            callback = action[1];
-        } else if (action instanceof Object) {
-            module = action.module;
-            callback = action.callback;
-        } else if (action instanceof Function) {
-            rv[k] = action;
-            continue;
-        } else {
-            throw new Error(
-                'Action `' + k + '` is of type `' + typeof(action) + '`, ' +
-                    "which this function doesn't know how to interpret"
-            );
-        }
-        /* Resolve function description to actual function */
-        rv[k] = require(module)[callback];
-    }
-    return rv;
-}
-
 
 /**
  * getModules
@@ -91,8 +58,11 @@ exports.adminShowModal = function (div, field_td, row,
  * editing is completed, call addRow and pass along the JSON-encoded
  * form data.
  */
-exports.showModal = function (type, form, div, field_td, row,
+exports.showModal = function (type, div, field_td, row,
                               typename, val, rawval, field) {
+
+    var form = new forms.Form(type, val);
+
     if (rawval) {
         form.validate(rawval);
     }

@@ -12,7 +12,6 @@
 var db = require('./db'),
     render = require('./render'),
     sanitize = require('./sanitize'),
-    _ = require('./underscore')._,
     utils = require('./utils'),
     _ = require('./underscore')._;
 
@@ -124,6 +123,39 @@ Widget.prototype.toHTML = function (name, value, raw) {
     html += this._attrs(name);
     return html + ' />';
 };
+
+/**
+ * Convert an object containing several [ module, callback ] or
+ * { module: x, callback: y } items in to an object containing
+ * several native javascript functions, by using require.
+ *
+ * @param actions An object, containing items describing a
+ *          function that can be obtained via require().
+ */
+exports.parseActionCallbacks = function(actions) {
+    var rv = {};
+    for (var k in actions) {
+        var module, callback, action = actions[k];
+        if (_.isArray(action)) {
+            module = action[0];
+            callback = action[1];
+        } else if (_.isFunction(action)) {
+            rv[k] = action;
+            continue;
+        } else if (action instanceof Object) {
+            module = action.module;
+            callback = action.callback;
+        } else {
+            throw new Error(
+                'Action `' + k + '` is of type `' + typeof(action) + '`, ' +
+                    "which this function doesn't know how to interpret"
+            );
+        }
+        /* Resolve function description to actual function */
+        rv[k] = require(module)[callback];
+    }
+    return rv;
+}
 
 /**
  * Creates a new text input widget.
@@ -293,22 +325,25 @@ exports.computed = function (options) {
 exports.embedList = function (options) {
     var w = new Widget('embedList', options);
 
-    w.actions = options.actions;
+    w.sortable = options.sortable;
     w.singleton = options.singleton;
     w.widget = (options.widget || exports.defaultEmbedded());
+    w.actions = exports.parseActionCallbacks(options.actions || {});
 
     w.toHTML = function (name, value, raw, field) {
+
+        this.cacheInit();
         var id = this._id(name, 'list');
+
         var html = (
             '<div class="embedlist" rel="' +
                 h(field.type.name) + '" id="' + h(id) + '">'
         );
-
         value = (value instanceof Array ? value : []);
         html += '<div class="items" rel="' + h(name) + '">';
 
         for (var i = 0, len = value.length; i < len; ++i) { 
-            html += this.htmlForListItem(field, {
+            html += this.htmlForListItem(field, name, {
                 offset: (this.singleton ? null : i),
                 name: name, value: value[i], raw: raw,
             });
@@ -317,20 +352,19 @@ exports.embedList = function (options) {
                 '</div>' +
             '<div class="actions">'
         );
-        
         if (i == 0 || !this.singleton) {
             html += this.htmlForAddButton();
         }
-
         html += (
                 '</div>' +
             '</div>'
         );
-
         return html;
     };
 
     w.clientInit = function(field, path, value, raw, errors, offset) {
+        
+        this.cacheInit();
         var list_elt = this.discoverListElement(path);
         var item_elts = list_elt.closestChild('.items').children('.item');
 
@@ -343,32 +377,52 @@ exports.embedList = function (options) {
                 );
             }
         }
-        
+
+        this.renumberList(path);
         this.bindEventsForList(field, path);
     };
 
     /** private: **/
 
-    w.discoverListElement = function(list_name_or_path) {
-        var name = (
-            list_name_or_path instanceof Array ?
-                list_name_or_path.join('.') : list_name_or_path
-        );
+    w.cacheInit = function () {
+        this.discoverListElement = _.memoize(this._discoverListElement);
+        this.discoverListName = _.memoize(this._discoverListName);
+        this.discoverListType = _.memoize(this._discoverListType);
+        this.discoverListItemsElement = _.memoize(this._discoverListItemsElement);
+    };
+
+    w._discoverListElement = function (path) {
+        var name = (path instanceof Array ? path.join('.') : path);
         return $('#' + this._id(name, 'list'));
     };
 
-    w.discoverListName = function (list_elt) {
-        var actions_elt = $(list_elt).closestChild('.');
+    w._discoverListName = function (path) {
+        var list_elt = this.discoverListElement(path);
+        var actions_elt = $(list_elt).closestChild('.actions');
         return actions_elt.attr('rel');
     };
-
-    w.discoverListType = function (list_elt) {
+    
+    w._discoverListType = function (path) {
+        var list_elt = this.discoverListElement(path);
         return list_elt.attr('rel');
     };
 
+    w._discoverListItemsElement = function (path) {
+        var list_elt = this.discoverListElement(path);
+        return list_elt.closestChild('.items');
+    };
+
+    w.discoverListItems = function (path) {
+        return this.discoverListItemsElement(path).children('.item');
+    },
+
+    w.countListItems = function (path) {
+        return this.discoverListItems(path).length;
+    },
+
     w.bindEventsForList = function(field, path) {
         var list_elt = this.discoverListElement(path);
-        var add_elt = $(list_elt).closestChild('.actions > .add');
+        var add_elt = $(list_elt).closestChild('.actions .add');
 
         add_elt.bind('click', utils.bindContext(this, function (ev) {
             return this.handleAddButtonClick(ev, field, path);
@@ -376,8 +430,9 @@ exports.embedList = function (options) {
     };
 
     w.bindEventsForListItem = function (field, path, item_elt) {
-        var edit_elt = $(item_elt).closestChild('.actions > .edit');
-        var delete_elt = $(item_elt).closestChild('.actions > .delete');
+        item_elt = $(item_elt);
+        var edit_elt = item_elt.closestChild('.actions .edit');
+        var delete_elt = item_elt.closestChild('.actions .delete');
 
         edit_elt.bind('click', utils.bindContext(this, function(ev) {
             return this.handleEditButtonClick(ev, field, path);
@@ -386,67 +441,102 @@ exports.embedList = function (options) {
         delete_elt.bind('click', utils.bindContext(this, function(ev) {
             return this.handleDeleteButtonClick(ev, field, path);
         }));
+
+        if (this.sortable) {
+            /* Items show/hide logic is implemented in renumberItem */
+            var up_elt = item_elt.closestChild('.actions .up');
+            var down_elt = item_elt.closestChild('.actions .down');
+
+            up_elt.bind('click', utils.bindContext(this, function(ev) {
+                return this.handleUpButtonClick(ev, field, path);
+            }));
+
+            down_elt.bind('click', utils.bindContext(this, function(ev) {
+                return this.handleDownButtonClick(ev, field, path);
+            }));
+        }
     };
 
     w.renumberList = function (path) {
         var list_elt = this.discoverListElement(path);
+        var add_elt = list_elt.closestChild('.actions .add');
         var item_elts = list_elt.closestChild('.items').children('.item');
 
         for (var i = 0, len = item_elts.length; i < len; ++i) {
-            this.renumberItem(item_elts[i], path, i);
-        };
+            var item = $(item_elts[i]);
+            this.renumberItem(item, path, i);
 
-        var add_elt = list_elt.closestChild('.actions > .add');
+            if (this.sortable) {
+                var up_elt = item.closestChild('.actions .up');
+                var down_elt = item.closestChild('.actions .down');
+                if (i <= 0) {
+                    up_elt.attr('disabled', 'disabled');
+                } else {
+                    up_elt.removeAttr('disabled');
+                }
+                if (i + 1 >= len) {
+                    down_elt.attr('disabled', 'disabled');
+                } else {
+                    down_elt.removeAttr('disabled');
+                }
+            }
+
+        };
 
         if (this.singleton && i > 0) {
             add_elt.hide();
         } else {
             add_elt.show();
         }
-
         return i;
     };
 
     w.renumberItem = function (elt, path, offset) {
+        if (this.widget.updateName)
+            this.widget.updateName(elt, path, offset);
+
         var input_elt = $(elt).closestChild('input[type=hidden]');
         var name = path.join('.');
-        input_elt.attr(
-            'name', this._name(name, (this.singleton ? null : offset))
-        );
-    }
 
-    w.insertItemAtEnd = function (field, path) {
+        offset = (this.singleton ? null : offset);
+        input_elt.attr('id', this._id(name, offset));
+        input_elt.attr('name', this._name(name, offset));
+    };
+
+    w.moveExistingItem = function (field, path, after_elt, item_elt) {
+        if (after_elt) {
+            $(after_elt).after(item_elt);
+        } else {
+            var items_elt = this.discoverListItemsElement(path);
+            items_elt.append(item_elt);
+        }
+        this.renumberList(path);
+        this.bindEventsForListItem(field, path, item_elt);
+    };
+
+    w.insertNewItemAtEnd = function (field, path) {
         var list_elt = this.discoverListElement(path);
-        var item_elts =  list_elt.closestChild('.items').children('.item');
+        var item_elts = this.discoverListItemsElement(path).children('.item');
         var last_elt = item_elts.last();
-        this.insertItem(
-            field, path,
-            (this.singleton ? null : item_elts.length),
-            last_elt[0]
+        return this.insertNewItem(
+            field, path, (this.singleton ? null : item_elts.length),
+                last_elt[0]
         );
     };
 
-    w.insertItem = function(field, path, offset, after_elt) {
+    w.insertNewItem = function(field, path, offset, after_elt) {
         var list_elt = this.discoverListElement(path);
-        var items_elt = list_elt.closestChild('.items');
-        var list_type = this.discoverListType(list_elt);
+        var list_type = this.discoverListType(path);
 
         db.newUUID(100, utils.bindContext(this, function (err, uuid) {
             var value = { type: list_type, _id: uuid };
 
-            var item_elt = $(this.htmlForListItem(field, {
+            var item_elt = $(this.htmlForListItem(field, path, {
                 name: path.join('.'),
                 offset: offset, value: value, raw: value
             }));
 
-            if (after_elt) {
-                $(after_elt).after(item_elt);
-            } else {
-                items_elt.append(item_elt);
-            }
-
-            this.renumberList(path);
-            this.bindEventsForListItem(field, path, item_elt);
+            this.moveExistingItem(field, path, after_elt, item_elt);
 
             if (this.widget.clientInit) {
                 this.widget.clientInit(
@@ -456,10 +546,14 @@ exports.embedList = function (options) {
         }))
     };
 
-    w.htmlForListItem = function(field, item) {
+    w.htmlForListItem = function(field, path, item) {
         var html = (
             '<div class="item">' +
                 '<div class="actions">' +
+                    (this.options.sortable ?
+                        this.htmlForDownButton() : '') +
+                    (this.options.sortable ?
+                        this.htmlForUpButton() : '') +
                     this.htmlForEditButton() +
                     this.htmlForDeleteButton() +
                 '</div>' +
@@ -473,33 +567,55 @@ exports.embedList = function (options) {
 
     w.htmlForAddButton = function() {
         return (
-            '<input type="button" class="add" value="Add" />'
+            '<input type="button" class="add action" value="Add" />'
         );
     };
 
     w.htmlForEditButton = function() {
         return (
-            '<input type="button" class="edit" value="Edit" />'
+            '<input type="button" class="edit action" value="Edit" />'
         );
     };
 
     w.htmlForDeleteButton = function() {
         return (
-            '<input type="button" class="delete" value="Delete" />'
+            '<input type="button" class="delete action" value="Delete" />'
         );
     };
 
+    w.htmlForUpButton = function() {
+        return (
+            '<input type="button" class="up action" value="&uarr;" />'
+        );
+    };
+
+    w.htmlForDownButton = function() {
+        return (
+            '<input type="button" class="down action" value="&darr;" />'
+        );
+    };
+
+    w.handleUpButtonClick = function (ev, field, path) {
+        var item_elt = $(ev.target).closest('.item', this);
+        item_elt.insertBefore(item_elt.prev('.item'));
+        this.renumberList(path);
+    };
+
+    w.handleDownButtonClick = function (ev, field, path) {
+        var item_elt = $(ev.target).closest('.item', this);
+        item_elt.insertAfter(item_elt.next('.item'));
+        this.renumberList(path);
+    };
+
     w.handleAddButtonClick = function (ev, field, path) {
-        this.insertItemAtEnd(field, path);
+        this.insertNewItemAtEnd(field, path);
     };
 
     w.handleEditButtonClick = function (ev, field, path) {
     };
 
     w.handleDeleteButtonClick = function (ev, field, path) {
-        var list_elt = this.discoverListElement(path);
         var item_elt = $(ev.target).closest('.item', this);
-
         item_elt.remove();
         this.renumberList(path);
     };
@@ -512,7 +628,7 @@ exports.embedList = function (options) {
  * This is automatically added to embed and embedList field types
  * that don't specify a widget.
  *
- * @name embedded([options])
+ * @name defaultEmbedded([options])
  * @param options
  * @returns {Widget Object}
  * @api public
@@ -528,10 +644,35 @@ exports.defaultEmbedded = function (options) {
             display_name = field.type.display_name(value);
         }
         var html = (
-            '<div class="embed">' + 
+            '<div class="embedded embed">' + 
                 '<input type="hidden" value="' + fval + '" name="' +
                     h(this._name(name, offset)) + '" />' +
                 '<span class="value">' + h(display_name) + '</span>' +
+            '</div>'
+        );
+        return html;
+    };
+    return w;
+};
+
+/**
+ * Creates a new instance of an embedded *form* for the specified type.
+ * This is the basis for the presentation of complex data types in Kanso,
+ * and is used within an embedList to add and/or edit items.
+ *
+ * @name embedForm([options])
+ * @param options
+ * @returns {Widget Object}
+ * @api public
+ */
+
+exports.embedForm = function (options) {
+    var w = new Widget('embedForm', options);
+    w.toHTML = function (name, value, raw, field, offset) {
+        var type = this.options.type;
+        var html = (
+            '<div class="embedded form">' +
+                form.toHTML() +
             '</div>'
         );
         return html;
