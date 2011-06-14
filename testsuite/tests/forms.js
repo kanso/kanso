@@ -519,7 +519,7 @@ exports['Form.validate - options.exclude'] = function (test) {
     // a value for 'bar', validation should fail.
     test.strictEqual(f.isValid(), false);
 
-    f = new forms.Form(fieldset, null, { exclude: ['bar', 'baz'] });
+    f = new forms.Form(fieldset, null, { exclude: ['baz'] });
     f.validate({form: {foo: 'foo', bar: 123}});
     test.strictEqual(f.isValid(), true);
 
@@ -535,7 +535,7 @@ exports['Form.validate - options.exclude'] = function (test) {
         this.end = function () {};
     }
     f.toHTML({}, TestRenderer);
-    test.same(calls, ['foo']);
+    test.same(calls, ['foo', 'bar']);
 
     // with initial values
     f = new forms.Form(fieldset, {bar: 123}, { exclude: ['bar', 'baz'] });

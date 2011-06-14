@@ -146,7 +146,7 @@ Field.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, userCtx) {
         fn = perms.add;
     }
     // on remove
-    else if (newDoc._deleted) {
+    else if (!newDoc || newDoc._deleted) {
         fn = perms.remove;
     }
     // on update

@@ -66,6 +66,67 @@ var Form = exports.Form = function Form(fields, doc, options) {
     }*/
 };
 
+
+/**
+ * Overrides values in doc_a with values in doc_b, only when a field is present
+ * for that value. This means properties not in fields (or in excluded fields)
+ * are retained, while properties which are covered by the fieldset are
+ * replaced.
+ *
+ * This is used when updating the form's values with a request when its been
+ * initiated with a previous document. You shouldn't normally need to call this
+ * directly.
+ *
+ * Returns the updated doc_a object.
+ *
+ * @name override(excludes, field_subset, fields, doc_a, doc_b, path)
+ * @param {Array | null} excludes
+ * @param {Array | null} field_subset
+ * @param {Object} Fields
+ * @param {Object} doc_a
+ * @param {Object} doc_b
+ * @param {Array} path
+ * @returns {Object}
+ * @api public
+ */
+
+exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path) {
+    var keys = _.keys(fields);
+
+    _.each(keys, function (k) {
+        var f_path = path.concat([k]);
+        var f = fields[k];
+        var b = doc_b[k];
+
+        if (excludes) {
+            if (_.indexOf(excludes, f_path.join('.')) !== -1) {
+                return;
+            }
+        }
+        if (field_subset) {
+            if (_.indexOf(field_subset, f_path.join('.')) === -1) {
+                return;
+            }
+        }
+
+        var cname = utils.constructorName(f);
+
+        if (cname === 'Field' ||
+            cname === 'Embedded' ||
+            cname === 'EmbeddedList') {
+            doc_a[k] = b;
+        }
+        else if (cname === 'Object') {
+            doc_a[k] = exports.override(
+                excludes, field_subset, f, doc_a, b, f_path
+            );
+        } else {
+            throw new Error('The field type `' + cname + '` is not supported.');
+        }
+    });
+    return doc_a;
+};
+
 /**
  * Parses a request and validates the result, binding values and errors to
  * the form instance.
@@ -82,10 +143,15 @@ Form.prototype.validate = function (req) {
     this.raw = req.form || {};
     var tree = exports.formValuesToTree(this.raw);
 
-    this.values = utils.override(
-        this.values || fieldset.createDefaults(this.fields, req.userCtx),
-        exports.parseRaw(this.fields, tree)
+    this.values = exports.override(
+        this.options.exclude,
+        this.options.fields,
+        this.fields,
+        this.values || fieldset.createDefaults(this.fields, req.userCtx) || {},
+        exports.parseRaw(this.fields, tree),
+        []
     );
+
     this.errors = fieldset.validate(
         this.fields, this.values, this.values, this.raw, [], false
     );
