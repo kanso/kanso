@@ -515,7 +515,6 @@ exports.embedList = function (_options) {
 
         db.newUUID(100, utils.bindContext(this, function (err, uuid) {
             var value = { type: list_type, _id: uuid };
-
             var item_elt = $(this.htmlForListItem(path, {
                 name: this._name(path),
                 offset: offset, value: value, raw: value
@@ -525,7 +524,9 @@ exports.embedList = function (_options) {
 
             if (this.widget.clientInit) {
                 this.widget.clientInit(
-                    this.field, path, value, value, [], offset
+                    this.field, path, value, value, [], {
+                        offset: offset
+                    }
                 );
             }
         }))
@@ -719,9 +720,9 @@ exports.documentSelector = function (_options) {
     };
     w.clientInit = function(field, path, value, raw, errors, options) {
 
-        var id = this._id(path, options.offset, options.path_extra);
+        var id = this._id(path, options.offset, options.extra_path);
         var container_elt = $('#' + id).parent();
-        console.log([ id, container_elt, path, options ]);
+
         var select_elt = container_elt.closestChild('.selector');
         var spinner_elt = container_elt.closestChild('.spinner');
         var options = (this.options || {});

@@ -88,29 +88,30 @@ exports.escapeXmlCharacterData = exports.cdata = function (s)
  * @api public
  */
 
-exports.generateDomIdentifier = exports.id = function (/* ... */)
-{
+exports.generateDomIdentifier = exports.id = function (/* ... */) {
     if (arguments.length <= 0) {
         return null;
     }
-
     var rv = [ 'id' ];
+    var esc = function (x) {
+        return ('' + x).replace(/[^A-Za-z0-9_]+/, '_');
+    };
 
     for (var i = 0, len = arguments.length; i < len; ++i) {
         if (arguments[i] != undefined) {
             var arg = arguments[i];
             if (_.isArray(arg)) {
                 /* Avoid recursion; limit to one level deep */
-                for (var j = 0, lenj = arguments.length; j < lenj; ++j) {
+                for (var j = 0, lenj = arg.length; j < lenj; ++j) {
                     if (arg[j] != undefined) {
-                        rv.concat(arg[j])
+                        rv.push(esc(arg[j]));
                     }
                 }
+            } else {
+                rv.push(esc(arg));
             }
-            rv.push((arg + '').replace(/[^A-Za-z0-9_]+/, '_'));
         }
     }
-
     return rv.join('_');
 };
 
@@ -126,29 +127,30 @@ exports.generateDomIdentifier = exports.id = function (/* ... */)
  * @api public
  */
 
-exports.generateDomName = exports.name = function (/* ... */)
-{
+exports.generateDomName = exports.name = function (/* ... */) {
     if (arguments.length <= 0) {
         return null;
     }
-
     var rv = [];
+    var esc = function (x) {
+        return ('' + x).replace(/[\'\"]+/, '_');
+    };
 
     for (var i = 0, len = arguments.length; i < len; ++i) {
         if (arguments[i] != undefined) {
             var arg = arguments[i];
             if (_.isArray(arg)) {
                 /* Avoid recursion; limit to one level deep */
-                for (var j = 0, lenj = arguments.length; j < lenj; ++j) {
+                for (var j = 0, lenj = arg.length; j < lenj; ++j) {
                     if (arg[j] != undefined) {
-                        rv.concat(arg[j] + '')
+                        rv.push(esc(arg[j]));
                     }
                 }
+            } else {
+                rv.push(esc(arg));
             }
-            rv.push((arg + '').replace(/[\'\"]+/, '_'))
         }
     }
-
     return rv.join('.');
 };
 
