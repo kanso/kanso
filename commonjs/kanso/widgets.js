@@ -10,6 +10,7 @@
  */
 
 var db = require('./db'),
+    actions = require('./actions'),
     render = require('./render'),
     sanitize = require('./sanitize'),
     utils = require('./utils'),
@@ -123,39 +124,6 @@ Widget.prototype.toHTML = function (name, value, raw) {
     html += this._attrs(name);
     return html + ' />';
 };
-
-/**
- * Convert an object containing several [ module, callback ] or
- * { module: x, callback: y } items in to an object containing
- * several native javascript functions, by using require.
- *
- * @param actions An object, containing items describing a
- *          function that can be obtained via require().
- */
-exports.parseActionCallbacks = function(actions) {
-    var rv = {};
-    for (var k in actions) {
-        var module, callback, action = actions[k];
-        if (_.isArray(action)) {
-            module = action[0];
-            callback = action[1];
-        } else if (_.isFunction(action)) {
-            rv[k] = action;
-            continue;
-        } else if (action instanceof Object) {
-            module = action.module;
-            callback = action.callback;
-        } else {
-            throw new Error(
-                'Action `' + k + '` is of type `' + typeof(action) + '`, ' +
-                    "which this function doesn't know how to interpret"
-            );
-        }
-        /* Resolve function description to actual function */
-        rv[k] = require(module)[callback];
-    }
-    return rv;
-}
 
 /**
  * Creates a new text input widget.
@@ -328,10 +296,9 @@ exports.embedList = function (options) {
     w.sortable = options.sortable;
     w.singleton = options.singleton;
     w.widget = (options.widget || exports.defaultEmbedded());
-    w.actions = exports.parseActionCallbacks(options.actions || {});
+    w.actions = actions.parse(options.actions || {});
 
     w.toHTML = function (name, value, raw, field) {
-
         this.cacheInit();
         var id = this._id(name, 'list');
 
@@ -363,7 +330,6 @@ exports.embedList = function (options) {
     };
 
     w.clientInit = function(field, path, value, raw, errors, offset) {
-        
         this.cacheInit();
         var list_elt = this.discoverListElement(path);
         var item_elts = list_elt.closestChild('.items').children('.item');
@@ -392,7 +358,7 @@ exports.embedList = function (options) {
     };
 
     w._discoverListElement = function (path) {
-        var name = (path instanceof Array ? path.join('.') : path);
+        var name = (path instanceof Array ? this._name(path) : path);
         return $('#' + this._id(name, 'list'));
     };
 
@@ -443,7 +409,6 @@ exports.embedList = function (options) {
         }));
 
         if (this.sortable) {
-            /* Items show/hide logic is implemented in renumberItem */
             var up_elt = item_elt.closestChild('.actions .up');
             var down_elt = item_elt.closestChild('.actions .down');
 
@@ -459,48 +424,58 @@ exports.embedList = function (options) {
 
     w.renumberList = function (path) {
         var list_elt = this.discoverListElement(path);
-        var add_elt = list_elt.closestChild('.actions .add');
         var item_elts = list_elt.closestChild('.items').children('.item');
 
         for (var i = 0, len = item_elts.length; i < len; ++i) {
             var item = $(item_elts[i]);
-            this.renumberItem(item, path, i);
-
-            if (this.sortable) {
-                var up_elt = item.closestChild('.actions .up');
-                var down_elt = item.closestChild('.actions .down');
-                if (i <= 0) {
-                    up_elt.attr('disabled', 'disabled');
-                } else {
-                    up_elt.removeAttr('disabled');
-                }
-                if (i + 1 >= len) {
-                    down_elt.attr('disabled', 'disabled');
-                } else {
-                    down_elt.removeAttr('disabled');
-                }
-            }
+            this.renumberListItem(item, path, i);
+            this.adjustListItemActions(item, i, len);
 
         };
-
-        if (this.singleton && i > 0) {
-            add_elt.hide();
-        } else {
-            add_elt.show();
-        }
-        return i;
+        
+        return this.adjustListActions(path);
     };
 
-    w.renumberItem = function (elt, path, offset) {
+    w.renumberListItem = function (elt, path, offset) {
         if (this.widget.updateName)
             this.widget.updateName(elt, path, offset);
 
-        var input_elt = $(elt).closestChild('input[type=hidden]');
-        var name = path.join('.');
+        var name = this._name(path);
+        var input_elt = $(elt).closestChild('input[name=' + name + ']');
 
         offset = (this.singleton ? null : offset);
         input_elt.attr('id', this._id(name, offset));
         input_elt.attr('name', this._name(name, offset));
+    };
+
+    w.adjustListActions = function (path, offset) {
+        var list_elt = this.discoverListElement(path);
+        var add_elt = list_elt.closestChild('.actions .add');
+
+        if (this.singleton && offset > 0) {
+            add_elt.hide();
+        } else {
+            add_elt.show();
+        }
+        return offset;
+    };
+
+    w.adjustListItemActions = function (item_elt, offset, count) {
+        if (this.sortable) {
+            var attr = 'disabled';
+            var up_elt = item_elt.closestChild('.actions .up');
+            var down_elt = item_elt.closestChild('.actions .down');
+            if (offset <= 0) {
+                up_elt.attr(attr, attr);
+            } else {
+                up_elt.removeAttr(attr);
+            }
+            if (offset + 1 >= count) {
+                down_elt.attr(attr, attr);
+            } else {
+                down_elt.removeAttr(attr);
+            }
+        }
     };
 
     w.moveExistingItem = function (field, path, after_elt, item_elt) {
@@ -612,6 +587,14 @@ exports.embedList = function (options) {
     };
 
     w.handleEditButtonClick = function (ev, field, path) {
+        var name = this._name(path);
+        var type_name = this.discoverListType(path);
+        var item_elt = $(ev.target).closest('.item', this);
+        var input_elt = $(item_elt).closestChild('input[name=' + name + ']');
+
+        console.log([
+            field, path, input_elt.val()
+        ]);
     };
 
     w.handleDeleteButtonClick = function (ev, field, path) {
@@ -670,6 +653,7 @@ exports.embedForm = function (options) {
     var w = new Widget('embedForm', options);
     w.toHTML = function (name, value, raw, field, offset) {
         var type = this.options.type;
+        var form = new forms.Form(type, value);
         var html = (
             '<div class="embedded form">' +
                 form.toHTML() +
