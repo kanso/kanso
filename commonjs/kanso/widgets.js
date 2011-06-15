@@ -101,17 +101,48 @@ Widget.prototype._attrs = function (name) {
 };
 
 /**
+ * Converts an input element's value attribute to a valid
+ * in-memory representation of the document or document fragment.
+ * This function tries to interpret the string as JSON if it's
+ * appropriate; otherwise the string is left alone.
+ *
+ * @name _parse_value(str, type_name)
+ * @param {String} str The string value to parse
+ * @param {String} type_name The type of field that the input control
+ *          belongs to. This value may influence how str is parsed.
+ * @returns {Object}
+ */
+
+Widget.prototype._parse_value = function (str, type_name)
+{
+    /* TODO:
+        This function needs to actually check type_name... */
+
+    var rv = null;
+
+    try {
+        rv = JSON.parse(str);
+    } catch (e) {
+        rv = str;
+    }
+
+    return rv;
+};
+
+/**
  * Converts a widget to HTML using the provided name and parsed and raw values
  *
- * @name Widget.toHTML(name, value, raw)
+ * @name Widget.toHTML(name, value, raw, field, options)
  * @param {String} name
  * @param value
  * @param raw
+ * @param field
+ * @param options
  * @returns {String}
  * @api public
  */
 
-Widget.prototype.toHTML = function (name, value, raw) {
+Widget.prototype.toHTML = function (name, value, raw, field, options) {
     if (raw === undefined) {
         raw = (value === undefined) ? '': '' + value;
     }
@@ -125,6 +156,82 @@ Widget.prototype.toHTML = function (name, value, raw) {
     return html + ' />';
 };
 
+/**
+ * Initializes a widget on the client-side only, using the browser's
+ * script interpreter. This function is guaranteed to be called
+ * after toHTML, and any DOM elements created by toHTML are
+ * guaranteed to be accessible
+ *
+ * @name Widget.clientInit(path, value, raw, field, options)
+ * @param {Array} path
+ * @param value
+ * @param raw
+ * @param field
+ * @param options
+ * @returns {Boolean}
+ * @api public
+ */
+
+Widget.prototype.clientInit = function (path, value, raw, field, options) {
+    return true;
+};
+
+/**
+ * Called by Kanso when it becomes necessary to rename this widget
+ * instance. The widget should respond by updating the id and name
+ * attributes.
+ *
+ * @name Widget.updateName(path)
+ * @param {String} elt An element that contains one or
+ *          more instances of the widget referenced by `this'.
+ * @param {String} path The widget's new path; combine this using
+ *          the _name or _id function to generate a usable string.
+ * @param {Object} options A new set of toHTML/clientInit options.
+ *          This may or may not influence the widget's name.
+ * @api public
+ */
+
+Widget.prototype.updateName = function (elt, path, options) {
+    var e = $('input[type=hidden]', elt);
+    e.attr('id', this._id(path));
+    e.attr('name', this._name(path));
+};
+
+/**
+ * Called by Kanso when it becomes necessary to rename this widget
+ * instance. The widget should respond by updating the value attribute.
+ *
+ * @name Widget.updateValue(elt, path, value, options)
+ * @param {String} elt An element that contains one or
+ *          more instances of the widget referenced by `this'.
+ * @param {String} path The path to the widget.
+ * @param {Object} value The new value for the widget, unencoded.
+ * @param {Object} options An up-to-date set of toHTML/clientInit options.
+ * @api public
+ */
+
+Widget.prototype.updateValue = function (elt, path, value, options) {
+    var elt = $('#' + this._id(path));
+    elt.val(value);
+};
+
+/**
+ * Called by Kanso when it becomes necessary to interrogate this
+ * widget to determine its value. The widget should respond by
+ * returning an unencoded value (typically as an object).
+ *
+ * @name Widget.getValue(elt, path, options)
+ * @param {String} elt An element that contains one or
+ *          more instances of the widget referenced by `this'.
+ * @param {String} path The path to the widget.
+ * @param {Object} options An up-to-date set of toHTML/clientInit options.
+ * @api public
+ */
+
+Widget.prototype.getValue = function (elt, path, options) {
+    var elt = $('#' + this._id(path));
+    return elt.val();
+};
 /**
  * Creates a new text input widget.
  *
@@ -398,7 +505,7 @@ exports.embedList = function (_options) {
         var add_elt = $(list_elt).closestChild('.actions .add');
 
         add_elt.bind('click', utils.bindContext(this, function (ev) {
-            return this.handleAddButtonClick(ev, this.field, path);
+            return this.handleAddButtonClick(ev, path);
         }));
     };
 
@@ -408,11 +515,11 @@ exports.embedList = function (_options) {
         var delete_elt = item_elt.closestChild('.actions .delete');
 
         edit_elt.bind('click', utils.bindContext(this, function(ev) {
-            return this.handleEditButtonClick(ev, this.field, path);
+            return this.handleEditButtonClick(ev, path);
         }));
 
         delete_elt.bind('click', utils.bindContext(this, function(ev) {
-            return this.handleDeleteButtonClick(ev, this.field, path);
+            return this.handleDeleteButtonClick(ev, path);
         }));
 
         if (this.sortable) {
@@ -420,11 +527,11 @@ exports.embedList = function (_options) {
             var down_elt = item_elt.closestChild('.actions .down');
 
             up_elt.bind('click', utils.bindContext(this, function(ev) {
-                return this.handleUpButtonClick(ev, this.field, path);
+                return this.handleUpButtonClick(ev, path);
             }));
 
             down_elt.bind('click', utils.bindContext(this, function(ev) {
-                return this.handleDownButtonClick(ev, this.field, path);
+                return this.handleDownButtonClick(ev, path);
             }));
         }
     };
@@ -444,15 +551,12 @@ exports.embedList = function (_options) {
     };
 
     w.renumberListItem = function (elt, path, offset) {
-        if (this.widget.updateName)
-            this.widget.updateName(elt, path, offset);
-
         var name = this._name(path);
-        var input_elt = $(elt).closestChild('input.backing');
+        var options = (this.singleton ? null : { offset: offset });
 
-        offset = (this.singleton ? null : offset);
-        input_elt.attr('id', this._id(name, offset));
-        input_elt.attr('name', this._name(name, offset));
+        if (this.widget.updateName) {
+            this.widget.updateName(elt, path, options);
+        }
     };
 
     w.adjustListActions = function (path, offset) {
@@ -472,6 +576,7 @@ exports.embedList = function (_options) {
             var attr = 'disabled';
             var up_elt = item_elt.closestChild('.actions .up');
             var down_elt = item_elt.closestChild('.actions .down');
+
             if (offset <= 0) {
                 up_elt.attr(attr, attr);
             } else {
@@ -532,6 +637,12 @@ exports.embedList = function (_options) {
         }))
     };
 
+    w.setListItemValue = function(elt, path, value, offset) {
+        if (this.widget.updateValue) {
+            this.widget.updateValue(elt, path, value, { offset: offset });
+        }
+    };
+
     w.htmlForListItem = function(path, item) {
         var html = (
             '<div class="item">' +
@@ -579,42 +690,57 @@ exports.embedList = function (_options) {
         );
     };
 
-    w.handleUpButtonClick = function (ev, field, path) {
-        var item_elt = $(ev.target).closest('.item', this);
+    w.handleUpButtonClick = function (ev, path) {
+        var item_elt = $(ev.target).closest('.item');
         item_elt.insertBefore(item_elt.prev('.item'));
         this.renumberList(path);
     };
 
-    w.handleDownButtonClick = function (ev, field, path) {
-        var item_elt = $(ev.target).closest('.item', this);
+    w.handleDownButtonClick = function (ev, path) {
+        var item_elt = $(ev.target).closest('.item');
         item_elt.insertAfter(item_elt.next('.item'));
         this.renumberList(path);
     };
 
-    w.handleAddButtonClick = function (ev, field, path) {
+    w.handleAddButtonClick = function (ev, path) {
         this.insertNewItemAtEnd(path);
     };
 
-    w.handleEditButtonClick = function (ev, field, path) {
-        var value, name = this._name(path);
+    w.handleEditButtonClick = function (ev, path) {
+        var offset = 0;
+        var name = this._name(path);
         var type_name = this.discoverListType(path);
-        var item_elt = $(ev.target).closest('.item', this);
-        var input_elt = $(item_elt).closestChild('input.backing');
+        var item_elt = $(ev.target).closest('.item');
 
-        try {
-            value = JSON.parse(input_elt.val());
-        } catch (e) {
-            value = input_elt.val();
-        }
-        
-        if (this.actions.add) {
-            this.actions.add(
-                type_name, field, path, input_elt.val(), null, [], 0
+        var value = this.widget.getValue(item_elt, path);
+        var widget_options = { offset: offset, path_extra: [] };
+
+        /* Action will transfer control here when finished */
+        var cb = utils.bindContext(this, function (successful, new_value) {
+            this.handleEditCompletion.call(
+                this, ev, path, offset, successful, new_value
+            );
+        });
+
+        if (this.actions.edit) {
+            this.actions.edit(
+                type_name, this.field, path,
+                    value, value, [], widget_options, cb
             );
         }
     };
 
-    w.handleDeleteButtonClick = function (ev, field, path) {
+    w.handleEditCompletion = function (ev, path, offset, is_successful, new_value) {
+        if (is_successful) {
+            var item_elt = $(ev.target).closest('.item', this);
+            this.setListItemValue(
+                item_elt, path, new_value, offset
+            );
+        }
+        return is_successful;
+    };
+
+    w.handleDeleteButtonClick = function (ev, path) {
         var item_elt = $(ev.target).closest('.item', this);
         item_elt.remove();
         this.renumberList(path);
@@ -718,9 +844,45 @@ exports.documentSelector = function (_options) {
 
         return html;
     };
-    w.clientInit = function(field, path, value, raw, errors, options) {
 
-        var id = this._id(path, options.offset, options.extra_path);
+    w.updateName = function (elt, path, options) {
+        elt = $(elt);
+        var select_elt = elt.closestChild('select.selector');
+        var hidden_elt = elt.closestChild('input[type=hidden].backing');
+
+        select_elt.attr('id', this._id(
+            path, 'visible', options.offset, options.path_extra
+        ));
+        hidden_elt.attr('id', this._id(
+            path, options.offset, options.path_extra
+        ));
+        select_elt.attr('name', this._name(
+            path, 'visible', options.offset, options.path_extra
+        ));
+        hidden_elt.attr('name', this._name(
+            path, options.offset, options.path_extra
+        ));
+    };
+
+    w.updateValue = function (elt, path, value, options) {
+        elt = $(elt);
+        var value = JSON.stringify(value);
+        var select_elt = elt.closestChild('select.selector');
+        var hidden_elt = elt.closestChild('input[type=hidden].backing');
+
+        hidden_elt.val(value);
+        select_elt.val(value);
+    };
+
+    w.getValue = function (elt, path, options) {
+        elt = $(elt);
+        var hidden_elt = elt.closestChild('input[type=hidden].backing');
+        return JSON.parse(hidden_elt.attr('value'));
+    };
+
+    w.clientInit = function (field, path, value, raw, errors, options) {
+
+        var id = this._id(path, options.offset, options.path_extra);
         var container_elt = $('#' + id).parent();
 
         var select_elt = container_elt.closestChild('.selector');
@@ -784,7 +946,7 @@ exports.documentSelector = function (_options) {
 
 /* 
  * closestChild for jQuery
- * Copyright 2011, Tobias Lindig 
+ * Copyright 2011, Tobias Lindig
  * 
  * Dual licensed under the MIT license and GPL licenses:
  *   http://www.opensource.org/licenses/mit-license.php

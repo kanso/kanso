@@ -67,23 +67,24 @@ exports.parse = function(actions) {
  * which does the actual form rendering and presentation.
  */
 
-exports.modalDialog = function (options, type_name, field, path,
-                                value, raw, errors, offset, callback) {
+exports.modalDialog = function (action_options, type_name, field, path,
+                                value, raw, errors, options, callback) {
     options = (options || {});
+    action_options = (action_options || {});
 
     var div = $('<div />');
-    var widget = options.widget;
+    var widget = action_options.widget;
     var name = sanitize.generateDomName.apply(null, path);
 
     var widget_options = {
-        offset: offset, path_extra: [ 'modal' ]
+        offset: options.offset, path_extra: [ 'modal' ]
     };
 
     /* Resolve widget */
-    if (!widget && options.type) {
+    if (!widget && action_options.type) {
         widget = widgets.embedForm(
-            _.defaults(options.options || {}, {
-                type: options.type
+            _.defaults(action_options.options || {}, {
+                type: action_options.type
             })
         );
     }
@@ -104,15 +105,23 @@ exports.modalDialog = function (options, type_name, field, path,
         '<input type="button" value="Cancel" />'
     );
     div.append(
-        widget.toHTML(name, value, raw, field, widget_options)
+        widget.toHTML(
+            name, value, raw, field, widget_options
+        )
     );
 
     /* Register event handlers */
     okbtn.click(function () {
         $.modal.close();
+        return callback(
+            true, widget.getValue(div, path, widget_options)
+        );
     });
     cancelbtn.click(function () {
         $.modal.close();
+        return callback(
+            false, widget.getValue(elt, path, widget_options)
+        );
     });
     div.submit(function (ev) {
         ev.preventDefault();
