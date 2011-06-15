@@ -12,47 +12,6 @@ var core = require('kanso/core'),
 var h = sanitize.escapeHtml;
 
 
-
-/**
- * getModules
- */
-exports.getModules = function (/*optional*/req, callback) {
-    if (!callback) {
-        /* Arity = 1: callback only */
-        callback = req;
-        req = utils.currentRequest();
-    }
-    db.getDesignDoc(req.query.app, function (err, ddoc) {
-        if (err) {
-            throw err;
-        }
-        var settings = loader.appRequire(ddoc, 'kanso/settings');
-        var app = loader.appRequire(ddoc, settings.load);
-        var forms = loader.appRequire(ddoc, 'kanso/forms');
-        callback(settings, app, forms);
-    });
-};
-
-/**
- * A showModal wrapper, containing functionality specific to the
- * administrative interface. This function retrieves information
- * from a second application instance, and then calls the usual
- * showModal implementation.
- */
-exports.adminShowModal = function (div, field_td, row,
-                                   typename, val, rawval, field) {
-
-    exports.getModules(function (settings, app, forms) {
-        var type = app.types[typename];
-        var form = new forms.Form(type, val);
-
-        return exports.showModal(
-            type, form, div, field_td, row,
-            typename, val, rawval, field
-        );
-    });
-};
-
 /**
  * Show a modal dialog containing an editable form. Once the
  * editing is completed, call addRow and pass along the JSON-encoded

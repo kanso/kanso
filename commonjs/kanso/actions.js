@@ -104,19 +104,39 @@ exports.modalDialog = function (action_options, type_name, field, path,
     var cancelbtn = $(
         '<input type="button" value="Cancel" />'
     );
+
+    /* Draw widget */
     div.append(
         widget.toHTML(
             name, value, raw, field, widget_options
         )
     );
 
-    /* Register event handlers */
     okbtn.click(function () {
-        $.modal.close();
+        if (_.isFunction(widget.validate) &&
+            !widget.validate(div, path, widget_options)) {
+
+            /* Repost dialog box:
+                This will replace the current dialog box. */
+
+            return exports.modalDialog(
+                action_options, type_name, field, path,
+                    value, raw, errors, options, callback
+            );
+        } else {
+
+            /* Close the dialog box:
+                Note that the dialog box won't disappear until
+                we've unwound and returned to the main event loop.
+                If you depend upon closure, use setTimeout(..., 0). */
+
+            $.modal.close();
+        }
         return callback(
             true, widget.getValue(div, path, widget_options)
         );
     });
+
     cancelbtn.click(function () {
         $.modal.close();
         return callback(
@@ -140,25 +160,4 @@ exports.modalDialog = function (action_options, type_name, field, path,
         field, path, value, raw, errors, widget_options
     );
 };
-
-/**
- * Resizes a simplemodal control to match the dimensions of the
- * specified div.
- *
- * @name resizeModal(div)
- * @param {Element} The element from which to read width/height.
- * @api public
- */
-
-exports.resizeModal = function (div) {
-    $('#simplemodal-container').css({height: 'none', width: 'none'});
-    $('#simplemodal-container').css({
-        height: (div.height() + 20) + 'px',
-        width: (div.width() + 40) + 'px'
-    });
-    $.modal.setPosition();
-};
-
-
-
 

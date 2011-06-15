@@ -10,6 +10,7 @@
  */
 
 var db = require('./db'),
+    forms = require('./forms'),
     actions = require('./actions'),
     render = require('./render'),
     sanitize = require('./sanitize'),
@@ -232,6 +233,27 @@ Widget.prototype.getValue = function (elt, path, options) {
     var elt = $('#' + this._id(path));
     return elt.val();
 };
+
+/**
+ * Called by Kanso when it becomes necessary to validate the
+ * contents of this widget -- i.e. to ensure it's in a consistent
+ * state before using its value or proceeding. Most widgets will
+ * not implement this method; its primary use is complex widgets
+ * that host validation-enabled forms and/or types. Returns true
+ * if the contents is consistent and valid; false otherwise.
+ *
+ * @name Widget.validate(elt, path, options)
+ * @param {String} elt An element that contains one or
+ *          more instances of the widget referenced by `this'.
+ * @param {String} path The path to the widget.
+ * @param {Object} options An up-to-date set of toHTML/clientInit options.
+ * @api public
+ */
+
+Widget.prototype.validate = function (elt, path, options) {
+    return true;
+};
+
 /**
  * Creates a new text input widget.
  *
@@ -448,7 +470,7 @@ exports.embedList = function (_options) {
         for (var i = 0, len = item_elts.length; i < len; ++i) {
             this.bindEventsForListItem(path, item_elts[i]);
 
-            if (this.widget.clientInit) {
+            if (_.isFunction(this.widget.clientInit)) {
                 this.widget.clientInit(
                     this.field, path, value[i], value[i], [],
                         { offset: i }
@@ -554,7 +576,7 @@ exports.embedList = function (_options) {
         var name = this._name(path);
         var options = (this.singleton ? null : { offset: offset });
 
-        if (this.widget.updateName) {
+        if (_.isFunction(this.widget.updateName)) {
             this.widget.updateName(elt, path, options);
         }
     };
@@ -627,7 +649,7 @@ exports.embedList = function (_options) {
 
             this.moveExistingItem(path, after_elt, item_elt);
 
-            if (this.widget.clientInit) {
+            if (_.isFunction(this.widget.clientInit)) {
                 this.widget.clientInit(
                     this.field, path, value, value, [], {
                         offset: offset
@@ -794,16 +816,28 @@ exports.defaultEmbedded = function (_options) {
 
 exports.embedForm = function (_options) {
     var w = new Widget('embedForm', _options);
+    w.type = _options.type;
+
     w.toHTML = function (name, value, raw, field, options) {
-        var type = this.options.type;
-        var form = new forms.Form(type, value);
+        this.form = new forms.Form(this.type, value);
+
         var html = (
             '<div class="embedded form">' +
-                form.toHTML() +
+                this.form.toHTML() +
             '</div>'
         );
         return html;
     };
+
+    w.getValue = function (elt, path, options) {
+        return JSON.stringify(this.form.values);
+    };
+
+    w.validate = function (path, options) {
+        return true;
+    };
+
+
     return w;
 };
 
@@ -817,7 +851,9 @@ exports.embedForm = function (_options) {
 
 exports.documentSelector = function (_options) {
     var w = new Widget('documentSelector', _options);
+
     w.toHTML = function (name, value, raw, field, options) {
+        this.cacheInit();
         var html_value = (
             value instanceof Object ?
                 JSON.stringify(value) : value
@@ -846,9 +882,9 @@ exports.documentSelector = function (_options) {
     };
 
     w.updateName = function (elt, path, options) {
-        elt = $(elt);
-        var select_elt = elt.closestChild('select.selector');
-        var hidden_elt = elt.closestChild('input[type=hidden].backing');
+        this.cacheInit();
+        var hidden_elt = this._discoverBackingElement(elt);
+        var select_elt = this._discoverSelectionElement(elt);
 
         select_elt.attr('id', this._id(
             path, 'visible', options.offset, options.path_extra
@@ -867,16 +903,15 @@ exports.documentSelector = function (_options) {
     w.updateValue = function (elt, path, value, options) {
         elt = $(elt);
         var value = JSON.stringify(value);
-        var select_elt = elt.closestChild('select.selector');
-        var hidden_elt = elt.closestChild('input[type=hidden].backing');
+        var hidden_elt = this._discoverBackingElement(elt);
+        var select_elt = this._discoverSelectionElement(elt);
 
         hidden_elt.val(value);
         select_elt.val(value);
     };
 
     w.getValue = function (elt, path, options) {
-        elt = $(elt);
-        var hidden_elt = elt.closestChild('input[type=hidden].backing');
+        var hidden_elt = this._discoverBackingElement(elt);
         return JSON.parse(hidden_elt.attr('value'));
     };
 
@@ -885,14 +920,12 @@ exports.documentSelector = function (_options) {
         var id = this._id(path, options.offset, options.path_extra);
         var container_elt = $('#' + id).parent();
 
-        var select_elt = container_elt.closestChild('.selector');
         var spinner_elt = container_elt.closestChild('.spinner');
         var options = (this.options || {});
         var is_embedded = (value instanceof Object);
 
-        var hidden_elt = (
-            container_elt.closestChild('input[type=hidden].backing')
-        );
+        var select_elt = this._discoverSelectionElement(container_elt);
+        var hidden_elt = this._discoverBackingElement(container_elt);
 
         /* Start progress */
         spinner_elt.show();
@@ -941,6 +974,32 @@ exports.documentSelector = function (_options) {
                 select_elt.trigger('change');
         });
     };
+
+    /** private: **/
+
+    w.cacheInit = function () {
+        this.discoverBackingElement = _.memoize(
+            utils.bindContext(this, this._discoverBackingElement),
+            function (container_elt) {
+                return container_elt.id;
+            }
+        );
+        this.discoverSelectionElement = _.memoize(
+            utils.bindContext(this, this._discoverSelectionElement),
+            function (container_elt) {
+                return container_elt.id;
+            }
+        );
+    };
+
+    w._discoverBackingElement = function (container_elt) {
+        return $(container_elt).closestChild('input[type=hidden].backing');
+    };
+
+    w._discoverSelectionElement = function (container_elt) {
+        return $(container_elt).closestChild('select.selector');
+    };
+
     return w;
 };
 
