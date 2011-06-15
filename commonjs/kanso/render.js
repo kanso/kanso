@@ -155,6 +155,19 @@ exports.classes = function (field, errors) {
 };
 
 /**
+ * Determines the default renderer class, to be used globally by 
+ * instances of forms.Form that fail to specify a renderer class.
+ *
+ * @name defaultRenderer()
+ * @returns {Function}
+ * @api public
+ */
+
+exports.defaultRenderer = function () {
+    return exports.table;
+};
+
+/**
  * The default table renderer class, passed to the toHTML method of a
  * form. Renders a form using a single table, with <tbody> tags to
  * represent nested field groups. The <tbody>s are labelled with
@@ -348,8 +361,10 @@ exports.div = function () {
      * @param {Object} value
      * @param {String} raw
      * @param {Array} errors
+     * @param {Object} options An object containing widget options, which
+     *          will ultimately be provided to each widget's toHTML method.
     */
-    this.field = function (field, path, value, raw, errors) {
+    this.field = function (field, path, value, raw, errors, options) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         if (field.widget.type === 'hidden') {
@@ -367,7 +382,9 @@ exports.div = function () {
                 '</div>' +
                 '<div class="content">' +
                     '<div class="inner">' +
-                        field.widget.toHTML(name, value, raw, field, {}) +
+                        field.widget.toHTML(
+                            name, value, raw, field, (options || {})
+                        ) +
                     '</div>' +
                     '<div class="hint">' +
                         exports.hintHTML(field) +
@@ -395,3 +412,4 @@ exports.div = function () {
         return '</div>';
     };
 };
+

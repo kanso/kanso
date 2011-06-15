@@ -105,11 +105,16 @@ Form.prototype.isValid = function () {
  * @name Form.toHTML(req, [RendererClass])
  * @param {Object} req Kanso request object; null for most recent. (optional)
  * @param {Renderer} RendererClass (optional)
+ * @param {Object} options An object containing widget options, which
+ *          will ultimately be provided to each widget's toHTML method.
+ * @returns {String}
  * @returns {String}
  * @api public
  */
 
-Form.prototype.toHTML = function (/*optional*/req, /*optional*/RendererClass) {
+Form.prototype.toHTML = function (/* optional */ req,
+                                  /* optional */ RendererClass,
+                                  /* optional */ options) {
     if (!req) {
         req = utils.currentRequest();
     }
@@ -117,12 +122,13 @@ Form.prototype.toHTML = function (/*optional*/req, /*optional*/RendererClass) {
         this.fields,
         req.userCtx
     );
-    RendererClass = RendererClass || render.table;
+    RendererClass = (RendererClass || render.defaultRenderer());
     var renderer = new RendererClass();
     var rv = (
         renderer.start() +
         this.renderFields(
-            renderer, this.fields, values, this.raw, this.errors, []
+            renderer, this.fields,
+                values, this.raw, this.errors, [], (options || {})
         ) +
         renderer.end() +
         render.scriptTagForEvent('renderFinish')
@@ -160,11 +166,14 @@ var errsBelowPath = function (errs, path) {
  * @param {Object} values
  * @param {Array} errs
  * @param {Array} path
+ * @param {Object} options An object containing widget options, which
+ *          will ultimately be provided to each widget's toHTML method.
  * @returns {String}
  * @api public
  */
 
-Form.prototype.renderFields = function (renderer, fields, values, raw, errs, path) {
+Form.prototype.renderFields = function (renderer, fields, values,
+                                        raw, errs, path, options) {
     fields = fields || {};
     values = values || {};
     raw = raw || {};
@@ -202,7 +211,8 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
                 f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
+                f_errs,
+                (options || {})
             );
         }
         else if (cname === 'Object') {
@@ -213,7 +223,8 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
                     values[k],
                     (raw[k] === undefined) ? values[k]: raw[k],
                     errs,
-                    f_path
+                    f_path,
+                    (options || {})
                 ) + (k ? renderer.endGroup(f_path) : '');
         } else {
             throw new Error('The field type `' + cname + '` is not supported.');
