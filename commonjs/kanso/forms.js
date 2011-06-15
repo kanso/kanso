@@ -92,6 +92,7 @@ var Form = exports.Form = function Form(fields, doc, options) {
 
 exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path) {
     var keys = _.keys(fields);
+    var fields_module = require('./fields');
 
     _.each(keys, function (k) {
         var f_path = path.concat([k]);
@@ -109,19 +110,19 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
             }
         }
 
-        var cname = utils.constructorName(f);
-
-        if (cname === 'Field' ||
-            cname === 'Embedded' ||
-            cname === 'EmbeddedList') {
+        if (f instanceof fields_module.Field ||
+            f instanceof fields_module.Embedded ||
+            f instanceof fields_module.EmbeddedList) {
             doc_a[k] = b;
         }
-        else if (cname === 'Object') {
+        else if (f instanceof Object) {
             doc_a[k] = exports.override(
                 excludes, field_subset, f, doc_a, b, f_path
             );
         } else {
-            throw new Error('The field type `' + cname + '` is not supported.');
+            throw new Error(
+                'The field type `' + (typeof f) + '` is not supported.'
+            );
         }
     });
     return doc_a;
@@ -288,6 +289,8 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
     var field_subset = this.options.fields;
     var keys = _.keys(fields);
 
+    var fields_module = require('./fields');
+
     return _.reduce(keys, function (html, k) {
 
         var f_path = path.concat([k]);
@@ -304,20 +307,20 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
         }
 
         var f_errs = errsBelowPath(errs, f_path);
-        var cname = utils.constructorName(fields[k]);
+        var f = fields[k];
 
-        if (cname === 'Field') {
+        if (f instanceof fields_module.Field) {
             return html + renderer.field(
-                fields[k],
+                f,
                 f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs
             );
         }
-        else if (cname === 'Embedded') {
+        else if (f instanceof fields_module.Embedded) {
             html += renderer.embed(
-                fields[k],
+                f,
                 f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
@@ -325,9 +328,9 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
             );
             return html;
         }
-        else if (cname === 'EmbeddedList') {
+        else if (f instanceof fields_module.EmbeddedList) {
             html += renderer.embedList(
-                fields[k],
+                f,
                 f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
@@ -335,18 +338,20 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
             );
             return html;
         }
-        else if (cname === 'Object') {
+        else if (f instanceof Object) {
             return html + (k ? renderer.beginGroup(f_path) : '') +
                 that.renderFields(
                     renderer,
-                    fields[k],
+                    f,
                     values[k],
                     (raw[k] === undefined) ? values[k]: raw[k],
                     errs,
                     f_path
                 ) + (k ? renderer.endGroup(f_path) : '');
         } else {
-            throw new Error('The field type `' + cname + '` is not supported.');
+            throw new Error(
+                'The field type `' + (typeof f) + '` is not supported.'
+            );
         }
     }, '');
 };
@@ -386,13 +391,14 @@ exports.formValuesToTree = function (form) {
 exports.parseRaw = function (fields, raw) {
     var doc = {};
     raw = raw || {};
+    var fields_module = require('./fields');
 
     for (var k in fields) {
         var f = fields[k];
         var r = raw[k];
-        var cname = utils.constructorName(f);
 
-        if (cname === 'Field') {
+
+        if (f instanceof fields_module.Field) {
             if (!f.isEmpty(r)) {
                 doc[k] = f.parse(r);
             }
@@ -400,7 +406,7 @@ exports.parseRaw = function (fields, raw) {
                 doc[k] = undefined;
             }
         }
-        else if (cname === 'Embedded') {
+        else if (f instanceof fields_module.Embedded) {
             if (!f.isEmpty(r)) {
                 if (typeof r === 'string') {
                     if (r !== '') {
@@ -412,7 +418,7 @@ exports.parseRaw = function (fields, raw) {
                 }
             }
         }
-        else if (cname === 'EmbeddedList') {
+        else if (f instanceof fields_module.EmbeddedList) {
             doc[k] = [];
             for (var i in r) {
                 var val;
@@ -432,10 +438,12 @@ exports.parseRaw = function (fields, raw) {
                 delete doc[k];
             }
         }
-        else if (cname === 'Object') {
+        else if (f instanceof Object) {
             doc[k] = exports.parseRaw(f, r);
         } else {
-            throw new Error('The field type `' + cname + '` is not supported.');
+            throw new Error(
+                'The field type `' + (typeof f) + '` is not supported.'
+            );
         }
     }
     return doc;

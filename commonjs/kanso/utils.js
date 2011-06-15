@@ -196,6 +196,7 @@ exports.setPropertyPath = function (obj, path, val) {
  * @api public
  */
 
+// TODO: is this unused now?
 exports.constructorName = function (obj) {
     if (obj === null || obj === undefined) {
         return undefined;

@@ -9,7 +9,7 @@
  * Module dependencies
  */
 
-var _ = require('./underscore'),
+var _ = require('./underscore')._,
     utils = require('./utils');
 
 
@@ -23,12 +23,12 @@ var _ = require('./underscore'),
  */
 
 exports.createDefaults = function (fields, userCtx) {
+    var fields_module = require('./fields');
     return _.reduce(_.keys(fields), function (result, k) {
         var f = fields[k];
-        var cname = utils.constructorName(f);
-        if (cname === 'Field' ||
-            cname === 'Embedded' ||
-            cname === 'EmbeddedList') {
+        if (f instanceof fields_module.Field ||
+            f instanceof fields_module.Embedded ||
+            f instanceof fields_module.EmbeddedList) {
             if (f.hasOwnProperty('default_value')) {
                 if (_.isFunction(f.default_value)) {
                     result[k] = f.default_value(userCtx);
@@ -38,10 +38,12 @@ exports.createDefaults = function (fields, userCtx) {
                 }
             }
         }
-        else if (cname === 'Object') {
+        else if (f instanceof Object) {
             result[k] = exports.createDefaults(f, userCtx);
         } else {
-            throw new Error('The field type `' + cname + '` is not supported.');
+            throw new Error(
+                'The field type `' + (typeof f) + '` is not supported.'
+            );
         }
         return result;
     }, {});
@@ -107,6 +109,7 @@ exports.validate = function (fields, doc, values, raw, path, extra) {
     // required fields, or may not detect the presence of extra fields.
 
     var keys = _.uniq(_.keys(fields).concat(_.keys(values)));
+    var fields_module = require('./fields');
 
     return _.reduce(keys, function (errs, k) {
         var f = fields[k];
@@ -124,10 +127,9 @@ exports.validate = function (fields, doc, values, raw, path, extra) {
             return errs;
         }
         var fn = exports.validate;
-        var cname = utils.constructorName(f);
-        if (cname === 'Field' ||
-            cname === 'Embedded' ||
-            cname === 'EmbeddedList') {
+        if (f instanceof fields_module.Field ||
+            f instanceof fields_module.Embedded ||
+            f instanceof fields_module.EmbeddedList) {
             fn = exports.validateField;
         }
         return errs.concat(
@@ -206,6 +208,8 @@ exports.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path, extra) {
     var oldKeys = _.keys(oVal);
     var keys = _.uniq(fKeys.concat(newKeys).concat(oldKeys));
 
+    var fields_module = require('./fields');
+
     return _.reduce(keys, function (errs, k) {
         var field = f[k];
         if (field === undefined) {
@@ -224,10 +228,9 @@ exports.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path, extra) {
             return errs;
         }
         var fn = exports.authFieldSet;
-        var cname = utils.constructorName(field);
-        if (cname === 'Field' ||
-            cname === 'Embedded' ||
-            cname === 'EmbeddedList') {
+        if (field instanceof fields_module.Field ||
+            field instanceof fields_module.Embedded ||
+            field instanceof fields_module.EmbeddedList) {
             fn = exports.authField;
         }
         return errs.concat(fn(
