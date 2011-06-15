@@ -47,6 +47,14 @@ Using node to write the associated tools allows us to do some powerful things
 by interpreting the JavaScript of your application.
 
 
+### CouchDB version
+
+As of release 0.0.7, Kanso **only supports CouchDB 1.1.0 or higher**. This is due
+to a number of fixes in CouchDB 1.1.0 for CommonJS modules which make Kanso
+faster and helps to keep the framework code clean. If you're running an older
+version of CouchDB you'll want to upgrade it before continuing with this guide.
+
+
 <h2 id="starting_a_project">Starting a project</h2>
 
 For this tutorial we'll be making a fairly typical blog, with posts,
