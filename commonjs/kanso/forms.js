@@ -178,6 +178,55 @@ Form.prototype.validate = function (req) {
             req.userCtx, [], true
         ));
     }
+
+    // clear field properties on errors for excluded fields
+    var excludes = this.options.exclude;
+    if (excludes) {
+        var excl_paths = _.map(excludes, function (p) {
+            return p.split('.');
+        });
+        this.errors = _.map(this.errors, function (e) {
+            if (!e.field) {
+                return e;
+            }
+            for (var i = 0, len = excl_paths.length; i < len; i++) {
+                var path = excl_paths[i];
+                if (utils.isSubPath(path, e.field)) {
+                    e.message = e.field.join('.') + ': ' + (
+                        e.message || e.toString()
+                    );
+                    delete e.field;
+                    return e;
+                }
+            }
+            return e;
+        });
+    }
+
+    // clear field properties on errors not in fields subset
+    var field_subset = this.options.fields;
+    if (field_subset) {
+        var subset_paths = _.map(field_subset, function (p) {
+            return p.split('.');
+        });
+        this.errors = _.map(this.errors, function (e) {
+            if (!e.field) {
+                return e;
+            }
+            for (var i = 0, len = subset_paths.length; i < len; i++) {
+                var path = subset_paths[i];
+                if (!utils.isSubPath(path, e.field)) {
+                    e.message = e.field.join('.') + ': ' + (
+                        e.message || e.toString()
+                    );
+                    delete e.field;
+                    return e;
+                }
+            }
+            return e;
+        });
+    }
+
     return this;
 };
 
@@ -210,12 +259,7 @@ var errsBelowPath = function (errs, path) {
         if (!e.field) {
             return false;
         }
-        for (var i = 0, len = path.length; i < len; i++) {
-            if (path[i] !== e.field[i]) {
-                return false;
-            }
-        }
-        return true;
+        return utils.isSubPath(path, e.field);
     });
 };
 

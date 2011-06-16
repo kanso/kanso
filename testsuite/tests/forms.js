@@ -603,6 +603,37 @@ exports['Form.validate - don\'t merge embedded'] = function (test) {
     test.done();
 };
 
+exports['Form.validate - clear field for excluded fields'] = function (test) {
+    var fieldset = {
+        one: fields.string()
+    };
+    var f = new forms.Form(fieldset, null, {
+        exclude: ['one']
+    });
+    f.validate({form: {}, userCtx: {}});
+    test.equal(f.errors.length, 1);
+    var e = f.errors[0];
+    test.strictEqual(e.field, undefined);
+    test.ok(/required/i.test(e.message || e.toString()));
+    test.done();
+};
+
+exports['Form.validate - clear for fields not in subset'] = function (test) {
+    var fieldset = {
+        one: fields.string(),
+        two: fields.string({required: false})
+    };
+    var f = new forms.Form(fieldset, null, {
+        fields: ['two']
+    });
+    f.validate({form: {}, userCtx: {}});
+    test.equal(f.errors.length, 1);
+    var e = f.errors[0];
+    test.strictEqual(e.field, undefined);
+    test.ok(/required/i.test(e.message || e.toString()));
+    test.done();
+};
+
 exports['Form.validate - options.fields'] = function (test) {
     var fieldset = {
         foo: fields.string(),
