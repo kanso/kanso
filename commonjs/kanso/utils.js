@@ -303,3 +303,22 @@ exports.redirect = function (req, url) {
     var baseURL = exports.getBaseURL(req);
     return {code: 302, headers: {'Location': baseURL + url}};
 };
+
+/**
+ * Tests if path b is equal to or a sub-path of a.
+ *
+ * @name isSubPath(a, b)
+ * @param {Array} a
+ * @param {Array} b
+ * @returns {Boolean}
+ * @api public
+ */
+
+exports.isSubPath = function (a, b) {
+    for (var i = 0, len = a.length; i < len; i++) {
+        if (a[i] !== b[i]) {
+            return false;
+        }
+    }
+    return true;
+};

@@ -87,3 +87,14 @@ exports['getPropertyPath'] = function (test) {
     utils.isBrowser = true;
     test.done();
 };
+
+exports['isSubPath'] = function (test) {
+    test.strictEqual(utils.isSubPath(['one'], ['one']), true);
+    test.strictEqual(utils.isSubPath(['one'], ['one', 'two']), true);
+    test.strictEqual(utils.isSubPath(['one', 'two'], ['one', 'two']), true);
+    test.strictEqual(utils.isSubPath(['1', '2'], ['1', '2', '3', '4']), true);
+    test.strictEqual(utils.isSubPath(['one'], ['two']), false);
+    test.strictEqual(utils.isSubPath(['one', 'two'], ['one']), false);
+    test.strictEqual(utils.isSubPath(['one', 'two'], ['two', 'three']), false);
+    test.done();
+};
