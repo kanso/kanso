@@ -15,6 +15,7 @@ var db = require('./db'),
     render = require('./render'),
     sanitize = require('./sanitize'),
     utils = require('./utils'),
+    querystring = require('./querystring'),
     _ = require('./underscore')._;
 
 var h = sanitize.escapeHtml;
@@ -93,7 +94,7 @@ Widget.prototype._name = function (name /* , ... */) {
 Widget.prototype._parse_value = function (str, type_name)
 {
     /* TODO:
-        This function needs to actually check type_name... */
+        This function needs to actually check type_name. */
 
     var rv = null;
 
@@ -121,7 +122,7 @@ Widget.prototype._parse_value = function (str, type_name)
 Widget.prototype._stringify_value = function (value, type_name)
 {
     /* TODO:
-        This function needs to actually check type_name... */
+        This function needs to actually check type_name. */
 
     var rv = null;
 
@@ -156,7 +157,7 @@ Widget.prototype.toHTML = function (name, value, raw, field, options) {
     var html = '<input';
     html += (this.type ? ' type="' + h(this.type) + '"': '');
     html += ' value="' + h(raw) + '"';
-    html += ' name="' + this._id(name, options.offset) + '" id="';
+    html += ' name="' + this._name(name, options.offset) + '" id="';
     html += this._id(name, options.offset, options.path_extra) + '"'
     return html + ' />';
 };
@@ -316,7 +317,7 @@ exports.textarea = function (_options) {
             raw = '';
         }
         var html = '<textarea';
-        html += ' name="' + this._id(name, options.offset) + '" id="';
+        html += ' name="' + this._name(name, options.offset) + '" id="';
         html += this._id(name, options.offset, options.path_extra) + '"';
 
         if (this.options.hasOwnProperty('cols')) {
@@ -345,7 +346,7 @@ exports.checkbox = function (_options) {
     var w = new Widget('checkbox', _options || {});
     w.toHTML = function (name, value, raw, field, options) {
         var html = '<input type="checkbox"';
-        html += ' name="' + this._id(name, options.offset) + '" id="';
+        html += ' name="' + this._name(name, options.offset) + '" id="';
         html += this._id(name, options.offset, options.path_extra) + '"';
         html += (value ? ' checked="checked"': '');
         return (html + ' />');
@@ -371,7 +372,7 @@ exports.select = function (_options) {
         }
 
         var html = '<select';
-        html += ' name="' + this._id(name, options.offset) + '" id="';
+        html += ' name="' + this._name(name, options.offset) + '" id="';
         html += this._id(name, options.offset, options.path_extra) + '">';
 
         for (var i = 0; i < this.values.length; i++) {
@@ -410,7 +411,7 @@ exports.computed = function (_options) {
             raw = '';
         }
         var html = '<input type="hidden" value="' + h(raw) + '"';
-        html += ' name="' + this._id(name, options.offset) + '" id="';
+        html += ' name="' + this._name(name, options.offset) + '" id="';
         html += this._id(name, options.offset, options.path_extra) + '" />';
         html += '<span>' + h(raw) + '</span>';
         return html;
@@ -439,9 +440,15 @@ exports.embedList = function (_options) {
     w.widget = (_options.widget || exports.defaultEmbedded());
 
     w.toHTML = function (name, value, raw, field, options) {
+
         this.cacheInit();
         this.field = field;
-        var id = this._id(name, 'list', options.path_extra);
+        this.render_options = (options || {});
+
+        var id = this._id(
+            name, 'list', this.render_options.offset,
+                this.render_options.path_extra
+        );
 
         var html = (
             '<div class="embedlist" rel="' +
@@ -452,7 +459,7 @@ exports.embedList = function (_options) {
         html += '<div class="items" rel="' + h(name) + '">';
 
         for (var i = 0, len = value.length; i < len; ++i) { 
-            html += this.htmlForListItem(name, {
+            html += this.htmlForListItem({
                 offset: (this.singleton ? null : i),
                 name: name, value: value[i], raw: raw,
             });
@@ -472,25 +479,28 @@ exports.embedList = function (_options) {
     };
 
     w.clientInit = function(field, path, value, raw, errors, options) {
-        this.cacheInit();
-        this.field = field;
 
+        this.cacheInit();
+        this.path = path;
+        this.field = field;
+        this.render_options = (options || {});
         var item_elts = (
-            this.discoverListItemsElement(path).children('.item')
+            this.discoverListItemsElement().children('.item')
         );
+
         for (var i = 0, len = item_elts.length; i < len; ++i) {
-            this.bindEventsForListItem(path, item_elts[i]);
+            this.bindEventsForListItem(item_elts[i]);
 
             if (_.isFunction(this.widget.clientInit)) {
                 this.widget.clientInit(
-                    this.field, path, value[i], value[i], [],
+                    this.field, this.path, value[i], value[i], [],
                         { offset: i }
                 );
             }
         }
 
-        this.renumberList(path);
-        this.bindEventsForList(path);
+        this.renumberList();
+        this.bindEventsForList();
     };
 
     /** private: **/
@@ -502,57 +512,59 @@ exports.embedList = function (_options) {
         this.discoverListItemsElement = _.memoize(this._discoverListItemsElement);
     };
 
-    w._discoverListElement = function (path) {
-        var name = (
-            path instanceof Array ?  this._name(path) : path
-        );
-        return $('#' + this._id(name, 'list'));
+    w._discoverListElement = function () {
+        return $('#' + this._id(
+            this.path, 'list', this.render_options.offset,
+                this.render_options.path_extra
+        ));
     };
 
-    w._discoverListName = function (path) {
-        var list_elt = this.discoverListElement(path);
+    w._discoverListName = function () {
+        var list_elt = this.discoverListElement();
         var actions_elt = $(list_elt).closestChild('.actions');
         return actions_elt.attr('rel');
     };
     
-    w._discoverListType = function (path) {
-        var list_elt = this.discoverListElement(path);
+    w._discoverListType = function () {
+        var list_elt = this.discoverListElement();
         return list_elt.attr('rel');
     };
 
-    w._discoverListItemsElement = function (path) {
-        var list_elt = this.discoverListElement(path);
+    w._discoverListItemsElement = function () {
+        var list_elt = this.discoverListElement();
         return list_elt.closestChild('.items');
     };
 
-    w.discoverListItems = function (path) {
-        return this.discoverListItemsElement(path).children('.item');
+    w.discoverListItems = function () {
+        return (
+            this.discoverListItemsElement().children('.item')
+        );
     },
 
-    w.countListItems = function (path) {
-        return this.discoverListItems(path).length;
+    w.countListItems = function () {
+        return this.discoverListItems().length;
     },
 
-    w.bindEventsForList = function(path) {
-        var list_elt = this.discoverListElement(path);
+    w.bindEventsForList = function() {
+        var list_elt = this.discoverListElement();
         var add_elt = $(list_elt).closestChild('.actions .add');
 
         add_elt.bind('click', utils.bindContext(this, function (ev) {
-            return this.handleAddButtonClick(ev, path);
+            return this.handleAddButtonClick(ev);
         }));
     };
 
-    w.bindEventsForListItem = function (path, item_elt) {
+    w.bindEventsForListItem = function (item_elt) {
         item_elt = $(item_elt);
         var edit_elt = item_elt.closestChild('.actions .edit');
         var delete_elt = item_elt.closestChild('.actions .delete');
 
         edit_elt.bind('click', utils.bindContext(this, function(ev) {
-            return this.handleEditButtonClick(ev, path);
+            return this.handleEditButtonClick(ev);
         }));
 
         delete_elt.bind('click', utils.bindContext(this, function(ev) {
-            return this.handleDeleteButtonClick(ev, path);
+            return this.handleDeleteButtonClick(ev);
         }));
 
         if (this.sortable) {
@@ -560,40 +572,39 @@ exports.embedList = function (_options) {
             var down_elt = item_elt.closestChild('.actions .down');
 
             up_elt.bind('click', utils.bindContext(this, function(ev) {
-                return this.handleUpButtonClick(ev, path);
+                return this.handleUpButtonClick(ev);
             }));
 
             down_elt.bind('click', utils.bindContext(this, function(ev) {
-                return this.handleDownButtonClick(ev, path);
+                return this.handleDownButtonClick(ev);
             }));
         }
     };
 
-    w.renumberList = function (path) {
+    w.renumberList = function () {
         var item_elts =
-            this.discoverListItemsElement(path).children('.item');
+            this.discoverListItemsElement().children('.item');
 
         for (var i = 0, len = item_elts.length; i < len; ++i) {
             var item = $(item_elts[i]);
-            this.renumberListItem(item, path, i);
-            this.adjustListItemActions(item, i, len);
+            this.renumberListItem(item, i);
+            this.updateListItemActions(item, i, len);
 
         };
-        
-        return this.adjustListActions(path);
+        return this.updateListActions(len);
     };
 
-    w.renumberListItem = function (elt, path, offset) {
-        var name = this._name(path);
-        var options = (this.singleton ? null : { offset: offset });
-
+    w.renumberListItem = function (elt, offset) {
+        var widget_options = (
+            this.singleton ? null : { offset: offset }
+        );
         if (_.isFunction(this.widget.updateName)) {
-            this.widget.updateName(elt, path, options);
+            this.widget.updateName(elt, this.path, widget_options);
         }
     };
 
-    w.adjustListActions = function (path, offset) {
-        var list_elt = this.discoverListElement(path);
+    w.updateListActions = function (offset) {
+        var list_elt = this.discoverListElement();
         var add_elt = list_elt.closestChild('.actions .add');
 
         if (this.singleton && offset > 0) {
@@ -604,7 +615,7 @@ exports.embedList = function (_options) {
         return offset;
     };
 
-    w.adjustListItemActions = function (item_elt, offset, count) {
+    w.updateListItemActions = function (item_elt, offset, count) {
         if (this.sortable) {
             var attr = 'disabled';
             var up_elt = item_elt.closestChild('.actions .up');
@@ -623,48 +634,48 @@ exports.embedList = function (_options) {
         }
     };
 
-    w.moveExistingItem = function (path, after_elt, item_elt) {
+    w.moveExistingItem = function (after_elt, item_elt) {
         if (after_elt) {
             $(after_elt).after(item_elt);
         } else {
-            var items_elt = this.discoverListItemsElement(path);
+            var items_elt = this.discoverListItemsElement();
             items_elt.append(item_elt);
         }
-        this.renumberList(path);
-        this.bindEventsForListItem(path, item_elt);
+        this.renumberList();
+        this.bindEventsForListItem(item_elt);
     };
 
-    w.insertNewItemAtEnd = function (path, callback) {
-        var list_elt = this.discoverListElement(path);
+    w.insertNewItemAtEnd = function (callback) {
+        var list_elt = this.discoverListElement();
 
         var item_elts =
-            this.discoverListItemsElement(path).children('.item');
+            this.discoverListItemsElement().children('.item');
 
         var last_elt = item_elts.last();
 
         return this.insertNewItem(
-            path, (this.singleton ? null : item_elts.length),
+            (this.singleton ? null : item_elts.length),
                 last_elt[0], callback
         );
     };
 
-    w.insertNewItem = function(path, offset, after_elt, callback) {
-        var list_elt = this.discoverListElement(path);
-        var list_type = this.discoverListType(path);
+    w.insertNewItem = function(offset, after_elt, callback) {
+        var list_elt = this.discoverListElement();
+        var list_type = this.discoverListType();
 
         db.newUUID(100, utils.bindContext(this, function (err, uuid) {
             var value = { type: list_type, _id: uuid };
 
-            var item_elt = $(this.htmlForListItem(path, {
-                name: this._name(path),
+            var item_elt = $(this.htmlForListItem({
+                name: this._name(this.path),
                 offset: offset, value: value, raw: value
             }));
 
-            this.moveExistingItem(path, after_elt, item_elt);
+            this.moveExistingItem(after_elt, item_elt);
 
             if (_.isFunction(this.widget.clientInit)) {
                 this.widget.clientInit(
-                    this.field, path, value, null, [], {
+                    this.field, this.path, value, null, [], {
                         offset: offset
                     }
                 );
@@ -678,19 +689,24 @@ exports.embedList = function (_options) {
         return item_elt[0];
     };
 
-    w.setListItemValue = function(elt, path, value, offset) {
+    w.setListItemValue = function(elt, value, offset) {
         if (this.widget.updateValue) {
-            this.widget.updateValue(elt, path, value, { offset: offset });
+            this.widget.updateValue(
+                elt, this.path, value, { offset: offset }
+            );
         }
     };
 
-    w.htmlForListItem = function(path, item) {
+    w.htmlForListItem = function(item) {
         var html = (
             '<div class="item">' +
                 '<div class="actions">' +
-                    (this.options.sortable ? this.htmlForDownButton() : '') +
-                    (this.options.sortable ? this.htmlForUpButton() : '') +
-                    this.htmlForEditButton() + this.htmlForDeleteButton() +
+                    (this.render_options.sortable ?
+                        this.htmlForDownButton() : '') +
+                    (this.render_options.sortable ?
+                        this.htmlForUpButton() : '') +
+                    this.htmlForEditButton() +
+                    this.htmlForDeleteButton() +
                 '</div>' +
                 this.widget.toHTML(
                     item.name, item.value, item.raw, this.field,
@@ -731,79 +747,79 @@ exports.embedList = function (_options) {
         );
     };
 
-    w.dispatchEventToAction = function (target_elt, path,
+    w.dispatchEventToAction = function (target_elt,
                                         action_name, callback) {
-        var name = this._name(path);
-        var type_name = this.discoverListType(path);
+        var name = this._name(this.path);
+        var type_name = this.discoverListType();
         var item_elt = $(target_elt).closest('.item');
-        var value = this.widget.getValue(item_elt, path);
+        var value = this.widget.getValue(item_elt);
         var offset = item_elt.prevAll('.item').length;
 
         var widget_options = {
             offset: offset,
-            path_extra: (this.options.path_extra || [])
+            path_extra: (this.render_options.path_extra || [])
         };
 
         /* Action handler will transfer control here when finished */
         var cb = utils.bindContext(this, function (successful, new_value) {
             if (callback) {
                 callback.call(
-                    this, target_elt, path, offset, successful, new_value
+                    this, target_elt, offset, successful, new_value
                 );
             }
         });
 
         if (this.actions[action_name]) {
             this.actions[action_name](
-                type_name, this.field, path,
-                    value, value, [], widget_options, cb
+                type_name, this.field, this.path,
+                    value, null, [], widget_options, cb
             );
         }
     };
 
-    w.handleUpButtonClick = function (ev, path) {
+    w.handleUpButtonClick = function (ev) {
         var item_elt = $(ev.target).closest('.item');
         item_elt.insertBefore(item_elt.prev('.item'));
-        this.renumberList(path);
+        this.renumberList();
     };
 
-    w.handleDownButtonClick = function (ev, path) {
+    w.handleDownButtonClick = function (ev) {
         var item_elt = $(ev.target).closest('.item');
         item_elt.insertAfter(item_elt.next('.item'));
-        this.renumberList(path);
+        this.renumberList();
     };
 
-    w.handleAddButtonClick = function (ev, path) {
+    w.handleAddButtonClick = function (ev) {
         var callback = utils.bindContext(
             this, this.handleAddOrEditCompletion
         );
         this.insertNewItemAtEnd(
-            path, utils.bindContext(this, function (item_elt) {
-                this.dispatchEventToAction(item_elt, path, 'add', callback);
+            utils.bindContext(this, function (item_elt) {
+                this.dispatchEventToAction(item_elt, 'add', callback);
             })
         );
     };
 
-    w.handleEditButtonClick = function (ev, path) {
+    w.handleEditButtonClick = function (ev) {
         var callback = utils.bindContext(
             this, this.handleAddOrEditCompletion
         );
-        this.dispatchEventToAction(ev.target, path, 'edit', callback);
+        this.dispatchEventToAction(ev.target, 'edit', callback);
     };
 
-    w.handleDeleteButtonClick = function (ev, path) {
+    w.handleDeleteButtonClick = function (ev) {
         var item_elt = $(ev.target).closest('.item', this);
         item_elt.remove();
-        this.renumberList(path);
-        return this.dispatchEventToAction(ev, path, 'delete');
+        this.renumberList();
+        return this.dispatchEventToAction(ev, 'delete');
     };
 
-    w.handleAddOrEditCompletion = function (target_elt, path, offset,
+    w.handleAddOrEditCompletion = function (target_elt, offset,
                                             is_successful, new_value) {
         if (is_successful) {
             var item_elt = $(target_elt).closest('.item', this);
             this.setListItemValue(
-                item_elt, path, new_value, offset
+                item_elt, new_value, offset
             );
         }
         return is_successful;
@@ -862,25 +878,49 @@ exports.embedForm = function (_options) {
     w.type = _options.type;
 
     w.toHTML = function (name, value, raw, field, options) {
+
+        this.field = field;
+        this.render_options = (options || {});
         this.form = new forms.Form(this.type, value);
+
+        var id = this._id(
+            name, 'form', this.render_options.offset,
+                this.render_options.path_extra
+        );
         var html = (
-            '<div class="embedded form">' +
-                this.form.toHTML(
-                    null, render.defaultRenderer(), options
-                ) +
+            '<div id="' + id + '" class="embedded form">' +
+                '<form>' +
+                    this.form.toHTML(
+                        null, render.defaultRenderer(), this.render_options
+                    ) +
+                '</form>' +
             '</div>'
         );
         return html;
     };
 
     w.getValue = function (elt, path, options) {
-        return JSON.stringify(this.form.values);
+        var container_elt = this._discoverContainerElement(path);
+        var form_elt = container_elt.closestChild('form');
+        var rv = querystring.parse(
+            form_elt.serialize().replace(/\+/g, '%20')
+        );
+        return rv;
     };
 
-    w.validate = function (path, options) {
+    w.validate = function (elt, path, options) {
         return true;
     };
 
+    /** private: **/
+
+    w._discoverContainerElement = function (path) {
+        var id = this._id(
+            path, 'form', this.render_options.offset,
+                this.render_options.path_extra
+        );
+        return $('#' + id);
+    };
 
     return w;
 };
@@ -898,27 +938,33 @@ exports.documentSelector = function (_options) {
 
     w.toHTML = function (name, value, raw, field, options) {
         this.cacheInit();
+        var html_name = this._name(
+            name, options.offset
+        );
+        var container_id = this._id(
+            name, 'top', options.offset, options.path_extra
+        );
+        var hidden_id = this._id(
+            name, options.offset, options.path_extra
+        );
+        var select_id = this._id(
+            name, 'select', options.offset, options.path_extra
+        );
         var html_value = (
-            value instanceof Object ?
-                JSON.stringify(value) : value
+            value instanceof Object ? JSON.stringify(value) : value
         );
         var input_html = (
             '<input class="backing"' +
-                ' type="hidden" value="' + h(html_value) + '" id="' +
-                this._id(name, options.offset, options.path_extra) +
-                '" name="' + this._name(name, options.offset) + '" />'
+                ' type="hidden" value="' + h(html_value) +
+                '" id="' + hidden_id + '" name="' + html_name + '" />'
         );
         var select_html = (
-            '<select class="selector" id="' + h(
-                this._id(name, 'visible', options.offset, options.path_extra)
-             ) + '"></select>'
+            '<select class="selector" id="' + select_id + '"></select>'
         );
         var html = (
-            '<div class="widget layout">' +
-            '<div class="selector">' +
+            '<div id="' + container_id + '" class="selector widget">' +
                 input_html + select_html +
                 '<div class="spinner" style="display: none;"></div>' +
-            '</div>' +
             '</div>'
         );
 
@@ -927,49 +973,47 @@ exports.documentSelector = function (_options) {
 
     w.updateName = function (elt, path, options) {
         this.cacheInit();
-        var hidden_elt = this._discoverBackingElement(elt);
-        var select_elt = this._discoverSelectionElement(elt);
+        var hidden_elt = this.discoverBackingElement(elt);
+        var select_elt = this.discoverSelectionElement(elt);
 
         select_elt.attr('id', this._id(
-            path, 'visible', options.offset, options.path_extra
+            path, 'select', options.offset, options.path_extra
         ));
         hidden_elt.attr('id', this._id(
             path, options.offset, options.path_extra
         ));
-        select_elt.attr('name', this._name(
-            path, 'visible', options.offset, options.path_extra
-        ));
         hidden_elt.attr('name', this._name(
-            path, options.offset, options.path_extra
+            path, options.offset
         ));
     };
 
     w.updateValue = function (elt, path, value, options) {
         elt = $(elt);
-        var value = JSON.stringify(value);
-        var hidden_elt = this._discoverBackingElement(elt);
-        var select_elt = this._discoverSelectionElement(elt);
+        value = this._stringify_value(value);
+
+        var hidden_elt = this.discoverBackingElement(elt);
+        var select_elt = this.discoverSelectionElement(elt);
 
         hidden_elt.val(value);
-        select_elt.val(value);
+        /* select_elt.val(value); */
     };
 
     w.getValue = function (elt, path, options) {
-        var hidden_elt = this._discoverBackingElement(elt);
+        var hidden_elt = this.discoverBackingElement(elt);
         return JSON.parse(hidden_elt.attr('value'));
     };
 
     w.clientInit = function (field, path, value, raw, errors, options) {
 
-        var id = this._id(path, options.offset, options.path_extra);
-        var container_elt = $('#' + id).parent();
+        var id = this._id(path, 'top', options.offset, options.path_extra);
+        var container_elt = $('#' + id);
 
         var spinner_elt = container_elt.closestChild('.spinner');
         var options = (this.options || {});
         var is_embedded = (value instanceof Object);
 
-        var select_elt = this._discoverSelectionElement(container_elt);
-        var hidden_elt = this._discoverBackingElement(container_elt);
+        var select_elt = this.discoverSelectionElement(container_elt);
+        var hidden_elt = this.discoverBackingElement(container_elt);
 
         /* Start progress */
         spinner_elt.show();
@@ -986,7 +1030,7 @@ exports.documentSelector = function (_options) {
                 /* Error handling */
                 if (err) {
                     throw new Error(
-                        'Failed to request content from CouchDB view `' +
+                        'Failed to request content from view `' +
                             options.viewName + '`'
                     );
                 }
@@ -1022,18 +1066,8 @@ exports.documentSelector = function (_options) {
     /** private: **/
 
     w.cacheInit = function () {
-        this.discoverBackingElement = _.memoize(
-            utils.bindContext(this, this._discoverBackingElement),
-            function (container_elt) {
-                return container_elt.id;
-            }
-        );
-        this.discoverSelectionElement = _.memoize(
-            utils.bindContext(this, this._discoverSelectionElement),
-            function (container_elt) {
-                return container_elt.id;
-            }
-        );
+        this.discoverBackingElement = this._discoverBackingElement;
+        this.discoverSelectionElement = this._discoverSelectionElement;
     };
 
     w._discoverBackingElement = function (container_elt) {

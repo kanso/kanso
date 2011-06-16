@@ -76,10 +76,7 @@ exports.modalDialog = function (action_options, type_name, field, path,
     var widget = action_options.widget;
     var name = sanitize.generateDomName.apply(null, path);
     var path_extra = (options.path_extra || []).concat([ 'modal' ]);
-
-    var widget_options = {
-        offset: options.offset, path_extra: path_extra
-    };
+    var widget_options = { path_extra: path_extra };
 
     /* Resolve widget */
     if (!widget && action_options.type) {
@@ -127,23 +124,29 @@ exports.modalDialog = function (action_options, type_name, field, path,
         } else {
 
             /* Close the dialog box:
-                Note that the dialog box won't disappear until
-                we've unwound and returned to the main event loop.
-                If you depend upon closure, use setTimeout(..., 0). */
+                Note that the dialog box won't actually disappear
+                until we've unwound and returned to the main event
+                loop. If you depend upon closure, use setTimeout(). */
+
+            callback(
+                true, widget.getValue(div, path, widget_options)
+            );
+
+            /* Order matters:
+                The callback may refer to elements inside of the modal
+                dialog, so don't destroy it until after it returns. */
 
             $.modal.close();
         }
-        return callback(
-            true, widget.getValue(div, path, widget_options)
-        );
     });
 
     cancelbtn.click(function () {
-        $.modal.close();
-        return callback(
+        callback(
             false, widget.getValue(elt, path, widget_options)
         );
+        $.modal.close();
     });
+
     div.submit(function (ev) {
         ev.preventDefault();
         okbtn.click();
