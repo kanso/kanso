@@ -826,8 +826,8 @@ exports.add_blogpost = function (doc, req) {
     form.validate(req);
 
     if (form.isValid()) {
-        // the form is valid, save the document and redirect to homepage
-        return [form.values, utils.redirect(req, '/')];
+        // the form is valid, save the document and redirect to the new page
+        return [form.values, utils.redirect(req, '/' + form.values._id)];
     }
     else {
         // the form is not valid, so render it again with error messages
