@@ -52,7 +52,7 @@ exports.parse = function(actions) {
             var args = [ options ].concat(
                 Array.prototype.slice.apply(arguments)
             );
-            return require(module)[callback].apply(this, args);
+            return require(module)[callback].apply(null, args);
         };
     }
     return rv;
@@ -142,7 +142,7 @@ exports.modalDialog = function (action_options, type_name, field, path,
 
     cancelbtn.click(function () {
         callback(
-            false, widget.getValue(elt, path, widget_options)
+            false, widget.getValue(div, path, widget_options)
         );
         $.modal.close();
     });

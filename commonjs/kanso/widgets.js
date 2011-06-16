@@ -37,7 +37,6 @@ var Widget = exports.Widget = function Widget(type, options) {
     this.classes = (options.classes || []);
     this.id = options.id;
     this.type = type;
-    this.options = options;
 };
 
 /**
@@ -218,7 +217,7 @@ Widget.prototype.updateName = function (elt, path, options) {
 
 Widget.prototype.updateValue = function (elt, path, value, options) {
     var elt = $('#' + this._id(path));
-    elt.val(value);
+    elt.val(this._stringify_value(value));
 };
 
 /**
@@ -236,7 +235,7 @@ Widget.prototype.updateValue = function (elt, path, value, options) {
 
 Widget.prototype.getValue = function (elt, path, options) {
     var elt = $('#' + this._id(path));
-    return elt.val();
+    return this._parse_value(elt.val());
 };
 
 /**
@@ -309,6 +308,7 @@ exports.hidden = function (options) {
 
 exports.textarea = function (_options) {
     var w = new Widget('textarea', _options || {});
+    w.options = _options;
     w.toHTML = function (name, value, raw, field, options) {
         if (raw === undefined) {
             raw = (value === undefined) ? '': '' + value;
@@ -436,12 +436,12 @@ exports.embedList = function (_options) {
 
     w.sortable = _options.sortable;
     w.singleton = _options.singleton;
-    w.actions = actions.parse(_options.actions || {});
     w.widget = (_options.widget || exports.defaultEmbedded());
-
+    w.actions = actions.parse(_options.actions || {});
+    
     w.toHTML = function (name, value, raw, field, options) {
-
         this.cacheInit();
+
         this.field = field;
         this.render_options = (options || {});
 
@@ -481,9 +481,11 @@ exports.embedList = function (_options) {
     w.clientInit = function(field, path, value, raw, errors, options) {
 
         this.cacheInit();
+
         this.path = path;
         this.field = field;
         this.render_options = (options || {});
+
         var item_elts = (
             this.discoverListItemsElement().children('.item')
         );
@@ -682,11 +684,9 @@ exports.embedList = function (_options) {
             }
 
             if (callback) {
-                callback(item_elt);
+                callback(item_elt[0]);
             }
         }));
-
-        return item_elt[0];
     };
 
     w.setListItemValue = function(elt, value, offset) {
@@ -701,9 +701,9 @@ exports.embedList = function (_options) {
         var html = (
             '<div class="item">' +
                 '<div class="actions">' +
-                    (this.render_options.sortable ?
+                    (this.sortable ?
                         this.htmlForDownButton() : '') +
-                    (this.render_options.sortable ?
+                    (this.sortable ?
                         this.htmlForUpButton() : '') +
                     this.htmlForEditButton() +
                     this.htmlForDeleteButton() +
@@ -769,11 +769,37 @@ exports.embedList = function (_options) {
             }
         });
 
-        if (this.actions[action_name]) {
-            this.actions[action_name](
+        var action_handler = (
+            this.actions[action_name] ||
+                this.defaultActionFor(action_name)
+        );
+
+        if (action_handler) {
+            action_handler(
                 type_name, this.field, this.path,
                     value, null, [], widget_options, cb
             );
+        }
+    };
+
+    w.defaultActionFor = function (action_name) {
+        switch (action_name) {
+            case 'add':
+            case 'edit':
+                return utils.bindContext(this, function () {
+                    var action_options = {
+                        widget: exports.embedForm({
+                            type: this.field.type
+                        })
+                    };
+                    var args = Array.prototype.slice.apply(arguments);
+                    actions.modalDialog.apply(
+                        this, [ action_options ].concat(args)
+                    );
+                });
+                break;
+            case 'delete':
+                break;
         }
     };
 
@@ -825,7 +851,6 @@ exports.embedList = function (_options) {
         return is_successful;
     };
 
-
     return w;
 };
 
@@ -844,14 +869,14 @@ exports.defaultEmbedded = function (_options) {
     var w = new Widget('defaultEmbedded', _options);
     w.toHTML = function (name, value, raw, field, options) {
         var display_name = (value ? value._id: '');
-        var fval = (value ? utils.escapeHTML(JSON.stringify(value)) : '');
+        var fval = (value ? this._stringify_value(value) : '');
 
         if (field && field.type.display_name && value) {
             display_name = field.type.display_name(value);
         }
         var html = (
             '<div class="embedded embed">' + 
-                '<input type="hidden" value="' + fval + '" name="' +
+                '<input type="hidden" value="' + h(fval) + '" name="' +
                     h(this._name(name, options.offset)) + '" />' +
                 '<span class="value">' + h(display_name) + '</span>' +
             '</div>'
@@ -875,13 +900,13 @@ exports.defaultEmbedded = function (_options) {
 exports.embedForm = function (_options) {
 
     var w = new Widget('embedForm', _options);
-    w.type = _options.type;
+    w.embedded_type = _options.type;
 
     w.toHTML = function (name, value, raw, field, options) {
 
         this.field = field;
         this.render_options = (options || {});
-        this.form = new forms.Form(this.type, value);
+        this.form = new forms.Form(this.embedded_type, value);
 
         var id = this._id(
             name, 'form', this.render_options.offset,
@@ -891,7 +916,8 @@ exports.embedForm = function (_options) {
             '<div id="' + id + '" class="embedded form">' +
                 '<form>' +
                     this.form.toHTML(
-                        null, render.defaultRenderer(), this.render_options
+                        null, render.defaultRenderer(),
+                            this.render_options
                     ) +
                 '</form>' +
             '</div>'
@@ -935,6 +961,7 @@ exports.embedForm = function (_options) {
 
 exports.documentSelector = function (_options) {
     var w = new Widget('documentSelector', _options);
+    w.options = (_options || {});
 
     w.toHTML = function (name, value, raw, field, options) {
         this.cacheInit();
@@ -1008,8 +1035,8 @@ exports.documentSelector = function (_options) {
         var id = this._id(path, 'top', options.offset, options.path_extra);
         var container_elt = $('#' + id);
 
-        var spinner_elt = container_elt.closestChild('.spinner');
         var options = (this.options || {});
+        var spinner_elt = container_elt.closestChild('.spinner');
         var is_embedded = (value instanceof Object);
 
         var select_elt = this.discoverSelectionElement(container_elt);
