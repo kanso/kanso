@@ -148,7 +148,7 @@ Form.prototype.validate = function (req) {
         this.options.exclude,
         this.options.fields,
         this.fields,
-        this.values || fieldset.createDefaults(this.fields, req.userCtx) || {},
+        this.values || fieldset.createDefaults(this.fields, req) || {},
         exports.parseRaw(this.fields, tree),
         []
     );
@@ -294,10 +294,7 @@ Form.prototype.toHTML = function (req, /*optional*/RendererClass) {
             'Form\'s toHTML method requires request object as first argument'
         );
     }
-    var values = this.values || fieldset.createDefaults(
-        this.fields,
-        req.userCtx
-    );
+    var values = this.values || fieldset.createDefaults(this.fields, req);
     RendererClass = RendererClass || render.table;
     var renderer = new RendererClass();
     return renderer.start(errsWithoutFields(this.errors)) +

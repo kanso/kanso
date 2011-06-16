@@ -16,13 +16,14 @@ var _ = require('./underscore')._,
 /**
  * Returns a hierachy of default values for a given set of Field objects
  *
- * @name createDefaults(fields, userCtx)
+ * @name createDefaults(fields, req)
  * @param {Object} fields
+ * @param {Object} req - the request object to pass to default_value functions
  * @returns {Object}
  * @api public
  */
 
-exports.createDefaults = function (fields, userCtx) {
+exports.createDefaults = function (fields, req) {
     var fields_module = require('./fields');
     return _.reduce(_.keys(fields), function (result, k) {
         var f = fields[k];
@@ -31,7 +32,7 @@ exports.createDefaults = function (fields, userCtx) {
             f instanceof fields_module.EmbeddedList) {
             if (f.hasOwnProperty('default_value')) {
                 if (_.isFunction(f.default_value)) {
-                    result[k] = f.default_value(userCtx);
+                    result[k] = f.default_value(req);
                 }
                 else {
                     result[k] = f.default_value;
@@ -39,7 +40,7 @@ exports.createDefaults = function (fields, userCtx) {
             }
         }
         else if (f instanceof Object) {
-            result[k] = exports.createDefaults(f, userCtx);
+            result[k] = exports.createDefaults(f, req);
         } else {
             throw new Error(
                 'The field type `' + (typeof f) + '` is not supported.'

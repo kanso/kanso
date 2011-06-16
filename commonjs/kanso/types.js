@@ -55,6 +55,9 @@ var Type = exports.Type = function Type(name, options) {
         widget: widgets.hidden(),
         permissions: {
             update: permissions.fieldUneditable()
+        },
+        default_value: function (req) {
+            return req.uuid;
         }
     });
     f._rev = fields.string({
@@ -193,7 +196,7 @@ Type.prototype.authorizeTypeLevel = function (nDoc, oDoc, user) {
  */
 
 Type.prototype.create = function (userCtx, callback) {
-    var doc = fieldset.createDefaults(this.fields, userCtx);
+    var doc = fieldset.createDefaults(this.fields, {userCtx: userCtx});
     db.newUUID(100, function (err, uuid) {
         if (err) {
             return callback(err);
