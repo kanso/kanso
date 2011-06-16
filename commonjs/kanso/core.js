@@ -234,7 +234,7 @@ exports.init = function () {
                 method: method,
                 url: url,
                 data: data,
-                timestamp: ev.timestamp,
+                timestamp: state.timestamp,
                 history_count: count
             };
             exports.handle(method, url, data);
