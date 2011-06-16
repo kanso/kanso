@@ -198,8 +198,8 @@ Widget.prototype.clientInit = function (path, value, raw, field, options) {
 
 Widget.prototype.updateName = function (elt, path, options) {
     var e = $('input[type=hidden]', elt);
-    e.attr('id', this._id(path));
-    e.attr('name', this._name(path));
+    e.attr('id', this._id(path, options.offset, options.path_extra));
+    e.attr('name', this._name(path, options.offset, options.path_extra));
 };
 
 /**
@@ -216,7 +216,8 @@ Widget.prototype.updateName = function (elt, path, options) {
  */
 
 Widget.prototype.updateValue = function (elt, path, value, options) {
-    var elt = $('#' + this._id(path));
+    console.log([ 'updateValue', elt, path, value, options ]);
+    elt = $(elt).closestChild('input[type=hidden]');
     elt.val(this._stringify_value(value));
 };
 
@@ -234,8 +235,9 @@ Widget.prototype.updateValue = function (elt, path, value, options) {
  */
 
 Widget.prototype.getValue = function (elt, path, options) {
-    var elt = $('#' + this._id(path));
-    return this._parse_value(elt.val());
+    return this._parse_value(
+        $(elt).closestChild('input[type=hidden]').val()
+    );
 };
 
 /**
@@ -445,6 +447,10 @@ exports.embedList = function (_options) {
         this.field = field;
         this.render_options = (options || {});
 
+        if (this.singleton && !_.isArray(value)) {
+            value = [ value ];
+        }
+
         var id = this._id(
             name, 'list', this.render_options.offset,
                 this.render_options.path_extra
@@ -597,9 +603,9 @@ exports.embedList = function (_options) {
     };
 
     w.renumberListItem = function (elt, offset) {
-        var widget_options = (
-            this.singleton ? null : { offset: offset }
-        );
+        var widget_options = {
+            offset: (this.singleton ? null : offset)
+        };
         if (_.isFunction(this.widget.updateName)) {
             this.widget.updateName(elt, this.path, widget_options);
         }
@@ -752,8 +758,10 @@ exports.embedList = function (_options) {
         var name = this._name(this.path);
         var type_name = this.discoverListType();
         var item_elt = $(target_elt).closest('.item');
-        var value = this.widget.getValue(item_elt);
         var offset = item_elt.prevAll('.item').length;
+        var value = this.widget.getValue(
+            item_elt, this.path, this.render_options
+        );
 
         var widget_options = {
             offset: offset,
@@ -775,31 +783,11 @@ exports.embedList = function (_options) {
         );
 
         if (action_handler) {
+            console.log([ 'value', value ]);
             action_handler(
                 type_name, this.field, this.path,
                     value, null, [], widget_options, cb
             );
-        }
-    };
-
-    w.defaultActionFor = function (action_name) {
-        switch (action_name) {
-            case 'add':
-            case 'edit':
-                return utils.bindContext(this, function () {
-                    var action_options = {
-                        widget: exports.embedForm({
-                            type: this.field.type
-                        })
-                    };
-                    var args = Array.prototype.slice.apply(arguments);
-                    actions.modalDialog.apply(
-                        this, [ action_options ].concat(args)
-                    );
-                });
-                break;
-            case 'delete':
-                break;
         }
     };
 
@@ -851,6 +839,28 @@ exports.embedList = function (_options) {
         return is_successful;
     };
 
+    w.defaultActionFor = function (action_name) {
+        switch (action_name) {
+            case 'add':
+            case 'edit':
+                return utils.bindContext(this, function () {
+                    var action_options = {
+                        widget: exports.embedForm({
+                            type: this.field.type
+                        })
+                    };
+                    var args = Array.prototype.slice.apply(arguments);
+                    actions.modalDialog.apply(
+                        this, [ action_options ].concat(args)
+                    );
+                });
+                break;
+            case 'delete':
+                break;
+        }
+        return null;
+    };
+
     return w;
 };
 
@@ -868,6 +878,7 @@ exports.embedList = function (_options) {
 exports.defaultEmbedded = function (_options) {
     var w = new Widget('defaultEmbedded', _options);
     w.toHTML = function (name, value, raw, field, options) {
+        console.log([ name, value, raw, field, options ]);
         var display_name = (value ? value._id: '');
         var fval = (value ? this._stringify_value(value) : '');
 
