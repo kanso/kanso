@@ -78,30 +78,6 @@ Widget.prototype._name = function (name /* , ... */) {
 };
 
 /**
- * Generates a string for common widget attributes.
- *
- * @param {String} name - field name on the HTML form
- * @param {String} extension - optional; a string to be added
- *                  to the generated DOM identifier. Use this when you
- *                  want to make an identifier that is related to
- *                  an existing identifier, but is still unique. The
- *                  HTML form name will not b changed.
- * @returns {String}
- * @api private
- */
-
-Widget.prototype._attrs = function (name) {
-    var html = (
-        ' name="' + h(this._name.apply(this, arguments)) +
-            '" id="' + h(this._id.apply(this, arguments)) + '"'
-    );
-    if (this.classes.length > 0) {
-        html += ' class="' + h(this.classes.join(' ')) + '"';
-    }
-    return html;
-};
-
-/**
  * Converts an input element's value attribute to a valid
  * in-memory representation of the document or document fragment.
  * This function tries to interpret the string as JSON if it's
@@ -131,6 +107,33 @@ Widget.prototype._parse_value = function (str, type_name)
 };
 
 /**
+ * Converts an in-memory representation of the document or
+ * document fragment in to an encoded string. If the value
+ * passed is already encoded, this function does nothing.
+ *
+ * @name _stringify_value(str, type_name)
+ * @param {String} value The value to encode.
+ * @param {String} type_name The type of field that the input control
+ *          belongs to. This value may influence how value is encoded.
+ * @returns {Object}
+ */
+
+Widget.prototype._stringify_value = function (value, type_name)
+{
+    /* TODO:
+        This function needs to actually check type_name... */
+
+    var rv = null;
+
+    try {
+        rv = JSON.stringify(value);
+    } catch (e) {
+        rv = value;
+    }
+
+    return rv;
+};
+/**
  * Converts a widget to HTML using the provided name and parsed and raw values
  *
  * @name Widget.toHTML(name, value, raw, field, options)
@@ -153,7 +156,8 @@ Widget.prototype.toHTML = function (name, value, raw, field, options) {
     var html = '<input';
     html += (this.type ? ' type="' + h(this.type) + '"': '');
     html += ' value="' + h(raw) + '"';
-    html += this._attrs(name);
+    html += ' name="' + this._id(name, options.offset) + '" id="';
+    html += this._id(name, options.offset, options.path_extra) + '"'
     return html + ' />';
 };
 
@@ -302,10 +306,9 @@ exports.hidden = function (options) {
  * @api public
  */
 
-exports.textarea = function (options) {
-    options = options || {};
-    var w = new Widget('textarea', options);
-    w.toHTML = function (name, value, raw, field) {
+exports.textarea = function (_options) {
+    var w = new Widget('textarea', _options || {});
+    w.toHTML = function (name, value, raw, field, options) {
         if (raw === undefined) {
             raw = (value === undefined) ? '': '' + value;
         }
@@ -313,12 +316,14 @@ exports.textarea = function (options) {
             raw = '';
         }
         var html = '<textarea';
-        html += this._attrs(name);
-        if (options.hasOwnProperty('cols')) {
-            html += ' cols="' + h(options.cols) + '"';
+        html += ' name="' + this._id(name, options.offset) + '" id="';
+        html += this._id(name, options.offset, options.path_extra) + '"';
+
+        if (this.options.hasOwnProperty('cols')) {
+            html += ' cols="' + h(this.options.cols) + '"';
         }
-        if (options.hasOwnProperty('rows')) {
-            html += ' rows="' + h(options.rows) + '"';
+        if (this.options.hasOwnProperty('rows')) {
+            html += ' rows="' + h(this.options.rows) + '"';
         }
         html += '>' + h(raw);
         html += '</textarea>';
@@ -336,11 +341,12 @@ exports.textarea = function (options) {
  * @api public
  */
 
-exports.checkbox = function (options) {
-    var w = new Widget('checkbox', options);
-    w.toHTML = function (name, value, raw, field) {
+exports.checkbox = function (_options) {
+    var w = new Widget('checkbox', _options || {});
+    w.toHTML = function (name, value, raw, field, options) {
         var html = '<input type="checkbox"';
-        html += this._attrs(name);
+        html += ' name="' + this._id(name, options.offset) + '" id="';
+        html += this._id(name, options.offset, options.path_extra) + '"';
         html += (value ? ' checked="checked"': '');
         return (html + ' />');
     };
@@ -356,14 +362,18 @@ exports.checkbox = function (options) {
  * @api public
  */
 
-exports.select = function (options) {
-    var w = new Widget('select', options);
-    w.values = options.values;
-    w.toHTML = function (name, value, raw, field) {
+exports.select = function (_options) {
+    var w = new Widget('select', _options || {});
+    w.values = _options.values;
+    w.toHTML = function (name, value, raw, field, options) {
         if (value === null || value === undefined) {
             value = '';
         }
-        var html = '<select' + this._attrs(name) + '>';
+
+        var html = '<select';
+        html += ' name="' + this._id(name, options.offset) + '" id="';
+        html += this._id(name, options.offset, options.path_extra) + '">';
+
         for (var i = 0; i < this.values.length; i++) {
             var opt = this.values[i];
             html += '<option value="' + h(opt[0]) + '"';
@@ -390,8 +400,8 @@ exports.select = function (options) {
  * @api public
  */
 
-exports.computed = function (options) {
-    var w = new Widget('computed', options);
+exports.computed = function (_options) {
+    var w = new Widget('computed', _options);
     w.toHTML = function (name, value, raw, field) {
         if (raw === undefined) {
             raw = (value === undefined) ? '': '' + value;
@@ -400,7 +410,8 @@ exports.computed = function (options) {
             raw = '';
         }
         var html = '<input type="hidden" value="' + h(raw) + '"';
-        html += this._attrs(name) + ' />';
+        html += ' name="' + this._id(name, options.offset) + '" id="';
+        html += this._id(name, options.offset, options.path_extra) + '" />';
         html += '<span>' + h(raw) + '</span>';
         return html;
     };
@@ -623,25 +634,27 @@ exports.embedList = function (_options) {
         this.bindEventsForListItem(path, item_elt);
     };
 
-    w.insertNewItemAtEnd = function (path) {
+    w.insertNewItemAtEnd = function (path, callback) {
         var list_elt = this.discoverListElement(path);
 
         var item_elts =
             this.discoverListItemsElement(path).children('.item');
 
         var last_elt = item_elts.last();
+
         return this.insertNewItem(
             path, (this.singleton ? null : item_elts.length),
-                last_elt[0]
+                last_elt[0], callback
         );
     };
 
-    w.insertNewItem = function(path, offset, after_elt) {
+    w.insertNewItem = function(path, offset, after_elt, callback) {
         var list_elt = this.discoverListElement(path);
         var list_type = this.discoverListType(path);
 
         db.newUUID(100, utils.bindContext(this, function (err, uuid) {
             var value = { type: list_type, _id: uuid };
+
             var item_elt = $(this.htmlForListItem(path, {
                 name: this._name(path),
                 offset: offset, value: value, raw: value
@@ -651,12 +664,18 @@ exports.embedList = function (_options) {
 
             if (_.isFunction(this.widget.clientInit)) {
                 this.widget.clientInit(
-                    this.field, path, value, value, [], {
+                    this.field, path, value, null, [], {
                         offset: offset
                     }
                 );
             }
-        }))
+
+            if (callback) {
+                callback(item_elt);
+            }
+        }));
+
+        return item_elt[0];
     };
 
     w.setListItemValue = function(elt, path, value, offset) {
@@ -712,6 +731,36 @@ exports.embedList = function (_options) {
         );
     };
 
+    w.dispatchEventToAction = function (target_elt, path,
+                                        action_name, callback) {
+        var name = this._name(path);
+        var type_name = this.discoverListType(path);
+        var item_elt = $(target_elt).closest('.item');
+        var value = this.widget.getValue(item_elt, path);
+        var offset = item_elt.prevAll('.item').length;
+
+        var widget_options = {
+            offset: offset,
+            path_extra: (this.options.path_extra || [])
+        };
+
+        /* Action handler will transfer control here when finished */
+        var cb = utils.bindContext(this, function (successful, new_value) {
+            if (callback) {
+                callback.call(
+                    this, target_elt, path, offset, successful, new_value
+                );
+            }
+        });
+
+        if (this.actions[action_name]) {
+            this.actions[action_name](
+                type_name, this.field, path,
+                    value, value, [], widget_options, cb
+            );
+        }
+    };
+
     w.handleUpButtonClick = function (ev, path) {
         var item_elt = $(ev.target).closest('.item');
         item_elt.insertBefore(item_elt.prev('.item'));
@@ -725,36 +774,34 @@ exports.embedList = function (_options) {
     };
 
     w.handleAddButtonClick = function (ev, path) {
-        this.insertNewItemAtEnd(path);
+        var callback = utils.bindContext(
+            this, this.handleAddOrEditCompletion
+        );
+        this.insertNewItemAtEnd(
+            path, utils.bindContext(this, function (item_elt) {
+                this.dispatchEventToAction(item_elt, path, 'add', callback);
+            })
+        );
     };
 
     w.handleEditButtonClick = function (ev, path) {
-        var offset = 0;
-        var name = this._name(path);
-        var type_name = this.discoverListType(path);
-        var item_elt = $(ev.target).closest('.item');
-
-        var value = this.widget.getValue(item_elt, path);
-        var widget_options = { offset: offset, path_extra: [] };
-
-        /* Action will transfer control here when finished */
-        var cb = utils.bindContext(this, function (successful, new_value) {
-            this.handleEditCompletion.call(
-                this, ev, path, offset, successful, new_value
-            );
-        });
-
-        if (this.actions.edit) {
-            this.actions.edit(
-                type_name, this.field, path,
-                    value, value, [], widget_options, cb
-            );
-        }
+        var callback = utils.bindContext(
+            this, this.handleAddOrEditCompletion
+        );
+        this.dispatchEventToAction(ev.target, path, 'edit', callback);
     };
 
-    w.handleEditCompletion = function (ev, path, offset, is_successful, new_value) {
+    w.handleDeleteButtonClick = function (ev, path) {
+        var item_elt = $(ev.target).closest('.item', this);
+        item_elt.remove();
+        this.renumberList(path);
+        return this.dispatchEventToAction(ev, path, 'delete');
+    };
+
+    w.handleAddOrEditCompletion = function (target_elt, path, offset,
+                                            is_successful, new_value) {
         if (is_successful) {
-            var item_elt = $(ev.target).closest('.item', this);
+            var item_elt = $(target_elt).closest('.item', this);
             this.setListItemValue(
                 item_elt, path, new_value, offset
             );
@@ -762,11 +809,6 @@ exports.embedList = function (_options) {
         return is_successful;
     };
 
-    w.handleDeleteButtonClick = function (ev, path) {
-        var item_elt = $(ev.target).closest('.item', this);
-        item_elt.remove();
-        this.renumberList(path);
-    };
 
     return w;
 };
@@ -815,15 +857,17 @@ exports.defaultEmbedded = function (_options) {
  */
 
 exports.embedForm = function (_options) {
+
     var w = new Widget('embedForm', _options);
     w.type = _options.type;
 
     w.toHTML = function (name, value, raw, field, options) {
         this.form = new forms.Form(this.type, value);
-
         var html = (
             '<div class="embedded form">' +
-                this.form.toHTML() +
+                this.form.toHTML(
+                    null, render.defaultRenderer(), options
+                ) +
             '</div>'
         );
         return html;

@@ -75,9 +75,10 @@ exports.modalDialog = function (action_options, type_name, field, path,
     var div = $('<div />');
     var widget = action_options.widget;
     var name = sanitize.generateDomName.apply(null, path);
+    var path_extra = (options.path_extra || []).concat([ 'modal' ]);
 
     var widget_options = {
-        offset: options.offset, path_extra: [ 'modal' ]
+        offset: options.offset, path_extra: path_extra
     };
 
     /* Resolve widget */

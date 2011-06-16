@@ -244,8 +244,10 @@ exports.table = function () {
      * @param {Object} value
      * @param {String} raw
      * @param {Array} errors
+     * @param {Object} options An object containing widget options, which
+     *          will ultimately be provided to each widget's toHTML method.
      */
-    this.field = function (field, path, value, raw, errors) {
+    this.field = function (field, path, value, raw, errors, options) {
         var name = path.join('.');
         var id = (path.join('_') + '_field');
         var caption = path.slice(this.depth).join(' ');
@@ -259,7 +261,9 @@ exports.table = function () {
         });
 
         if (field.widget.type === 'hidden') {
-            return field.widget.toHTML(name, value, raw, field, {});
+            return field.widget.toHTML(
+                name, value, raw, field, (options || {})
+            );
         }
 
         return (
@@ -270,7 +274,9 @@ exports.table = function () {
                     exports.descriptionHTML(field) +
                 '</th>' +
                 '<td>' +
-                    field.widget.toHTML(name, value, raw, field, {}) +
+                    field.widget.toHTML(
+                        name, value, raw, field, (options || {})
+                    ) +
                     exports.hintHTML(field) +
                 '</td>' +
                 '<td class="errors">' +
@@ -368,7 +374,9 @@ exports.div = function () {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         if (field.widget.type === 'hidden') {
-            return field.widget.toHTML(name, value, raw, field, {});
+            return field.widget.toHTML(
+                name, value, raw, field, (options || {})
+            );
         }
         return (
             '<div class="' +
