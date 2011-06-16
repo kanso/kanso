@@ -1036,8 +1036,33 @@ exports.setURL = function (method, url, data) {
         timestamp: new Date().getTime(),
         history_count: window.history.length + 1
     };
+    // this is the result of a direct call to setURL
+    // (don't show confirmation dialog for unsafe states needing to re-submit)
     exports.set_called = true;
-    window.history.pushState(state, document.title, fullurl);
+
+    /**
+     * if the current request is unsafe, we replace it so clicking the back
+     * button 'skips' it without showing a dialog.
+     *
+     * This means GET1, POST2, GET3 would result in a history of GET1, GET3.
+     * Clicking back after GET3 wouldn't re-submit a form.
+     *
+     * Doing GET1, POST2, then clicking back and forward again would result
+     * in a confirmation dialog asking if you want to re-submit.
+     */
+
+    var curr_state = exports.current_state;
+    var curr_method = curr_state ? (curr_state.method || 'GET'): 'GET';
+
+    if (curr_method !== 'GET' && curr_method !== 'HEAD') {
+        // unsafe method on current request, replace it
+        window.history.replaceState(state, document.title, fullurl);
+    }
+    else {
+        // last request was safe, add a new entry in the history
+        window.history.pushState(state, document.title, fullurl);
+    }
+    // manually fire popstate event
     window.onpopstate({state: state});
 };
 
