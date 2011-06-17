@@ -19,11 +19,9 @@ var h = sanitize.escapeHtml;
 
 /**
  * Generates a script tag that fires the event named {name}.
- *
  */
 
 exports.scriptTagForEvent = function (name) {
-
     var rv = (
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
@@ -48,7 +46,7 @@ exports.scriptTagForEvent = function (name) {
 
 exports.errorHTML = function (errors) {
     if (errors && errors.length) {
-        var html = '<ul class="errors">';
+        var html = '<ul class="errors right">';
         for (var i = 0; i < errors.length; i++) {
             html += (
                 '<li class="error_msg">' +
@@ -266,7 +264,7 @@ exports.table = function () {
             );
         }
 
-        return (
+        var rv = (
             '<tr id="' + id + '" class="' +
                 exports.classes(field, errors).join(' ') + '">' +
                 '<th>' +
@@ -274,16 +272,15 @@ exports.table = function () {
                     exports.descriptionHTML(field) +
                 '</th>' +
                 '<td>' +
+                    exports.errorHTML(errors) +
                     field.widget.toHTML(
                         name, value, raw, field, (options || {})
                     ) +
                     exports.hintHTML(field) +
                 '</td>' +
-                '<td class="errors">' +
-                    exports.errorHTML(errors) +
-                '</td>' +
             '</tr>'
         );
+        return rv;
     };
 
     /**

@@ -473,7 +473,7 @@
 			var input = $(':input:enabled:visible:' + p, s.d.wrap);
 			setTimeout(function () {
 				input.length > 0 ? input.focus() : s.d.wrap.focus();
-			}, 10);
+			}, 0);
 		},
 		getDimensions: function () {
 			var el = $(window);
@@ -691,7 +691,7 @@
 
 					// reset the dialog object
 					s.d = {};
-				}, 10);
+				}, 0);
 			}
 		}
 	};

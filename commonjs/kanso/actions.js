@@ -111,16 +111,27 @@ exports.modalDialog = function (action_options, type_name, field, path,
     );
 
     okbtn.click(function () {
-        if (_.isFunction(widget.validate) &&
-            !widget.validate(div, path, widget_options)) {
+
+        /* Validate widget:
+            This usually defers to a form type's implementation.
+            Most simple widgets just return true for this method. */
+
+        errors = widget.validate(div, path, widget_options);
+
+        if (errors.length > 0) {
 
             /* Repost dialog box:
                 This will replace the current dialog box. */
 
-            return exports.modalDialog(
-                action_options, type_name, field, path,
-                    value, raw, errors, options, callback
-            );
+            $.modal.close();
+
+            setTimeout(function () {
+                exports.modalDialog(
+                    action_options, type_name, field, path,
+                        value, raw, errors, options, callback
+                );
+            }, 0);
+
         } else {
 
             /* Close the dialog box:
@@ -156,12 +167,13 @@ exports.modalDialog = function (action_options, type_name, field, path,
     div.append(okbtn);
     div.append(cancelbtn);
 
-    /* Launch */
-    div.modal();
-
     /* Initialize widget */
     widget.clientInit(
         field, path, value, raw, errors, widget_options
     );
+    
+    /* Launch */
+    div.modal();
+
 };
 

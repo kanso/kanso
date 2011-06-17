@@ -133,6 +133,7 @@ Widget.prototype._stringify_value = function (value, type_name)
 
     return rv;
 };
+
 /**
  * Converts a widget to HTML using the provided name and parsed and raw values
  *
@@ -216,7 +217,6 @@ Widget.prototype.updateName = function (elt, path, options) {
  */
 
 Widget.prototype.updateValue = function (elt, path, value, options) {
-    console.log([ 'updateValue', elt, path, value, options ]);
     elt = $(elt).closestChild('input[type=hidden]');
     elt.val(this._stringify_value(value));
 };
@@ -447,7 +447,7 @@ exports.embedList = function (_options) {
         this.field = field;
         this.render_options = (options || {});
 
-        if (this.singleton && !_.isArray(value)) {
+        if (this.singleton && value && !_.isArray(value)) {
             value = [ value ];
         }
 
@@ -472,12 +472,8 @@ exports.embedList = function (_options) {
         }
         html += (
                 '</div>' +
-            '<div class="actions">'
-        );
-        if (i == 0 || !this.singleton) {
-            html += this.htmlForAddButton();
-        }
-        html += (
+                '<div class="actions">' +
+                    this.htmlForAddButton() +
                 '</div>' +
             '</div>'
         );
@@ -783,7 +779,6 @@ exports.embedList = function (_options) {
         );
 
         if (action_handler) {
-            console.log([ 'value', value ]);
             action_handler(
                 type_name, this.field, this.path,
                     value, null, [], widget_options, cb
@@ -878,7 +873,6 @@ exports.embedList = function (_options) {
 exports.defaultEmbedded = function (_options) {
     var w = new Widget('defaultEmbedded', _options);
     w.toHTML = function (name, value, raw, field, options) {
-        console.log([ name, value, raw, field, options ]);
         var display_name = (value ? value._id: '');
         var fval = (value ? this._stringify_value(value) : '');
 
@@ -911,13 +905,15 @@ exports.defaultEmbedded = function (_options) {
 exports.embedForm = function (_options) {
 
     var w = new Widget('embedForm', _options);
+
     w.embedded_type = _options.type;
+    w.form = new forms.Form(w.embedded_type);
 
     w.toHTML = function (name, value, raw, field, options) {
 
         this.field = field;
+        this.form.values = value;
         this.render_options = (options || {});
-        this.form = new forms.Form(this.embedded_type, value);
 
         var id = this._id(
             name, 'form', this.render_options.offset,
@@ -946,7 +942,8 @@ exports.embedForm = function (_options) {
     };
 
     w.validate = function (elt, path, options) {
-        return true;
+        this.form.validate(this.getValue(elt, path, options));
+        return this.form.errors;
     };
 
     /** private: **/
