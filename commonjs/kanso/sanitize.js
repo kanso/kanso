@@ -72,7 +72,7 @@ exports.escapeJavascriptString = exports.js = function (s)
 exports.escapeXmlCharacterData = exports.cdata = function (s)
 {
     s = ('' + s); /* Coerce to string */
-    s = s.replace(/]]>/g, '');
+    s = s.replace(/\]\]>/g, '');
     return s;
 };
 
@@ -98,12 +98,12 @@ exports.generateDomIdentifier = exports.id = function (/* ... */) {
     };
 
     for (var i = 0, len = arguments.length; i < len; ++i) {
-        if (arguments[i] != undefined) {
+        if (arguments[i] !== undefined) {
             var arg = arguments[i];
             if (_.isArray(arg)) {
                 /* Avoid recursion; limit to one level deep */
                 for (var j = 0, lenj = arg.length; j < lenj; ++j) {
-                    if (arg[j] != undefined) {
+                    if (arg[j] !== undefined) {
                         rv.push(esc(arg[j]));
                     }
                 }
@@ -137,12 +137,12 @@ exports.generateDomName = exports.name = function (/* ... */) {
     };
 
     for (var i = 0, len = arguments.length; i < len; ++i) {
-        if (arguments[i] != undefined) {
+        if (arguments[i] !== undefined) {
             var arg = arguments[i];
             if (_.isArray(arg)) {
                 /* Avoid recursion; limit to one level deep */
                 for (var j = 0, lenj = arg.length; j < lenj; ++j) {
-                    if (arg[j] != undefined) {
+                    if (arg[j] !== undefined) {
                         rv.push(esc(arg[j]));
                     }
                 }

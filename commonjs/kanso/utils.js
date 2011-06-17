@@ -1,4 +1,5 @@
-/*global window: false */
+/*global window: false, __kansojs_current_request: true*/
+
 
 /**
  * General utility functions used by Kanso. Some functions were moved here from
@@ -26,9 +27,9 @@ var settings = require('./settings'), // settings module is auto-generated
  * for these functions, and is only exported to make unit testing easier.
  */
 
-exports.isBrowser = function() {
+exports.isBrowser = function () {
     return (typeof(window) !== 'undefined');
-}
+};
 
 /**
  * Keeps track of the last *triggered* request. This is to avoid a race
@@ -40,12 +41,10 @@ exports.isBrowser = function() {
  * this value to see if they should continue rendering the result or not.
  */
 
-/* global __kansojs_current_request; */
-
 exports.currentRequest = function (v) {
     if (v) {
         __kansojs_current_request = v;
-    } else if (typeof(__kansojs_current_request) == 'undefined') {
+    } else if (typeof(__kansojs_current_request) === 'undefined') {
         __kansojs_current_request = null;
     }
     return __kansojs_current_request;
@@ -136,10 +135,10 @@ exports.getBaseURL = function (/*optional*/req) {
  * no action for a callback or markup-generator function.
  */
 
-exports.emptyFunction = function()
+exports.emptyFunction = function ()
 {
     return '';
-}
+};
 
 /**
  * Traverses an object and its sub-objects using an array of property names.
@@ -452,6 +451,6 @@ exports.override = function (a, b) {
 exports.bindContext = function (context, closure) {
     return function () {
         return closure.apply(context, arguments);
-    }
+    };
 };
 

@@ -1,3 +1,5 @@
+/*global __kansojs_event_listeners: true*/
+
 /**
  * The events module handles events emitted by Kanso as well as custom
  * events defined by a Kanso app. These events can be used client-side
@@ -17,7 +19,7 @@ var _ = require('./underscore')._;
  * Stores the bound listeners
  */
 
-/* global */ __kansojs_event_listeners = {};
+__kansojs_event_listeners = {};
 
 
 /**

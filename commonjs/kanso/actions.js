@@ -1,3 +1,5 @@
+/*global $: false, kanso: true*/
+
 /**
  * Implementation of widget actions. These are procedures
  * that can be referenced by widgets to present/collect information,
@@ -17,6 +19,20 @@ var widgets = require('./widgets'),
 
 var h = sanitize.escapeHtml;
 
+/**
+ * Create a closure that loads {module}, and invokes {method}
+ * on it. The {options} parameter is prepenced to the method's
+ * argument list. This separate function silences a lint warning.
+ * See the parse method for details.
+ */
+exports.make_action_handler = function (module, method, options) {
+    return function () {
+        var args = [ options ].concat(
+            Array.prototype.slice.apply(arguments)
+        );
+        return require(module)[method].apply(null, args);
+    };
+};
 
 /**
  * Convert an object containing several [ module, callback ] or
@@ -26,10 +42,11 @@ var h = sanitize.escapeHtml;
  * @param actions An object, containing items describing a
  *          function that can be obtained via require().
  */
-exports.parse = function(actions) {
+exports.parse = function (actions) {
     var rv = {};
     for (var k in actions) {
-        var module, callback, action = actions[k];
+        var module, callback, options;
+        var action = actions[k];
         if (_.isArray(action)) {
             module = action[0];
             callback = action[1];
@@ -37,7 +54,7 @@ exports.parse = function(actions) {
         } else if (_.isFunction(action)) {
             rv[k] = action;
             continue;
-        } else if (typeof(action) == 'object') {
+        } else if (typeof(action) === 'object') {
             module = action.module;
             callback = action.callback;
             options = action.options;
@@ -48,15 +65,10 @@ exports.parse = function(actions) {
             );
         }
         /* Resolve function description to actual function */
-        rv[k] = function () {
-            var args = [ options ].concat(
-                Array.prototype.slice.apply(arguments)
-            );
-            return require(module)[callback].apply(null, args);
-        };
+        rv[k] = exports.make_action_handler(module, callback, options);
     }
     return rv;
-}
+};
 
 /**
  * An action that produces a modal dialog box, with buttons along

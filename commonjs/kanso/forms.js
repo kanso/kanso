@@ -204,7 +204,7 @@ Form.prototype.renderFields = function (renderer, fields, values,
         var cname = utils.constructorName(fields[k]);
 
         if (cname === 'Field' ||
-            cname === 'Embedded' || cname == 'EmbeddedList') {
+            cname === 'Embedded' || cname === 'EmbeddedList') {
 
             return html + renderer.field(
                 fields[k],

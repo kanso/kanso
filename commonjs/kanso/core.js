@@ -566,7 +566,7 @@ exports.parseResponse = function (req, res) {
             body: body,
             code: res.code || 200,
             headers: res.headers
-        }
+        };
     }
     return {
         body: res.body,
@@ -608,7 +608,7 @@ exports.parseResponse = function (req, res) {
             body: body,
             code: res.code || 200,
             headers: res.headers
-        }
+        };
     }
     return {
         body: res.body,

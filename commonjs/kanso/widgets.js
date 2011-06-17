@@ -1,3 +1,5 @@
+/*global $: false, kanso: true*/
+
 /**
  * Widgets define the way a Field object is displayed when rendered as part of a
  * Form. Changing a Field's widget will be reflected in the admin app.
@@ -158,7 +160,7 @@ Widget.prototype.toHTML = function (name, value, raw, field, options) {
     html += (this.type ? ' type="' + h(this.type) + '"': '');
     html += ' value="' + h(raw) + '"';
     html += ' name="' + this._name(name, options.offset) + '" id="';
-    html += this._id(name, options.offset, options.path_extra) + '"'
+    html += this._id(name, options.offset, options.path_extra) + '"';
     return html + ' />';
 };
 
@@ -405,7 +407,7 @@ exports.select = function (_options) {
 
 exports.computed = function (_options) {
     var w = new Widget('computed', _options);
-    w.toHTML = function (name, value, raw, field) {
+    w.toHTML = function (name, value, raw, field, options) {
         if (raw === undefined) {
             raw = (value === undefined) ? '': '' + value;
         }
@@ -467,7 +469,9 @@ exports.embedList = function (_options) {
         for (var i = 0, len = value.length; i < len; ++i) { 
             html += this.htmlForListItem({
                 offset: (this.singleton ? null : i),
-                name: name, value: value[i], raw: raw,
+                name: name,
+                value: value[i],
+                raw: raw,
             });
         }
         html += (
@@ -480,7 +484,7 @@ exports.embedList = function (_options) {
         return html;
     };
 
-    w.clientInit = function(field, path, value, raw, errors, options) {
+    w.clientInit = function (field, path, value, raw, errors, options) {
 
         this.cacheInit();
 
@@ -543,13 +547,13 @@ exports.embedList = function (_options) {
         return (
             this.discoverListItemsElement().children('.item')
         );
-    },
+    };
 
     w.countListItems = function () {
         return this.discoverListItems().length;
-    },
+    };
 
-    w.bindEventsForList = function() {
+    w.bindEventsForList = function () {
         var list_elt = this.discoverListElement();
         var add_elt = $(list_elt).closestChild('.actions .add');
 
@@ -563,11 +567,11 @@ exports.embedList = function (_options) {
         var edit_elt = item_elt.closestChild('.actions .edit');
         var delete_elt = item_elt.closestChild('.actions .delete');
 
-        edit_elt.bind('click', utils.bindContext(this, function(ev) {
+        edit_elt.bind('click', utils.bindContext(this, function (ev) {
             return this.handleEditButtonClick(ev);
         }));
 
-        delete_elt.bind('click', utils.bindContext(this, function(ev) {
+        delete_elt.bind('click', utils.bindContext(this, function (ev) {
             return this.handleDeleteButtonClick(ev);
         }));
 
@@ -575,11 +579,11 @@ exports.embedList = function (_options) {
             var up_elt = item_elt.closestChild('.actions .up');
             var down_elt = item_elt.closestChild('.actions .down');
 
-            up_elt.bind('click', utils.bindContext(this, function(ev) {
+            up_elt.bind('click', utils.bindContext(this, function (ev) {
                 return this.handleUpButtonClick(ev);
             }));
 
-            down_elt.bind('click', utils.bindContext(this, function(ev) {
+            down_elt.bind('click', utils.bindContext(this, function (ev) {
                 return this.handleDownButtonClick(ev);
             }));
         }
@@ -594,7 +598,7 @@ exports.embedList = function (_options) {
             this.renumberListItem(item, i);
             this.updateListItemActions(item, i, len);
 
-        };
+        }
         return this.updateListActions(len);
     };
 
@@ -663,7 +667,7 @@ exports.embedList = function (_options) {
         );
     };
 
-    w.insertNewItem = function(offset, after_elt, callback) {
+    w.insertNewItem = function (offset, after_elt, callback) {
         var list_elt = this.discoverListElement();
         var list_type = this.discoverListType();
 
@@ -672,7 +676,9 @@ exports.embedList = function (_options) {
 
             var item_elt = $(this.htmlForListItem({
                 name: this._name(this.path),
-                offset: offset, value: value, raw: value
+                offset: offset,
+                value: value,
+                raw: value
             }));
 
             this.moveExistingItem(after_elt, item_elt);
@@ -691,7 +697,7 @@ exports.embedList = function (_options) {
         }));
     };
 
-    w.setListItemValue = function(elt, value, offset) {
+    w.setListItemValue = function (elt, value, offset) {
         if (this.widget.updateValue) {
             this.widget.updateValue(
                 elt, this.path, value, { offset: offset }
@@ -699,7 +705,7 @@ exports.embedList = function (_options) {
         }
     };
 
-    w.htmlForListItem = function(item) {
+    w.htmlForListItem = function (item) {
         var html = (
             '<div class="item">' +
                 '<div class="actions">' +
@@ -719,31 +725,31 @@ exports.embedList = function (_options) {
         return html;
     };
 
-    w.htmlForAddButton = function() {
+    w.htmlForAddButton = function () {
         return (
             '<input type="button" class="add action" value="Add" />'
         );
     };
 
-    w.htmlForEditButton = function() {
+    w.htmlForEditButton = function () {
         return (
             '<input type="button" class="edit action" value="Edit" />'
         );
     };
 
-    w.htmlForDeleteButton = function() {
+    w.htmlForDeleteButton = function () {
         return (
             '<input type="button" class="delete action" value="Delete" />'
         );
     };
 
-    w.htmlForUpButton = function() {
+    w.htmlForUpButton = function () {
         return (
             '<input type="button" class="up action" value="&uarr;" />'
         );
     };
 
-    w.htmlForDownButton = function() {
+    w.htmlForDownButton = function () {
         return (
             '<input type="button" class="down action" value="&darr;" />'
         );
@@ -836,22 +842,21 @@ exports.embedList = function (_options) {
 
     w.defaultActionFor = function (action_name) {
         switch (action_name) {
-            case 'add':
-            case 'edit':
-                return utils.bindContext(this, function () {
-                    var action_options = {
-                        widget: exports.embedForm({
-                            type: this.field.type
-                        })
-                    };
-                    var args = Array.prototype.slice.apply(arguments);
-                    actions.modalDialog.apply(
-                        this, [ action_options ].concat(args)
-                    );
-                });
-                break;
-            case 'delete':
-                break;
+        case 'add':
+        case 'edit':
+            return utils.bindContext(this, function () {
+                var action_options = {
+                    widget: exports.embedForm({
+                        type: this.field.type
+                    })
+                };
+                var args = Array.prototype.slice.apply(arguments);
+                actions.modalDialog.apply(
+                    this, [ action_options ].concat(args)
+                );
+            });
+        case 'delete':
+            break;
         }
         return null;
     };
@@ -1040,10 +1045,11 @@ exports.documentSelector = function (_options) {
 
     w.clientInit = function (field, path, value, raw, errors, options) {
 
+        options = (this.options || {});
+
         var id = this._id(path, 'top', options.offset, options.path_extra);
         var container_elt = $('#' + id);
 
-        var options = (this.options || {});
         var spinner_elt = container_elt.closestChild('.spinner');
         var is_embedded = (value instanceof Object);
 
@@ -1077,7 +1083,7 @@ exports.documentSelector = function (_options) {
                 select_elt.append(nil_option);
 
                 /* All other options */
-                _.each(rv.rows || [], function(r) {
+                _.each(rv.rows || [], function (r) {
                     var option = $(document.createElement('option'));
                     var is_selected = (
                         is_embedded ? (value._id === r.id) : (value === r.id)
@@ -1095,7 +1101,8 @@ exports.documentSelector = function (_options) {
                 /* Finished */
                 spinner_elt.hide();
                 select_elt.trigger('change');
-        });
+            }
+        );
     };
 
     /** private: **/
@@ -1127,16 +1134,16 @@ exports.documentSelector = function (_options) {
  */
 
 if (utils.isBrowser()) {
-    (function($) {
-        $.fn.closestChild = function(selector) {
+    (function ($) {
+        $.fn.closestChild = function (selector) {
             /* Breadth-first search for the first matched node */
-            if (selector && selector != '') {
+            if (selector && selector !== '') {
                 var queue = [];
                 queue.push(this);
-                while(queue.length > 0) {
+                while (queue.length > 0) {
                     var node = queue.shift();
                     var children = node.children();
-                    for(var i = 0; i < children.length; ++i) {
+                    for (var i = 0; i < children.length; ++i) {
                         var child = $(children[i]);
                         if (child.is(selector)) {
                             return child;
@@ -1147,6 +1154,6 @@ if (utils.isBrowser()) {
             }
             return $(); /* Nothing found */
         };
-    })(jQuery);
+    }($));
 }
 
