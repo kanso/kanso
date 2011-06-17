@@ -28,3 +28,14 @@ var events = require('kanso/events');
  *     // session change handling code goes here...
  * });
  */
+
+
+/**
+ * The updateFailure event fires when an update function returns a document as
+ * the first part of an array, but the client-side request to update the
+ * document fails.
+ */
+
+events.on('updateFailure', function (err, info, req, res, doc) {
+    alert(err.message || err.toString());
+});

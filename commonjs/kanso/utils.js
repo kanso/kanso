@@ -210,28 +210,6 @@ exports.setPropertyPath = function (obj, path, val) {
 };
 
 /**
- * Returns the name of the constructor function for an object. This is used
- * as a workaround for CouchDB's lack of a module cache, where instanceof checks
- * can break if a module is re-eval'd.
- *
- * @name constructorName(obj)
- * @param {Object} obj
- * @returns {String}
- * @api public
- */
-
-exports.constructorName = function (obj) {
-    if (obj === null || obj === undefined) {
-        return undefined;
-    }
-    if (obj.constructor.name) {
-        return obj.constructor.name;
-    }
-    var match = new RegExp('function (.+)\\(').exec(obj.constructor.toString());
-    return (match && match.length > 1) ? match[1] : undefined;
-};
-
-/**
  * Call function with arguments, catch any errors and add to an array,
  * returning the modified array.
  *
@@ -346,93 +324,23 @@ exports.redirect = function (/*optional*/req, url) {
     return {code: 302, headers: {'Location': baseURL + url}};
 };
 
-
 /**
- * Recursively copies properties of an object, handling circular references
- * and returning a new object completely seperate from the original.
+ * Tests if path b is equal to or a sub-path of a.
  *
- * Modifications to the new object will not affect the original copy.
- *
- * @name deepCopy(obj, [limit])
- * @param obj - the object to copy
- * @param {Number} limit - the recursion depth before throwing (optional)
+ * @name isSubPath(a, b)
+ * @param {Array} a
+ * @param {Array} b
+ * @returns {Boolean}
  * @api public
  */
 
-exports.deepCopy = function (obj, limit) {
-    // for handling circular references:
-    var seen = [];   // store references to original objects
-    var clones = []; // store references to copied objects
-
-    var fn = function (obj, limit) {
-        if (!limit) {
-            throw new Error('deepCopy recursion limit reached');
+exports.isSubPath = function (a, b) {
+    for (var i = 0, len = a.length; i < len; i++) {
+        if (a[i] !== b[i]) {
+            return false;
         }
-
-        if (obj instanceof Date) {
-            var copy = new Date();
-            copy.setTime(obj.getTime());
-            return copy;
-        }
-        else if (typeof obj === 'object') {
-
-            // check for a circular reference
-            var i = _.indexOf(seen, obj);
-            if (i !== -1) {
-                return clones[i];
-            }
-
-            var newObj;
-            if (obj instanceof Array) {
-                newObj = [];
-            }
-            else {
-                // to fix instanceof and constructorName checks
-                var F = function () {};
-                F.prototype = obj;
-                newObj = new F();
-            }
-
-            // add cloned object to list of references, so we
-            // can check for circular references later
-            seen.push(obj);
-            clones.push(newObj);
-
-            // deepCopy all properties
-            for (var k in obj) {
-                newObj[k] = fn(obj[k], limit - 1);
-            }
-            return newObj;
-        }
-        return obj;
-    };
-    return fn(obj, limit || 1000);
-};
-
-
-/**
- * A destructive merge of two JSON objects. The values in 'b' override the
- * values already existing in 'a'. If a value existing in 'b', but not in 'a',
- * it is added. If a value exists in 'a', but not 'b', it is retained.
- *
- * The 'a' object is updated in-place.
- *
- * @name override(a, b)
- * @param {Object} a
- * @param {Object} b
- * @api public
- */
-
-exports.override = function (a, b) {
-    if (a instanceof Object && b instanceof Object) {
-        for (var k in b) {
-            if (b[k] !== undefined) {
-                a[k] = exports.override(a[k], b[k]);
-            }
-        }
-        return a;
     }
-    return b;
+    return true;
 };
 
 /**

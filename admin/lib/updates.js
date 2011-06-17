@@ -94,7 +94,7 @@ exports.updatetype = function (doc, req) {
             type = app.types ? app.types[doc.type]: undefined;
 
         var forms = loader.appRequire(ddoc, 'kanso/forms'),
-            form = new forms.Form(type);
+            form = new forms.Form(type, doc);
 
         form.validate(req.form);
 

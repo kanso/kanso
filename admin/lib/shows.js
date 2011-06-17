@@ -136,12 +136,12 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
     document.title = settings.name + ' - Types - ' + doc.type;
 });
 
-exports.fieldPairs = function (fields, doc, path) {
+exports.fieldPairs = function (fields_module, fields, doc, path) {
     var pairs = [];
     var val, type, display_name;
     for (var k in fields) {
         if (fields.hasOwnProperty(k)) {
-            if (kanso_utils.constructorName(fields[k]) === 'Field') {
+            if (fields[k] instanceof fields_module.Field) {
                 val = kanso_utils.getPropertyPath(doc, path.concat([k]));
                 if (!fields[k].isEmpty(val) || !fields[k].omit_empty) {
                     pairs.push({
@@ -150,12 +150,7 @@ exports.fieldPairs = function (fields, doc, path) {
                     });
                 }
             }
-            else if (kanso_utils.constructorName(fields[k]) === 'Embedded') {
-                /*pairs = pairs.concat(
-                    exports.fieldPairs(
-                        fields[k].type.fields, doc, path.concat([k])
-                    )
-                );*/
+            else if (fields[k] instanceof fields_module.Embedded) {
                 val = kanso_utils.getPropertyPath(doc, path.concat([k]));
                 type = fields[k].type;
                 display_name = val ? val._id: '';
@@ -167,17 +162,10 @@ exports.fieldPairs = function (fields, doc, path) {
                     value: display_name
                 });
             }
-            else if (kanso_utils.constructorName(fields[k]) === 'EmbeddedList') {
+            else if (fields[k] instanceof fields_module.EmbeddedList) {
                 var items = kanso_utils.getPropertyPath(doc, path.concat([k]));
                 if (items) {
                     for (var i = 0; i < items.length; i++) {
-                        /*
-                        pairs = pairs.concat(
-                            exports.fieldPairs(
-                                fields[k].type.fields, doc, path.concat([k,i])
-                            )
-                        );
-                        */
                         val = kanso_utils.getPropertyPath(doc, path.concat([k, i]));
                         type = fields[k].type;
                         display_name = val ? val._id: '';
@@ -198,7 +186,9 @@ exports.fieldPairs = function (fields, doc, path) {
             }
             else if (typeof fields[k] === 'object') {
                 pairs = pairs.concat(
-                    exports.fieldPairs(fields[k], doc, path.concat([k]))
+                    exports.fieldPairs(
+                        fields_module, fields[k], doc, path.concat([k])
+                    )
                 );
             }
         }
@@ -327,7 +317,7 @@ exports.viewtype = adminShow(function (doc, ddoc, req) {
     var tfields = type ? type.fields: {};
     var dname = (type && type.display_name) ? type.display_name(doc): doc._id;
     var content = templates.render('viewtype.html', req, {
-        fields: exports.fieldPairs(tfields, doc, []),
+        fields: exports.fieldPairs(fields, tfields, doc, []),
         doc: doc,
         display_name: dname,
         app: req.query.app,

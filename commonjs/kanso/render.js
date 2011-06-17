@@ -185,9 +185,17 @@ exports.table = function () {
      *
      * @constructor
     */
-    this.start = function () {
+    this.start = function (errs) {
         this.depth = 0;
-        return '<table class="render-table">';
+        var html = '<table class="render-table">';
+        if (errs && errs.length) {
+            html += '<ul class="form-errors">';
+            _.each(errs, function (e) {
+                html += '<li>' + (e.message || e.toString()) + '</li>';
+            });
+            html += '</ul>';
+        }
+        return html;
     };
 
     /**
@@ -312,9 +320,17 @@ exports.div = function () {
      *
      * @constructor
     */
-    this.start = function () {
+    this.start = function (errs) {
         this.depth = 0;
-        return '<div class="render-div">';
+        var html = '<div class="render-div">';
+        if (errs && errs.length) {
+            html += '<ul class="errors">';
+            _.each(errs, function (e) {
+                html += '<li>' + (e.message || e.toString()) + '</li>';
+            });
+            html += '</ul>';
+        }
+        return html;
     };
 
     /**
