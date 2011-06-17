@@ -96,7 +96,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         form = new forms.Form(type);
 
     if (req.method === 'POST') {
-        form.validate(req.form);
+        form.validate(req);
     }
     var content = templates.render('add_type.html', req, {
         app: req.query.app,

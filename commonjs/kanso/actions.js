@@ -179,13 +179,13 @@ exports.modalDialog = function (action_options, type_name, field, path,
     div.append(okbtn);
     div.append(cancelbtn);
 
+    /* Launch */
+    div.modal();
+
     /* Initialize widget */
     widget.clientInit(
         field, path, value, raw, errors, widget_options
     );
-    
-    /* Launch */
-    div.modal();
 
 };
 

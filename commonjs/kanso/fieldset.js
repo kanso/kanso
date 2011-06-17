@@ -68,7 +68,6 @@ exports.createDefaults = function (fields, /*optional*/req) {
  */
 
 exports.validateField = function (field, doc, value, raw, path) {
-    //log('validateField: ' + path.join('.'));
     return _.map(field.validate(doc, value, raw), function (err) {
         err.field = path.concat(err.field || []);
         err.has_field = true;
@@ -95,14 +94,13 @@ exports.validateField = function (field, doc, value, raw, path) {
  */
 
 exports.validate = function (fields, doc, values, raw, path, extra) {
-    //log('validateFieldSet: ' + path.join('.'));
     values = values || {};
     fields = fields || {};
     raw = raw || {};
 
     // Expecting sub-object, not a value
     if (typeof values !== 'object') {
-        var e = new Error('Unexpected property');
+        var e = new Error('Unexpected property - validation 1');
         e.field = path;
         e.has_field = false;
         return [e];
@@ -121,8 +119,8 @@ exports.validate = function (fields, doc, values, raw, path, extra) {
             // Extra value with no associated field detected
             if (!extra) {
                 // ignore system properties
-                if (path.length !== 0 || k.charAt(0) !== '_') {
-                    var e = new Error('Unexpected property');
+                if (!(path.length == 0 && k.charAt(0) === '_')) {
+                    var e = new Error('Unexpected property - validation 2');
                     e.field = path.concat([k]);
                     e.has_field = false;
                     errs.push(e);
@@ -197,7 +195,7 @@ exports.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path, extra) {
     // This *should* be picked up by validation, and be raised as a validation
     // error before it gets to the auth stage
     if (typeof nVal !== 'object') {
-        var e = new Error('Unexpected property');
+        var e = new Error('Unexpected property 1');
         e.field = path;
         e.has_field = false;
         return [e];
@@ -222,8 +220,8 @@ exports.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path, extra) {
             // validation error before it gets to the auth stage
             if (!extra) {
                 // ignore system properties
-                if (path.length !== 0 || k.charAt(0) !== '_') {
-                    var e = new Error('Unexpected property');
+                if (!(path.length == 0 && k.charAt(0) === '_')) {
+                    var e = new Error('Unexpected property 2');
                     e.field = path.concat([k]);
                     e.has_field = false;
                     errs.push(e);

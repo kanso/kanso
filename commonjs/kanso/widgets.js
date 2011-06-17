@@ -947,7 +947,10 @@ exports.embedForm = function (_options) {
     };
 
     w.validate = function (elt, path, options) {
-        this.form.validate(this.getValue(elt, path, options));
+        this.form.validate({
+            form: this.getValue(elt, path, options),
+            userCtx: utils.userCtx
+        });
         return this.form.errors;
     };
 
@@ -982,7 +985,7 @@ exports.documentSelector = function (_options) {
             name, options.offset
         );
         var container_id = this._id(
-            name, 'top', options.offset, options.path_extra
+            name, 'selector', options.offset, options.path_extra
         );
         var hidden_id = this._id(
             name, options.offset, options.path_extra
@@ -1035,19 +1038,19 @@ exports.documentSelector = function (_options) {
         var select_elt = this.discoverSelectionElement(elt);
 
         hidden_elt.val(value);
-        /* select_elt.val(value); */
+        select_elt.val(value);
     };
 
     w.getValue = function (elt, path, options) {
         var hidden_elt = this.discoverBackingElement(elt);
-        return JSON.parse(hidden_elt.attr('value'));
+        return this._parse_value(hidden_elt.attr('value'));
     };
 
     w.clientInit = function (field, path, value, raw, errors, options) {
 
-        options = (this.options || {});
+        var widget_options = (this.options || {});
 
-        var id = this._id(path, 'top', options.offset, options.path_extra);
+        var id = this._id(path, 'selector', options.offset, options.path_extra);
         var container_elt = $('#' + id);
 
         var spinner_elt = container_elt.closestChild('.spinner');
@@ -1065,18 +1068,19 @@ exports.documentSelector = function (_options) {
         });
         /* Fetch contents */
         db.getView(
-            options.viewName,
-            { include_docs: is_embedded }, { db: options.db },
+            widget_options.viewName,
+            { include_docs: is_embedded },
+            { db: widget_options.db },
             function (err, rv) {
                 /* Error handling */
                 if (err) {
                     throw new Error(
                         'Failed to request content from view `' +
-                            options.viewName + '`'
+                            widget_options.viewName + '`'
                     );
                 }
                 /* Option for 'no selection' */
-                var nil_option = $(document.createElement('option'));
+                var nil_option = $('<option />');
                 if (!value) {
                     nil_option.attr('selected', 'selected');
                 }
@@ -1084,7 +1088,7 @@ exports.documentSelector = function (_options) {
 
                 /* All other options */
                 _.each(rv.rows || [], function (r) {
-                    var option = $(document.createElement('option'));
+                    var option = $('<option />');
                     var is_selected = (
                         is_embedded ? (value._id === r.id) : (value === r.id)
                     );

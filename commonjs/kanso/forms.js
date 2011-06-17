@@ -48,8 +48,8 @@ var Form = exports.Form = function Form(fields, doc, options) {
 
     this.values = null;
     if (doc) {
-        this.values = doc;
-        this.old_doc = doc;
+        this.values = JSON.parse(JSON.stringify(doc));
+        this.initial_doc = doc;
     }
     if (fields && fields.fields) {
         this.type = fields;
@@ -134,18 +134,17 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
  * the form instance.
  *
  * @name Form.validate(req)
- * @param {Object} form
+ * @param {Object} req
  * @returns {Form}
  * @api public
  */
 
-Form.prototype.validate = function (/*optional*/form) {
-    if (!form) {
-        form = utils.currentRequest().form;
+Form.prototype.validate = function (/*optional*/req) {
+    if (!req) {
+        req = utils.currentRequest();
     }
-    this.raw = form || {};
+    this.raw = req.form || {};
     var tree = exports.formValuesToTree(this.raw);
-
     this.values = exports.override(
         this.options.exclude,
         this.options.fields,
@@ -162,7 +161,7 @@ Form.prototype.validate = function (/*optional*/form) {
     if (this.type) {
         // run top level permissions first
         var type_errs = this.type.authorizeTypeLevel(
-            this.values, this.old_doc, req.userCtx
+            this.values, this.initial_doc, req.userCtx
         );
         if (type_errs.length) {
             this.errors = this.errors.concat(type_errs);
@@ -170,14 +169,16 @@ Form.prototype.validate = function (/*optional*/form) {
         else {
             // if no top-level permissions errors, check each field
             this.errors = this.errors.concat(
-                this.type.authorize(this.values, this.old_doc, req.userCtx)
+                this.type.authorize(
+                    this.values, this.initial_doc, req.userCtx
+                )
             );
         }
     }
     else {
         this.errors = this.errors.concat(fieldset.authFieldSet(
-            this.fields, this.values, this.old_doc, this.values, this.old_doc,
-            req.userCtx, [], true
+            this.fields, this.values, this.initial_doc, this.values,
+            this.initial_doc, req.userCtx, [], true
         ));
     }
 
@@ -302,7 +303,8 @@ Form.prototype.toHTML = function (/* optional */ req,
     var values = this.values || fieldset.createDefaults(this.fields, req);
     RendererClass = (RendererClass || render.defaultRenderer());
     var renderer = new RendererClass();
-    return renderer.start(errsWithoutFields(this.errors)) +
+    return (
+        renderer.start(errsWithoutFields(this.errors)) +
         this.renderFields(
             renderer, this.fields,
                 values, this.raw, this.errors, [], (options || {})
@@ -333,8 +335,6 @@ var errsBelowPath = function (errs, path) {
 };
 
 /**
-=======
->>>>>>> b407313b6a8f68a22b1fd0be9a37217453b22b9b
  * Iterates over fields and sub-objects calling the correct renderer function on
  * each. Returns a HTML representation of the fields. Used internally by the
  * toHTML method, you should not need to call this function directly.
@@ -384,7 +384,10 @@ Form.prototype.renderFields = function (renderer, fields, values,
         var f_errs = errsBelowPath(errs, f_path);
         var f = fields[k];
 
-        if (f instanceof fields_module.Field) {
+        if (f instanceof fields_module.Field ||
+            f instanceof fields_module.Embedded ||
+            f instanceof fields_module.EmbeddedList) {
+
             return html + renderer.field(
                 f,
                 f_path,
@@ -392,25 +395,6 @@ Form.prototype.renderFields = function (renderer, fields, values,
                 (raw[k] === undefined) ? values[k]: raw[k],
                 f_errs,
                 (options || {})
-            );
-        }
-        else if (f instanceof fields_module.Embedded) {
-            html += renderer.embed(
-                f,
-                f_path,
-                values[k],
-                (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
-            );
-            return html;
-        }
-        else if (f instanceof fields_module.EmbeddedList) {
-            html += renderer.embedList(
-                f,
-                f_path,
-                values[k],
-                (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
             );
         }
         else if (f instanceof Object) {

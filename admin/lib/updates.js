@@ -27,7 +27,7 @@ exports.addtype = function (doc, req) {
         var forms = loader.appRequire(ddoc, 'kanso/forms'),
             form = new forms.Form(type);
 
-        form.validate(req.form);
+        form.validate(req);
 
         if (form.isValid()) {
             db.saveDoc(form.values, function (err, resp) {
@@ -96,7 +96,7 @@ exports.updatetype = function (doc, req) {
         var forms = loader.appRequire(ddoc, 'kanso/forms'),
             form = new forms.Form(type, doc);
 
-        form.validate(req.form);
+        form.validate(req);
 
         if (form.isValid()) {
             db.saveDoc(form.values, function (err, resp) {
