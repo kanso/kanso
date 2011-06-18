@@ -158,8 +158,8 @@ exports.modalDialog = function (action_options, action_name,
 
             setTimeout(function () {
                 exports.modalDialog(
-                    action_options, type_name, field, path,
-                        value, raw, errors, options, callback
+                    action_options, action_name, type_name, field,
+                        path, value, raw, errors, options, callback
                 );
             }, 0);
 
