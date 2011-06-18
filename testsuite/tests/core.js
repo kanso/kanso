@@ -1,3 +1,5 @@
+/*global window: false, $: false*/
+
 var core = require('kanso/core');
 
 

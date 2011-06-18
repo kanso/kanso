@@ -1,4 +1,5 @@
-/*global window: false */
+/*global window: false, __kansojs_current_request: true*/
+
 
 /**
  * General utility functions used by Kanso. Some functions were moved here from
@@ -24,19 +25,30 @@ var settings = require('./settings'), // settings module is auto-generated
  * Some functions calculate results differently depending on the execution
  * environment. The isBrowser value is used to set the correct environment
  * for these functions, and is only exported to make unit testing easier.
- *
- * You should not need to change this value during normal usage.
  */
 
-// TODO: this was moved to this module from core.js to avoid a circular
-// dependency between core.js and db.js ...once circular dependencies in
-// couchdb's commonjs implementation are fixed it can be moved back into
-// core.js. For now, this is also exported from core.js and should
-// be accessed from there.
-exports.isBrowser = false;
-if (typeof window !== 'undefined') {
-    exports.isBrowser = true;
-}
+exports.isBrowser = function () {
+    return (typeof(window) !== 'undefined');
+};
+
+/**
+ * Keeps track of the last *triggered* request. This is to avoid a race
+ * condition where two link clicks in quick succession can cause the rendered
+ * page to not match the current URL. If the first link's document or view takes
+ * longer to return than the second, the URL was updated for the second link
+ * click but the page for the first link will render last, overwriting the
+ * correct page. Now, callbacks for fetching documents and views check against
+ * this value to see if they should continue rendering the result or not.
+ */
+
+exports.currentRequest = function (v) {
+    if (v) {
+        __kansojs_current_request = v;
+    } else if (typeof(__kansojs_current_request) === 'undefined') {
+        __kansojs_current_request = null;
+    }
+    return __kansojs_current_request;
+};
 
 /**
  * This is because the first page hit also triggers kanso to handle the url
@@ -48,9 +60,8 @@ if (typeof window !== 'undefined') {
 
 // TODO: this was moved to this module from core.js to avoid a circular
 // dependency between core.js and session.js
+
 exports.initial_hit = true;
-
-
 
 /**
  * Used to store userCtx, periodically updated like on session.login and
@@ -58,6 +69,7 @@ exports.initial_hit = true;
  */
 
 // TODO: added to utils to avoid circular dependency bug in couchdb
+
 exports.userCtx = null;
 
 /**
@@ -65,7 +77,6 @@ exports.userCtx = null;
  * a call to session.info
  */
 exports.session = null;
-
 
 /**
  * This is used to make unit testing in the browser easier.
@@ -76,7 +87,6 @@ exports.session = null;
 exports.getWindowLocation = function () {
     return window.location;
 };
-
 
 /**
  * Returns the path to prefix to any URLs. When running behind a
@@ -97,11 +107,15 @@ exports.getWindowLocation = function () {
 // couchdb's commonjs implementation are fixed it can be moved back into
 // core.js. For now, this is also exported from core.js and should
 // be accessed from there.
-exports.getBaseURL = function (req) {
+
+exports.getBaseURL = function (/*optional*/req) {
+    if (!req) {
+        req = exports.currentRequest();
+    }
     if ('baseURL' in settings) {
         return settings.baseURL;
     }
-    if (exports.isBrowser) {
+    if (exports.isBrowser()) {
         var re = new RegExp('(.*\\/_rewrite).*$');
         var match = re.exec(exports.getWindowLocation().pathname);
         if (match) {
@@ -115,6 +129,16 @@ exports.getBaseURL = function (req) {
     return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
 };
 
+
+/**
+ * A named empty function. Use this when you wish to take
+ * no action for a callback or markup-generator function.
+ */
+
+exports.emptyFunction = function ()
+{
+    return '';
+};
 
 /**
  * Traverses an object and its sub-objects using an array of property names.
@@ -184,7 +208,6 @@ exports.setPropertyPath = function (obj, path, val) {
     }
     exports.setPropertyPath(obj[next], path, val);
 };
-
 
 /**
  * Call function with arguments, catch any errors and add to an array,
@@ -291,14 +314,11 @@ exports.parseCSV = function (csvString) {
  * @api public
  */
 
-exports.redirect = function (req, url) {
+exports.redirect = function (/*optional*/req, url) {
     if (!url) {
-        if (typeof req === 'string') {
-            throw new Error(
-                'First argument to redirect should be a request object'
-            );
-        }
-        throw new Error('No redirect URL specified');
+        /* Arity = 1: url only */
+        url = req;
+        req = exports.currentRequest();
     }
     var baseURL = exports.getBaseURL(req);
     return {code: 302, headers: {'Location': baseURL + url}};
@@ -322,3 +342,23 @@ exports.isSubPath = function (a, b) {
     }
     return true;
 };
+
+/**
+ * Returns a function that executes {closure} in the context of {context}.
+ * Use this function if you'd like to preserve the current context
+ * across callbacks, event handlers, and other cases where the value of
+ * {this} is set for you.
+ *
+ * @name bindContext(context, closure)
+ * @param {Object} context The context to use when executing closure.
+ *          Usually, you will specify the current value of 'this'.
+ * @param {Function} closure The function to to bind to {context}.
+ * @api public
+ */
+
+exports.bindContext = function (context, closure) {
+    return function () {
+        return closure.apply(context, arguments);
+    };
+};
+

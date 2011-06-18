@@ -2,12 +2,14 @@
   $: false*/
 
 var utils = require('./utils'),
-    admin_forms = require('./forms'),
     core = require('kanso/core'),
-    templates = require('kanso/templates'),
     db = require('kanso/db'),
+    forms = require('kanso/forms'),
+    loader = require('kanso/loader'),
+    kanso_utils = require('kanso/utils'),
+    templates = require('kanso/templates'),
+    widgets = require('kanso/widgets'),
     flashmessages = require('kanso/flashmessages');
-
 
 exports.addtype = function (doc, req) {
     if (!req.client) {
@@ -16,14 +18,14 @@ exports.addtype = function (doc, req) {
             content: templates.render('noscript.html', req, {})
         })];
     }
-    utils.getDesignDoc(req.query.app, function (err, ddoc) {
-        var settings = utils.appRequire(ddoc, 'kanso/settings'),
-            types = utils.appRequire(ddoc, 'kanso/types'),
-            app = utils.appRequire(ddoc, settings.load),
+    db.getDesignDoc(req.query.app, function (err, ddoc) {
+        var settings = loader.appRequire(ddoc, 'kanso/settings'),
+            types = loader.appRequire(ddoc, 'kanso/types'),
+            app = loader.appRequire(ddoc, settings.load),
             type = app.types ? app.types[req.query.type]: undefined;
 
-        var forms = utils.appRequire(ddoc, 'kanso/forms'),
-            form = new forms.Form(type, doc);
+        var forms = loader.appRequire(ddoc, 'kanso/forms'),
+            form = new forms.Form(type);
 
         form.validate(req);
 
@@ -45,8 +47,8 @@ exports.addtype = function (doc, req) {
                     });
 
                     $('#content').html(content);
+
                     document.title = settings.name + ' - Types - ' + req.query.type;
-                    admin_forms.bind(req);
                 }
                 else {
                     flashmessages.addMessage(req, {
@@ -73,9 +75,9 @@ exports.addtype = function (doc, req) {
             });
 
             $('#content').html(content);
+
             document.title = settings.name + ' - Types - ' + req.query.type;
         }
-        admin_forms.bind(req);
     });
 };
 
@@ -86,12 +88,12 @@ exports.updatetype = function (doc, req) {
             content: templates.render('noscript.html', req, {})
         })];
     }
-    utils.getDesignDoc(req.query.app, function (err, ddoc) {
-        var settings = utils.appRequire(ddoc, 'kanso/settings'),
-            app = utils.appRequire(ddoc, settings.load),
+    db.getDesignDoc(req.query.app, function (err, ddoc) {
+        var settings = loader.appRequire(ddoc, 'kanso/settings'),
+            app = loader.appRequire(ddoc, settings.load),
             type = app.types ? app.types[doc.type]: undefined;
 
-        var forms = utils.appRequire(ddoc, 'kanso/forms'),
+        var forms = loader.appRequire(ddoc, 'kanso/forms'),
             form = new forms.Form(type, doc);
 
         form.validate(req);
@@ -114,8 +116,8 @@ exports.updatetype = function (doc, req) {
                     });
 
                     $('#content').html(content);
+
                     document.title = settings.name + ' - Types - ' + doc.type;
-                    admin_forms.bind(req);
                 }
                 else {
                     flashmessages.addMessage(req, {
@@ -142,14 +144,14 @@ exports.updatetype = function (doc, req) {
             });
 
             $('#content').html(content);
+
             document.title = settings.name + ' - Types - ' + doc.type;
         }
-        admin_forms.bind(req);
     });
 };
 
 exports.deletetype = function (doc, req) {
-    var baseURL = require('kanso/utils').getBaseURL();
+    var baseURL = kanso_utils.getBaseURL();
 
     if (!req.client) {
         var loc = baseURL + '/' + req.query.app + '/types/' + doc.type;

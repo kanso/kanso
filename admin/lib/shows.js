@@ -4,7 +4,9 @@
 var utils = require('./utils'),
     kanso_utils = require('kanso/utils'),
     db = require('kanso/db'),
-    admin_forms = require('./forms'),
+    core = require('kanso/core'),
+    loader = require('kanso/loader'),
+    widgets = require('kanso/widgets'),
     templates = require('kanso/templates'),
     querystring = require('kanso/querystring'),
     _ = require('kanso/underscore');
@@ -18,7 +20,7 @@ var adminShow = function (fn) {
                 content: templates.render('noscript.html', req, {})
             });
         }
-        utils.getDesignDoc(req.query.app, function (err, ddoc) {
+        db.getDesignDoc(req.query.app, function (err, ddoc) {
             if (err) {
                 return alert(err);
             }
@@ -28,8 +30,8 @@ var adminShow = function (fn) {
 };
 
 exports.types = adminShow(function (doc, ddoc, req) {
-    var settings = utils.appRequire(ddoc, 'kanso/settings');
-    var app = utils.appRequire(ddoc, settings.load);
+    var settings = loader.appRequire(ddoc, 'kanso/settings');
+    var app = loader.appRequire(ddoc, settings.load);
 
     var baseURL = kanso_utils.getBaseURL(req);
 
@@ -86,11 +88,11 @@ exports.types = adminShow(function (doc, ddoc, req) {
 });
 
 exports.addtype = adminShow(function (doc, ddoc, req) {
-    var settings = utils.appRequire(ddoc, 'kanso/settings'),
-        app = utils.appRequire(ddoc, settings.load),
+    var settings = loader.appRequire(ddoc, 'kanso/settings'),
+        app = loader.appRequire(ddoc, settings.load),
         type = app.types ? app.types[req.query.type]: undefined;
 
-    var forms = utils.appRequire(ddoc, 'kanso/forms'),
+    var forms = loader.appRequire(ddoc, 'kanso/forms'),
         form = new forms.Form(type);
 
     if (req.method === 'POST') {
@@ -105,17 +107,18 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
         description: type.description,
         form: form.toHTML(req)
     });
+
     $('#content').html(content);
+
     document.title = settings.name + ' - Types - ' + req.query.type;
-    admin_forms.bind(req);
 });
 
 exports.edittype = adminShow(function (doc, ddoc, req) {
-    var settings = utils.appRequire(ddoc, 'kanso/settings'),
-        app = utils.appRequire(ddoc, settings.load),
+    var settings = loader.appRequire(ddoc, 'kanso/settings'),
+        app = loader.appRequire(ddoc, settings.load),
         type = app.types ? app.types[doc.type]: undefined;
 
-    var forms = utils.appRequire(ddoc, 'kanso/forms'),
+    var forms = loader.appRequire(ddoc, 'kanso/forms'),
         form = new forms.Form(type, doc);
 
     var content = templates.render('edit_type.html', req, {
@@ -129,8 +132,8 @@ exports.edittype = adminShow(function (doc, ddoc, req) {
     });
 
     $('#content').html(content);
+
     document.title = settings.name + ' - Types - ' + doc.type;
-    admin_forms.bind(req);
 });
 
 exports.fieldPairs = function (fields_module, fields, doc, path) {
@@ -196,8 +199,8 @@ exports.fieldPairs = function (fields_module, fields, doc, path) {
 
 exports.viewlist = adminShow(function (doc, ddoc, req) {
     var base = kanso_utils.getBaseURL(),
-        settings = utils.appRequire(ddoc, 'kanso/settings'),
-        app = utils.appRequire(ddoc, settings.load);
+        settings = loader.appRequire(ddoc, 'kanso/settings'),
+        app = loader.appRequire(ddoc, settings.load);
 
     var view_req = {
         url: base + '/_db/_design/' + req.query.app + '/_view/' + req.query.view,
@@ -300,9 +303,9 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
 
 
 exports.viewtype = adminShow(function (doc, ddoc, req) {
-    var settings = utils.appRequire(ddoc, 'kanso/settings'),
-        fields = utils.appRequire(ddoc, 'kanso/fields'),
-        app = utils.appRequire(ddoc, settings.load),
+    var settings = loader.appRequire(ddoc, 'kanso/settings'),
+        fields = loader.appRequire(ddoc, 'kanso/fields'),
+        app = loader.appRequire(ddoc, settings.load),
         type = app.types ? app.types[doc.type]: undefined;
 
     if (!doc) {

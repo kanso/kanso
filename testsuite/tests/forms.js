@@ -1,5 +1,7 @@
 var forms = require('kanso/forms'),
     types = require('kanso/types'),
+    db = require('kanso/db'),
+    core = require('kanso/core'),
     fields = require('kanso/fields');
 
 
@@ -429,6 +431,15 @@ exports['Form.toHTML - embeddedList - with values'] = function (test) {
     test.done();
 };
 
+exports['Form.toHTML - request autodiscovery'] = function (test) {
+    test.expect(2);
+    db.getShow('test', null, function (err, rv) {
+        test.equals(err, undefined, 'Requested show successfully');
+        test.notEqual(rv, undefined, 'Received output from show');
+        test.done();
+    });
+};
+
 exports['Form.validate - numbers'] = function (test) {
     test.expect(3);
     var f = new forms.Form({
@@ -467,7 +478,7 @@ exports['Form.validate - strings'] = function (test) {
 };
 
 exports['Form.validate - empty strings'] = function (test) {
-    test.expect(4);
+    test.expect(5);
     var f = new forms.Form({
         foo: fields.string({required: true}),
         bar: fields.string({required: false})
@@ -479,7 +490,10 @@ exports['Form.validate - empty strings'] = function (test) {
     f.validate({form: {foo: null }});
     test.strictEqual(f.isValid(), false);
 
-    f.validate({form: {foo: 'baz' }});
+    f.validate({ foo: '' });
+    test.strictEqual(f.isValid(), false);
+
+    f.validate({ foo: 'baz' });
     test.strictEqual(f.isValid(), true);
 
     f.validate({form: {foo: 'baz', bar: null}});
@@ -488,12 +502,31 @@ exports['Form.validate - empty strings'] = function (test) {
     test.done();
 };
 
-exports['Form.validate - error on string field'] = function (test) {
+exports['Form.validate - groups'] = function (test) {
+    test.expect(2);
+    var f = new forms.Form({
+        group: {
+            group: {
+                test: fields.string({required: true})
+            }
+        }
+    });
+
+    f.validate({form: {}});
+    test.strictEqual(f.isValid(), false);
+
+    f.validate({form: { group: { group: { test: 'test' }}}});
+    test.strictEqual(f.isValid(), true);
+
+    test.done();
+};
+
+exports['Form.validate - throw error on string field'] = function (test) {
     test.expect(1);
     var req = {};
     var f = new forms.Form({
-        baz: fields.string(),
-        type: 'test'
+        bar: 'test',
+        baz: fields.string()
     });
     try {
         f.validate(req);
@@ -707,11 +740,8 @@ exports['override'] = function (test) {
         forms.override(
             null, // excludes
             null, // subset
-            { // fields
-                a: fields.string(),
-                b: fields.string(),
-                c: fields.string()
-            },
+            { a: fields.string(), // fields
+              b: fields.string(), c: fields.string() },
             {a: 'one', b: 'two'}, // doc a
             {c: 'three'}, // doc b
             [] // path
@@ -722,11 +752,8 @@ exports['override'] = function (test) {
         forms.override(
             null,
             null,
-            {
-                a: fields.string(),
-                b: fields.string(),
-                c: fields.string()
-            },
+            { a: fields.string(),
+              b: fields.string(), c: fields.string() },
             {a: 'one', b: 'two'},
             {c: 'three', b: 'foo'},
             []
@@ -737,13 +764,8 @@ exports['override'] = function (test) {
         forms.override(
             null,
             null,
-            {
-                a: fields.string(),
-                group: {
-                    b: fields.string(),
-                    c: fields.string()
-                }
-            },
+            { a: fields.string(),
+              group: { b: fields.string(), c: fields.string() } },
             {a: 'one', group: {b: 'two'}},
             {group: {c: 'three', b: 'foo'}},
             []
@@ -755,13 +777,8 @@ exports['override'] = function (test) {
         forms.override(
             null,
             null,
-            {
-                a: fields.string(),
-                group: {
-                    b: fields.string(),
-                    c: fields.string()
-                }
-            },
+            { a: fields.string(),
+              group: { b: fields.string(), c: fields.string() } },
             {a: 'one', group: {b: 'two'}},
             {group: {c: 'three'}},
             []
@@ -773,10 +790,8 @@ exports['override'] = function (test) {
         forms.override(
             null,
             null,
-            {
-                a: fields.string(),
-                group: fields.embed({type: {}})
-            },
+            { a: fields.string(),
+              group: fields.embed({type: {}}) },
             {a: 'one', group: {b: 'two'}},
             {group: {c: 'three'}},
             []
@@ -788,13 +803,8 @@ exports['override'] = function (test) {
         forms.override(
             ['group.b'],
             null,
-            {
-                a: fields.string(),
-                group: {
-                    b: fields.string(),
-                    c: fields.string()
-                }
-            },
+            { a: fields.string(),
+              group: { b: fields.string(), c: fields.string() } },
             {a: 'one', group: {b: 'two'}},
             {group: {c: 'three', b: 'foo'}},
             []
@@ -806,13 +816,8 @@ exports['override'] = function (test) {
         forms.override(
             null,
             ['group.b'],
-            {
-                a: fields.string(),
-                group: {
-                    b: fields.string(),
-                    c: fields.string()
-                }
-            },
+            { a: fields.string(),
+              group: { b: fields.string(), c: fields.string() } },
             {a: 'one', group: {b: 'two'}},
             {group: {c: 'three', b: 'foo'}},
             []
@@ -824,13 +829,8 @@ exports['override'] = function (test) {
         forms.override(
             ['a'],
             ['group.b'],
-            {
-                a: fields.string(),
-                group: {
-                    b: fields.string(),
-                    c: fields.string()
-                }
-            },
+            { a: fields.string(),
+              group: { b: fields.string(), c: fields.string() } },
             {a: 'one', group: {b: 'two'}},
             {a: 'asdf', group: {c: 'three', b: 'foo'}},
             []

@@ -5,6 +5,9 @@
  */
 
 var templates = require('kanso/templates'),
+    forms = require('kanso/forms'),
+    fields = require('kanso/fields'),
+    types = require('kanso/types'),
     utils = require('./utils');
 
 
@@ -75,3 +78,16 @@ exports.not_found = function (doc, req) {
         })};
     }
 };
+
+exports.test = function (doc, req) {
+    var f = new forms.Form(
+        new types.Type('test', { })
+    );
+
+    if (req.client) {
+        throw new Error('Cannot run this test on client');
+    } else {
+        return f.toHTML();
+    }
+};
+

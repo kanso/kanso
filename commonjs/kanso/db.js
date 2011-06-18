@@ -12,10 +12,11 @@
  */
 
 var utils = require('./utils'),
-    settings = require('./settings');
+    settings = require('./settings'),
+    session = null;
 
-var session = null;
-// avoid making a circular require in CouchDB
+/* Avoid a circular require in CouchDB */
+
 if (utils.isBrowser) {
     session = require('./session');
 }
@@ -31,6 +32,13 @@ if (utils.isBrowser) {
  */
 
 var last_session_check = 0;
+
+
+/**
+ * Cache for design documents fetched via getDesignDoc.
+ */
+
+exports.design_docs = {};
 
 
 /**
@@ -156,7 +164,7 @@ exports.request = function (options, callback) {
  */
 
 exports.getRewrite = function (path, /*optional*/q, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('getRewrite cannot be called server-side');
     }
     if (!callback) {
@@ -190,7 +198,7 @@ exports.getRewrite = function (path, /*optional*/q, callback) {
  */
 
 exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('getDoc cannot be called server-side');
     }
     if (!id) {
@@ -237,7 +245,7 @@ exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
  */
 
 exports.saveDoc = function (doc, /*optional*/options, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('saveDoc cannot be called server-side');
     }
     var method, url;
@@ -282,7 +290,7 @@ exports.saveDoc = function (doc, /*optional*/options, callback) {
  */
 
 exports.removeDoc = function (doc, /*optional*/options, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('removeDoc cannot be called server-side');
     }
     if (!doc._id) {
@@ -325,7 +333,7 @@ exports.removeDoc = function (doc, /*optional*/options, callback) {
  */
 
 exports.getView = function (view, /*optional*/q, /*optional*/options, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('getView cannot be called server-side');
     }
     if (!callback) {
@@ -377,7 +385,7 @@ exports.getView = function (view, /*optional*/q, /*optional*/options, callback) 
 
 // TODO: run list function client-side?
 exports.getList = function (list, view, /*optional*/q, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('getList cannot be called server-side');
     }
     if (!callback) {
@@ -412,7 +420,7 @@ exports.getList = function (list, view, /*optional*/q, callback) {
 
 // TODO: run show function client-side?
 exports.getShow = function (show, docid, /*optional*/q, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('getShow cannot be called server-side');
     }
     if (!callback) {
@@ -441,7 +449,7 @@ exports.getShow = function (show, docid, /*optional*/q, callback) {
  */
 
 exports.all = function (/*optional*/q, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('all cannot be called server-side');
     }
     if (!callback) {
@@ -497,7 +505,7 @@ exports.stringifyQuery = function (query) {
 var uuidCache = [];
 
 exports.newUUID = function (cacheNum, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('newUUID cannot be called server-side');
     }
     if (!callback) {
@@ -535,7 +543,7 @@ exports.newUUID = function (cacheNum, callback) {
  */
 
 exports.createDatabase = function (name, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('createDatabase cannot be called server-side');
     }
     var req = {
@@ -558,7 +566,7 @@ exports.createDatabase = function (name, callback) {
  */
 
 exports.deleteDatabase = function (name, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('deleteDatabase cannot be called server-side');
     }
     var req = {
@@ -587,7 +595,7 @@ exports.deleteDatabase = function (name, callback) {
  */
 
 exports.getReplication = function (id, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('getReplication cannot be called server-side');
     }
     var req = {
@@ -616,7 +624,7 @@ exports.getReplication = function (id, callback) {
  */
 
 exports.startReplication = function (options, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('startReplication cannot be called server-side');
     }
     if (!options.source) {
@@ -658,7 +666,7 @@ exports.startReplication = function (options, callback) {
  */
 
 exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_function, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('waitReplication cannot be called server-side');
     }
     var default_state_function = function (recent_doc, initial_doc) {
@@ -732,7 +740,7 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
 
 exports.stopReplication = function (doc, callback, /*optional*/options) {
 
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('stopReplication cannot be called server-side');
     }
 
@@ -822,6 +830,31 @@ exports.deleteUser = function (username, callback) {
             contentType: 'application/json'
         };
         exports.request(req, callback);
+    });
+};
+
+/**
+ * Fetch a design document from CouchDB. By default, the
+ * results of this function are cached within the javascript
+ * engine. To avoid this, pass true for the no_cache argument.
+ *
+ * @name getDesignDoc(name, callback, no_cache)
+ * @param name The name of (i.e. path to) the design document.
+ * @param callback The callback to invoke when the request completes.
+ * @param no_cache optional; true to force a cache miss for this request.
+ * @api public
+ */
+
+exports.getDesignDoc = function (name, callback, no_cache) {
+    if (!no_cache && exports.design_docs[name]) {
+        return callback(null, exports.design_docs[name]);
+    }
+    exports.getDoc('_design/' + name, {}, function (err, ddoc) {
+        if (err) {
+            return callback(err);
+        }
+        exports.design_docs[name] = ddoc;
+        return callback(null, exports.design_docs[name]);
     });
 };
 

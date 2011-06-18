@@ -1,3 +1,5 @@
+/*global __kansojs_event_listeners: true*/
+
 /**
  * The events module handles events emitted by Kanso as well as custom
  * events defined by a Kanso app. These events can be used client-side
@@ -17,7 +19,7 @@ var _ = require('./underscore')._;
  * Stores the bound listeners
  */
 
-var listeners = {};
+__kansojs_event_listeners = {};
 
 
 /**
@@ -30,10 +32,10 @@ var listeners = {};
  */
 
 exports.on = function (name, listener) {
-    if (!listeners[name]) {
-        listeners[name] = [];
+    if (!__kansojs_event_listeners[name]) {
+        __kansojs_event_listeners[name] = [];
     }
-    listeners[name].push(listener);
+    __kansojs_event_listeners[name].push(listener);
 };
 
 /**
@@ -71,8 +73,6 @@ exports.once = function (name, listener) {
  */
 
 exports.emit = function (name) {
-    //console.log('Event: ' + name);
-    //console.log(arguments);
     var args = Array.prototype.slice.call(arguments, 1);
     var fns = exports.listeners(name);
     for (var i = 0, len = fns.length; i < len; i++) {
@@ -94,8 +94,8 @@ exports.emit = function (name) {
  */
 
 exports.listeners = function (name) {
-    var fns = listeners[name] || [];
-    return listeners[name] || [];
+    var fns = __kansojs_event_listeners[name] || [];
+    return __kansojs_event_listeners[name] || [];
 };
 
 /**
@@ -107,7 +107,7 @@ exports.listeners = function (name) {
  */
 
 exports.removeAllListeners = function (name) {
-    delete listeners[name];
+    delete __kansojs_event_listeners[name];
 };
 
 /**
@@ -120,7 +120,7 @@ exports.removeAllListeners = function (name) {
  */
 
 exports.removeListener = function (name, listener) {
-    listeners[name] = _.filter(exports.listeners(name), function (l) {
+    __kansojs_event_listeners[name] = _.filter(exports.listeners(name), function (l) {
         return l !== listener && (!l.listener || l.listener !== listener);
     });
 };

@@ -77,7 +77,7 @@ exports.sessionChange = function (userCtx, callback) {
  */
 
 exports.logout = function (callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('logout cannot be called server-side');
     }
     db.request({
@@ -109,7 +109,7 @@ exports.logout = function (callback) {
  */
 
 exports.login = function (username, password, callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('login cannot be called server-side');
     }
     db.request({
@@ -145,7 +145,7 @@ exports.login = function (username, password, callback) {
  */
 
 exports.info = function (callback) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('info cannot be called server-side');
     }
     db.request({

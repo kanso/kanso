@@ -9,8 +9,31 @@
  * Module dependencies
  */
 
-var _ = require('./underscore')._;
+var embed = require('kanso/embed'),
+    events = require('kanso/events'),
+    sanitize = require('kanso/sanitize'),
+    _ = require('./underscore')._;
 
+var h = sanitize.escapeHtml;
+
+
+/**
+ * Generates a script tag that fires the event named {name}.
+ */
+
+exports.scriptTagForEvent = function (name) {
+    var rv = (
+        '<script type="text/javascript">' +
+        "// <![CDATA[\n" +
+            "require('kanso/events').emit('" +
+                sanitize.cdata(sanitize.js(name)) +
+            "');" +
+        "// ]]>" +
+        '</script>'
+    );
+
+    return rv;
+}; 
 
 /**
  * Renders HTML for error messages.
@@ -23,12 +46,13 @@ var _ = require('./underscore')._;
 
 exports.errorHTML = function (errors) {
     if (errors && errors.length) {
-        var html = '<ul class="errors">';
+        var html = '<ul class="errors right">';
         for (var i = 0; i < errors.length; i++) {
-            /* Fix me: XSS if any portion of the error string is user input. */
-            html += '<li class="error_msg">' +
-                (errors[i].message || errors[i].toString()) +
-            '</li>';
+            html += (
+                '<li class="error_msg">' +
+                    h(errors[i].message || errors[i].toString()) +
+                '</li>'
+            );
         }
         html += '</ul>';
         return html;
@@ -67,8 +91,8 @@ exports.labelText = function (field, name) {
  */
 
 exports.labelHTML = function (field, name, id) {
-    return '<label for="' + (id || 'id_' + name) + '">' +
-        exports.labelText(field, name, id) +
+    return '<label for="' + h(id || sanitize.id(name)) + '">' +
+        h(exports.labelText(field, name, id)) +
     '</label>';
 };
 
@@ -83,7 +107,7 @@ exports.labelHTML = function (field, name, id) {
 
 exports.descriptionHTML = function (obj) {
     if (obj.description) {
-        return '<div class="description">' + obj.description + '</div>';
+        return '<div class="description">' + h(obj.description) + '</div>';
     }
     return '';
 };
@@ -99,7 +123,7 @@ exports.descriptionHTML = function (obj) {
 
 exports.hintHTML = function (obj) {
     if (obj.hint) {
-        return '<div class="hint">' + obj.hint + '</div>';
+        return '<div class="hint">' + h(obj.hint) + '</div>';
     }
     return '';
 };
@@ -129,6 +153,19 @@ exports.classes = function (field, errors) {
 };
 
 /**
+ * Determines the default renderer class, to be used globally by 
+ * instances of forms.Form that fail to specify a renderer class.
+ *
+ * @name defaultRenderer()
+ * @returns {Function}
+ * @api public
+ */
+
+exports.defaultRenderer = function () {
+    return exports.table;
+};
+
+/**
  * The default table renderer class, passed to the toHTML method of a
  * form. Renders a form using a single table, with <tbody> tags to
  * represent nested field groups. The <tbody>s are labelled with
@@ -150,15 +187,15 @@ exports.table = function () {
     */
     this.start = function (errs) {
         this.depth = 0;
+        var html = '<table class="render-table">';
         if (errs && errs.length) {
-            var html = '<ul class="form_errors">';
+            html += '<ul class="form-errors">';
             _.each(errs, function (e) {
                 html += '<li>' + (e.message || e.toString()) + '</li>';
             });
             html += '</ul>';
-            return html;
         }
-        return '';
+        return html;
     };
 
     /**
@@ -175,16 +212,17 @@ exports.table = function () {
         this.depth += 1;
         var name = _.last(path);
         var css_class = 'level-' + this.depth;
+
         return (
-            '<tbody class="head ' + css_class + '">' +
+            '<tbody class="head ' + h(css_class) + '">' +
             '<tr>' +
                 '<th colspan="3">' +
-                (name.substr(0, 1).toUpperCase() +
-                    name.substr(1).replace(/_/g, ' ')) +
+                    h(name.substr(0, 1).toUpperCase() +
+                        name.substr(1).replace(/_/g, ' ')) +
                 '</th>' +
             '</tr>' +
             '</tbody>' +
-            '<tbody class="group ' + css_class + '">'
+            '<tbody class="group ' + h(css_class) + '">'
         );
     };
 
@@ -197,7 +235,7 @@ exports.table = function () {
      * for the corresponding beginGroup call; see beginGroup.
      *
      * @param {Array} path
-    */
+     */
     this.endGroup = function (path) {
         this.depth -= 1;
         return '</tbody>';
@@ -212,93 +250,45 @@ exports.table = function () {
      * @param {Object} value
      * @param {String} raw
      * @param {Array} errors
-    */
-    this.field = function (field, path, value, raw, errors) {
+     * @param {Object} options An object containing widget options, which
+     *          will ultimately be provided to each widget's toHTML method.
+     */
+    this.field = function (field, path, value, raw, errors, options) {
         var name = path.join('.');
+        var id = (path.join('_') + '_field');
         var caption = path.slice(this.depth).join(' ');
-        if (field.widget.type === 'hidden') {
-            return field.widget.toHTML(name, value, raw, field);
-        }
-        return '<tr class="' + exports.classes(field, errors).join(' ') + '">' +
-            '<th>' +
-                exports.labelHTML(field, caption) +
-                exports.descriptionHTML(field) +
-            '</th>' +
-            '<td>' +
-                field.widget.toHTML(name, value, raw, field) +
-                exports.hintHTML(field) +
-            '</td>' +
-            '<td class="errors">' +
-                exports.errorHTML(errors) +
-            '</td>' +
-        '</tr>';
-    };
 
-    /**
-     * Called by the forms layer when it encounters any embed field.
-     * An embed field contains either zero documents (if required is
-     * false) or a single document.
-     *
-     * @param {Object} field
-     * @param {Array} path
-     * @param {Object} value
-     * @param {String} raw
-     * @param {Array} errors
-    */
-    this.embed = function (field, path, value, raw, errors) {
-        var name = path.join('.');
-        var caption = path.slice(this.depth).join(' ');
-        return '<tr class="embedded">' +
-            '<th>' +
-                exports.labelHTML(field.type, caption) +
-                exports.descriptionHTML(field.type) +
-            '</th>' +
-            '<td class="field" rel="' + field.type.name + '">' +
-            '<table rel="' + name + '"><tbody><tr><td>' +
-                field.widget.toHTML(name, value, raw, field) +
-            '</td>' +
-            '<td class="actions"></td>' +
-            '</tr></tbody></table>' +
-            '<td class="errors">' +
-                exports.errorHTML(errors) +
-            '</td>' +
-        '</tr>';
-    };
-
-    /**
-     * Called by the forms layer when it encounters any embedList field.
-     * An embedList field can contain any number of documents.
-     *
-     * @param {Object} field
-     * @param {Array} path
-     * @param {Object} value
-     * @param {String} raw
-     * @param {Array} errors
-    */
-    this.embedList = function (field, path, value, raw, errors) {
-        var name = path.join('.');
-        var caption = path.slice(this.depth).join(' ');
-        var html = '<tr class="embeddedlist">' +
-            '<th>' +
-                exports.labelHTML(field.type, caption) +
-                exports.descriptionHTML(field.type) +
-            '</th>' +
-            '<td class="field" rel="' + field.type.name + '">' +
-            '<table rel="' + name + '"><tbody>';
-        _.each(value, function (v, i) {
-            html += (
-                '<tr><td>' +
-                    field.widget.toHTML(name, v, raw, field) +
-                '</td><td class="actions">' +
-                '</td></tr>'
-            );
+        events.once('renderFinish', function () {
+            if (field.widget.clientInit) {
+                field.widget.clientInit(
+                    field, path, value, raw, errors, {}
+                );
+            }
         });
-        html += '</tbody></table></td>' +
-            '<td class="errors">' +
-                exports.errorHTML(errors) +
-            '</td>' +
-        '</tr>';
-        return html;
+
+        if (field.widget.type === 'hidden') {
+            return field.widget.toHTML(
+                name, value, raw, field, (options || {})
+            );
+        }
+
+        var rv = (
+            '<tr id="' + id + '" class="' +
+                exports.classes(field, errors).join(' ') + '">' +
+                '<th>' +
+                    exports.labelHTML(field, caption) +
+                    exports.descriptionHTML(field) +
+                '</th>' +
+                '<td>' +
+                    exports.errorHTML(errors) +
+                    field.widget.toHTML(
+                        name, value, raw, field, (options || {})
+                    ) +
+                    exports.hintHTML(field) +
+                '</td>' +
+            '</tr>'
+        );
+        return rv;
     };
 
     /**
@@ -312,8 +302,9 @@ exports.table = function () {
      * @param {Array} errors
     */
     this.end = function () {
-        return '';
+        return '</table>';
     };
+
 };
 
 /**
@@ -331,15 +322,15 @@ exports.div = function () {
     */
     this.start = function (errs) {
         this.depth = 0;
+        var html = '<div class="render-div">';
         if (errs && errs.length) {
-            var html = '<ul class="form_errors">';
+            html += '<ul class="errors">';
             _.each(errs, function (e) {
                 html += '<li>' + (e.message || e.toString()) + '</li>';
             });
             html += '</ul>';
-            return html;
         }
-        return '';
+        return html;
     };
 
     /**
@@ -357,9 +348,9 @@ exports.div = function () {
         var name = _.last(path);
         var css_class = 'level-' + this.depth;
         return (
-            '<div class="group ' + css_class + '">' +
+            '<div class="group ' + h(css_class) + '">' +
             '<div class="heading">' +
-                (name.substr(0, 1).toUpperCase() +
+                h(name.substr(0, 1).toUpperCase() +
                     name.substr(1).replace(/_/g, ' ')) +
             '</div>'
         );
@@ -389,26 +380,32 @@ exports.div = function () {
      * @param {Object} value
      * @param {String} raw
      * @param {Array} errors
+     * @param {Object} options An object containing widget options, which
+     *          will ultimately be provided to each widget's toHTML method.
     */
-    this.field = function (field, path, value, raw, errors) {
+    this.field = function (field, path, value, raw, errors, options) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
         if (field.widget.type === 'hidden') {
-            return field.widget.toHTML(name, value, raw, field);
+            return field.widget.toHTML(
+                name, value, raw, field, (options || {})
+            );
         }
         return (
             '<div class="' +
                 exports.classes(field, errors).join(' ') + '">' +
             '<div class="scalar">' +
                 '<div class="label">' +
-                    '<label for="' + name + '">' +
+                    '<label for="' + h(name) + '">' +
                         exports.labelHTML(field, caption) +
                         exports.descriptionHTML(field) +
                     '</label>' +
                 '</div>' +
                 '<div class="content">' +
                     '<div class="inner">' +
-                        field.widget.toHTML(name, value, raw, field) +
+                        field.widget.toHTML(
+                            name, value, raw, field, (options || {})
+                        ) +
                     '</div>' +
                     '<div class="hint">' +
                         exports.hintHTML(field) +
@@ -423,92 +420,6 @@ exports.div = function () {
     };
 
     /**
-     * Called by the forms layer when it encounters any embed field.
-     * An embed field contains either zero documents (if required is
-     * false) or a single document.
-     *
-     * @param {Object} field
-     * @param {Array} path
-     * @param {Object} value
-     * @param {String} raw
-     * @param {Array} errors
-    */
-    this.embed = function (field, path, value, raw, errors) {
-        var name = path.join('.');
-        var caption = path.slice(this.depth).join(' ');
-        return (
-            '<div class="' +
-                exports.classes(field.type, errors).join(' ') + '">' +
-            '<div class="embedded">' +
-                '<div class="label">' +
-                    '<label for="' + name + '">' +
-                        exports.labelHTML(field.type, caption) +
-                        exports.descriptionHTML(field.type) +
-                    '</label>' +
-                '</div>' +
-                '<div class="content" rel="' + field.type.name + '">' +
-                    '<div class="inner" rel="' + name + '">' +
-                        field.widget.toHTML(name, value, raw, field) +
-                    '</div>' +
-                    '<div class="actions">' +
-                    '</div>' +
-                    '<div class="errors">' +
-                        exports.errorHTML(errors) +
-                    '</div>' +
-                '</div>' +
-            '</div>'
-        );
-    };
-
-    /**
-     * Called by the forms layer when it encounters any embedList field.
-     * An embedList field can contain any number of documents.
-     *
-     * @param {Object} field
-     * @param {Array} path
-     * @param {Object} value
-     * @param {String} raw
-     * @param {Array} errors
-    */
-    this.embedList = function (field, path, value, raw, errors) {
-        var name = path.join('.');
-        var caption = path.slice(this.depth).join(' ');
-        var html = (
-            '<div class="' +
-                exports.classes(field.type, errors).join(' ') + '">' +
-            '<div class="embeddedlist">' +
-                '<div class="label">' +
-                    '<label for="' + name + '">' +
-                        exports.labelHTML(field.type, caption) +
-                        exports.descriptionHTML(field.type) +
-                    '</label>' +
-                '</div>' +
-                '<div class="content" rel="' + field.type.name + '">'
-        );
-        _.each(value, function (v, i) {
-            html += (
-                '<div class="item" rel="' + name + '">' +
-                    '<div class="inner">' +
-                        field.widget.toHTML(name, value, raw, field) +
-                    '</div>' +
-                    '<div class="actions">' +
-                    '</div>' +
-                '</div>'
-            );
-        });
-        html += (
-                '<div class="errors">' +
-                    exports.errorHTML(errors) +
-                '</div>' +
-                '</div>' +
-            '</div>' +
-            '</div>'
-        );
-
-        return html;
-    };
-
-    /**
      * Called by the forms layer when it is finished rendering a form.
      * Markup returned from this function is appended to the form output.
      *
@@ -519,6 +430,7 @@ exports.div = function () {
      * @param {Array} errors
     */
     this.end = function () {
-        return '';
+        return '</div>';
     };
 };
+

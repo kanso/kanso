@@ -29,22 +29,6 @@ var settings = require('./settings'), // module auto-generated
 
 
 /**
- * Some functions calculate results differently depending on the execution
- * environment. The isBrowser value is used to set the correct environment
- * for these functions, and is only exported to make unit testing easier.
- *
- * You should not need to change this value during normal usage.
- *
- * This was moved to utils to avoid a circular dependency between
- * core.js and db.js... however, it should be accessed via the core.js module
- * as it may get moved back once circular dependencies are fixed in couchdb's
- * commonjs implementation.
- */
-
-//exports.isBrowser = utils.isBrowser;
-
-
-/**
  * This is because the first page hit also triggers kanso to handle the url
  * client-side. Knowing it is the first page being loaded means we can stop
  * the pageTracker code from submitting the URL twice. Exported because this
@@ -130,17 +114,6 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
 //exports.userCtx = utils.userCtx;
 
 
-/**
- * Keeps track of the last *triggered* request. This is to avoid a race
- * condition where two link clicks in quick succession can cause the rendered
- * page to not match the current URL. If the first link's document or view takes
- * longer to return than the second, the URL was updated for the second link
- * click but the page for the first link will render last, overwriting the
- * correct page. Now, callbacks for fetching documents and views check against
- * this value to see if they should continue rendering the result or not.
- */
-
-var current_request_uuid = null;
 
 
 /**
@@ -520,7 +493,8 @@ exports.runShowBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            if (current_request_uuid === req.uuid) {
+            var current_req = (utils.currentRequest() || {});
+            if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -562,6 +536,46 @@ exports.runShowBrowser = function (req, name, docid, callback) {
 };
 
 /**
+ * Helper for runShow/runList.
+ *
+ * @name parseResponse(req, res)
+ * @param {Object} req
+ * @param {Object} res
+ * @api public
+ */
+
+exports.parseResponse = function (req, res) {
+    var ids = _.without(_.keys(res), 'title', 'code', 'headers', 'body');
+    if (req.client) {
+        if (res.title) {
+            document.title = res.title;
+        }
+        _.each(ids, function (id) {
+            $('#' + id).html(res[id]);
+        });
+    }
+    else if (!res.body) {
+        var context = {title: res.title || ''};
+        _.each(ids, function (id) {
+            context[id] = res[id];
+        });
+        var body = templates.render(
+            settings.base_template || 'base.html', req, context
+        );
+        res = {
+            body: body,
+            code: res.code || 200,
+            headers: res.headers
+        };
+    }
+    return {
+        body: res.body,
+        code: res.code,
+        headers: res.headers
+    };
+};
+
+/**
  * Runs a show function with the given document and request object,
  * emitting relevant events. This function runs both server and client-side.
  *
@@ -594,7 +608,7 @@ exports.parseResponse = function (req, res) {
             body: body,
             code: res.code || 200,
             headers: res.headers
-        }
+        };
     }
     return {
         body: res.body,
@@ -605,6 +619,7 @@ exports.parseResponse = function (req, res) {
 
 exports.runShow = function (fn, doc, req) {
     req = flashmessages.updateRequest(req);
+    utils.currentRequest(req);
     var info = {
         type: 'show',
         name: req.path[1],
@@ -655,7 +670,8 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            if (current_request_uuid === req.uuid) {
+            var current_req = (utils.currentRequest() || {});
+            if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -718,7 +734,8 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
  */
 
 exports.runUpdate = function (fn, doc, req, cb) {
-    flashmessages.updateRequest(req);
+    req = flashmessages.updateRequest(req);
+    utils.currentRequest(req);
     var info = {
         type: 'update',
         name: req.path[1],
@@ -807,7 +824,8 @@ exports.runListBrowser = function (req, name, view, callback) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
         db.getView(view, req.query, function (err, data) {
-            if (current_request_uuid === req.uuid) {
+            var current_req = (utils.currentRequest() || {});
+            if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -865,7 +883,8 @@ exports.runListBrowser = function (req, name, view, callback) {
  */
 
 exports.runList = function (fn, head, req) {
-    flashmessages.updateRequest(req);
+    req = flashmessages.updateRequest(req);
+    utils.currentRequest(req);
     var info = {
         type: 'list',
         name: req.path[1],
@@ -949,7 +968,7 @@ exports.handle = function (method, url, data) {
             }
 
             console.log(msg);
-            current_request_uuid = req.uuid;
+            utils.currentRequest(req);
 
             var after = function () {
                 if (parsed.hash) {
