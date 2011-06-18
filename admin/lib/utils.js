@@ -7,6 +7,8 @@ exports.capitalize = function (str) {
 exports.typePlural = function (type) {
     // capitalize and make plural
     // TODO: add django-style admin panel for custom setting of plurals
+    // Note: Rails has a nice set of built-in pluralization rules, too.
+    // Consider using a rule set, and then allowing for exceptions.
     return type.replace(/_/g, ' ') + 's';
 };
 

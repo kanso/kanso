@@ -48,7 +48,7 @@ var Form = exports.Form = function Form(fields, doc, options) {
 
     this.values = null;
     if (doc) {
-        this.values = JSON.parse(JSON.stringify(doc));
+        this.values = JSON.parse(JSON.stringify(doc)); /* Copy */
         this.initial_doc = doc;
     }
     if (fields && fields.fields) {
@@ -301,23 +301,38 @@ var errsWithoutFields = function (errs) {
  *
  * @name Form.toHTML(req, [RendererClass])
  * @param {Object} req Kanso request object; null for most recent. (optional)
- * @param {Renderer} RendererClass (optional)
+ * @param {Renderer} renderer_class (optional)
  * @param {Object} options An object containing widget options, which
  *          will ultimately be provided to each widget's toHTML method.
+ * @param {Boolean} create_defaults (optional) Set this to true if you've
+ *          provided a document in {doc}, but would still like default
+ *          values to be merged in to it via createDefaults. For a field f,
+ *          the default value is added to {doc} if and only if doc[f]
+ *          is undefined, null, or not present. Defaults to off.
  * @returns {String}
  * @returns {String}
  * @api public
  */
 
 Form.prototype.toHTML = function (/* optional */ req,
-                                  /* optional */ RendererClass,
-                                  /* optional */ options) {
+                                  /* optional */ renderer_class,
+                                  /* optional */ options,
+                                  /* optional */ create_defaults) {
     if (!req) {
         req = utils.currentRequest();
     }
-    var values = this.values || fieldset.createDefaults(this.fields, req);
-    RendererClass = (RendererClass || render.defaultRenderer());
-    var renderer = new RendererClass();
+    var values = this.values;
+
+    if (create_defaults) {
+        values = _.defaults(
+            values, fieldset.createDefaults(this.fields, req)
+        );
+    } else if (!values) {
+        values = fieldset.createDefaults(this.fields, req);
+    }
+
+    renderer_class = (renderer_class || render.defaultRenderer());
+    var renderer = new renderer_class();
     return (
         renderer.start(errsWithoutFields(this.errors)) +
         this.renderFields(
