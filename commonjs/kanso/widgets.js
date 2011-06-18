@@ -929,7 +929,7 @@ exports.embedForm = function (_options) {
                 '<form>' +
                     this.form.toHTML(
                         null, render.defaultRenderer(),
-                            this.render_options
+                            this.render_options, true /* create defaults */
                     ) +
                 '</form>' +
             '</div>'
