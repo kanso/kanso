@@ -92,37 +92,51 @@ var Form = exports.Form = function Form(fields, doc, options) {
  */
 
 exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path) {
-    var keys = _.keys(fields);
+    fields = fields || {};
+    doc_a = doc_a || {};
+
     var fields_module = require('./fields');
+    var exclude_paths = (excludes || []).map(function (p) {
+        return p.split('.');
+    });
+    var subset_paths = (field_subset || []).map(function (p) {
+        return p.split('.');
+    });
+
+    var keys = _.keys(doc_b);
 
     _.each(keys, function (k) {
-        var f_path = path.concat([k]);
         var f = fields[k];
         var b = doc_b[k];
-
-        if (excludes) {
-            if (_.indexOf(excludes, f_path.join('.')) !== -1) {
-                return;
-            }
-        }
-        if (field_subset) {
-            if (_.indexOf(field_subset, f_path.join('.')) === -1) {
-                return;
-            }
-        }
+        var f_path = path.concat([k]);
 
         if (f instanceof fields_module.Field ||
             f instanceof fields_module.Embedded ||
-            f instanceof fields_module.EmbeddedList) {
+            f instanceof fields_module.EmbeddedList ||
+            typeof b !== 'object') {
+            if (excludes) {
+                for (var i = 0; i < exclude_paths.length; i++) {
+                    if (utils.isSubPath(exclude_paths[i], f_path)) {
+                        return;
+                    }
+                }
+            }
+            if (field_subset) {
+                var in_subset = false;
+                for (var j = 0; j < subset_paths.length; j++) {
+                    if (utils.isSubPath(subset_paths[j], f_path)) {
+                        in_subset = true;
+                    }
+                }
+                if (!in_subset) {
+                    return;
+                }
+            }
             doc_a[k] = b;
         }
-        else if (f instanceof Object) {
+        else {
             doc_a[k] = exports.override(
-                excludes, field_subset, f, doc_a, b, f_path
-            );
-        } else {
-            throw new Error(
-                'The field type `' + (typeof f) + '` is not supported.'
+                excludes, field_subset, fields[k], doc_a[k], b, f_path
             );
         }
     });
