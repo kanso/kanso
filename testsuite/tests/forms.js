@@ -644,11 +644,11 @@ exports['Form.validate - options.fields'] = function (test) {
     var f;
 
     f = new forms.Form(fieldset, null, { fields: ['bar', 'baz'] });
-    f.validate({form: {bar: 123}});
+    f.validate({form: {bar: '123'}});
     test.strictEqual(f.isValid(), false);
 
-    f = new forms.Form(fieldset, null, { fields: ['bar', 'baz'] });
-    f.validate({form: {foo: 'foo', bar: 123}});
+    f = new forms.Form(fieldset, null, { fields: ['foo', 'bar'] });
+    f.validate({form: {foo: 'foo', bar: '123'}});
     test.strictEqual(f.isValid(), true);
 
     // only render fields included in fields list
@@ -663,7 +663,7 @@ exports['Form.validate - options.fields'] = function (test) {
         this.end = function () {};
     }
     f.toHTML({}, TestRenderer);
-    test.same(calls, ['bar', 'baz']);
+    test.same(calls, ['foo', 'bar']);
 
     // with initial values
     f = new forms.Form(fieldset, {bar: 123}, { fields: ['foo'] });
@@ -672,7 +672,7 @@ exports['Form.validate - options.fields'] = function (test) {
     test.same(f.values, {foo: 'foo', bar: 123});
 
     f = new forms.Form(fieldset, {bar: 123}, { fields: ['foo', 'bar'] });
-    f.validate({form: {foo: 'foo', bar: 456}});
+    f.validate({form: {foo: 'foo', bar: '456'}});
     test.strictEqual(f.isValid(), true);
     test.same(f.values, {foo: 'foo', bar: 456});
 
@@ -699,5 +699,143 @@ exports['Form.isValid'] = function (test) {
     test.strictEqual(f.isValid(), true);
     f.errors = ['error'];
     test.strictEqual(f.isValid(), false);
+    test.done();
+};
+
+exports['override'] = function (test) {
+    test.same(
+        forms.override(
+            null, // excludes
+            null, // subset
+            { // fields
+                a: fields.string(),
+                b: fields.string(),
+                c: fields.string()
+            },
+            {a: 'one', b: 'two'}, // doc a
+            {c: 'three'}, // doc b
+            [] // path
+        ),
+        {a: 'one', b: 'two', c: 'three'}
+    );
+    test.same(
+        forms.override(
+            null,
+            null,
+            {
+                a: fields.string(),
+                b: fields.string(),
+                c: fields.string()
+            },
+            {a: 'one', b: 'two'},
+            {c: 'three', b: 'foo'},
+            []
+        ),
+        {a: 'one', b: 'foo', c: 'three'}
+    );
+    test.same(
+        forms.override(
+            null,
+            null,
+            {
+                a: fields.string(),
+                group: {
+                    b: fields.string(),
+                    c: fields.string()
+                }
+            },
+            {a: 'one', group: {b: 'two'}},
+            {group: {c: 'three', b: 'foo'}},
+            []
+        ),
+        {a: 'one', group: {b: 'foo', c: 'three'}}
+    );
+    // merge sub-paths
+    test.same(
+        forms.override(
+            null,
+            null,
+            {
+                a: fields.string(),
+                group: {
+                    b: fields.string(),
+                    c: fields.string()
+                }
+            },
+            {a: 'one', group: {b: 'two'}},
+            {group: {c: 'three'}},
+            []
+        ),
+        {a: 'one', group: {b: 'two', c: 'three'}}
+    );
+    // don't merge embedded types
+    test.same(
+        forms.override(
+            null,
+            null,
+            {
+                a: fields.string(),
+                group: fields.embed({type: {}})
+            },
+            {a: 'one', group: {b: 'two'}},
+            {group: {c: 'three'}},
+            []
+        ),
+        {a: 'one', group: {c: 'three'}}
+    );
+    // don't override if field is excluded
+    test.same(
+        forms.override(
+            ['group.b'],
+            null,
+            {
+                a: fields.string(),
+                group: {
+                    b: fields.string(),
+                    c: fields.string()
+                }
+            },
+            {a: 'one', group: {b: 'two'}},
+            {group: {c: 'three', b: 'foo'}},
+            []
+        ),
+        {a: 'one', group: {b: 'two', c: 'three'}}
+    );
+    // override only if field is in subset (if specified)
+    test.same(
+        forms.override(
+            null,
+            ['group.b'],
+            {
+                a: fields.string(),
+                group: {
+                    b: fields.string(),
+                    c: fields.string()
+                }
+            },
+            {a: 'one', group: {b: 'two'}},
+            {group: {c: 'three', b: 'foo'}},
+            []
+        ),
+        {a: 'one', group: {b: 'foo'}}
+    );
+    // override ad exclude working together
+    test.same(
+        forms.override(
+            ['a'],
+            ['group.b'],
+            {
+                a: fields.string(),
+                group: {
+                    b: fields.string(),
+                    c: fields.string()
+                }
+            },
+            {a: 'one', group: {b: 'two'}},
+            {a: 'asdf', group: {c: 'three', b: 'foo'}},
+            []
+        ),
+        {a: 'one', group: {b: 'foo'}}
+    );
     test.done();
 };
