@@ -19,7 +19,6 @@ a:hover .icon {
 }
 
 body {
-    line-height: 1.618em;
     font-size: 14px;
     font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
     color: #292626;
@@ -77,6 +76,10 @@ h1 strong a {
 
 h2 {
     margin: 18px 0;
+}
+
+.simplemodal-data h2 {
+    margin-top: 0;
 }
 
 table.typelist,
@@ -290,14 +293,25 @@ td.actions .button {
     background-color: #eee;
     border-radius: 3px;
 }
+
 #flashmessages li.error {
     background-color: #fdd;
 }
+
 #flashmessages li.success {
     background-color: #dfd;
 }
-#simplemodal-overlay {background-color:#000;}
-#simplemodal-container {background-color:#fff; border:8px solid #444; padding:12px;}
+
+#simplemodal-overlay {
+    background-color: #000;
+}
+
+#simplemodal-container {
+    background-color:#fff;
+    border: 8px
+    solid #444;
+    padding: 12px;
+}
 
 #session {
     font-size: 0.95em;
