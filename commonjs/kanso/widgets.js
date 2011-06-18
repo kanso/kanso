@@ -653,6 +653,11 @@ exports.embedList = function (_options) {
         this.bindEventsForListItem(item_elt);
     };
 
+    w.deleteExistingItem = function (item_elt) {
+        $(item_elt).remove();
+        this.renumberList();
+    };
+
     w.insertNewItemAtEnd = function (callback) {
         var list_elt = this.discoverListElement();
 
@@ -806,7 +811,7 @@ exports.embedList = function (_options) {
 
     w.handleAddButtonClick = function (ev) {
         var callback = utils.bindContext(
-            this, this.handleAddOrEditCompletion
+            this, this.handleAddCompletion
         );
         this.insertNewItemAtEnd(
             utils.bindContext(this, function (item_elt) {
@@ -817,27 +822,46 @@ exports.embedList = function (_options) {
 
     w.handleEditButtonClick = function (ev) {
         var callback = utils.bindContext(
-            this, this.handleAddOrEditCompletion
+            this, this.handleEditCompletion
         );
         this.dispatchEventToAction(ev.target, 'edit', callback);
     };
 
     w.handleDeleteButtonClick = function (ev) {
+        var callback = utils.bindContext(
+            this, this.handleDeleteCompletion
+        );
         var item_elt = $(ev.target).closest('.item', this);
-        item_elt.remove();
-        this.renumberList();
-        return this.dispatchEventToAction(ev, 'delete');
+        this.deleteExistingItem(item_elt);
+        this.dispatchEventToAction(ev, 'delete');
     };
 
-    w.handleAddOrEditCompletion = function (target_elt, offset,
-                                            is_successful, new_value) {
+    w.handleAddCompletion = function (target_elt, offset,
+                                      is_successful, new_value) {
+        var item_elt = $(target_elt).closest('.item', this);
+
+        if (is_successful) {
+            this.setListItemValue(
+                item_elt, new_value, offset
+            );
+        } else {
+            this.deleteExistingItem(item_elt);
+        }
+    };
+
+    w.handleEditCompletion = function (target_elt, offset,
+                                       is_successful, new_value) {
         if (is_successful) {
             var item_elt = $(target_elt).closest('.item', this);
             this.setListItemValue(
                 item_elt, new_value, offset
             );
         }
-        return is_successful;
+    };
+
+    w.handleDeleteCompletion = function (target_elt, offset,
+                                         is_successful, new_value) {
+        return;
     };
 
     w.defaultActionFor = function (action_name) {
@@ -855,6 +879,7 @@ exports.embedList = function (_options) {
                     this, [ action_options ].concat(args)
                 );
             });
+            /* break */
         case 'delete':
             break;
         }
