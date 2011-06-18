@@ -9,8 +9,7 @@
  * Module dependencies
  */
 
-var embed = require('kanso/embed'),
-    events = require('kanso/events'),
+var events = require('kanso/events'),
     sanitize = require('kanso/sanitize'),
     _ = require('./underscore')._;
 
