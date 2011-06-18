@@ -45,18 +45,103 @@ var core = require('./core'),
 
 var Form = exports.Form = function Form(fields, doc, options) {
     this.options = options || {};
-    this.values = doc;
 
-    this.fields = (fields && fields.fields) ? fields.fields: fields;
-    /*
-    if (utils.constructorName(fields) === 'Type') {
+    this.values = null;
+    if (doc) {
+        this.values = JSON.parse(JSON.stringify(doc));
+        this.initial_doc = doc;
+    }
+    if (fields && fields.fields) {
+        this.type = fields;
+        this.fields = this.type.fields;
+    }
+    else {
+        this.fields = fields;
+    }
+    /*if (utils.constructorName(fields) === 'Type') {
         this.type = fields;
         this.fields = this.type.field;
     }
     else {
         this.fields = fields;
-    }
-    */
+    }*/
+};
+
+
+/**
+ * Overrides values in doc_a with values in doc_b, only when a field is present
+ * for that value. This means properties not in fields (or in excluded fields)
+ * are retained, while properties which are covered by the fieldset are
+ * replaced.
+ *
+ * This is used when updating the form's values with a request when its been
+ * initiated with a previous document. You shouldn't normally need to call this
+ * directly.
+ *
+ * Returns the updated doc_a object.
+ *
+ * @name override(excludes, field_subset, fields, doc_a, doc_b, path)
+ * @param {Array | null} excludes
+ * @param {Array | null} field_subset
+ * @param {Object} Fields
+ * @param {Object} doc_a
+ * @param {Object} doc_b
+ * @param {Array} path
+ * @returns {Object}
+ * @api public
+ */
+
+exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path) {
+    fields = fields || {};
+    doc_a = doc_a || {};
+
+    var fields_module = require('./fields');
+    var exclude_paths = (excludes || []).map(function (p) {
+        return p.split('.');
+    });
+    var subset_paths = (field_subset || []).map(function (p) {
+        return p.split('.');
+    });
+
+    var keys = _.keys(doc_b);
+
+    _.each(keys, function (k) {
+        var f = fields[k];
+        var b = doc_b[k];
+        var f_path = path.concat([k]);
+
+        if (typeof b !== 'object' ||
+            f instanceof fields_module.Field ||
+            f instanceof fields_module.Embedded ||
+            f instanceof fields_module.EmbeddedList) {
+
+            if (excludes) {
+                for (var i = 0; i < exclude_paths.length; i++) {
+                    if (utils.isSubPath(exclude_paths[i], f_path)) {
+                        return;
+                    }
+                }
+            }
+            if (field_subset) {
+                var in_subset = false;
+                for (var j = 0; j < subset_paths.length; j++) {
+                    if (utils.isSubPath(subset_paths[j], f_path)) {
+                        in_subset = true;
+                    }
+                }
+                if (!in_subset) {
+                    return;
+                }
+            }
+            doc_a[k] = b;
+        }
+        else {
+            doc_a[k] = exports.override(
+                excludes, field_subset, fields[k], doc_a[k], b, f_path
+            );
+        }
+    });
+    return doc_a;
 };
 
 /**
@@ -64,25 +149,102 @@ var Form = exports.Form = function Form(fields, doc, options) {
  * the form instance.
  *
  * @name Form.validate(req)
- * @param {Object} form
+ * @param {Object} req
  * @returns {Form}
  * @api public
  */
 
-Form.prototype.validate = function (/*optional*/form) {
-    if (!form) {
-        form = core.currentRequest().form;
+Form.prototype.validate = function (/*optional*/req) {
+    if (!req) {
+        req = utils.currentRequest();
     }
-    this.raw = form || {};
+    this.raw = req.form || {};
     var tree = exports.formValuesToTree(this.raw);
-
-    this.values = utils.override(
-        this.values || fieldset.createDefaults(this.fields),
-        exports.parseRaw(this.fields, tree)
+    this.values = exports.override(
+        this.options.exclude,
+        this.options.fields,
+        this.fields,
+        this.values || fieldset.createDefaults(this.fields, req) || {},
+        exports.parseRaw(this.fields, tree),
+        []
     );
+
     this.errors = fieldset.validate(
         this.fields, this.values, this.values, this.raw, [], false
     );
+
+    if (this.type) {
+        // run top level permissions first
+        var type_errs = this.type.authorizeTypeLevel(
+            this.values, this.initial_doc, req.userCtx
+        );
+        if (type_errs.length) {
+            this.errors = this.errors.concat(type_errs);
+        }
+        else {
+            // if no top-level permissions errors, check each field
+            this.errors = this.errors.concat(
+                this.type.authorize(
+                    this.values, this.initial_doc, req.userCtx
+                )
+            );
+        }
+    }
+    else {
+        this.errors = this.errors.concat(fieldset.authFieldSet(
+            this.fields, this.values, this.initial_doc, this.values,
+            this.initial_doc, req.userCtx, [], true
+        ));
+    }
+
+    // clear field properties on errors for excluded fields
+    var excludes = this.options.exclude;
+    if (excludes) {
+        var excl_paths = _.map(excludes, function (p) {
+            return p.split('.');
+        });
+        this.errors = _.map(this.errors, function (e) {
+            if (!e.field) {
+                return e;
+            }
+            for (var i = 0, len = excl_paths.length; i < len; i++) {
+                var path = excl_paths[i];
+                if (utils.isSubPath(path, e.field)) {
+                    e.message = e.field.join('.') + ': ' + (
+                        e.message || e.toString()
+                    );
+                    delete e.field;
+                    return e;
+                }
+            }
+            return e;
+        });
+    }
+
+    // clear field properties on errors not in fields subset
+    var field_subset = this.options.fields;
+    if (field_subset) {
+        var subset_paths = _.map(field_subset, function (p) {
+            return p.split('.');
+        });
+        this.errors = _.map(this.errors, function (e) {
+            if (!e.field) {
+                return e;
+            }
+            for (var i = 0, len = subset_paths.length; i < len; i++) {
+                var path = subset_paths[i];
+                if (!utils.isSubPath(path, e.field)) {
+                    e.message = e.field.join('.') + ': ' + (
+                        e.message || e.toString()
+                    );
+                    delete e.field;
+                    return e;
+                }
+            }
+            return e;
+        });
+    }
+
     return this;
 };
 
@@ -100,32 +262,70 @@ Form.prototype.isValid = function () {
 };
 
 /**
+ * Filters an array of errors, returning only those below a specific field path
+ *
+ * @param {Array} errs
+ * @param {Array} path
+ * @returns {Array}
+ */
+
+var errsBelowPath = function (errs, path) {
+    if (!path || !path.length) {
+        return errs;
+    }
+    return _.filter(errs, function (e) {
+        if (!e.field) {
+            return false;
+        }
+        return utils.isSubPath(path, e.field);
+    });
+};
+
+/**
+ * Filters a list of errors, returning only those without a field property.
+ * This is used to populate the errors at the top of the form, which apply
+ * generally, or cannot be attributed to a single field.
+ *
+ * @param {Array} errs
+ * @returns {Array}
+ */
+
+var errsWithoutFields = function (errs) {
+    return _.filter(errs, function (e) {
+        return !e.field;
+    });
+};
+
+/**
  * Converts current form to a HTML string, using an optional renderer class.
  *
  * @name Form.toHTML(req, [RendererClass])
  * @param {Object} req Kanso request object; null for most recent. (optional)
  * @param {Renderer} RendererClass (optional)
+ * @param {Object} options An object containing widget options, which
+ *          will ultimately be provided to each widget's toHTML method.
+ * @returns {String}
  * @returns {String}
  * @api public
  */
 
-Form.prototype.toHTML = function (/*optional*/req, /*optional*/RendererClass) {
+Form.prototype.toHTML = function (/* optional */ req,
+                                  /* optional */ RendererClass,
+                                  /* optional */ options) {
     if (!req) {
-        req = core.currentRequest();
+        req = utils.currentRequest();
     }
-    var values = this.values || fieldset.createDefaults(
-        this.fields,
-        req.userCtx
-    );
-    RendererClass = RendererClass || render.table;
+    var values = this.values || fieldset.createDefaults(this.fields, req);
+    RendererClass = (RendererClass || render.defaultRenderer());
     var renderer = new RendererClass();
     return (
-        renderer.start() +
+        renderer.start(errsWithoutFields(this.errors)) +
         this.renderFields(
-            renderer, this.fields, values, this.raw, this.errors, []
+            renderer, this.fields,
+                values, this.raw, this.errors, [], (options || {})
         ) +
         renderer.end() +
-        render.generateInitializationMarkup()
+        render.scriptTagForEvent('renderFinish')
     );
 };
 
@@ -159,11 +359,14 @@ var errsBelowPath = function (errs, path) {
  * @param {Object} values
  * @param {Array} errs
  * @param {Array} path
+ * @param {Object} options An object containing widget options, which
+ *          will ultimately be provided to each widget's toHTML method.
  * @returns {String}
  * @api public
  */
 
-Form.prototype.renderFields = function (renderer, fields, values, raw, errs, path) {
+Form.prototype.renderFields = function (renderer, fields, values,
+                                        raw, errs, path, options) {
     fields = fields || {};
     values = values || {};
     raw = raw || {};
@@ -174,6 +377,8 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
     var excludes = this.options.exclude;
     var field_subset = this.options.fields;
     var keys = _.keys(fields);
+
+    var fields_module = require('./fields');
 
     return _.reduce(keys, function (html, k) {
 
@@ -191,49 +396,36 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
         }
 
         var f_errs = errsBelowPath(errs, f_path);
-        var cname = utils.constructorName(fields[k]);
+        var f = fields[k];
 
-        if (cname === 'Field') {
+        if (f instanceof fields_module.Field ||
+            f instanceof fields_module.Embedded ||
+            f instanceof fields_module.EmbeddedList) {
+
             return html + renderer.field(
-                fields[k],
+                f,
                 f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
+                f_errs,
+                (options || {})
             );
         }
-        else if (cname === 'Embedded') {
-            html += renderer.embed(
-                fields[k],
-                f_path,
-                values[k],
-                (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
-            );
-            return html;
-        }
-        else if (cname === 'EmbeddedList') {
-            html += renderer.embedList(
-                fields[k],
-                f_path,
-                values[k],
-                (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
-            );
-            return html;
-        }
-        else if (cname === 'Object') {
+        else if (f instanceof Object) {
             return html + (k ? renderer.beginGroup(f_path) : '') +
                 that.renderFields(
                     renderer,
-                    fields[k],
+                    f,
                     values[k],
                     (raw[k] === undefined) ? values[k]: raw[k],
                     errs,
-                    f_path
+                    f_path,
+                    (options || {})
                 ) + (k ? renderer.endGroup(f_path) : '');
         } else {
-            throw new Error('The field type `' + cname + '` is not supported.');
+            throw new Error(
+                'The field type `' + (typeof f) + '` is not supported.'
+            );
         }
     }, '');
 };
@@ -273,13 +465,14 @@ exports.formValuesToTree = function (form) {
 exports.parseRaw = function (fields, raw) {
     var doc = {};
     raw = raw || {};
+    var fields_module = require('./fields');
 
     for (var k in fields) {
         var f = fields[k];
         var r = raw[k];
-        var cname = utils.constructorName(f);
 
-        if (cname === 'Field') {
+
+        if (f instanceof fields_module.Field) {
             if (!f.isEmpty(r)) {
                 doc[k] = f.parse(r);
             }
@@ -287,7 +480,7 @@ exports.parseRaw = function (fields, raw) {
                 doc[k] = undefined;
             }
         }
-        else if (cname === 'Embedded') {
+        else if (f instanceof fields_module.Embedded) {
             if (!f.isEmpty(r)) {
                 if (typeof r === 'string') {
                     if (r !== '') {
@@ -299,7 +492,7 @@ exports.parseRaw = function (fields, raw) {
                 }
             }
         }
-        else if (cname === 'EmbeddedList') {
+        else if (f instanceof fields_module.EmbeddedList) {
             doc[k] = [];
             for (var i in r) {
                 var val;
@@ -319,10 +512,12 @@ exports.parseRaw = function (fields, raw) {
                 delete doc[k];
             }
         }
-        else if (cname === 'Object') {
+        else if (f instanceof Object) {
             doc[k] = exports.parseRaw(f, r);
         } else {
-            throw new Error('The field type `' + cname + '` is not supported.');
+            throw new Error(
+                'The field type `' + (typeof f) + '` is not supported.'
+            );
         }
     }
     return doc;

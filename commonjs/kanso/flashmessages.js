@@ -95,7 +95,7 @@ exports.updateRequest = function (req) {
  */
 
 exports.getMessages = function (req) {
-    if (utils.isBrowser) {
+    if (utils.isBrowser()) {
         // also remove any messages from this request already set in the cookie
         var cookie_messages = exports.readBrowserCookie();
         var bmessages = _.filter(cookie_messages, function (val) {
@@ -229,3 +229,4 @@ exports.addMessage = function (req, msg) {
         req.flash_messages.push(message);
     }
 };
+

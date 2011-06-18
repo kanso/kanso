@@ -185,3 +185,4 @@ exports.extname = function (path) {
     // hidden file in UNIX).
     return dot <= slash + 1 ? '' : path.substring(dot);
 };
+

@@ -89,5 +89,5 @@ exports.test = function (doc, req) {
     } else {
         return f.toHTML();
     }
-}
+};
 

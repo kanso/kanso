@@ -186,20 +186,18 @@ p.description {
     margin-bottom: 2em;
 }
 
-.render-table td.errors {
-    padding-left: 10px;
-}
-
-.render-table td.errors ul {
+.render-table ul.errors {
+    margin: 0;
+    padding: 0;
+    font-size: 0.9em;
+    font-weight: bold;
     list-style-type: none;
-    padding: 0;
-    margin: 0;
 }
 
-.render-table td.errors ul li {
+.render-table ul.errors li {
     padding: 0;
     margin: 0;
-    color: red;
+    color: #f88;
 }
 
 .button {
@@ -400,6 +398,32 @@ td.actions .button {
 }
 
 .layout {
+    overflow: hidden;
+}
+
+.embedlist .item {
+    clear: both;
+}
+
+.embedlist .actions {
+    float: none;
+    overflow: visible;
+    padding-left: 0;
+}
+
+.embedlist .item .actions {
+    float: right;
+    overflow: hidden;
+    padding-left: 1em;
+}
+
+.embedlist .embed {
+    float: none;
+    overflow: visible;
+}
+
+.embedlist .item .embed {
+    float: left;
     overflow: hidden;
 }
 

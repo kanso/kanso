@@ -502,6 +502,25 @@ exports['Form.validate - empty strings'] = function (test) {
     test.done();
 };
 
+exports['Form.validate - groups'] = function (test) {
+    test.expect(2);
+    var f = new forms.Form({
+        group: {
+            group: {
+                test: fields.string({required: true})
+            }
+        }
+    });
+
+    f.validate({form: {}});
+    test.strictEqual(f.isValid(), false);
+
+    f.validate({form: { group: { group: { test: 'test' }}}});
+    test.strictEqual(f.isValid(), true);
+
+    test.done();
+};
+
 exports['Form.validate - throw error on string field'] = function (test) {
     test.expect(1);
     var req = {};
@@ -533,7 +552,7 @@ exports['Form.validate - options.exclude'] = function (test) {
     // a value for 'bar', validation should fail.
     test.strictEqual(f.isValid(), false);
 
-    f = new forms.Form(fieldset, null, { exclude: ['bar', 'baz'] });
+    f = new forms.Form(fieldset, null, { exclude: ['baz'] });
     f.validate({form: {foo: 'foo', bar: 123}});
     test.strictEqual(f.isValid(), true);
 
@@ -549,7 +568,7 @@ exports['Form.validate - options.exclude'] = function (test) {
         this.end = function () {};
     }
     f.toHTML({}, TestRenderer);
-    test.same(calls, ['foo']);
+    test.same(calls, ['foo', 'bar']);
 
     // with initial values
     f = new forms.Form(fieldset, {bar: 123}, { exclude: ['bar', 'baz'] });
@@ -579,6 +598,75 @@ exports['Form.validate - options.exclude'] = function (test) {
     test.done();
 };
 
+exports['Form.validate - don\'t merge embedded'] = function (test) {
+    var Type = types.Type;
+    var t = new Type('t1', {
+        fields: {
+            name: fields.string({required: false})
+        }
+    });
+
+    var fieldset = {
+        t1_list: fields.embedList({type: t, required: false}),
+        t1_single: fields.embed({type: t, required: false})
+    };
+    var f, olddoc;
+
+    olddoc = {t1_single: {_id: 'id1', name: 'test'}, t1_list: []};
+    f = new forms.Form(fieldset, olddoc);
+    f.validate({form: {t1_single: '{"_id": "id1", "foo":"bar"}'}});
+
+    // check that the t1_single wasn't merged
+    test.same(f.values.t1_single, {_id: 'id1', foo: 'bar'});
+
+
+    olddoc = {t1_list: [
+        {_id: 'id1', name: 'test'},
+        {_id: 'id2', name: 'test2'}
+    ]};
+    f = new forms.Form(fieldset, olddoc);
+    f.validate({form: {
+        't1_list.0': '{"_id": "id1", "foo":"bar"}'
+    }});
+
+    // check that the t1_single wasn't merged
+    test.same(f.values.t1_list, [{_id: 'id1', foo: 'bar'}]);
+
+
+    test.done();
+};
+
+exports['Form.validate - clear field for excluded fields'] = function (test) {
+    var fieldset = {
+        one: fields.string()
+    };
+    var f = new forms.Form(fieldset, null, {
+        exclude: ['one']
+    });
+    f.validate({form: {}, userCtx: {}});
+    test.equal(f.errors.length, 1);
+    var e = f.errors[0];
+    test.strictEqual(e.field, undefined);
+    test.ok(/required/i.test(e.message || e.toString()));
+    test.done();
+};
+
+exports['Form.validate - clear for fields not in subset'] = function (test) {
+    var fieldset = {
+        one: fields.string(),
+        two: fields.string({required: false})
+    };
+    var f = new forms.Form(fieldset, null, {
+        fields: ['two']
+    });
+    f.validate({form: {}, userCtx: {}});
+    test.equal(f.errors.length, 1);
+    var e = f.errors[0];
+    test.strictEqual(e.field, undefined);
+    test.ok(/required/i.test(e.message || e.toString()));
+    test.done();
+};
+
 exports['Form.validate - options.fields'] = function (test) {
     var fieldset = {
         foo: fields.string(),
@@ -589,11 +677,11 @@ exports['Form.validate - options.fields'] = function (test) {
     var f;
 
     f = new forms.Form(fieldset, null, { fields: ['bar', 'baz'] });
-    f.validate({form: {bar: 123}});
+    f.validate({form: {bar: '123'}});
     test.strictEqual(f.isValid(), false);
 
-    f = new forms.Form(fieldset, null, { fields: ['bar', 'baz'] });
-    f.validate({form: {foo: 'foo', bar: 123}});
+    f = new forms.Form(fieldset, null, { fields: ['foo', 'bar'] });
+    f.validate({form: {foo: 'foo', bar: '123'}});
     test.strictEqual(f.isValid(), true);
 
     // only render fields included in fields list
@@ -608,7 +696,7 @@ exports['Form.validate - options.fields'] = function (test) {
         this.end = function () {};
     }
     f.toHTML({}, TestRenderer);
-    test.same(calls, ['bar', 'baz']);
+    test.same(calls, ['foo', 'bar']);
 
     // with initial values
     f = new forms.Form(fieldset, {bar: 123}, { fields: ['foo'] });
@@ -617,7 +705,7 @@ exports['Form.validate - options.fields'] = function (test) {
     test.same(f.values, {foo: 'foo', bar: 123});
 
     f = new forms.Form(fieldset, {bar: 123}, { fields: ['foo', 'bar'] });
-    f.validate({form: {foo: 'foo', bar: 456}});
+    f.validate({form: {foo: 'foo', bar: '456'}});
     test.strictEqual(f.isValid(), true);
     test.same(f.values, {foo: 'foo', bar: 456});
 
@@ -644,5 +732,110 @@ exports['Form.isValid'] = function (test) {
     test.strictEqual(f.isValid(), true);
     f.errors = ['error'];
     test.strictEqual(f.isValid(), false);
+    test.done();
+};
+
+exports['override'] = function (test) {
+    test.same(
+        forms.override(
+            null, // excludes
+            null, // subset
+            { a: fields.string(), // fields
+              b: fields.string(), c: fields.string() },
+            {a: 'one', b: 'two'}, // doc a
+            {c: 'three'}, // doc b
+            [] // path
+        ),
+        {a: 'one', b: 'two', c: 'three'}
+    );
+    test.same(
+        forms.override(
+            null,
+            null,
+            { a: fields.string(),
+              b: fields.string(), c: fields.string() },
+            {a: 'one', b: 'two'},
+            {c: 'three', b: 'foo'},
+            []
+        ),
+        {a: 'one', b: 'foo', c: 'three'}
+    );
+    test.same(
+        forms.override(
+            null,
+            null,
+            { a: fields.string(),
+              group: { b: fields.string(), c: fields.string() } },
+            {a: 'one', group: {b: 'two'}},
+            {group: {c: 'three', b: 'foo'}},
+            []
+        ),
+        {a: 'one', group: {b: 'foo', c: 'three'}}
+    );
+    // merge sub-paths
+    test.same(
+        forms.override(
+            null,
+            null,
+            { a: fields.string(),
+              group: { b: fields.string(), c: fields.string() } },
+            {a: 'one', group: {b: 'two'}},
+            {group: {c: 'three'}},
+            []
+        ),
+        {a: 'one', group: {b: 'two', c: 'three'}}
+    );
+    // don't merge embedded types
+    test.same(
+        forms.override(
+            null,
+            null,
+            { a: fields.string(),
+              group: fields.embed({type: {}}) },
+            {a: 'one', group: {b: 'two'}},
+            {group: {c: 'three'}},
+            []
+        ),
+        {a: 'one', group: {c: 'three'}}
+    );
+    // don't override if field is excluded
+    test.same(
+        forms.override(
+            ['group.b'],
+            null,
+            { a: fields.string(),
+              group: { b: fields.string(), c: fields.string() } },
+            {a: 'one', group: {b: 'two'}},
+            {group: {c: 'three', b: 'foo'}},
+            []
+        ),
+        {a: 'one', group: {b: 'two', c: 'three'}}
+    );
+    // override only if field is in subset (if specified)
+    test.same(
+        forms.override(
+            null,
+            ['group.b'],
+            { a: fields.string(),
+              group: { b: fields.string(), c: fields.string() } },
+            {a: 'one', group: {b: 'two'}},
+            {group: {c: 'three', b: 'foo'}},
+            []
+        ),
+        {a: 'one', group: {b: 'foo'}}
+    );
+    // override ad exclude working together
+    test.same(
+        forms.override(
+            ['a'],
+            ['group.b'],
+            { a: fields.string(),
+              group: { b: fields.string(), c: fields.string() } },
+            {a: 'one', group: {b: 'two'}},
+            {a: 'asdf', group: {c: 'three', b: 'foo'}},
+            []
+        ),
+        {a: 'one', group: {b: 'foo'}}
+    );
     test.done();
 };

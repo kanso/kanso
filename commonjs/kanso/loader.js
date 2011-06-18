@@ -1,5 +1,8 @@
 /*global $: false */
 
+var sanitize = require('./sanitize');
+
+
 /**
  * Implements the CommonJS require API, using a design document
  * that has been manually fetched using getDesignDoc. The usual
@@ -12,7 +15,7 @@
 
 exports.appRequire = function (ddoc, path) {
     return exports.Couch.compileFunction('function () {\n' +
-    '    return require("' + path + '");\n' +
+    '    return require("' + sanitize.js(path) + '");\n' +
     '}', ddoc)();
 };
 

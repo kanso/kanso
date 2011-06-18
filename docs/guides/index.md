@@ -12,6 +12,11 @@ Kanso makes it easy to re-use code between the client and server wherever
 possible, but to be used effectively you must understand how requests are
 processed.
 
+## [Sharing Code With Views](sharing_code_with_views.html)
+
+As of CouchDB 1.1.0, its possible to share modules between your view functions
+and your normal application code. This guide explains the process of adding
+shared modules to a Kanso project.
 
 ## [Writing Guides](writing_guides.html)
 

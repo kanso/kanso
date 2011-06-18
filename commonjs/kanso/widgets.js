@@ -1,3 +1,5 @@
+/*global $: false, kanso: true*/
+
 /**
  * Widgets define the way a Field object is displayed when rendered as part of a
  * Form. Changing a Field's widget will be reflected in the admin app.
@@ -10,8 +12,15 @@
  */
 
 var db = require('./db'),
+    forms = require('./forms'),
+    actions = require('./actions'),
+    render = require('./render'),
+    sanitize = require('./sanitize'),
     utils = require('./utils'),
+    querystring = require('./querystring'),
     _ = require('./underscore')._;
+
+var h = sanitize.escapeHtml;
 
 
 /**
@@ -26,8 +35,8 @@ var db = require('./db'),
  */
 
 var Widget = exports.Widget = function Widget(type, options) {
-    options = options || {};
-    this.classes = options.classes || [];
+    options = (options || {});
+    this.classes = (options.classes || []);
     this.id = options.id;
     this.type = type;
 };
@@ -43,130 +52,104 @@ var Widget = exports.Widget = function Widget(type, options) {
  * @returns {String}
  */
 
-Widget.prototype._id = function (name, extension) {
-    return (
-        this.id ? this.id : 'id_' + name.replace(/[^\w]+/, '_')
-    ) + (
-        extension ? ('_' + extension) : ''
+Widget.prototype._id = function (name /* , ... */) {
+    return sanitize.generateDomIdentifier.apply(
+        this, [ this.id || name ].concat(
+            Array.prototype.slice.call(arguments, 1)
+        )
     );
 };
 
-
 /**
- * Generates a string for common widget attributes.
+ * Generates a name string for a widget.
  *
  * @param {String} name - field name on the HTML form
- * @param {String} id_extension - optional; a string to be added
- *                  to the generated DOM identifier. Use this when you
+ * @param {String} extension - optional; a string to be added
+ *                  to the generated identifier. Use this when you
  *                  want to make an identifier that is related to
- *                  an existing identifier, but is still unique. The
- *                  HTML form name will not b changed.
+ *                  an existing identifier, but is still unique.
  * @returns {String}
- * @api private
  */
 
-Widget.prototype._attrs = function (name, id_extension) {
-    var html = (
-        ' name="' + name + '" id="' +
-            this._id(name, id_extension) + '"'
+Widget.prototype._name = function (name /* , ... */) {
+    return sanitize.generateDomName.apply(
+        this, [ name ].concat(
+            Array.prototype.slice.call(arguments, 1)
+        )
     );
-    if (this.classes.length) {
-        html += ' class="' + this.classes.join(' ') + '"';
+};
+
+/**
+ * Converts an input element's value attribute to a valid
+ * in-memory representation of the document or document fragment.
+ * This function tries to interpret the string as JSON if it's
+ * appropriate; otherwise the string is left alone.
+ *
+ * @name _parse_value(str, type_name)
+ * @param {String} str The string value to parse
+ * @param {String} type_name The type of field that the input control
+ *          belongs to. This value may influence how str is parsed.
+ * @returns {Object}
+ */
+
+Widget.prototype._parse_value = function (str, type_name)
+{
+    /* TODO:
+        This function needs to actually check type_name. */
+
+    var rv = null;
+
+    try {
+        rv = JSON.parse(str);
+    } catch (e) {
+        rv = str;
     }
-    return html;
-};
 
-
-/**
- * Generate a script tag, containing code to invoke a function
- * in a CommonJS module. This is a general-purpose dispatch method
- * for client-side initialization functions. If you're writing a
- * widget, please use the version found in the Widget prototype.
- *
- * @param {String} module - the commonjs module to call in to.
- * @param {String} method - the function to invoke in the module; this
- *                  argument can be a dotted path to traverse objects
- *                  in the module. This string is substituted directly.
- *                  Javascript injection warning: it is the caller's
- *                  responsibility to construct this string safely.
- * @param {Object} options - optional; additional argument data to
- *                  be passed to the init function. This data will be
- *                  passed to the method as a single argument, and will
- *                  undergo serialization. It is *not* possible to pass
- *                  functions or closures using this mechanism. All
- *                  data in options will be copied and serialized.
- * @param {Object} args - optional; a string consisting of literal
- *                  arguments to the method. This will be directly
- *                  substituted in to the argument list at its beginning.
- *                  Javascript injection warning: it is the caller's
- *                  responsibility to construct this string safely.
- * @returns {String}
- * @api public
- */
-
-exports.scriptTagForInit = function(module, method, options, args)
-{
-    /* XSS Prevention:
-        Prevent escape from (i) the javascript string, and then (ii)
-        the CDATA block. Use a JSON string to keep these rules simple. */
-
-    var json_options = (
-        JSON.stringify(options || {}).replace(/'/g, "\\'").replace(']]>', '')
-    );
-
-    return (
-        '<script type="text/javascript">' +
-        "// <![CDATA[\n" +
-            "require('" + module + "')." + method + '(' +
-                (args ? args + ', ' : '') + "'" + json_options + "');\n" +
-        "// ]]>" +
-        '</script>'
-    );
+    return rv;
 };
 
 /**
- * A specialized version of scriptTagForInit, for use with custom widgets.
- * This function generates a script tag, which invokes a client-side
- * initialization function -- within the client's web browser -- for the
- * widget. This function uses the widget's type attribute to resolve the
- * name of the widget's initialization function; it uses the widget's
- * id to locate the widget's markup on the page.
+ * Converts an in-memory representation of the document or
+ * document fragment in to an encoded string. If the value
+ * passed is already encoded, this function does nothing.
  *
- * @param {String} name - field name on the HTML form
- * @param {Object} options - data to be passed to init function.
- * @param {String} module - optional; the commonjs module to load. This
- *                  module should export an object named identically to the
- *                  value you pass for namespace; that object should contain
- *                  initialization functions, with names matching each
- *                  widget type. By default, this is 'kanso/widgets'.
- * @param {String} namespace - optional; the namespace (an object) that
- *                  contains widget initialization functions for the module.
- *                  By default, this namespace is called 'init'.
- * @returns {String}
- * @api public
+ * @name _stringify_value(str, type_name)
+ * @param {String} value The value to encode.
+ * @param {String} type_name The type of field that the input control
+ *          belongs to. This value may influence how value is encoded.
+ * @returns {Object}
  */
 
-Widget.prototype.scriptTagForInit = function (name, options, module, namespace)
+Widget.prototype._stringify_value = function (value, type_name)
 {
-    return exports.scriptTagForInit(
-        (module || 'kanso/widgets'), 
-            ((namespace || 'init') + '.' + this.type),
-            options, ("$('#" + this._id(name) + "')")
-    );
-}
+    /* TODO:
+        This function needs to actually check type_name. */
+
+    var rv = null;
+
+    try {
+        rv = JSON.stringify(value);
+    } catch (e) {
+        rv = value;
+    }
+
+    return rv;
+};
 
 /**
  * Converts a widget to HTML using the provided name and parsed and raw values
  *
- * @name Widget.toHTML(name, value, raw)
+ * @name Widget.toHTML(name, value, raw, field, options)
  * @param {String} name
  * @param value
  * @param raw
+ * @param field
+ * @param options
  * @returns {String}
  * @api public
  */
 
-Widget.prototype.toHTML = function (name, value, raw) {
+Widget.prototype.toHTML = function (name, value, raw, field, options) {
     if (raw === undefined) {
         raw = (value === undefined) ? '': '' + value;
     }
@@ -174,18 +157,110 @@ Widget.prototype.toHTML = function (name, value, raw) {
         raw = '';
     }
     var html = '<input';
-    html += this.type ? ' type="' + this.type + '"': '';
-    html += ' value="' + raw + '"';
-    html += this._attrs(name);
+    html += (this.type ? ' type="' + h(this.type) + '"': '');
+    html += ' value="' + h(raw) + '"';
+    html += ' name="' + this._name(name, options.offset) + '" id="';
+    html += this._id(name, options.offset, options.path_extra) + '"';
     return html + ' />';
 };
 
 /**
- * Storage for client-side widget initialization functions.
- * For more information, see scriptTagForInit's documentation.
+ * Initializes a widget on the client-side only, using the browser's
+ * script interpreter. This function is guaranteed to be called
+ * after toHTML, and any DOM elements created by toHTML are
+ * guaranteed to be accessible
+ *
+ * @name Widget.clientInit(path, value, raw, field, options)
+ * @param {Array} path
+ * @param value
+ * @param raw
+ * @param field
+ * @param options
+ * @returns {Boolean}
+ * @api public
  */
 
-exports.init = {};
+Widget.prototype.clientInit = function (path, value, raw, field, options) {
+    return true;
+};
+
+/**
+ * Called by Kanso when it becomes necessary to rename this widget
+ * instance. The widget should respond by updating the id and name
+ * attributes.
+ *
+ * @name Widget.updateName(path)
+ * @param {String} elt An element that contains one or
+ *          more instances of the widget referenced by `this'.
+ * @param {String} path The widget's new path; combine this using
+ *          the _name or _id function to generate a usable string.
+ * @param {Object} options A new set of toHTML/clientInit options.
+ *          This may or may not influence the widget's name.
+ * @api public
+ */
+
+Widget.prototype.updateName = function (elt, path, options) {
+    var e = $('input[type=hidden]', elt);
+    e.attr('id', this._id(path, options.offset, options.path_extra));
+    e.attr('name', this._name(path, options.offset, options.path_extra));
+};
+
+/**
+ * Called by Kanso when it becomes necessary to rename this widget
+ * instance. The widget should respond by updating the value attribute.
+ *
+ * @name Widget.updateValue(elt, path, value, options)
+ * @param {String} elt An element that contains one or
+ *          more instances of the widget referenced by `this'.
+ * @param {String} path The path to the widget.
+ * @param {Object} value The new value for the widget, unencoded.
+ * @param {Object} options An up-to-date set of toHTML/clientInit options.
+ * @api public
+ */
+
+Widget.prototype.updateValue = function (elt, path, value, options) {
+    elt = $(elt).closestChild('input[type=hidden]');
+    elt.val(this._stringify_value(value));
+};
+
+/**
+ * Called by Kanso when it becomes necessary to interrogate this
+ * widget to determine its value. The widget should respond by
+ * returning an unencoded value (typically as an object).
+ *
+ * @name Widget.getValue(elt, path, options)
+ * @param {String} elt An element that contains one or
+ *          more instances of the widget referenced by `this'.
+ * @param {String} path The path to the widget.
+ * @param {Object} options An up-to-date set of toHTML/clientInit options.
+ * @api public
+ */
+
+Widget.prototype.getValue = function (elt, path, options) {
+    return this._parse_value(
+        $(elt).closestChild('input[type=hidden]').val()
+    );
+};
+
+/**
+ * Called by Kanso when it becomes necessary to validate the
+ * contents of this widget -- i.e. to ensure it's in a consistent
+ * state before using its value or proceeding. Most widgets will
+ * not implement this method; its primary use is complex widgets
+ * that host validation-enabled forms and/or types. Returns true
+ * if the contents is consistent and valid; false otherwise.
+ *
+ * @name Widget.validate(elt, path, options)
+ * @param {String} elt An element that contains one or
+ *          more instances of the widget referenced by `this'.
+ * @param {String} path The path to the widget.
+ * @param {Object} options An up-to-date set of toHTML/clientInit options.
+ * @api public
+ */
+
+Widget.prototype.validate = function (elt, path, options) {
+    return true;
+};
 
 /**
  * Creates a new text input widget.
@@ -227,37 +302,6 @@ exports.hidden = function (options) {
 };
 
 /**
- * Creates a new field for storing/displaying an embedded object.
- * This is automatically added to embed and embedList field types
- * that don't specify a widget.
- *
- * @name embedded([options])
- * @param options
- * @returns {Widget Object}
- * @api public
- */
-
-exports.defaultEmbedded = function (options) {
-    var w = new Widget('embedded', options);
-    w.toHTML = function (name, value, raw, field) {
-
-        var display_name = (value ? value._id: '');
-        var fval = (value ? utils.escapeHTML(JSON.stringify(value)) : '');
-
-        if (field.type.display_name && v) {
-            display_name = field.type.display_name(v);
-        }
-        var html = (
-            '<input type="hidden" ' +
-                'value="' + fval + '" name="' + name + '" />' +
-            '<span class="value">' + display_name + '</span>'
-        );
-        return html;
-    };
-    return w;
-};
-
-/**
  * Creates a new textarea widget.
  *
  * @name textarea([options])
@@ -266,10 +310,10 @@ exports.defaultEmbedded = function (options) {
  * @api public
  */
 
-exports.textarea = function (options) {
-    options = options || {};
-    var w = new Widget('textarea', options);
-    w.toHTML = function (name, value, raw, field) {
+exports.textarea = function (_options) {
+    var w = new Widget('textarea', _options || {});
+    w.options = _options;
+    w.toHTML = function (name, value, raw, field, options) {
         if (raw === undefined) {
             raw = (value === undefined) ? '': '' + value;
         }
@@ -277,15 +321,16 @@ exports.textarea = function (options) {
             raw = '';
         }
         var html = '<textarea';
-        html += this._attrs(name);
-        if (options.hasOwnProperty('cols')) {
-            html += ' cols="' + options.cols + '"';
+        html += ' name="' + this._name(name, options.offset) + '" id="';
+        html += this._id(name, options.offset, options.path_extra) + '"';
+
+        if (this.options.hasOwnProperty('cols')) {
+            html += ' cols="' + h(this.options.cols) + '"';
         }
-        if (options.hasOwnProperty('rows')) {
-            html += ' rows="' + options.rows + '"';
+        if (this.options.hasOwnProperty('rows')) {
+            html += ' rows="' + h(this.options.rows) + '"';
         }
-        html += '>';
-        html += utils.escapeHTML(raw);
+        html += '>' + h(raw);
         html += '</textarea>';
         return html;
     };
@@ -301,13 +346,14 @@ exports.textarea = function (options) {
  * @api public
  */
 
-exports.checkbox = function (options) {
-    var w = new Widget('checkbox', options);
-    w.toHTML = function (name, value, raw, field) {
+exports.checkbox = function (_options) {
+    var w = new Widget('checkbox', _options || {});
+    w.toHTML = function (name, value, raw, field, options) {
         var html = '<input type="checkbox"';
-        html += this._attrs(name);
-        html += value ? ' checked="checked"': '';
-        return html + ' />';
+        html += ' name="' + this._name(name, options.offset) + '" id="';
+        html += this._id(name, options.offset, options.path_extra) + '"';
+        html += (value ? ' checked="checked"': '');
+        return (html + ' />');
     };
     return w;
 };
@@ -321,22 +367,26 @@ exports.checkbox = function (options) {
  * @api public
  */
 
-exports.select = function (options) {
-    var w = new Widget('select', options);
-    w.values = options.values;
-    w.toHTML = function (name, value, raw, field) {
+exports.select = function (_options) {
+    var w = new Widget('select', _options || {});
+    w.values = _options.values;
+    w.toHTML = function (name, value, raw, field, options) {
         if (value === null || value === undefined) {
             value = '';
         }
-        var html = '<select' + this._attrs(name) + '>';
+
+        var html = '<select';
+        html += ' name="' + this._name(name, options.offset) + '" id="';
+        html += this._id(name, options.offset, options.path_extra) + '">';
+
         for (var i = 0; i < this.values.length; i++) {
             var opt = this.values[i];
-            html += '<option value="' + opt[0] + '"';
+            html += '<option value="' + h(opt[0]) + '"';
             if (opt[0] === value) {
                 html += ' selected="selected"';
             }
             html += '>';
-            html += opt[1];
+            html += h(opt[1]);
             html += '</option>';
         }
         html += '</select>';
@@ -355,23 +405,567 @@ exports.select = function (options) {
  * @api public
  */
 
-exports.computed = function (options) {
-    var w = new Widget('computed', options);
-    w.toHTML = function (name, value, raw, field) {
+exports.computed = function (_options) {
+    var w = new Widget('computed', _options);
+    w.toHTML = function (name, value, raw, field, options) {
         if (raw === undefined) {
             raw = (value === undefined) ? '': '' + value;
         }
         if (raw === null || raw === undefined) {
             raw = '';
         }
-        var html = '<input type="hidden" value="' + raw + '"';
-        html += this._attrs(name) + ' />';
-        html += '<span>' + utils.escapeHTML(raw) + '</span>';
+        var html = '<input type="hidden" value="' + h(raw) + '"';
+        html += ' name="' + this._name(name, options.offset) + '" id="';
+        html += this._id(name, options.offset, options.path_extra) + '" />';
+        html += '<span>' + h(raw) + '</span>';
         return html;
     };
     return w;
 };
 
+
+/**
+ * Creates a new field for storing/displaying an embedded object.
+ * This is automatically added to embed and embedList field types
+ * that don't specify a widget.
+ *
+ * @name embedded([options])
+ * @param options
+ * @returns {Widget Object}
+ * @api public
+ */
+
+exports.embedList = function (_options) {
+    var w = new Widget('embedList', _options);
+
+    w.sortable = _options.sortable;
+    w.singleton = _options.singleton;
+    w.widget = (_options.widget || exports.defaultEmbedded());
+    w.actions = actions.parse(_options.actions || {});
+    
+    w.toHTML = function (name, value, raw, field, options) {
+        this.cacheInit();
+
+        this.field = field;
+        this.render_options = (options || {});
+
+        if (this.singleton && value && !_.isArray(value)) {
+            value = [ value ];
+        }
+
+        var id = this._id(
+            name, 'list', this.render_options.offset,
+                this.render_options.path_extra
+        );
+
+        var html = (
+            '<div class="embedlist" rel="' +
+                h(this.field.type.name) + '" id="' + h(id) + '">'
+        );
+
+        value = (value instanceof Array ? value : []);
+        html += '<div class="items" rel="' + h(name) + '">';
+
+        for (var i = 0, len = value.length; i < len; ++i) { 
+            html += this.htmlForListItem({
+                offset: (this.singleton ? null : i),
+                name: name,
+                value: value[i],
+                raw: raw,
+            });
+        }
+        html += (
+                '</div>' +
+                '<div class="actions">' +
+                    this.htmlForAddButton() +
+                '</div>' +
+            '</div>'
+        );
+        return html;
+    };
+
+    w.clientInit = function (field, path, value, raw, errors, options) {
+
+        this.cacheInit();
+
+        this.path = path;
+        this.field = field;
+        this.render_options = (options || {});
+
+        var item_elts = (
+            this.discoverListItemsElement().children('.item')
+        );
+
+        for (var i = 0, len = item_elts.length; i < len; ++i) {
+            this.bindEventsForListItem(item_elts[i]);
+
+            if (_.isFunction(this.widget.clientInit)) {
+                this.widget.clientInit(
+                    this.field, this.path, value[i], value[i], [],
+                        { offset: i }
+                );
+            }
+        }
+
+        this.renumberList();
+        this.bindEventsForList();
+    };
+
+    /** private: **/
+
+    w.cacheInit = function () {
+        this.discoverListElement = _.memoize(this._discoverListElement);
+        this.discoverListName = _.memoize(this._discoverListName);
+        this.discoverListType = _.memoize(this._discoverListType);
+        this.discoverListItemsElement = _.memoize(this._discoverListItemsElement);
+    };
+
+    w._discoverListElement = function () {
+        return $('#' + this._id(
+            this.path, 'list', this.render_options.offset,
+                this.render_options.path_extra
+        ));
+    };
+
+    w._discoverListName = function () {
+        var list_elt = this.discoverListElement();
+        var actions_elt = $(list_elt).closestChild('.actions');
+        return actions_elt.attr('rel');
+    };
+    
+    w._discoverListType = function () {
+        var list_elt = this.discoverListElement();
+        return list_elt.attr('rel');
+    };
+
+    w._discoverListItemsElement = function () {
+        var list_elt = this.discoverListElement();
+        return list_elt.closestChild('.items');
+    };
+
+    w.discoverListItems = function () {
+        return (
+            this.discoverListItemsElement().children('.item')
+        );
+    };
+
+    w.countListItems = function () {
+        return this.discoverListItems().length;
+    };
+
+    w.bindEventsForList = function () {
+        var list_elt = this.discoverListElement();
+        var add_elt = $(list_elt).closestChild('.actions .add');
+
+        add_elt.bind('click', utils.bindContext(this, function (ev) {
+            return this.handleAddButtonClick(ev);
+        }));
+    };
+
+    w.bindEventsForListItem = function (item_elt) {
+        item_elt = $(item_elt);
+        var edit_elt = item_elt.closestChild('.actions .edit');
+        var delete_elt = item_elt.closestChild('.actions .delete');
+
+        edit_elt.bind('click', utils.bindContext(this, function (ev) {
+            return this.handleEditButtonClick(ev);
+        }));
+
+        delete_elt.bind('click', utils.bindContext(this, function (ev) {
+            return this.handleDeleteButtonClick(ev);
+        }));
+
+        if (this.sortable) {
+            var up_elt = item_elt.closestChild('.actions .up');
+            var down_elt = item_elt.closestChild('.actions .down');
+
+            up_elt.bind('click', utils.bindContext(this, function (ev) {
+                return this.handleUpButtonClick(ev);
+            }));
+
+            down_elt.bind('click', utils.bindContext(this, function (ev) {
+                return this.handleDownButtonClick(ev);
+            }));
+        }
+    };
+
+    w.renumberList = function () {
+        var item_elts =
+            this.discoverListItemsElement().children('.item');
+
+        for (var i = 0, len = item_elts.length; i < len; ++i) {
+            var item = $(item_elts[i]);
+            this.renumberListItem(item, i);
+            this.updateListItemActions(item, i, len);
+
+        }
+        return this.updateListActions(len);
+    };
+
+    w.renumberListItem = function (elt, offset) {
+        var widget_options = {
+            offset: (this.singleton ? null : offset)
+        };
+        if (_.isFunction(this.widget.updateName)) {
+            this.widget.updateName(elt, this.path, widget_options);
+        }
+    };
+
+    w.updateListActions = function (offset) {
+        var list_elt = this.discoverListElement();
+        var add_elt = list_elt.closestChild('.actions .add');
+
+        if (this.singleton && offset > 0) {
+            add_elt.hide();
+        } else {
+            add_elt.show();
+        }
+        return offset;
+    };
+
+    w.updateListItemActions = function (item_elt, offset, count) {
+        if (this.sortable) {
+            var attr = 'disabled';
+            var up_elt = item_elt.closestChild('.actions .up');
+            var down_elt = item_elt.closestChild('.actions .down');
+
+            if (offset <= 0) {
+                up_elt.attr(attr, attr);
+            } else {
+                up_elt.removeAttr(attr);
+            }
+            if (offset + 1 >= count) {
+                down_elt.attr(attr, attr);
+            } else {
+                down_elt.removeAttr(attr);
+            }
+        }
+    };
+
+    w.moveExistingItem = function (after_elt, item_elt) {
+        if (after_elt) {
+            $(after_elt).after(item_elt);
+        } else {
+            var items_elt = this.discoverListItemsElement();
+            items_elt.append(item_elt);
+        }
+        this.renumberList();
+        this.bindEventsForListItem(item_elt);
+    };
+
+    w.insertNewItemAtEnd = function (callback) {
+        var list_elt = this.discoverListElement();
+
+        var item_elts =
+            this.discoverListItemsElement().children('.item');
+
+        var last_elt = item_elts.last();
+
+        return this.insertNewItem(
+            (this.singleton ? null : item_elts.length),
+                last_elt[0], callback
+        );
+    };
+
+    w.insertNewItem = function (offset, after_elt, callback) {
+        var list_elt = this.discoverListElement();
+        var list_type = this.discoverListType();
+
+        db.newUUID(100, utils.bindContext(this, function (err, uuid) {
+            var value = { type: list_type, _id: uuid };
+
+            var item_elt = $(this.htmlForListItem({
+                name: this._name(this.path),
+                offset: offset,
+                value: value,
+                raw: value
+            }));
+
+            this.moveExistingItem(after_elt, item_elt);
+
+            if (_.isFunction(this.widget.clientInit)) {
+                this.widget.clientInit(
+                    this.field, this.path, value, null, [], {
+                        offset: offset
+                    }
+                );
+            }
+
+            if (callback) {
+                callback(item_elt[0]);
+            }
+        }));
+    };
+
+    w.setListItemValue = function (elt, value, offset) {
+        if (this.widget.updateValue) {
+            this.widget.updateValue(
+                elt, this.path, value, { offset: offset }
+            );
+        }
+    };
+
+    w.htmlForListItem = function (item) {
+        var html = (
+            '<div class="item">' +
+                '<div class="actions">' +
+                    (this.sortable ?
+                        this.htmlForDownButton() : '') +
+                    (this.sortable ?
+                        this.htmlForUpButton() : '') +
+                    this.htmlForEditButton() +
+                    this.htmlForDeleteButton() +
+                '</div>' +
+                this.widget.toHTML(
+                    item.name, item.value, item.raw, this.field,
+                        { offset: item.offset }
+                ) +
+            '</div>'
+        );
+        return html;
+    };
+
+    w.htmlForAddButton = function () {
+        return (
+            '<input type="button" class="add action" value="Add" />'
+        );
+    };
+
+    w.htmlForEditButton = function () {
+        return (
+            '<input type="button" class="edit action" value="Edit" />'
+        );
+    };
+
+    w.htmlForDeleteButton = function () {
+        return (
+            '<input type="button" class="delete action" value="Delete" />'
+        );
+    };
+
+    w.htmlForUpButton = function () {
+        return (
+            '<input type="button" class="up action" value="&uarr;" />'
+        );
+    };
+
+    w.htmlForDownButton = function () {
+        return (
+            '<input type="button" class="down action" value="&darr;" />'
+        );
+    };
+
+    w.dispatchEventToAction = function (target_elt,
+                                        action_name, callback) {
+        var name = this._name(this.path);
+        var type_name = this.discoverListType();
+        var item_elt = $(target_elt).closest('.item');
+        var offset = item_elt.prevAll('.item').length;
+        var value = this.widget.getValue(
+            item_elt, this.path, this.render_options
+        );
+
+        var widget_options = {
+            offset: offset,
+            path_extra: (this.render_options.path_extra || [])
+        };
+
+        /* Action handler will transfer control here when finished */
+        var cb = utils.bindContext(this, function (successful, new_value) {
+            if (callback) {
+                callback.call(
+                    this, target_elt, offset, successful, new_value
+                );
+            }
+        });
+
+        var action_handler = (
+            this.actions[action_name] ||
+                this.defaultActionFor(action_name)
+        );
+
+        if (action_handler) {
+            action_handler(
+                type_name, this.field, this.path,
+                    value, null, [], widget_options, cb
+            );
+        }
+    };
+
+    w.handleUpButtonClick = function (ev) {
+        var item_elt = $(ev.target).closest('.item');
+        item_elt.insertBefore(item_elt.prev('.item'));
+        this.renumberList();
+    };
+
+    w.handleDownButtonClick = function (ev) {
+        var item_elt = $(ev.target).closest('.item');
+        item_elt.insertAfter(item_elt.next('.item'));
+        this.renumberList();
+    };
+
+    w.handleAddButtonClick = function (ev) {
+        var callback = utils.bindContext(
+            this, this.handleAddOrEditCompletion
+        );
+        this.insertNewItemAtEnd(
+            utils.bindContext(this, function (item_elt) {
+                this.dispatchEventToAction(item_elt, 'add', callback);
+            })
+        );
+    };
+
+    w.handleEditButtonClick = function (ev) {
+        var callback = utils.bindContext(
+            this, this.handleAddOrEditCompletion
+        );
+        this.dispatchEventToAction(ev.target, 'edit', callback);
+    };
+
+    w.handleDeleteButtonClick = function (ev) {
+        var item_elt = $(ev.target).closest('.item', this);
+        item_elt.remove();
+        this.renumberList();
+        return this.dispatchEventToAction(ev, 'delete');
+    };
+
+    w.handleAddOrEditCompletion = function (target_elt, offset,
+                                            is_successful, new_value) {
+        if (is_successful) {
+            var item_elt = $(target_elt).closest('.item', this);
+            this.setListItemValue(
+                item_elt, new_value, offset
+            );
+        }
+        return is_successful;
+    };
+
+    w.defaultActionFor = function (action_name) {
+        switch (action_name) {
+        case 'add':
+        case 'edit':
+            return utils.bindContext(this, function () {
+                var action_options = {
+                    widget: exports.embedForm({
+                        type: this.field.type
+                    })
+                };
+                var args = Array.prototype.slice.apply(arguments);
+                actions.modalDialog.apply(
+                    this, [ action_options ].concat(args)
+                );
+            });
+        case 'delete':
+            break;
+        }
+        return null;
+    };
+
+    return w;
+};
+
+/**
+ * Creates a new field for storing/displaying an embedded object.
+ * This is automatically added to embed and embedList field types
+ * that don't specify a widget.
+ *
+ * @name defaultEmbedded([options])
+ * @param options
+ * @returns {Widget Object}
+ * @api public
+ */
+
+exports.defaultEmbedded = function (_options) {
+    var w = new Widget('defaultEmbedded', _options);
+    w.toHTML = function (name, value, raw, field, options) {
+        var display_name = (value ? value._id: '');
+        var fval = (value ? this._stringify_value(value) : '');
+
+        if (field && field.type.display_name && value) {
+            display_name = field.type.display_name(value);
+        }
+        var html = (
+            '<div class="embedded embed">' + 
+                '<input type="hidden" value="' + h(fval) + '" name="' +
+                    h(this._name(name, options.offset)) + '" />' +
+                '<span class="value">' + h(display_name) + '</span>' +
+            '</div>'
+        );
+        return html;
+    };
+    return w;
+};
+
+/**
+ * Creates a new instance of an embedded *form* for the specified type.
+ * This is the basis for the presentation of complex data types in Kanso,
+ * and is used within an embedList to add and/or edit items.
+ *
+ * @name embedForm([options])
+ * @param options
+ * @returns {Widget Object}
+ * @api public
+ */
+
+exports.embedForm = function (_options) {
+
+    var w = new Widget('embedForm', _options);
+
+    w.embedded_type = _options.type;
+    w.form = new forms.Form(w.embedded_type);
+
+    w.toHTML = function (name, value, raw, field, options) {
+
+        this.field = field;
+        this.form.values = value;
+        this.render_options = (options || {});
+
+        var id = this._id(
+            name, 'form', this.render_options.offset,
+                this.render_options.path_extra
+        );
+        var html = (
+            '<div id="' + id + '" class="embedded form">' +
+                '<form>' +
+                    this.form.toHTML(
+                        null, render.defaultRenderer(),
+                            this.render_options
+                    ) +
+                '</form>' +
+            '</div>'
+        );
+        return html;
+    };
+
+    w.getValue = function (elt, path, options) {
+        var container_elt = this._discoverContainerElement(path);
+        var form_elt = container_elt.closestChild('form');
+        var rv = querystring.parse(
+            form_elt.serialize().replace(/\+/g, '%20')
+        );
+        return rv;
+    };
+
+    w.validate = function (elt, path, options) {
+        this.form.validate({
+            form: this.getValue(elt, path, options),
+            userCtx: utils.userCtx
+        });
+        return this.form.errors;
+    };
+
+    /** private: **/
+
+    w._discoverContainerElement = function (path) {
+        var id = this._id(
+            path, 'form', this.render_options.offset,
+                this.render_options.path_extra
+        );
+        return $('#' + id);
+    };
+
+    return w;
+};
 
 /**
  * Creates a new document selector widget. This widget allows the
@@ -381,93 +975,189 @@ exports.computed = function (options) {
  * @returns {Widget Object}
  */
 
-exports.documentSelector = function (options) {
-    var w = new Widget('documentSelector', options);
-    w.options = options;
-    w.toHTML = function (name, value, raw, field) {
+exports.documentSelector = function (_options) {
+    var w = new Widget('documentSelector', _options);
+    w.options = (_options || {});
+
+    w.toHTML = function (name, value, raw, field, options) {
+        this.cacheInit();
+        var html_name = this._name(
+            name, options.offset
+        );
+        var container_id = this._id(
+            name, 'selector', options.offset, options.path_extra
+        );
+        var hidden_id = this._id(
+            name, options.offset, options.path_extra
+        );
+        var select_id = this._id(
+            name, 'select', options.offset, options.path_extra
+        );
+        var html_value = (
+            value instanceof Object ? JSON.stringify(value) : value
+        );
         var input_html = (
-            '<input class="backing" type="hidden" ' + (
-                this.options.storeValue ?
-                    this._attrs(name) : ('id="' + this._id(name) + '"')
-            ) + ' />'
+            '<input class="backing"' +
+                ' type="hidden" value="' + h(html_value) +
+                '" id="' + hidden_id + '" name="' + html_name + '" />'
         );
         var select_html = (
-            '<select class="selector" ' + (
-                this.options.storeValue ?
-                    ('id="' + this._id(name, 'visible') + '"') :
-                        this._attrs(name, 'visible')
-            ) + '></select>'
+            '<select class="selector" id="' + select_id + '"></select>'
         );
-        return (
-            '<div class="widget layout">' +
-            '<div class="selector">' +
+        var html = (
+            '<div id="' + container_id + '" class="selector widget">' +
                 input_html + select_html +
                 '<div class="spinner" style="display: none;"></div>' +
-            '</div>' +
-            '</div>' +
-            this.scriptTagForInit(name, _.extend(this.options, {
-                value: value
-            }))
+            '</div>'
+        );
+
+        return html;
+    };
+
+    w.updateName = function (elt, path, options) {
+        this.cacheInit();
+        var hidden_elt = this.discoverBackingElement(elt);
+        var select_elt = this.discoverSelectionElement(elt);
+
+        select_elt.attr('id', this._id(
+            path, 'select', options.offset, options.path_extra
+        ));
+        hidden_elt.attr('id', this._id(
+            path, options.offset, options.path_extra
+        ));
+        hidden_elt.attr('name', this._name(
+            path, options.offset
+        ));
+    };
+
+    w.updateValue = function (elt, path, value, options) {
+        elt = $(elt);
+        value = this._stringify_value(value);
+
+        var hidden_elt = this.discoverBackingElement(elt);
+        var select_elt = this.discoverSelectionElement(elt);
+
+        hidden_elt.val(value);
+        select_elt.val(value);
+    };
+
+    w.getValue = function (elt, path, options) {
+        var hidden_elt = this.discoverBackingElement(elt);
+        return this._parse_value(hidden_elt.attr('value'));
+    };
+
+    w.clientInit = function (field, path, value, raw, errors, options) {
+
+        var widget_options = (this.options || {});
+
+        var id = this._id(path, 'selector', options.offset, options.path_extra);
+        var container_elt = $('#' + id);
+
+        var spinner_elt = container_elt.closestChild('.spinner');
+        var is_embedded = (value instanceof Object);
+
+        var select_elt = this.discoverSelectionElement(container_elt);
+        var hidden_elt = this.discoverBackingElement(container_elt);
+
+        /* Start progress */
+        spinner_elt.show();
+
+        /* Copy data to backing element */
+        select_elt.bind('change', function () {
+            hidden_elt.val(select_elt.val());
+        });
+        /* Fetch contents */
+        db.getView(
+            widget_options.viewName,
+            { include_docs: is_embedded },
+            { db: widget_options.db },
+            function (err, rv) {
+                /* Error handling */
+                if (err) {
+                    throw new Error(
+                        'Failed to request content from view `' +
+                            widget_options.viewName + '`'
+                    );
+                }
+                /* Option for 'no selection' */
+                var nil_option = $('<option />');
+                if (!value) {
+                    nil_option.attr('selected', 'selected');
+                }
+                select_elt.append(nil_option);
+
+                /* All other options */
+                _.each(rv.rows || [], function (r) {
+                    var option = $('<option />');
+                    var is_selected = (
+                        is_embedded ? (value._id === r.id) : (value === r.id)
+                    );
+                    if (is_selected) {
+                        option.attr('selected', 'selected');
+                    }
+                    option.val(
+                        (is_embedded ? JSON.stringify(r.doc) : r.id)
+                    );
+                    option.text(r.value);
+                    select_elt.append(option);
+                });
+
+                /* Finished */
+                spinner_elt.hide();
+                select_elt.trigger('change');
+            }
         );
     };
+
+    /** private: **/
+
+    w.cacheInit = function () {
+        this.discoverBackingElement = this._discoverBackingElement;
+        this.discoverSelectionElement = this._discoverSelectionElement;
+    };
+
+    w._discoverBackingElement = function (container_elt) {
+        return $(container_elt).closestChild('input[type=hidden].backing');
+    };
+
+    w._discoverSelectionElement = function (container_elt) {
+        return $(container_elt).closestChild('select.selector');
+    };
+
     return w;
 };
 
-/**
- * Selector widget: client-side initialization function.
+/* 
+ * closestChild for jQuery
+ * Copyright 2011, Tobias Lindig
+ * 
+ * Dual licensed under the MIT license and GPL licenses:
+ *   http://www.opensource.org/licenses/mit-license.php
+ *   http://www.opensource.org/licenses/gpl-license.php
+ * 
  */
 
-exports.init.documentSelector = function (_singleton_elt, _json_options) {
-
-    var container_elt = _singleton_elt.first().parent();
-    var hidden_elt = $('input.backing', container_elt);
-    var select_elt = $('input.backing ~ select.selector', container_elt);
-    var spinner_elt = $('input.backing ~ .spinner', container_elt);
-
-    var options = JSON.parse(_json_options);
-    var value = options.value;
-
-    if (options.storeValue) {
-        select_elt.bind('change', function () {
-            /* Copy data to backing element */
-            hidden_elt.val(select_elt.val());
-        });
-    }
-
-    spinner_elt.show();
-
-    db.getView(options.viewName, {}, { db: options.db }, function (err, rv) {
-        if (err) {
-            throw new Error(
-                'Failed to request content from CouchDB view `' +
-                    options.viewName + '`'
-            );
-        }
-
-        /* Option for 'no selection' */
-        var nil_option = $(document.createElement('option'));
-        if (!value) {
-            nil_option.attr('selected', 'selected');
-        }
-        select_elt.append(nil_option);
-
-        /* All other options */
-        _.each(rv.rows || [], function(r) {
-            var option = $(document.createElement('option'));
-            if (r.id == value) {
-                option.attr('selected', 'selected');
+if (utils.isBrowser()) {
+    (function ($) {
+        $.fn.closestChild = function (selector) {
+            /* Breadth-first search for the first matched node */
+            if (selector && selector !== '') {
+                var queue = [];
+                queue.push(this);
+                while (queue.length > 0) {
+                    var node = queue.shift();
+                    var children = node.children();
+                    for (var i = 0; i < children.length; ++i) {
+                        var child = $(children[i]);
+                        if (child.is(selector)) {
+                            return child;
+                        }
+                        queue.push(child);
+                    }
+                }
             }
-            option.val(r.id);
-            option.text(r.value);
-            select_elt.append(option);
-        });
-
-        spinner_elt.hide();
-    
-        if (options.storeValue) {
-            select_elt.trigger('change');
-        }
-    });
-};
-
+            return $(); /* Nothing found */
+        };
+    }($));
+}
 

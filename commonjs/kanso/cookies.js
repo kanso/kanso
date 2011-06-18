@@ -19,7 +19,7 @@ var utils = require('./utils');
  */
 
 exports.readBrowserCookies = function () {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('readBrowserCookies cannot be called server-side');
     }
     var cookies = {};
@@ -76,7 +76,7 @@ exports.cookieString = function (req, opt) {
  */
 
 exports.setBrowserCookie = function (req, opt) {
-    if (!utils.isBrowser) {
+    if (!utils.isBrowser()) {
         throw new Error('setBrowserCookie cannot be called server-side');
     }
     var str = (typeof opt === 'string') ? opt: exports.cookieString(req, opt);

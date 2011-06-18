@@ -1,4 +1,5 @@
-/*global window: false */
+/*global window: false, __kansojs_current_request: true*/
+
 
 /**
  * General utility functions used by Kanso. Some functions were moved here from
@@ -16,8 +17,7 @@
  * Module dependencies
  */
 
-var core = require('./core'),
-    settings = require('./settings'), // settings module is auto-generated
+var settings = require('./settings'), // settings module is auto-generated
     _ = require('./underscore')._;
 
 
@@ -25,19 +25,30 @@ var core = require('./core'),
  * Some functions calculate results differently depending on the execution
  * environment. The isBrowser value is used to set the correct environment
  * for these functions, and is only exported to make unit testing easier.
- *
- * You should not need to change this value during normal usage.
  */
 
-// TODO: this was moved to this module from core.js to avoid a circular
-// dependency between core.js and db.js ...once circular dependencies in
-// couchdb's commonjs implementation are fixed it can be moved back into
-// core.js. For now, this is also exported from core.js and should
-// be accessed from there.
-exports.isBrowser = false;
-if (typeof window !== 'undefined') {
-    exports.isBrowser = true;
-}
+exports.isBrowser = function () {
+    return (typeof(window) !== 'undefined');
+};
+
+/**
+ * Keeps track of the last *triggered* request. This is to avoid a race
+ * condition where two link clicks in quick succession can cause the rendered
+ * page to not match the current URL. If the first link's document or view takes
+ * longer to return than the second, the URL was updated for the second link
+ * click but the page for the first link will render last, overwriting the
+ * correct page. Now, callbacks for fetching documents and views check against
+ * this value to see if they should continue rendering the result or not.
+ */
+
+exports.currentRequest = function (v) {
+    if (v) {
+        __kansojs_current_request = v;
+    } else if (typeof(__kansojs_current_request) === 'undefined') {
+        __kansojs_current_request = null;
+    }
+    return __kansojs_current_request;
+};
 
 /**
  * This is because the first page hit also triggers kanso to handle the url
@@ -49,9 +60,8 @@ if (typeof window !== 'undefined') {
 
 // TODO: this was moved to this module from core.js to avoid a circular
 // dependency between core.js and session.js
+
 exports.initial_hit = true;
-
-
 
 /**
  * Used to store userCtx, periodically updated like on session.login and
@@ -59,6 +69,7 @@ exports.initial_hit = true;
  */
 
 // TODO: added to utils to avoid circular dependency bug in couchdb
+
 exports.userCtx = null;
 
 /**
@@ -66,7 +77,6 @@ exports.userCtx = null;
  * a call to session.info
  */
 exports.session = null;
-
 
 /**
  * This is used to make unit testing in the browser easier.
@@ -77,7 +87,6 @@ exports.session = null;
 exports.getWindowLocation = function () {
     return window.location;
 };
-
 
 /**
  * Returns the path to prefix to any URLs. When running behind a
@@ -98,14 +107,15 @@ exports.getWindowLocation = function () {
 // couchdb's commonjs implementation are fixed it can be moved back into
 // core.js. For now, this is also exported from core.js and should
 // be accessed from there.
+
 exports.getBaseURL = function (/*optional*/req) {
     if (!req) {
-        req = core.currentRequest();
+        req = exports.currentRequest();
     }
     if ('baseURL' in settings) {
         return settings.baseURL;
     }
-    if (exports.isBrowser) {
+    if (exports.isBrowser()) {
         var re = new RegExp('(.*\\/_rewrite).*$');
         var match = re.exec(exports.getWindowLocation().pathname);
         if (match) {
@@ -119,6 +129,16 @@ exports.getBaseURL = function (/*optional*/req) {
     return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
 };
 
+
+/**
+ * A named empty function. Use this when you wish to take
+ * no action for a callback or markup-generator function.
+ */
+
+exports.emptyFunction = function ()
+{
+    return '';
+};
 
 /**
  * Traverses an object and its sub-objects using an array of property names.
@@ -188,29 +208,6 @@ exports.setPropertyPath = function (obj, path, val) {
     }
     exports.setPropertyPath(obj[next], path, val);
 };
-
-/**
- * Returns the name of the constructor function for an object. This is used
- * as a workaround for CouchDB's lack of a module cache, where instanceof checks
- * can break if a module is re-eval'd.
- *
- * @name constructorName(obj)
- * @param {Object} obj
- * @returns {String}
- * @api public
- */
-
-exports.constructorName = function (obj) {
-    if (obj === null || obj === undefined) {
-        return undefined;
-    }
-    if (obj.constructor.name) {
-        return obj.constructor.name;
-    }
-    var match = new RegExp('function (.+)\\(').exec(obj.constructor.toString());
-    return (match && match.length > 1) ? match[1] : undefined;
-};
-
 
 /**
  * Call function with arguments, catch any errors and add to an array,
@@ -317,123 +314,51 @@ exports.parseCSV = function (csvString) {
  * @api public
  */
 
-exports.redirect = function (req, url) {
+exports.redirect = function (/*optional*/req, url) {
     if (!url) {
-        if (typeof req === 'string') {
-            throw new Error(
-                'First argument to redirect should be a request object'
-            );
-        }
-        throw new Error('No redirect URL specified');
+        /* Arity = 1: url only */
+        url = req;
+        req = exports.currentRequest();
     }
     var baseURL = exports.getBaseURL(req);
     return {code: 302, headers: {'Location': baseURL + url}};
 };
 
-
 /**
- * Recursively copies properties of an object, handling circular references
- * and returning a new object completely seperate from the original.
+ * Tests if path b is equal to or a sub-path of a.
  *
- * Modifications to the new object will not affect the original copy.
- *
- * @name deepCopy(obj, [limit])
- * @param obj - the object to copy
- * @param {Number} limit - the recursion depth before throwing (optional)
+ * @name isSubPath(a, b)
+ * @param {Array} a
+ * @param {Array} b
+ * @returns {Boolean}
  * @api public
  */
 
-exports.deepCopy = function (obj, limit) {
-    // for handling circular references:
-    var seen = [];   // store references to original objects
-    var clones = []; // store references to copied objects
-
-    var fn = function (obj, limit) {
-        if (!limit) {
-            throw new Error('deepCopy recursion limit reached');
+exports.isSubPath = function (a, b) {
+    for (var i = 0, len = a.length; i < len; i++) {
+        if (a[i] !== b[i]) {
+            return false;
         }
-
-        if (obj instanceof Date) {
-            var copy = new Date();
-            copy.setTime(obj.getTime());
-            return copy;
-        }
-        else if (typeof obj === 'object') {
-
-            // check for a circular reference
-            var i = _.indexOf(seen, obj);
-            if (i !== -1) {
-                return clones[i];
-            }
-
-            var newObj;
-            if (obj instanceof Array) {
-                newObj = [];
-            }
-            else {
-                // to fix instanceof and constructorName checks
-                var F = function () {};
-                F.prototype = obj;
-                newObj = new F();
-            }
-
-            // add cloned object to list of references, so we
-            // can check for circular references later
-            seen.push(obj);
-            clones.push(newObj);
-
-            // deepCopy all properties
-            for (var k in obj) {
-                newObj[k] = fn(obj[k], limit - 1);
-            }
-            return newObj;
-        }
-        return obj;
-    };
-    return fn(obj, limit || 1000);
-};
-
-
-/**
- * A destructive merge of two JSON objects. The values in 'b' override the
- * values already existing in 'a'. If a value existing in 'b', but not in 'a',
- * it is added. If a value exists in 'a', but not 'b', it is retained.
- *
- * The 'a' object is updated in-place.
- *
- * @name override(a, b)
- * @param {Object} a
- * @param {Object} b
- * @api public
- */
-
-exports.override = function (a, b) {
-    if (a instanceof Object && b instanceof Object) {
-        for (var k in b) {
-            if (b[k] !== undefined) {
-                a[k] = exports.override(a[k], b[k]);
-            }
-        }
-        return a;
     }
-    return b;
+    return true;
 };
 
 /**
- * Resizes a simplemodal control to match the dimensions of the
- * specified div.
+ * Returns a function that executes {closure} in the context of {context}.
+ * Use this function if you'd like to preserve the current context
+ * across callbacks, event handlers, and other cases where the value of
+ * {this} is set for you.
  *
- * @name resizeModal(div)
- * @param {Element} The element from which to read width/height.
+ * @name bindContext(context, closure)
+ * @param {Object} context The context to use when executing closure.
+ *          Usually, you will specify the current value of 'this'.
+ * @param {Function} closure The function to to bind to {context}.
  * @api public
  */
 
-exports.resizeModal = function (div) {
-    $('#simplemodal-container').css({height: 'none', width: 'none'});
-    $('#simplemodal-container').css({
-        height: (div.height() + 20) + 'px',
-        width: (div.width() + 40) + 'px'
-    });
-    $.modal.setPosition();
+exports.bindContext = function (context, closure) {
+    return function () {
+        return closure.apply(context, arguments);
+    };
 };
 

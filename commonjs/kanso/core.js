@@ -18,29 +18,14 @@ var settings = require('./settings'), // module auto-generated
     url = require('./url'),
     db = require('./db'),
     utils = require('./utils'),
-    flashmessages = require('./flashmessages'),
     session = require('./session'),
     cookies = require('./cookies'),
+    flashmessages = require('./flashmessages'),
+    templates = require('./templates'),
     events = require('./events'),
     urlParse = url.parse,
     urlFormat = url.format,
     _ = require('./underscore')._;
-
-
-/**
- * Some functions calculate results differently depending on the execution
- * environment. The isBrowser value is used to set the correct environment
- * for these functions, and is only exported to make unit testing easier.
- *
- * You should not need to change this value during normal usage.
- *
- * This was moved to utils to avoid a circular dependency between
- * core.js and db.js... however, it should be accessed via the core.js module
- * as it may get moved back once circular dependencies are fixed in couchdb's
- * commonjs implementation.
- */
-
-//exports.isBrowser = utils.isBrowser;
 
 
 /**
@@ -66,6 +51,15 @@ exports.history_support = false;
  */
 
 exports.current_state = null;
+
+/**
+ * Set to true when setURL is called so the onpopstate which fires afterwards
+ * knows it is the result of an explicit call to setURL (as opposed to clicking
+ * the back, forward or reload buttons). This means we can avoid showing a
+ * confirmation dialog for POST requests in these circumstances.
+ */
+
+exports.set_called = false;
 
 
 if (typeof window !== 'undefined') {
@@ -120,26 +114,6 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
 //exports.userCtx = utils.userCtx;
 
 
-/**
- * Keeps track of the last *triggered* request. This is to avoid a race
- * condition where two link clicks in quick succession can cause the rendered
- * page to not match the current URL. If the first link's document or view takes
- * longer to return than the second, the URL was updated for the second link
- * click but the page for the first link will render last, overwriting the
- * correct page. Now, callbacks for fetching documents and views check against
- * this value to see if they should continue rendering the result or not.
- */
-
-/* global __kansojs_current_request; */
-
-exports.currentRequest = function (v) {
-    if (v) {
-        __kansojs_current_request = v;
-    } else if (typeof(__kansojs_current_request) == 'undefined') {
-        __kansojs_current_request = null;
-    }
-    return __kansojs_current_request;
-};
 
 
 /**
@@ -197,6 +171,28 @@ exports.init = function () {
             var state = ev.state || {};
             var method = state.method || 'GET';
             var data = state.data;
+            var count = state.history_count;
+
+            if (method !== 'GET' && method !== 'HEAD') {
+                // unsafe method, unless caused by an explicit call to setURL
+                // show a confirmation dialog
+                if (!exports.set_called) {
+                    // TODO: at this point is it too late to undo the popstate?
+                    var resend = confirm(
+                        'In order to complete this request the browser will ' +
+                        'have to re-send information, repeating any ' +
+                        'previous action (such as creating a document).\n\n' +
+                        'Re-send information?'
+                    );
+                    if (!resend) {
+                        var curr_count = exports.current_state.history_count;
+                        window.history.go(curr_count - count);
+                        return;
+                    }
+                }
+            }
+            // reset set_called
+            exports.set_called = false;
 
             var curr = exports.current_state;
             if (curr &&
@@ -211,7 +207,8 @@ exports.init = function () {
                 method: method,
                 url: url,
                 data: data,
-                timestamp: ev.timestamp
+                timestamp: state.timestamp,
+                history_count: count
             };
             exports.handle(method, url, data);
         };
@@ -496,7 +493,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            var current_req = (exports.currentRequest() || {});
+            var current_req = (utils.currentRequest() || {});
             if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
@@ -569,7 +566,7 @@ exports.parseResponse = function (req, res) {
             body: body,
             code: res.code || 200,
             headers: res.headers
-        }
+        };
     }
     return {
         body: res.body,
@@ -611,7 +608,7 @@ exports.parseResponse = function (req, res) {
             body: body,
             code: res.code || 200,
             headers: res.headers
-        }
+        };
     }
     return {
         body: res.body,
@@ -622,6 +619,7 @@ exports.parseResponse = function (req, res) {
 
 exports.runShow = function (fn, doc, req) {
     req = flashmessages.updateRequest(req);
+    utils.currentRequest(req);
     var info = {
         type: 'show',
         name: req.path[1],
@@ -672,7 +670,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
 
     if (docid) {
         db.getDoc(docid, req.query, function (err, doc) {
-            var current_req = (exports.currentRequest() || {});
+            var current_req = (utils.currentRequest() || {});
             if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
@@ -735,9 +733,9 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
  * @api public
  */
 
-exports.runUpdate = function (fn, doc, req) {
+exports.runUpdate = function (fn, doc, req, cb) {
     req = flashmessages.updateRequest(req);
-    exports.currentRequest(req);
+    utils.currentRequest(req);
     var info = {
         type: 'update',
         name: req.path[1],
@@ -762,8 +760,19 @@ exports.runUpdate = function (fn, doc, req) {
         val ? val[0]: null,
         flashmessages.updateResponse(req, res)
     ];
-    req.response_received = true;
-    return r;
+    if (req.client && r[0]) {
+        db.saveDoc(r[0], function (err, res) {
+            if (err) {
+                return cb(err);
+            }
+            req.response_received = true;
+            cb(null, r);
+        });
+    }
+    else {
+        req.response_received = true;
+        cb(null, r);
+    }
 };
 
 
@@ -815,8 +824,8 @@ exports.runListBrowser = function (req, name, view, callback) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
         db.getView(view, req.query, function (err, data) {
-            var current_req = (exports.currentRequest() || {});
-            if (current_request.uuid === req.uuid) {
+            var current_req = (utils.currentRequest() || {});
+            if (current_req.uuid === req.uuid) {
                 if (err) {
                     return callback(err);
                 }
@@ -875,7 +884,7 @@ exports.runListBrowser = function (req, name, view, callback) {
 
 exports.runList = function (fn, head, req) {
     req = flashmessages.updateRequest(req);
-    exports.currentRequest(req);
+    utils.currentRequest(req);
     var info = {
         type: 'list',
         name: req.path[1],
@@ -959,7 +968,7 @@ exports.handle = function (method, url, data) {
             }
 
             console.log(msg);
-            exports.currentRequest(req);
+            utils.currentRequest(req);
 
             var after = function () {
                 if (parsed.hash) {
@@ -1043,9 +1052,36 @@ exports.setURL = function (method, url, data) {
     var state = {
         method: method,
         data: data,
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime(),
+        history_count: window.history.length + 1
     };
-    window.history.pushState(state, document.title, fullurl);
+    // this is the result of a direct call to setURL
+    // (don't show confirmation dialog for unsafe states needing to re-submit)
+    exports.set_called = true;
+
+    /**
+     * if the current request is unsafe, we replace it so clicking the back
+     * button 'skips' it without showing a dialog.
+     *
+     * This means GET1, POST2, GET3 would result in a history of GET1, GET3.
+     * Clicking back after GET3 wouldn't re-submit a form.
+     *
+     * Doing GET1, POST2, then clicking back and forward again would result
+     * in a confirmation dialog asking if you want to re-submit.
+     */
+
+    var curr_state = exports.current_state;
+    var curr_method = curr_state ? (curr_state.method || 'GET'): 'GET';
+
+    if (curr_method !== 'GET' && curr_method !== 'HEAD') {
+        // unsafe method on current request, replace it
+        window.history.replaceState(state, document.title, fullurl);
+    }
+    else {
+        // last request was safe, add a new entry in the history
+        window.history.pushState(state, document.title, fullurl);
+    }
+    // manually fire popstate event
     window.onpopstate({state: state});
 };
 
