@@ -110,7 +110,7 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
         var b = doc_b[k];
         var f_path = path.concat([k]);
 
-        if (typeof v !== 'object' ||
+        if (typeof b !== 'object' ||
             f instanceof fields_module.Field ||
             f instanceof fields_module.Embedded ||
             f instanceof fields_module.EmbeddedList) {
