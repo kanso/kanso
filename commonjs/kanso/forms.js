@@ -327,7 +327,6 @@ Form.prototype.toHTML = function (/* optional */ req,
         renderer.end() +
         render.scriptTagForEvent('renderFinish')
     );
-    return rv;
 };
 
 /**

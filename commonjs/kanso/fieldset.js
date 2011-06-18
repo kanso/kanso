@@ -119,7 +119,7 @@ exports.validate = function (fields, doc, values, raw, path, extra) {
             // Extra value with no associated field detected
             if (!extra) {
                 // ignore system properties
-                if (!(path.length == 0 && k.charAt(0) === '_')) {
+                if (!(path.length === 0 && k.charAt(0) === '_')) {
                     var e = new Error('Unexpected property - validation 2');
                     e.field = path.concat([k]);
                     e.has_field = false;
@@ -220,7 +220,7 @@ exports.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path, extra) {
             // validation error before it gets to the auth stage
             if (!extra) {
                 // ignore system properties
-                if (!(path.length == 0 && k.charAt(0) === '_')) {
+                if (!(path.length === 0 && k.charAt(0) === '_')) {
                     var e = new Error('Unexpected property 2');
                     e.field = path.concat([k]);
                     e.has_field = false;
