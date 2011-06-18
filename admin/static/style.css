@@ -79,6 +79,10 @@ h2 {
     margin: 18px 0;
 }
 
+.simplemodal-data h2 {
+    margin-top: 0;
+}
+
 table.typelist,
 table.viewlist {
     clear: left;

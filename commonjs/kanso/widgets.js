@@ -791,7 +791,7 @@ exports.embedList = function (_options) {
 
         if (action_handler) {
             action_handler(
-                type_name, this.field, this.path,
+                action_name, type_name, this.field, this.path,
                     value, null, [], widget_options, cb
             );
         }

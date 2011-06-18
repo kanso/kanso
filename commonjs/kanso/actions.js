@@ -1,5 +1,7 @@
 /*global $: false, kanso: true*/
 
+var utils = require('./utils');
+
 /**
  * Implementation of widget actions. These are procedures
  * that can be referenced by widgets to present/collect information,
@@ -79,8 +81,9 @@ exports.parse = function (actions) {
  * which does the actual form rendering and presentation.
  */
 
-exports.modalDialog = function (action_options, type_name, field, path,
-                                value, raw, errors, options, callback) {
+exports.modalDialog = function (action_options, action_name,
+                                type_name, field, path, value,
+                                raw, errors, options, callback) {
     options = (options || {});
     action_options = (action_options || {});
 
@@ -106,14 +109,28 @@ exports.modalDialog = function (action_options, type_name, field, path,
         );
     }
 
-    /* Create elements for content */
-    var okbtn = $(
-        '<input type="button" value="' +
-            h(raw ? 'Modify Item' : 'Add Item')  + '" />"'
+    
+    /* Generate strings for content */
+    var cancel_label = 'Cancel';
+    var type_label = utils.titleize(type_name);
+    var action_label = utils.titleize(action_name);
+
+    /* Generate inner elements */
+    var title_elt = $(
+        '<h2>' + [ action_label, type_label ].join(' ') + '</h2>'
     );
-    var cancelbtn = $(
-        '<input type="button" value="Cancel" />'
+    var ok_elt = $(
+        '<input type="button" value="' + h(action_label) + '" />'
     );
+    var cancel_elt = $(
+        '<input type="button" value="' + h(cancel_label) + '" />'
+    );
+    var actions_elt = $(
+        '<div class="actions" />'
+    );
+
+    /* Add dialog title */
+    div.append(title_elt);
 
     /* Draw widget */
     div.append(
@@ -122,7 +139,7 @@ exports.modalDialog = function (action_options, type_name, field, path,
         )
     );
 
-    okbtn.click(function () {
+    ok_elt.click(function () {
 
         /* Validate widget:
             This usually defers to a form type's implementation.
@@ -133,7 +150,9 @@ exports.modalDialog = function (action_options, type_name, field, path,
         if (errors.length > 0) {
 
             /* Repost dialog box:
-                This will replace the current dialog box. */
+                This will replace the current dialog box.
+                The modal dialog returns to the event loop before
+                actually removing its elements, so we do the same. */
 
             $.modal.close();
 
@@ -147,7 +166,7 @@ exports.modalDialog = function (action_options, type_name, field, path,
         } else {
 
             /* Close the dialog box:
-                Note that the dialog box won't actually disappear
+                Again, note that the dialog box won't actually disappear
                 until we've unwound and returned to the main event
                 loop. If you depend upon closure, use setTimeout(). */
 
@@ -157,13 +176,14 @@ exports.modalDialog = function (action_options, type_name, field, path,
 
             /* Order matters:
                 The callback may refer to elements inside of the modal
-                dialog, so don't destroy it until after it returns. */
+                dialog, so don't destroy it until after it returns, and
+                has had a chance to register any callbacks / timeouts. */
 
             $.modal.close();
         }
     });
 
-    cancelbtn.click(function () {
+    cancel_elt.click(function () {
         callback(
             false, widget.getValue(div, path, widget_options)
         );
@@ -172,12 +192,14 @@ exports.modalDialog = function (action_options, type_name, field, path,
 
     div.submit(function (ev) {
         ev.preventDefault();
-        okbtn.click();
+        ok_elt.click();
         return false;
     });
 
-    div.append(okbtn);
-    div.append(cancelbtn);
+    /* Insert content */
+    actions_elt.append(ok_elt);
+    actions_elt.append(cancel_elt);
+    div.append(actions_elt);
 
     /* Launch */
     div.modal();
