@@ -756,7 +756,10 @@ exports.numberChoice = function (options) {
 
 exports.embed = function (options) {
     return new Embedded(_.defaults((options || {}), {
-        widget: widgets.defaultEmbedded()
+        widget: widgets.embedList({
+            singleton: true,
+            widget: widgets.defaultEmbedded()
+        })
     }));
 };
 
@@ -773,7 +776,10 @@ exports.embed = function (options) {
 
 exports.embedList = function (options) {
     return new EmbeddedList(_.defaults((options || {}), {
-        widget: widgets.defaultEmbedded()
+        widget: widgets.embedList({
+            singleton: false,
+            widget: widgets.defaultEmbedded()
+        })
     }));
 };
 
@@ -833,3 +839,4 @@ exports.numberArray = function (options) {
     });
     return exports.array(options);
 };
+

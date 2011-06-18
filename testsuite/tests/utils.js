@@ -65,9 +65,7 @@ exports['getBaseURL - couchdb with vhost'] = function (test) {
 
 exports['getBaseURL - couchdb no request'] = function (test) {
     utils.isBrowser = false;
-    test.throws(function () {
-        utils.getBaseURL();
-    });
+    test.notEqual(utils.getBaseURL(), undefined);
     utils.isBrowser = true;
     test.done();
 };

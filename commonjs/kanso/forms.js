@@ -8,7 +8,8 @@
  * Module dependencies
  */
 
-var utils = require('./utils'),
+var core = require('./core'),
+    utils = require('./utils'),
     fieldset = require('./fieldset'),
     render = require('./render'),
     _ = require('./underscore')._;
@@ -47,8 +48,8 @@ var Form = exports.Form = function Form(fields, doc, options) {
 
     this.values = null;
     if (doc) {
-        this.values = doc;
-        this.old_doc = doc;
+        this.values = JSON.parse(JSON.stringify(doc));
+        this.initial_doc = doc;
     }
     if (fields && fields.fields) {
         this.type = fields;
@@ -109,10 +110,11 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
         var b = doc_b[k];
         var f_path = path.concat([k]);
 
-        if (f instanceof fields_module.Field ||
+        if (typeof b !== 'object' ||
+            f instanceof fields_module.Field ||
             f instanceof fields_module.Embedded ||
-            f instanceof fields_module.EmbeddedList ||
-            typeof b !== 'object') {
+            f instanceof fields_module.EmbeddedList) {
+
             if (excludes) {
                 for (var i = 0; i < exclude_paths.length; i++) {
                     if (utils.isSubPath(exclude_paths[i], f_path)) {
@@ -152,12 +154,12 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
  * @api public
  */
 
-Form.prototype.validate = function (req) {
-    // TODO: change this to accept an object instead of a request?
-    // doing req.form isn't that difficult and would make more sense
+Form.prototype.validate = function (/*optional*/req) {
+    if (!req) {
+        req = utils.currentRequest();
+    }
     this.raw = req.form || {};
     var tree = exports.formValuesToTree(this.raw);
-
     this.values = exports.override(
         this.options.exclude,
         this.options.fields,
@@ -174,7 +176,7 @@ Form.prototype.validate = function (req) {
     if (this.type) {
         // run top level permissions first
         var type_errs = this.type.authorizeTypeLevel(
-            this.values, this.old_doc, req.userCtx
+            this.values, this.initial_doc, req.userCtx
         );
         if (type_errs.length) {
             this.errors = this.errors.concat(type_errs);
@@ -182,14 +184,16 @@ Form.prototype.validate = function (req) {
         else {
             // if no top-level permissions errors, check each field
             this.errors = this.errors.concat(
-                this.type.authorize(this.values, this.old_doc, req.userCtx)
+                this.type.authorize(
+                    this.values, this.initial_doc, req.userCtx
+                )
             );
         }
     }
     else {
         this.errors = this.errors.concat(fieldset.authFieldSet(
-            this.fields, this.values, this.old_doc, this.values, this.old_doc,
-            req.userCtx, [], true
+            this.fields, this.values, this.initial_doc, this.values,
+            this.initial_doc, req.userCtx, [], true
         ));
     }
 
@@ -296,25 +300,52 @@ var errsWithoutFields = function (errs) {
  * Converts current form to a HTML string, using an optional renderer class.
  *
  * @name Form.toHTML(req, [RendererClass])
- * @param {Object} req
+ * @param {Object} req Kanso request object; null for most recent. (optional)
  * @param {Renderer} RendererClass (optional)
+ * @param {Object} options An object containing widget options, which
+ *          will ultimately be provided to each widget's toHTML method.
+ * @returns {String}
  * @returns {String}
  * @api public
  */
 
-Form.prototype.toHTML = function (req, /*optional*/RendererClass) {
+Form.prototype.toHTML = function (/* optional */ req,
+                                  /* optional */ RendererClass,
+                                  /* optional */ options) {
     if (!req) {
-        throw new Error(
-            'Form\'s toHTML method requires request object as first argument'
-        );
+        req = utils.currentRequest();
     }
     var values = this.values || fieldset.createDefaults(this.fields, req);
-    RendererClass = RendererClass || render.table;
+    RendererClass = (RendererClass || render.defaultRenderer());
     var renderer = new RendererClass();
-    return renderer.start(errsWithoutFields(this.errors)) +
+    return (
+        renderer.start(errsWithoutFields(this.errors)) +
         this.renderFields(
-            renderer, this.fields, values, this.raw, this.errors, []
-        ) + renderer.end();
+            renderer, this.fields,
+                values, this.raw, this.errors, [], (options || {})
+        ) +
+        renderer.end() +
+        render.scriptTagForEvent('renderFinish')
+    );
+};
+
+/**
+ * Filters an array of errors, returning only those below a specific field path
+ *
+ * @param {Array} errs
+ * @param {Array} path
+ * @returns {Array}
+ */
+
+var errsBelowPath = function (errs, path) {
+    return _.filter(errs, function (e) {
+        for (var i = 0, len = path.length; i < len; ++i) {
+            if (path[i] !== e.field[i]) {
+                return false;
+            }
+        }
+        return true;
+    });
 };
 
 /**
@@ -328,11 +359,14 @@ Form.prototype.toHTML = function (req, /*optional*/RendererClass) {
  * @param {Object} values
  * @param {Array} errs
  * @param {Array} path
+ * @param {Object} options An object containing widget options, which
+ *          will ultimately be provided to each widget's toHTML method.
  * @returns {String}
  * @api public
  */
 
-Form.prototype.renderFields = function (renderer, fields, values, raw, errs, path) {
+Form.prototype.renderFields = function (renderer, fields, values,
+                                        raw, errs, path, options) {
     fields = fields || {};
     values = values || {};
     raw = raw || {};
@@ -364,34 +398,18 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
         var f_errs = errsBelowPath(errs, f_path);
         var f = fields[k];
 
-        if (f instanceof fields_module.Field) {
+        if (f instanceof fields_module.Field ||
+            f instanceof fields_module.Embedded ||
+            f instanceof fields_module.EmbeddedList) {
+
             return html + renderer.field(
                 f,
                 f_path,
                 values[k],
                 (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
+                f_errs,
+                (options || {})
             );
-        }
-        else if (f instanceof fields_module.Embedded) {
-            html += renderer.embed(
-                f,
-                f_path,
-                values[k],
-                (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
-            );
-            return html;
-        }
-        else if (f instanceof fields_module.EmbeddedList) {
-            html += renderer.embedList(
-                f,
-                f_path,
-                values[k],
-                (raw[k] === undefined) ? values[k]: raw[k],
-                f_errs
-            );
-            return html;
         }
         else if (f instanceof Object) {
             return html + (k ? renderer.beginGroup(f_path) : '') +
@@ -401,7 +419,8 @@ Form.prototype.renderFields = function (renderer, fields, values, raw, errs, pat
                     values[k],
                     (raw[k] === undefined) ? values[k]: raw[k],
                     errs,
-                    f_path
+                    f_path,
+                    (options || {})
                 ) + (k ? renderer.endGroup(f_path) : '');
         } else {
             throw new Error(
@@ -504,4 +523,3 @@ exports.parseRaw = function (fields, raw) {
     return doc;
 };
 
-exports.render = require('./render');
