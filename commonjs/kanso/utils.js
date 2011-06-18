@@ -129,15 +129,24 @@ exports.getBaseURL = function (/*optional*/req) {
     return '/' + req.path.slice(0, 3).join('/') + '/_rewrite';
 };
 
-
 /**
  * A named empty function. Use this when you wish to take
- * no action for a callback or markup-generator function.
+ * no action for a callback or string-generating  function.
  */
 
 exports.emptyFunction = function ()
 {
     return '';
+};
+
+/**
+ * A named no-opfunction. Use this when you need to supply
+ * a map/transform function, but do not wish to modify anything
+ */
+
+exports.identity = function (x)
+{
+    return x;
 };
 
 /**
@@ -341,6 +350,20 @@ exports.isSubPath = function (a, b) {
         }
     }
     return true;
+};
+
+/**
+ * Return a title-case version of the supplied string.
+ * @name titleize(str)
+ * @param str The string to transform.
+ * @returns {String}
+ * @api public
+ */
+
+exports.titleize = function (str) {
+    return (str || '').toLowerCase().replace(/(?:^|\s+)\w/g, function (m) {
+        return m.toUpperCase();
+    });
 };
 
 /**
