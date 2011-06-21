@@ -974,7 +974,7 @@ exports.embedForm = function (_options) {
     w.validate = function (elt, path, options) {
         this.form.validate({
             form: this.getValue(elt, path, options),
-            userCtx: utils.userCtx
+            userCtx: (utils.userCtx || utils.currentRequest().userCtx)
         });
         return this.form.errors;
     };
