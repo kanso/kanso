@@ -3,7 +3,7 @@
 
 var utils = require('./utils'),
     db = require('kanso/db'),
-    loader = require('kanso/loader'),
+    loader = require('./loader'),
     kanso_utils = require('kanso/utils'),
     templates = require('kanso/templates'),
     flashmessages = require('kanso/flashmessages'),
