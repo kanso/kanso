@@ -77,11 +77,9 @@ exports.bindSessionControls = function () {
             $('.password .errors', div).text(
                 password ? '': 'Please enter a password'
             );
-            utils.resizeModal(div);
             if (username && password) {
                 session.login(username, password, function (err) {
                     $('.general_errors', div).text(err ? err.toString(): '');
-                    utils.resizeModal(div);
                     if (!err) {
                         $(div).fadeOut('slow', function () {
                             $.modal.close();
@@ -128,15 +126,12 @@ exports.bindSessionControls = function () {
             $('.password .errors', div).text(
                 password ? '': 'Please enter a password'
             );
-            utils.resizeModal(div);
             if (username && password) {
                 session.signup(username, password, function (err) {
                     $('.general_errors', div).text(err ? err.toString(): '');
-                    utils.resizeModal(div);
                     if (!err) {
                         session.login(username, password, function (err) {
                             $('.general_errors', div).text(err ? err.toString(): '');
-                            utils.resizeModal(div);
                             $(div).fadeOut('slow', function () {
                                 $.modal.close();
                             });
