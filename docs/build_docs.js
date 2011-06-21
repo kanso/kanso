@@ -245,6 +245,13 @@ function (err, results) {
         ),
         async.apply(
             create_page,
+            __dirname + '/download.md',
+            output_dir + '/download.html',
+            'download',
+            ''
+        ),
+        async.apply(
+            create_page,
             __dirname + '/community.md',
             output_dir + '/community.html',
             'community',
