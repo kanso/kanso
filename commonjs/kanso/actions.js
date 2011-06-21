@@ -87,7 +87,6 @@ exports.modalDialog = function (action_options, action_name,
     options = (options || {});
     action_options = (action_options || {});
 
-    var div = $('<div />');
     var widget = action_options.widget;
     var name = sanitize.generateDomName.apply(null, path);
     var path_extra = (options.path_extra || []).concat([ 'modal' ]);
@@ -128,28 +127,6 @@ exports.modalDialog = function (action_options, action_name,
     var actions_elt = $(
         '<div class="actions" />'
     );
-
-    /* Add dialog title */
-    div.append(title_elt);
-
-    /* Draw widget */
-    div.append(
-        widget.toHTML(
-            name, value, raw, field, widget_options
-        )
-    );
-
-    /* Find the form element:
-        This is created by the call to widget.toHTML, above. */
-
-    var form_elt = div.closestChild('form');
-
-    /* Make default action 'ok' */
-    form_elt.submit(function (ev) {
-        ev.preventDefault();
-        ok_elt.click();
-        return false;
-    });
 
     /* Handle success */
     ok_elt.click(function (ev) {
@@ -206,10 +183,48 @@ exports.modalDialog = function (action_options, action_name,
         $.modal.close();
     });
 
+    /* Create widget's parent element */
+    var div = $('<div />');
+
+    /* Add dialog title */
+    div.append(title_elt);
+
+    /* Draw widget */
+    div.append(
+        widget.toHTML(
+            name, value, raw, field, widget_options
+        )
+    );
+
+    /* Find the form element:
+        This is created by the call to widget.toHTML, above. */
+
+    var form_elt = div.closestChild('form');
+
+    if (form_elt.length <= 0) {
+
+        /* No form element found?
+            Generate one and wrap the contents of the dialog with
+            it. This helps support widgets other than embedForm. */
+
+        var wrapper_elt = $('<div />');
+        form_elt = $('<form />');
+        form_elt.append(div);
+        wrapper_elt.append(form_elt);
+        div = wrapper_elt;
+    }
+
+    /* Make default form action 'ok' */
+    form_elt.submit(function (ev) {
+        ev.preventDefault();
+        ok_elt.click();
+        return false;
+    });
+
     /* Insert dialog-managed elements */
     actions_elt.append(ok_elt);
     actions_elt.append(cancel_elt);
-    form.append(actions_elt);
+    form_elt.append(actions_elt);
 
     /* Launch dialog */
     div.modal();
