@@ -159,10 +159,15 @@ Form.prototype.validate = function (/*optional*/req) {
         req = utils.currentRequest();
     }
 
+    /* This is the request payload:
+        This contains all of the form fields that are used by
+        formValuesToTree and parseRaw, and must be copied first. */
+
+    this.raw = (req.form || {});
+
     var type_class = require('./types').Type;
     var tree = exports.formValuesToTree(this.raw);
 
-    this.raw = req.form || {};
     this.values = exports.override(
         this.options.exclude,
         this.options.fields,
