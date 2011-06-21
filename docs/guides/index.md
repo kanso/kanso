@@ -18,6 +18,11 @@ As of CouchDB 1.1.0, its possible to share modules between your view functions
 and your normal application code. This guide explains the process of adding
 shared modules to a Kanso project.
 
+## [Working With Data](working_with_data.html)
+
+How to load existing data into CouchDB and create initial documents for your app
+using Kanso's pushdata and data tranform commands.
+
 ## [Writing Guides](writing_guides.html)
 
 One of the best ways to give back to the Kanso project is to help others get
