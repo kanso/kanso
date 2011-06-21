@@ -1,6 +1,6 @@
 /*global $: false */
 
-var sanitize = require('./sanitize');
+var sanitize = require('kanso/sanitize');
 
 
 /**
