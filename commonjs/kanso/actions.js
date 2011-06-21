@@ -120,7 +120,7 @@ exports.modalDialog = function (action_options, action_name,
         '<h2>' + [ action_label, type_label ].join(' ') + '</h2>'
     );
     var ok_elt = $(
-        '<input type="button" value="' + h(action_label) + '" />'
+        '<input type="submit" value="' + h(action_label) + '" />'
     );
     var cancel_elt = $(
         '<input type="button" value="' + h(cancel_label) + '" />'
@@ -139,7 +139,20 @@ exports.modalDialog = function (action_options, action_name,
         )
     );
 
-    ok_elt.click(function () {
+    /* Find the form element:
+        This is created by the call to widget.toHTML, above. */
+
+    var form_elt = div.closestChild('form');
+
+    /* Make default action 'ok' */
+    form_elt.submit(function (ev) {
+        ev.preventDefault();
+        ok_elt.click();
+        return false;
+    });
+
+    /* Handle success */
+    ok_elt.click(function (ev) {
 
         /* Validate widget:
             This usually defers to a form type's implementation.
@@ -181,8 +194,11 @@ exports.modalDialog = function (action_options, action_name,
 
             $.modal.close();
         }
+
+        ev.preventDefault();
     });
 
+    /* Handle failure */
     cancel_elt.click(function () {
         callback(
             false, widget.getValue(div, path, widget_options)
@@ -190,21 +206,18 @@ exports.modalDialog = function (action_options, action_name,
         $.modal.close();
     });
 
-    div.submit(function (ev) {
-        ev.preventDefault();
-        ok_elt.click();
-        return false;
-    });
-
-    /* Insert content */
+    /* Insert dialog-managed elements */
     actions_elt.append(ok_elt);
     actions_elt.append(cancel_elt);
-    div.append(actions_elt);
+    form.append(actions_elt);
 
-    /* Launch */
+    /* Launch dialog */
     div.modal();
 
-    /* Initialize widget */
+    /* Initialize widget:
+        We do this last -- this makes sure all elements are present
+        and initialized prior to client-side widget initialization. */
+
     widget.clientInit(
         field, path, value, raw, errors, widget_options
     );
