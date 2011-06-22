@@ -995,14 +995,59 @@ exports.embedForm = function (_options) {
 /**
  * Creates a new document selector widget. This widget allows the
  * user to select a document from a CouchDB view (specified in options).
+ * The options available for this widget are explained briefly below:
  *
+ * <table class="options">
+ *   <tr>
+ *      <td class="name">viewName</td>
+ *      <td class="type">String</td>
+ *      <td class="description">
+ *          The name of the CouchDB view that you'd like to select
+ *          documents from. If this option is not specified, it will
+ *          look for a view with the same name as this widget's field.
+ *      </td>
+ *   </tr>
+ *   <tr>
+ *      <td class="name">db</td>
+ *      <td class="type">String</td>
+ *      <td class="description">
+ *          The CouchDB database containing the view for this widget. If
+ *          this option is not specified, the current database will be used.
+ *      </td>
+ *   </tr>
+ *   <tr>
+ *      <td class="name">useJSON</td>
+ *      <td class="type">String</td>
+ *      <td class="description">
+ *          Set this option to false if this widget should yield a string
+ *          containing a single document id. Set this option to true (the
+ *          default) to yield a JSON string.
+ *      </td>
+ *   </tr>
+ *   <tr>
+ *      <td class="name">storeEntireDocument</td>
+ *      <td class="type">String</td>
+ *      <td class="description">
+ *          Set this option to false if this widget should yield *only*
+ *          a document identifier, effectively storing a reference to a
+ *          document. Set this option to true (the default) to include
+ *          all fields from the selected document. If useJSON is false,
+ *          then this option is ignored and treated as if it were false.
+ *      </td>
+ *   </tr>
+ * </table>
+ *
+ * @constructor
  * @param options
- * @returns {Widget Object}
  */
 
 exports.documentSelector = function (_options) {
     var w = new Widget('documentSelector', _options);
-    w.options = (_options || {});
+
+    w.options = _.defaults(_options || {}, {
+        useJSON: true,
+        storeEntireDocument: true
+    });
 
     w.toHTML = function (name, value, raw, field, options) {
         this.cacheInit();
@@ -1072,15 +1117,13 @@ exports.documentSelector = function (_options) {
     };
 
     w.clientInit = function (field, path, value, raw, errors, options) {
-
+        var id = this._id(
+            path, 'selector', options.offset, options.path_extra
+        );
+        var container_elt = $('#' + id);
         var widget_options = (this.options || {});
 
-        var id = this._id(path, 'selector', options.offset, options.path_extra);
-        var container_elt = $('#' + id);
-
         var spinner_elt = container_elt.closestChild('.spinner');
-        var is_embedded = (value instanceof Object);
-
         var select_elt = this.discoverSelectionElement(container_elt);
         var hidden_elt = this.discoverBackingElement(container_elt);
 
@@ -1091,10 +1134,11 @@ exports.documentSelector = function (_options) {
         select_elt.bind('change', function () {
             hidden_elt.val(select_elt.val());
         });
+
         /* Fetch contents */
         db.getView(
             widget_options.viewName,
-            { include_docs: is_embedded },
+            { include_docs: widget_options.storeEntireDocument },
             { db: widget_options.db },
             function (err, rv) {
                 /* Error handling */
@@ -1115,13 +1159,15 @@ exports.documentSelector = function (_options) {
                 _.each(rv.rows || [], function (r) {
                     var option = $('<option />');
                     var is_selected = (
-                        is_embedded ? (value._id === r.id) : (value === r.id)
+                        widget_options.useJSON ?
+                            ((value || {})._id === r.id) : (value === r.id)
                     );
                     if (is_selected) {
                         option.attr('selected', 'selected');
                     }
                     option.val(
-                        (is_embedded ? JSON.stringify(r.doc) : r.id)
+                        widget_options.useJSON ?
+                          JSON.stringify(r.doc || { _id: r.id }) : r.id
                     );
                     option.text(r.value);
                     select_elt.append(option);

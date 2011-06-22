@@ -44,6 +44,7 @@ var Field = exports.Field = function Field(options) {
         validators: [],
         required: true
     }));
+    return this;
 };
 
 
