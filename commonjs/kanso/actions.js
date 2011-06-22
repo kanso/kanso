@@ -204,8 +204,8 @@ exports.modalDialog = function (action_options, action_name,
     if (form_elt.length <= 0) {
 
         /* No form element found?
-            Generate one and wrap the contents of the dialog with
-            it. This helps support widgets other than embedForm. */
+            Generate one and wrap the contents of the dialog with it.
+            This provides support for widgets other than embedForm. */
 
         var wrapper_elt = $('<div />');
         form_elt = $('<form />');
