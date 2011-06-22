@@ -1,3 +1,101 @@
+----------, Version 0.0.7
+
+* Dropped support for CouchDB < 1.1
+
+* Fixed default rewrites for changes in CouchDB 1.1
+
+* Changes to db module:
+
+  * Some db module functions now expect a JSON mime-type as the response and
+    return an error if another type is used
+
+  * Added deleteUser method to db module
+
+  * Added getReplication, stopReplication, waitReplication, and startReplication
+    functions to db module. These functions are designed to work with the
+    _replicator database in CouchDB 1.1
+
+  * Added createDatabase and deleteDatabase to db module
+
+  * Fixed some document ID encoding issues in db module
+
+  * Added getList, getShow and getRewrite functions to db module
+
+  * Added tests for some db module functions
+
+  * Allow caller to specify CouchdB database to use in saveDoc, getDoc and
+    removeDoc
+
+* Changes to utils module:
+
+  * Added redirect method to utils
+
+  * setPropertyPath and getPropertyPath in utils now accept strings as well as
+    arrays
+
+  * Added isSubPath to utils module
+
+
+* Added a testsuite app so kanso's commonjs module tests will run in the browser
+
+* Big Forms and widgets rewrite to make complex embedded fields more portable
+  and flexible - BACKWARDS INCOMPATIBLE CHANGE - custom widgets and form
+  renderers will need to be updated to use the new API
+   
+  * Update form.validate to also run permissions checks
+
+  * Add ability to exclude fields from a form when initialized using a Type
+    definition
+
+* Removed History.js dependency and integrated HTML5 history handling using
+  pushState only - BACKWARDS INCOMPATIBLE CHANGE - older browsers will see
+  some degradtion in performance
+
+* Skip unsafe requests when clicking back button if possible, warn otherwise
+  (previously Kanso was repeating unsafe requests such as POST, PUT and DELETE
+  without warning)
+
+* Added new events module - BACKWARDS INCOMPATIBLE CHANGE - changed the way init
+  and sessionChange events are bound. Create a new project skeleton for
+  example usage.
+
+  * Added support for user-defined custom events
+
+  * Added beforeResource, beforeRequest, beforeResponseStart, beforeResponseData
+    and afterResponse events
+
+* Added new website with extra guides, an updated tutorial and auto-generated
+  API documentation
+
+* Fixed a few small bugs in Admin app
+
+* Assume http://127.0.0.1:5984 if host and port are not specified when using
+  command-line tool. Than means you can push to 'dbname' by doing:
+  "kanso push dbname" instead of "kanso push http://127.0.0.1:5984/dbname"
+
+* Added short-hand response style, allowing you to return
+  {title: '...', content: '...'} from a list, show or update function and
+  kanso will do the right thing depending on whether its running client-side
+  or server-side. See the new tutorial for example usage.
+
+* Obey redirects returned from list, show and update functions, see new
+  tutorial for example usage
+
+* Automatically save documents returned from update function when run in the
+  browser, see new tutorial for example usage
+
+* Made it easier to share code between the normal app modules and CouchDB
+  views, see new guide on sharing code with views for more info
+
+* Added transform action to command-line tool for working with data on the
+  filesystem before importing, allowing you to convert from .csv to .json and
+  add or clear CouchDB _id properties to documents. See the new "working with
+  data" guide for more info
+
+* Added new streaming JSON parsing to pushdata and transform commands for
+  handling large files
+
+
 2011.05.21, Version 0.0.6
 
 * Better support for encoding unusual document ids and other parameters in db module
