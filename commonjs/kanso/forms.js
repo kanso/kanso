@@ -518,6 +518,8 @@ exports.parseRaw = function (fields, raw) {
                 if (typeof r === 'string') {
                     if (r !== '') {
                         doc[k] = JSON.parse(r);
+                    } else {
+                        doc[k] = {};
                     }
                 }
                 else {
@@ -532,7 +534,7 @@ exports.parseRaw = function (fields, raw) {
                     if (r[i] !== '') {
                         doc[k][i] = JSON.parse(r[i]);
                     } else {
-                        doc[k][i] = undefined;
+                        doc[k][i] = {};
                     }
                 }
                 else {

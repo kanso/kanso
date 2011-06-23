@@ -1239,7 +1239,7 @@ exports.documentSelector = function (_options) {
                     callback(err, null);
                 };
 
-                if (value._id) {
+                if (value && value._id) {
                     return_value(value._id);
                 } else {
                     db.newUUID(100, function (err, uuid) {
