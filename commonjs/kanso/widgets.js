@@ -444,20 +444,17 @@ exports.embedList = function (_options) {
     w.actions = actions.parse(_options.actions || {});
     
     w.toHTML = function (name, value, raw, field, options) {
+
         this.cacheInit();
+        value = this.normalizeValue(value);
 
         this.field = field;
         this.render_options = (options || {});
-
-        if (this.singleton && value && !_.isArray(value)) {
-            value = [ value ];
-        }
 
         var id = this._id(
             name, 'list', this.render_options.offset,
                 this.render_options.path_extra
         );
-
         var html = (
             '<div class="embedlist" rel="' +
                 h(this.field.type.name) + '" id="' + h(id) + '">'
@@ -487,6 +484,7 @@ exports.embedList = function (_options) {
     w.clientInit = function (field, path, value, raw, errors, options) {
 
         this.cacheInit();
+        value = this.normalizeValue(value);
 
         this.path = path;
         this.field = field;
@@ -501,8 +499,9 @@ exports.embedList = function (_options) {
 
             if (_.isFunction(this.widget.clientInit)) {
                 this.widget.clientInit(
-                    this.field, this.path, value[i], value[i], [],
-                        { offset: i }
+                    this.field, this.path, value[i], value[i], [], {
+                        offset: (this.singleton ? null : i)
+                    }
                 );
             }
         }
@@ -518,6 +517,15 @@ exports.embedList = function (_options) {
         this.discoverListName = _.memoize(this._discoverListName);
         this.discoverListType = _.memoize(this._discoverListType);
         this.discoverListItemsElement = _.memoize(this._discoverListItemsElement);
+    };
+
+    w.normalizeValue = function (value) {
+        if (this.singleton) {
+            if (value && !_.isArray(value)) {
+                value = [ value ];
+            }
+        }
+        return value;
     };
 
     w._discoverListElement = function () {
@@ -691,7 +699,7 @@ exports.embedList = function (_options) {
             if (_.isFunction(this.widget.clientInit)) {
                 this.widget.clientInit(
                     this.field, this.path, value, null, [], {
-                        offset: offset
+                        offset: (this.singleton ? null : offset)
                     }
                 );
             }
@@ -933,7 +941,6 @@ exports.defaultEmbedded = function (_options) {
  */
 
 exports.embedForm = function (_options) {
-
     var w = new Widget('embedForm', _options);
 
     w.embedded_type = _options.type;
@@ -1118,7 +1125,6 @@ exports.documentSelector = function (_options) {
         );
         var container_elt = $('#' + id);
         var widget_options = (this.options || {});
-
         var spinner_elt = container_elt.closestChild('.spinner');
         var select_elt = this.discoverSelectionElement(container_elt);
         var hidden_elt = this.discoverBackingElement(container_elt);
@@ -1142,6 +1148,7 @@ exports.documentSelector = function (_options) {
 
     w.populateSelectElement = function (elt, field, path,
                                         val, options, callback) {
+
         db.getView(
             options.viewName,
             { include_docs: options.storeEntireDocument },

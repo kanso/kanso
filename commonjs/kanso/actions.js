@@ -49,7 +49,9 @@ exports.parse = function (actions) {
     for (var k in actions) {
         var module, callback, options;
         var action = actions[k];
-        if (action !== false) {
+        if (action === false) {
+            rv[k] = utils.emptyFunction;
+        } else {
             if (_.isArray(action)) {
                 module = action[0];
                 callback = action[1];
