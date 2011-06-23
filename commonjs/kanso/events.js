@@ -15,11 +15,21 @@
 
 var _ = require('./underscore')._;
 
+
 /**
  * Stores the bound listeners
+ *
+ * These must be stored in a global since the forms code fires some events using
+ * script tags, which will fail to reference the listeners object if a local var
+ * is used.
+ *
+ * We test for a pre-existing global as admin app might require this module
+ * in multiple contexts, and we don't want to lose previous event listeners.
  */
 
-__kansojs_event_listeners = {};
+if (typeof __kansojs_event_listeners === 'undefined') {
+    __kansojs_event_listeners = {};
+}
 
 
 /**
