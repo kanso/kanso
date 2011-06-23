@@ -1168,7 +1168,6 @@ exports.documentSelector = function (_options) {
                     if (this.isOptionSelected(r, val, options)) {
                         option_elt.attr('selected', 'selected');
                     }
-
                     this.generateOptionValue(
                         field, r, val, options,
                         utils.bindContext(this, function (err, v) {
@@ -1179,14 +1178,13 @@ exports.documentSelector = function (_options) {
                                 );
                             }
                             option_elt.val(v);
+                            option_elt.text(r.value);
+                            elt.append(option_elt);
                             elt.trigger('change');
                         })
                     );
 
-                    option_elt.text(r.value);
-                    elt.append(option_elt);
                 }));
-
                 callback();
             })
         );
