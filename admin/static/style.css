@@ -428,7 +428,6 @@ td.actions .button {
 .embedlist .item .actions {
     float: right;
     overflow: hidden;
-    padding-left: 1em;
 }
 
 .embedlist .embed {
