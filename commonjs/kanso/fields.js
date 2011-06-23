@@ -102,7 +102,6 @@ Field.prototype.validate = function (doc, value, raw) {
     // don't validate empty fields, but check if required
     if (this.isEmpty(value, raw)) {
         if (this.required) {
-            console.log([ 'field validate', this, value, raw ]);
             return [ new Error('Required field') ];
         }
         return [];
