@@ -151,9 +151,9 @@ exports['parseRaw - embeddedList empty item'] = function (test) {
     var doc = forms.parseRaw(t2.fields, {
         type: 't1',
         embed: [
-            {type: 't2', one: 'one'},
+            { type: 't2', one: 'one' },
             '',
-            {type: 't2', one: 'three'}
+            { type: 't2', one: 'three' }
         ]
     });
 
@@ -161,7 +161,7 @@ exports['parseRaw - embeddedList empty item'] = function (test) {
         type: 't1',
         embed: [
             { type: 't2', one: 'one' },
-            undefined,
+            { },
             { type: 't2', one: 'three' }
         ]
     });
