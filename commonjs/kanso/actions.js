@@ -49,25 +49,27 @@ exports.parse = function (actions) {
     for (var k in actions) {
         var module, callback, options;
         var action = actions[k];
-        if (_.isArray(action)) {
-            module = action[0];
-            callback = action[1];
-            options = action[2];
-        } else if (_.isFunction(action)) {
-            rv[k] = action;
-            continue;
-        } else if (typeof(action) === 'object') {
-            module = action.module;
-            callback = action.callback;
-            options = action.options;
-        } else {
-            throw new Error(
-                'Action `' + k + '` is of type `' + typeof(action) + '`, ' +
-                    "which this function doesn't know how to interpret"
-            );
+        if (action !== false) {
+            if (_.isArray(action)) {
+                module = action[0];
+                callback = action[1];
+                options = action[2];
+            } else if (_.isFunction(action)) {
+                rv[k] = action;
+                continue;
+            } else if (typeof(action) === 'object') {
+                module = action.module;
+                callback = action.callback;
+                options = action.options;
+            } else {
+                throw new Error(
+                    'Action `' + k + '` is `' + typeof(action) + '`, ' +
+                        "which this function doesn't know how to interpret"
+                );
+            }
+            /* Resolve function description to actual function */
+            rv[k] = exports.make_action_handler(module, callback, options);
         }
-        /* Resolve function description to actual function */
-        rv[k] = exports.make_action_handler(module, callback, options);
     }
     return rv;
 };
