@@ -313,7 +313,7 @@ exports['Form.toHTML - embedded'] = function (test) {
         this.endGroup = function () {
             return;
         };
-        this.embed = function (field, path, value, raw, errors) {
+        this.field = function (field, path, value, raw, errors) {
             calls.push(['embed', field.type, path.join('.'), value, raw, errors]);
             return '';
         };
@@ -360,7 +360,7 @@ exports['Form.toHTML - embeddedList'] = function (test) {
         this.endGroup = function () {
             return;
         };
-        this.embedList = function (field, path, value, raw, errors) {
+        this.field = function (field, path, value, raw, errors) {
             calls.push(['embedList', field.type, path.join('.'), value, raw, errors]);
             return '';
         };
@@ -407,7 +407,7 @@ exports['Form.toHTML - embeddedList - with values'] = function (test) {
         this.endGroup = function () {
             return;
         };
-        this.embedList = function (field, path, value, raw, errors) {
+        this.field = function (field, path, value, raw, errors) {
             calls.push(['embedList', field.type, path.join('.'), value, raw, errors]);
             return '';
         };
@@ -487,7 +487,7 @@ exports['Form.validate - empty strings'] = function (test) {
     f.validate({form: {}});
     test.strictEqual(f.isValid(), false);
 
-    f.validate({form: {foo: null }});
+    f.validate({ form: { foo: null } });
     test.strictEqual(f.isValid(), false);
 
     f.validate({ foo: '' });
@@ -496,7 +496,7 @@ exports['Form.validate - empty strings'] = function (test) {
     f.validate({ foo: 'baz' });
     test.strictEqual(f.isValid(), true);
 
-    f.validate({form: {foo: 'baz', bar: null}});
+    f.validate({form: { foo: 'baz', bar: null }});
     test.strictEqual(f.isValid(), true);
 
     test.done();

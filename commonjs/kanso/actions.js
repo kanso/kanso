@@ -87,7 +87,6 @@ exports.modalDialog = function (action_options, action_name,
     options = (options || {});
     action_options = (action_options || {});
 
-    var div = $('<div />');
     var widget = action_options.widget;
     var name = sanitize.generateDomName.apply(null, path);
     var path_extra = (options.path_extra || []).concat([ 'modal' ]);
@@ -120,7 +119,7 @@ exports.modalDialog = function (action_options, action_name,
         '<h2>' + [ action_label, type_label ].join(' ') + '</h2>'
     );
     var ok_elt = $(
-        '<input type="button" value="' + h(action_label) + '" />'
+        '<input type="submit" value="' + h(action_label) + '" />'
     );
     var cancel_elt = $(
         '<input type="button" value="' + h(cancel_label) + '" />'
@@ -128,6 +127,9 @@ exports.modalDialog = function (action_options, action_name,
     var actions_elt = $(
         '<div class="actions" />'
     );
+    
+    /* Create widget's parent element */
+    var div = $('<div />');
 
     /* Add dialog title */
     div.append(title_elt);
@@ -139,7 +141,26 @@ exports.modalDialog = function (action_options, action_name,
         )
     );
 
-    ok_elt.click(function () {
+    /* Find the form element:
+        This is created by the call to widget.toHTML, above. */
+
+    var form_elt = div.closestChild('form');
+
+    if (form_elt.length <= 0) {
+
+        /* No form element found?
+            Generate one and wrap the contents of the dialog with it.
+            This provides support for widgets other than embedForm. */
+
+        var wrapper_elt = $('<div />');
+        form_elt = $('<form />');
+        form_elt.append(div);
+        wrapper_elt.append(form_elt);
+        div = wrapper_elt;
+    }
+
+    /* Handle success */
+    ok_elt.click(function (ev) {
 
         /* Validate widget:
             This usually defers to a form type's implementation.
@@ -181,8 +202,11 @@ exports.modalDialog = function (action_options, action_name,
 
             $.modal.close();
         }
+
+        ev.preventDefault();
     });
 
+    /* Handle failure */
     cancel_elt.click(function () {
         callback(
             false, widget.getValue(div, path, widget_options)
@@ -190,21 +214,25 @@ exports.modalDialog = function (action_options, action_name,
         $.modal.close();
     });
 
-    div.submit(function (ev) {
+    /* Make default form action 'ok' */
+    form_elt.submit(function (ev) {
         ev.preventDefault();
         ok_elt.click();
         return false;
     });
 
-    /* Insert content */
+    /* Insert dialog-managed elements */
     actions_elt.append(ok_elt);
     actions_elt.append(cancel_elt);
-    div.append(actions_elt);
+    form_elt.append(actions_elt);
 
-    /* Launch */
+    /* Launch dialog */
     div.modal();
 
-    /* Initialize widget */
+    /* Initialize widget:
+        We do this last -- this makes sure all elements are present
+        and initialized prior to client-side widget initialization. */
+
     widget.clientInit(
         field, path, value, raw, errors, widget_options
     );

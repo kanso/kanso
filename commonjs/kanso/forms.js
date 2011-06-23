@@ -158,8 +158,16 @@ Form.prototype.validate = function (/*optional*/req) {
     if (!req) {
         req = utils.currentRequest();
     }
-    this.raw = req.form || {};
+
+    /* This is the request payload:
+        This contains all of the form fields that are used by
+        formValuesToTree and parseRaw, and must be copied first. */
+
+    this.raw = (req.form || {});
+
+    var type_class = require('./types').Type;
     var tree = exports.formValuesToTree(this.raw);
+
     this.values = exports.override(
         this.options.exclude,
         this.options.fields,
@@ -168,27 +176,36 @@ Form.prototype.validate = function (/*optional*/req) {
         exports.parseRaw(this.fields, tree),
         []
     );
-
+    
     this.errors = fieldset.validate(
         this.fields, this.values, this.values, this.raw, [], false
     );
 
     if (this.type) {
-        // run top level permissions first
-        var type_errs = this.type.authorizeTypeLevel(
-            this.values, this.initial_doc, req.userCtx
-        );
-        if (type_errs.length) {
-            this.errors = this.errors.concat(type_errs);
-        }
-        else {
-            // if no top-level permissions errors, check each field
-            this.errors = this.errors.concat(
-                this.type.authorize(
-                    this.values, this.initial_doc, req.userCtx
-                )
+        if (this.type instanceof type_class) {
+            // run top level permissions first
+            var type_errs = this.type.authorizeTypeLevel(
+                this.values, this.initial_doc, req.userCtx
+            );
+            if (type_errs.length) {
+                this.errors = this.errors.concat(type_errs);
+            }
+            else {
+                // if no top-level permissions errors, check each field
+                this.errors = this.errors.concat(
+                    this.type.authorize(
+                        this.values, this.initial_doc, req.userCtx
+                    )
+                );
+            }
+        } else {
+            /* Programmer error: display a useful diagnostic message */
+            throw new Error(
+                'Encountered a type object that is not an instance of' +
+                    ' `Type`; check lib/types.js for proper instansiation'
             );
         }
+        
     }
     else {
         this.errors = this.errors.concat(fieldset.authFieldSet(
@@ -301,7 +318,7 @@ var errsWithoutFields = function (errs) {
  *
  * @name Form.toHTML(req, [RendererClass])
  * @param {Object} req Kanso request object; null for most recent. (optional)
- * @param {Renderer} renderer_class (optional)
+ * @param {Renderer} RendererClass (optional)
  * @param {Object} options An object containing widget options, which
  *          will ultimately be provided to each widget's toHTML method.
  * @param {Boolean} create_defaults (optional) Set this to true if you've
@@ -315,7 +332,7 @@ var errsWithoutFields = function (errs) {
  */
 
 Form.prototype.toHTML = function (/* optional */ req,
-                                  /* optional */ renderer_class,
+                                  /* optional */ RendererClass,
                                   /* optional */ options,
                                   /* optional */ create_defaults) {
     if (!req) {
@@ -331,10 +348,12 @@ Form.prototype.toHTML = function (/* optional */ req,
         values = fieldset.createDefaults(this.fields, req);
     }
 
-    renderer_class = (renderer_class || render.defaultRenderer());
-    var renderer = new renderer_class();
+    RendererClass = (RendererClass || render.defaultRenderer());
+    var renderer = new RendererClass();
     return (
-        renderer.start(errsWithoutFields(this.errors)) +
+        renderer.start(
+            errsWithoutFields(this.errors)
+        ) +
         this.renderFields(
             renderer, this.fields,
                 values, this.raw, this.errors, [], (options || {})

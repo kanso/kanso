@@ -159,7 +159,7 @@ exports['validate - field in the wrong place'] = function (test) {
     var errs = t.validate(doc, raw);
     test.equal(errs.length, 1);
     test.same(errs[0].field, ['one']);
-    test.equal(errs[0].message, 'Unexpected property');
+    test.notEqual(errs[0].message, undefined, 'Returns error');
     test.equal(errs[0].has_field, false);
     // asdf.two is not covered by the fieldset, so unexpected properties
     // don't matter.
@@ -192,7 +192,7 @@ exports['validate - extra values'] = function (test) {
     var errs = t.validate(doc, raw);
     test.equal(errs.length, 1);
     test.same(errs[0].field, ['asdf']);
-    test.equal(errs[0].message, 'Unexpected property');
+    test.notEqual(errs[0].message, undefined, 'Returns error');
     test.equal(errs[0].has_field, false);
     // asdf.two is not covered by the fieldset, so unexpected properties
     // don't matter.

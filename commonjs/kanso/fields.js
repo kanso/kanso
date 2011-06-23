@@ -44,6 +44,7 @@ var Field = exports.Field = function Field(options) {
         validators: [],
         required: true
     }));
+    return this;
 };
 
 
@@ -101,7 +102,7 @@ Field.prototype.validate = function (doc, value, raw) {
     // don't validate empty fields, but check if required
     if (this.isEmpty(value, raw)) {
         if (this.required) {
-            return [new Error('Required field')];
+            return [ new Error('Required field') ];
         }
         return [];
     }
@@ -236,7 +237,7 @@ Embedded.prototype.validate = function (doc, value, raw) {
     // don't validate empty fields, but check if required
     if (this.isEmpty(value, raw)) {
         if (this.required) {
-            return [new Error('Required field')];
+            return [ new Error('Required field') ];
         }
         return [];
     }
@@ -262,6 +263,9 @@ Embedded.prototype.validate = function (doc, value, raw) {
  */
 
 Embedded.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, user) {
+    if (newVal && oldVal && newVal._id !== oldVal._id) {
+        oldVal = undefined;
+    }
     return this.type.authorize(newVal || {_deleted: true}, oldVal, user);
 };
 
@@ -391,7 +395,7 @@ EmbeddedList.prototype.validate = function (doc, value, raw) {
     // don't validate empty fields, but check if required
     if (this.isEmpty(value, raw)) {
         if (this.required) {
-            return [new Error('Required field')];
+            return [ new Error('Required field') ];
         }
         return [];
     }
@@ -408,7 +412,7 @@ EmbeddedList.prototype.validate = function (doc, value, raw) {
             We don't currently have the infrastructure for a test case. */
         
         /* Before: return !(v instanceof Object) || _.isArray(v); */
-        return typeof(v) !== 'object' || _.isArray(v);
+        return (typeof(v) !== 'object' || _.isArray(v));
     });
     if (non_objects.length) {
         return _.map(non_objects, function (v) {
