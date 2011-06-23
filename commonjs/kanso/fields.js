@@ -263,6 +263,9 @@ Embedded.prototype.validate = function (doc, value, raw) {
  */
 
 Embedded.prototype.authorize = function (newDoc, oldDoc, newVal, oldVal, user) {
+    if (newVal && oldVal && newVal._id !== oldVal._id) {
+        oldVal = undefined;
+    }
     return this.type.authorize(newVal || {_deleted: true}, oldVal, user);
 };
 

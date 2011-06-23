@@ -31,21 +31,28 @@ exports['load'] = function (test) {
                 fs.readFileSync(pdir + '/lib/app.js').toString()
             );
             test.same(doc.shows, {
-                'testshow': 'function(){' +
-                    'return require("lib/app")["shows"]["testshow"]' +
-                        '.apply(this, arguments);' +
+                'testshow': 'function(doc, req){' +
+                    'var core = require("kanso/core");' +
+                    'var fn = require("lib/app")["shows"]["testshow"];' +
+                    'return core.runShow(fn, doc, req);' +
                 '}'
             });
             test.same(doc.lists, {
-                'testlist': 'function(){' +
-                    'return require("lib/app")["lists"]["testlist"]' +
-                        '.apply(this, arguments);' +
+                'testlist': 'function(head, req){' +
+                    'var core = require("kanso/core");' +
+                    'var fn = require("lib/app")["lists"]["testlist"];' +
+                    'return core.runList(fn, head, req);' +
                 '}'
             });
             test.same(doc.updates, {
-                'testupdate': 'function(){' +
-                    'return require("lib/app")["updates"]["testupdate"]' +
-                        '.apply(this, arguments);' +
+                'testupdate': 'function(doc, req){' +
+                    'var core = require("kanso/core");' +
+                    'var fn = require("lib/app")["updates"]["testupdate"];' +
+                    'var r;' +
+                    'core.runUpdate(fn, doc, req, function (err, res) { ' +
+                        'r = res; ' +
+                    '});' +
+                    'return r;' +
                 '}'
             });
             test.same(doc.filters, {

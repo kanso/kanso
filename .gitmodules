@@ -22,3 +22,9 @@
 [submodule "deps/scrawl"]
 	path = deps/scrawl
 	url = git://github.com/caolan/scrawl.git
+[submodule "deps/node-csv-parser"]
+	path = deps/node-csv-parser
+	url = git://github.com/wdavidw/node-csv-parser.git
+[submodule "deps/node-parser"]
+	path = deps/node-parser
+	url = git://github.com/Floby/node-parser.git
