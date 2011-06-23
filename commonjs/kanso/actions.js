@@ -88,7 +88,7 @@ exports.modalDialog = function (action_options, action_name,
     action_options = (action_options || {});
 
     var widget = action_options.widget;
-    var name = sanitize.generateDomName.apply(null, path);
+    var name = sanitize.generateDomName(path);
     var path_extra = (options.path_extra || []).concat([ 'modal' ]);
     var widget_options = { path_extra: path_extra };
 
@@ -100,6 +100,7 @@ exports.modalDialog = function (action_options, action_name,
             })
         );
     }
+
     if (!widget) {
         throw new Error(
             'modalDialog: Unable to determine the widget to' +
@@ -108,134 +109,141 @@ exports.modalDialog = function (action_options, action_name,
         );
     }
 
-    
-    /* Generate strings for content */
-    var cancel_label = 'Cancel';
-    var type_label = utils.titleize(type_name);
-    var action_label = utils.titleize(action_name);
+    /* Dialog setup and event handling:
+        This is wrapped in a closure to allow it to easily be
+        used inside both synchronous and asynchronous functions. */
 
-    /* Generate inner elements */
-    var title_elt = $(
-        '<h2>' + [ action_label, type_label ].join(' ') + '</h2>'
-    );
-    var ok_elt = $(
-        '<input type="submit" value="' + h(action_label) + '" />'
-    );
-    var cancel_elt = $(
-        '<input type="button" value="' + h(cancel_label) + '" />'
-    );
-    var actions_elt = $(
-        '<div class="actions" />'
-    );
-    
-    /* Create widget's parent element */
-    var div = $('<div />');
+    var generateModalDialog = function () {
 
-    /* Add dialog title */
-    div.append(title_elt);
+        /* Generate strings for content */
+        var cancel_label = 'Cancel';
+        var type_label = utils.titleize(type_name);
+        var action_label = utils.titleize(action_name);
 
-    /* Draw widget */
-    div.append(
-        widget.toHTML(
-            name, value, raw, field, widget_options
-        )
-    );
+        /* Generate inner elements */
+        var title_elt = $(
+            '<h2>' + [ action_label, type_label ].join(' ') + '</h2>'
+        );
+        var ok_elt = $(
+            '<input type="submit" value="' + h(action_label) + '" />'
+        );
+        var cancel_elt = $(
+            '<input type="button" value="' + h(cancel_label) + '" />'
+        );
+        var actions_elt = $(
+            '<div class="actions" />'
+        );
+        
+        /* Create widget's parent element */
+        var div = $('<div />');
 
-    /* Find the form element:
-        This is created by the call to widget.toHTML, above. */
+        /* Add dialog title */
+        div.append(title_elt);
 
-    var form_elt = div.closestChild('form');
+        /* Draw widget */
+        div.append(
+            widget.toHTML(
+                name, value, raw, field, widget_options
+            )
+        );
 
-    if (form_elt.length <= 0) {
+        /* Find the form element:
+            This is created by the call to widget.toHTML, above. */
 
-        /* No form element found?
-            Generate one and wrap the contents of the dialog with it.
-            This provides support for widgets other than embedForm. */
+        var form_elt = div.closestChild('form');
 
-        var wrapper_elt = $('<div />');
-        form_elt = $('<form />');
-        form_elt.append(div);
-        wrapper_elt.append(form_elt);
-        div = wrapper_elt;
-    }
+        if (form_elt.length <= 0) {
 
-    /* Handle success */
-    ok_elt.click(function (ev) {
+            /* No form element found?
+                Generate one and wrap the contents of the dialog with it.
+                This provides support for widgets other than embedForm. */
 
-        /* Validate widget:
-            This usually defers to a form type's implementation.
-            Most simple widgets just return true for this method. */
-
-        errors = widget.validate(div, path, widget_options);
-
-        if (errors.length > 0) {
-
-            /* Repost dialog box:
-                This will replace the current dialog box.
-                The modal dialog returns to the event loop before
-                actually removing its elements, so we do the same. */
-
-            $.modal.close();
-
-            setTimeout(function () {
-                exports.modalDialog(
-                    action_options, action_name, type_name, field,
-                        path, value, raw, errors, options, callback
-                );
-            }, 0);
-
-        } else {
-
-            /* Close the dialog box:
-                Again, note that the dialog box won't actually disappear
-                until we've unwound and returned to the main event
-                loop. If you depend upon closure, use setTimeout(). */
-
-            callback(
-                true, widget.getValue(div, path, widget_options)
-            );
-
-            /* Order matters:
-                The callback may refer to elements inside of the modal
-                dialog, so don't destroy it until after it returns, and
-                has had a chance to register any callbacks / timeouts. */
-
-            $.modal.close();
+            var wrapper_elt = $('<div />');
+            form_elt = $('<form />');
+            form_elt.append(div);
+            wrapper_elt.append(form_elt);
+            div = wrapper_elt;
         }
 
-        ev.preventDefault();
-    });
+        /* Handle success */
+        ok_elt.click(function (ev) {
 
-    /* Handle failure */
-    cancel_elt.click(function () {
-        callback(
-            false, widget.getValue(div, path, widget_options)
+            /* Validate widget:
+                This usually defers to a form type's implementation.
+                Most simple widgets just return true for this method. */
+
+            errors = widget.validate(div, path, widget_options);
+
+            if (errors.length > 0) {
+
+                /* Repost dialog box:
+                    This will replace the current dialog box.
+                    The modal dialog returns to the event loop before
+                    actually removing its elements, so we do the same. */
+
+                $.modal.close();
+
+                setTimeout(function () {
+                    exports.modalDialog(
+                        action_options, action_name, type_name, field,
+                            path, value, raw, errors, options, callback
+                    );
+                }, 0);
+
+            } else {
+
+                /* Close the dialog box:
+                    Again, note that the dialog box won't actually disappear
+                    until we've unwound and returned to the main event
+                    loop. If you depend upon closure, use setTimeout(). */
+
+                callback(
+                    true, widget.getValue(div, path, widget_options)
+                );
+
+                /* Order matters:
+                    The callback may refer to elements inside of the modal
+                    dialog, so don't destroy it until after it returns, and
+                    has had a chance to register any callbacks / timeouts. */
+
+                $.modal.close();
+            }
+
+            ev.preventDefault();
+        });
+
+        /* Handle failure */
+        cancel_elt.click(function () {
+            callback(
+                false, widget.getValue(div, path, widget_options)
+            );
+            $.modal.close();
+        });
+
+        /* Make default form action 'ok' */
+        form_elt.submit(function (ev) {
+            ev.preventDefault();
+            ok_elt.click();
+            return false;
+        });
+
+        /* Insert dialog-managed elements */
+        actions_elt.append(ok_elt);
+        actions_elt.append(cancel_elt);
+        form_elt.append(actions_elt);
+
+        /* Launch dialog */
+        div.modal();
+
+        /* Initialize widget:
+            We do this last -- this makes sure all elements are present
+            and initialized prior to client-side widget initialization. */
+
+        widget.clientInit(
+            field, path, value, raw, errors, widget_options
         );
-        $.modal.close();
-    });
+    };
 
-    /* Make default form action 'ok' */
-    form_elt.submit(function (ev) {
-        ev.preventDefault();
-        ok_elt.click();
-        return false;
-    });
-
-    /* Insert dialog-managed elements */
-    actions_elt.append(ok_elt);
-    actions_elt.append(cancel_elt);
-    form_elt.append(actions_elt);
-
-    /* Launch dialog */
-    div.modal();
-
-    /* Initialize widget:
-        We do this last -- this makes sure all elements are present
-        and initialized prior to client-side widget initialization. */
-
-    widget.clientInit(
-        field, path, value, raw, errors, widget_options
-    );
-
+    return generateModalDialog();
 };
 
