@@ -318,7 +318,7 @@ var errsWithoutFields = function (errs) {
  *
  * @name Form.toHTML(req, [RendererClass])
  * @param {Object} req Kanso request object; null for most recent. (optional)
- * @param {Renderer} renderer_class (optional)
+ * @param {Renderer} RendererClass (optional)
  * @param {Object} options An object containing widget options, which
  *          will ultimately be provided to each widget's toHTML method.
  * @param {Boolean} create_defaults (optional) Set this to true if you've
@@ -332,7 +332,7 @@ var errsWithoutFields = function (errs) {
  */
 
 Form.prototype.toHTML = function (/* optional */ req,
-                                  /* optional */ renderer_class,
+                                  /* optional */ RendererClass,
                                   /* optional */ options,
                                   /* optional */ create_defaults) {
     if (!req) {
@@ -348,10 +348,12 @@ Form.prototype.toHTML = function (/* optional */ req,
         values = fieldset.createDefaults(this.fields, req);
     }
 
-    renderer_class = (renderer_class || render.defaultRenderer());
-    var renderer = new renderer_class();
+    RendererClass = (RendererClass || render.defaultRenderer());
+    var renderer = new RendererClass();
     return (
-        renderer.start(errsWithoutFields(this.errors)) +
+        renderer.start(
+            errsWithoutFields(this.errors)
+        ) +
         this.renderFields(
             renderer, this.fields,
                 values, this.raw, this.errors, [], (options || {})

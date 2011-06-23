@@ -250,3 +250,49 @@ exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
         }
     }
 };
+
+/**
+ * This type wraps a reference to a document. The _id attribute is
+ * auto-generated as usual; the id of the document being referred to
+ * is stored in the 'ref' attribute. In lists, this has the effect of
+ * allowing multiple references to a single document.
+ */
+
+exports.reference = function (options) {
+    return new Type('reference', {
+        fields: {
+            ref: fields.string({
+                omit_empty: true,
+                required: !!options.required,
+                widget: widgets.hidden(),
+                permissions: {},
+                default_value: function (req) {
+                    return undefined;
+                }
+            })
+        }
+    });
+};
+
+/**
+ * This type wraps a reference to a document. The _id attribute is
+ * made writeable, and is used to store the id of the document being
+ * referred to. In lists, has the effect of constraining each reference
+ * to appear no more than once.
+ */
+
+exports.uniqueReference = function (options) {
+    var type = new Type('unique_reference', {
+        fields: {}
+    });
+    type.fields._id = fields.string({
+        omit_empty: true,
+        required: !!options.required,
+        widget: widgets.hidden(),
+        permissions: {},
+        default_value: function (req) {
+            return req.uuid;
+        }
+    });
+    return type;
+};

@@ -127,6 +127,37 @@ exports.modalDialog = function (action_options, action_name,
     var actions_elt = $(
         '<div class="actions" />'
     );
+    
+    /* Create widget's parent element */
+    var div = $('<div />');
+
+    /* Add dialog title */
+    div.append(title_elt);
+
+    /* Draw widget */
+    div.append(
+        widget.toHTML(
+            name, value, raw, field, widget_options
+        )
+    );
+
+    /* Find the form element:
+        This is created by the call to widget.toHTML, above. */
+
+    var form_elt = div.closestChild('form');
+
+    if (form_elt.length <= 0) {
+
+        /* No form element found?
+            Generate one and wrap the contents of the dialog with it.
+            This provides support for widgets other than embedForm. */
+
+        var wrapper_elt = $('<div />');
+        form_elt = $('<form />');
+        form_elt.append(div);
+        wrapper_elt.append(form_elt);
+        div = wrapper_elt;
+    }
 
     /* Handle success */
     ok_elt.click(function (ev) {
@@ -182,37 +213,6 @@ exports.modalDialog = function (action_options, action_name,
         );
         $.modal.close();
     });
-
-    /* Create widget's parent element */
-    var div = $('<div />');
-
-    /* Add dialog title */
-    div.append(title_elt);
-
-    /* Draw widget */
-    div.append(
-        widget.toHTML(
-            name, value, raw, field, widget_options
-        )
-    );
-
-    /* Find the form element:
-        This is created by the call to widget.toHTML, above. */
-
-    var form_elt = div.closestChild('form');
-
-    if (form_elt.length <= 0) {
-
-        /* No form element found?
-            Generate one and wrap the contents of the dialog with it.
-            This provides support for widgets other than embedForm. */
-
-        var wrapper_elt = $('<div />');
-        form_elt = $('<form />');
-        form_elt.append(div);
-        wrapper_elt.append(form_elt);
-        div = wrapper_elt;
-    }
 
     /* Make default form action 'ok' */
     form_elt.submit(function (ev) {
