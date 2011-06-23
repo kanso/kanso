@@ -75,7 +75,7 @@ location, or group posts by location. We'll explore this feature in the next few
 sections.
 
 
-# Digression: Dissecting the embedList Field Type
+# Dissecting the {embedList} Field Type
 
 Before we start extending the tutorial application, it's worth delving a bit
 deeper to examine how the embedList type works. When you instansiate an
@@ -159,9 +159,10 @@ embedList to draw it list item.
 
 The embedList widget, abstractly, implements either a set data structure or a
 list data structure, depending upon the options provided to it. If the sortable
-option is set to true, the embedList widget displays controls suitable for
-adjusting the list order. If sortable is false, the order of list items is
-currently preserved, but this may not always be the case.
+option is set to true, the embedList widget becomes a list, and displays
+controls suitable for adjusting the list order. If sortable is false, the widget
+becomes a set -- though the order of items is currently preserved, this may not
+always be the case.
 
 When a user asks Kanso to modify an embedList -- e.g. by pressing the add
 button, by deleting an item, or by modifying the list order -- the embedList
@@ -262,7 +263,10 @@ exports.blogpost = new Type('blogpost', {
             type: exports.location,
             widget: widgets.documentSelector({
                 db: 'myblog', viewName: 'locations'
-            })
+            }),
+            actions: {
+                add: false, edit: false, del: false
+            }
         })
     }
 });
@@ -309,7 +313,6 @@ exports.blogpost = new Type('blogpost', {
         ...
         /* Changed data type to 'string' */
         location: fields.string({
-            type: exports.location,
             widget: widgets.documentSelector({
                 db: 'myblog', viewName: 'locations',
                 /* Addition of two new options */
@@ -333,19 +336,25 @@ in more advanced use cases. We can achieve an equivalent effect by writing:
 <pre><code class="javascript">exports.blogpost = new Type('blogpost', {
     fields: {
         ...
-        /* Changed outer data type to 'embed';
-            changed inner data type to 'reference'.
-            The 'reference' type points to a 'location' instance. */
+        /* Changed outer data type and widget to 'embed'.
+           Changed inner data type to a 'reference' type,
+           which is constructed to refer to a 'location' */
 
         location: fields.embed({
             type: types.reference({
                 type: exports.location
             }),
-            widget: widgets.documentSelector({
-                db: 'myblog', viewName: 'locations',
-                storeEntireDocument: false,
-                /* Modification of one option */
-                useJSON: true
+            widget: widgets.embedList({
+                singleton: true,
+                widget: widgets.documentSelector({
+                    db: 'myblog', viewName: 'locations',
+                    storeEntireDocument: false,
+                    /* Modified one option */
+                    useJSON: true
+                }),
+                actions: {
+                    add: false, edit: false, del: false
+                }
             })
         })
     }
@@ -369,58 +378,66 @@ definition.
 <pre><code class="javascript">exports.blogpost = new Type('blogpost', {
     fields: {
         ...
-        /* Changed field name to 'itinerary' */
-        /* Changed field type to 'embedList' */
+        /* Changed field name to 'itinerary';
+           Changed field type to an 'embedList' */
+
         itinerary: fields.embedList({
-            /* Added sortable option */
-            sortable: true,
             type: types.reference({
                 type: exports.location
             }),
-            widget: widgets.documentSelector({
-                db: 'myblog', viewName: 'locations',
-                storeEntireDocument: false, useJSON: true
-            }),
-            actions: {
-                add: false, edit: false, del: false
-            }
+            widget: widgets.embedList({
+                /* Added sortable option */
+                sortable: true,
+                widget: widgets.documentSelector({
+                    db: 'myblog', viewName: 'locations',
+                    storeEntireDocument: false,
+                    useJSON: true
+                }),
+                actions: {
+                    add: false, edit: false, del: false
+                }
+            })
         })
     }
 });
 </code></pre>
 
-We've provided no handlers for the add, edit, or delete actions. Though it's
-clearly redundant, we could provide actions that show the same documentSelector
-interface when the user clicks on the 'Add' or 'Edit' buttons:
+Finally, here's an example that puts together many of the things we've learned
+so far. The following type definition stores a list of locations by value, allowing
+the user to edit each one in place using the same documentSelector control.
+After you have the following example working, try allowing the user to edit the
+details of an embedded location -- employing an {embedForm} in place of the
+{documentSelector} in the 'edit' action.
 
 <pre><code class="javascript">exports.blogpost = new Type('blogpost', {
     fields: {
         ...
         itinerary: fields.embedList({
-            sortable: true,
-            type: types.reference({
-                type: exports.location
-            }),
-            widget: widgets.documentSelector({
-                db: 'myblog', viewName: 'locations',
-                storeEntireDocument: false, useJSON: true
-            }),
-            /* Added 'add' and 'edit' actions */
-            actions: {
-                add: [ 'kanso/actions', 'modalDialog', {
-                    widget: widgets.documentSelector({
-                        db: 'myblog', viewName: 'locations',
-                        storeEntireDocument: false, useJSON: true
-                    })
-                } ],
-                edit: [ 'kanso/actions', 'modalDialog', {
-                    widget: widgets.documentSelector({
-                        db: 'myblog', viewName: 'locations',
-                        storeEntireDocument: false, useJSON: true
-                    })
-                } ],
-                del: false
-            }
+            /* Changed type back to by-value storage */
+            type: exports.location,
+            widget: widgets.embedList({
+                sortable: true,
+                widget: widgets.documentSelector({
+                    db: 'myblog', viewName: 'locations',
+                    storeEntireDocument: true, useJSON: true
+                }),
+                /* Added 'add' and 'edit' actions */
+                actions: {
+                    add: [ 'kanso/actions', 'modalDialog', {
+                        widget: widgets.documentSelector({
+                            db: 'myblog', viewName: 'locations',
+                            storeEntireDocument: true, useJSON: true
+                        })
+                    } ],
+                    edit: [ 'kanso/actions', 'modalDialog', {
+                        widget: widgets.documentSelector({
+                            db: 'myblog', viewName: 'locations',
+                            storeEntireDocument: true, useJSON: true
+                        })
+                    } ],
+                    del: false
+                }
+            })
         })
     }
 });
