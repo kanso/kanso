@@ -363,6 +363,57 @@ exports['Embedded.authorize - remove without _delete property'] = function (test
     test.done();
 };
 
+exports['Embedded.authorize - new _id causes add'] = function (test) {
+    test.expect(2);
+    var Field = fields.Field;
+    var Embedded = fields.Embedded;
+    var Type = types.Type;
+
+    var err = new Error('test error');
+
+    var newDoc = {embed: {_id: 'id2', test: 'newVal'}};
+    var oldDoc = {embed: {_id: 'id1', test: 'oldVal'}};
+
+    var t = new Type('t', {
+        permissions: {
+            add: function () {
+                test.ok(true, 'add should be called');
+            },
+            update: function () {
+                test.ok(false, 'update should not be called');
+            },
+            remove: function () {
+                test.ok(false, 'remove should not be called');
+            }
+        },
+        fields: {
+            test: fields.string({
+                permissions: {
+                    add: function () {
+                        test.ok(true, 'add should be called');
+                    },
+                    update: function () {
+                        test.ok(false, 'update should not be called');
+                    },
+                    remove: function () {
+                        test.ok(false, 'remove should not be called');
+                    }
+                }
+            })
+        }
+    });
+
+    var e = new Embedded({
+        required: false,
+        type: t
+    });
+
+    var errs = e.authorize(
+        newDoc, oldDoc, newDoc.embed, oldDoc.embed, 'user'
+    );
+    test.done();
+};
+
 exports['EmbeddedList - defaults'] = function (test) {
     var EmbeddedList = fields.EmbeddedList;
     var e = new EmbeddedList({type: 'type'});
