@@ -417,9 +417,9 @@ exports.computed = function (_options) {
         }
         var html = '<div id="';
         html += this._id(name, options.offset, options.path_extra) + '">';
-            html += '<input type="hidden" value="' + h(raw) + '"';
-            html += ' name="' + this._name(name, options.offset) + '" />';
-            html += '<span>' + h(raw) + '</span>';
+        html += '<input type="hidden" value="' + h(raw) + '"';
+        html += ' name="' + this._name(name, options.offset) + '" />';
+        html += '<span>' + h(raw) + '</span>';
         html += '</div>';
         return html;
     };
@@ -452,10 +452,10 @@ exports.creator = function (options) {
             var id = w._id(el_name, options.offset, options.path_extra);
 
             // store reference to container element
-            el = $('#' + id )[0];
+            el = $('#' + id)[0];
 
             var update_val = function (userCtx, req) {
-                var container = $('#' + id )[0];
+                var container = $('#' + id)[0];
                 if (el !== container) {
                     // element has been removed
                     events.removeListener('sessionChange', update_val);

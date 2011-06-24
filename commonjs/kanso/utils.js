@@ -53,10 +53,10 @@ exports.currentRequest = function (v) {
 
 // make sure currentRequest() always provided the latest session information
 events.on('sessionChange', function (userCtx, req) {
-    var req = exports.currentRequest();
-    if (req) {
-        req.userCtx = userCtx;
-        exports.currentRequest(req);
+    var curr_req = exports.currentRequest();
+    if (curr_req) {
+        curr_req.userCtx = userCtx;
+        exports.currentRequest(curr_req);
     }
 });
 
