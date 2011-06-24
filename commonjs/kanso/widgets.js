@@ -496,7 +496,7 @@ exports.embedList = function (_options) {
     w.singleton = _options.singleton;
     w.widget = (_options.widget || exports.defaultEmbedded());
     w.actions = actions.parse(_options.actions || {});
-    
+
     w.toHTML = function (name, value, raw, field, options) {
 
         this.cacheInit();
@@ -517,12 +517,12 @@ exports.embedList = function (_options) {
         value = (value instanceof Array ? value : []);
         html += '<div class="items" rel="' + h(name) + '">';
 
-        for (var i = 0, len = value.length; i < len; ++i) { 
+        for (var i = 0, len = value.length; i < len; ++i) {
             html += this.htmlForListItem({
                 offset: (this.singleton ? null : i),
                 name: name,
                 value: value[i],
-                raw: raw,
+                raw: raw
             });
         }
         html += (
