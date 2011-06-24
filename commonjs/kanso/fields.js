@@ -649,7 +649,7 @@ exports.creator = function (options) {
     }
     return exports.string(_.defaults(options, {
         required: false,
-        widget: widgets.computed(),
+        widget: widgets.creator(),
         default_value: function (req) {
             return (req.userCtx && req.userCtx.name) || '';
         }

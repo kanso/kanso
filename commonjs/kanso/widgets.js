@@ -17,6 +17,7 @@ var db = require('./db'),
     render = require('./render'),
     sanitize = require('./sanitize'),
     utils = require('./utils'),
+    events = require('./events'),
     querystring = require('./querystring'),
     _ = require('./underscore')._;
 
@@ -414,14 +415,67 @@ exports.computed = function (_options) {
         if (raw === null || raw === undefined) {
             raw = '';
         }
-        var html = '<input type="hidden" value="' + h(raw) + '"';
-        html += ' name="' + this._name(name, options.offset) + '" id="';
-        html += this._id(name, options.offset, options.path_extra) + '" />';
-        html += '<span>' + h(raw) + '</span>';
+        var html = '<div id="';
+        html += this._id(name, options.offset, options.path_extra) + '">';
+            html += '<input type="hidden" value="' + h(raw) + '"';
+            html += ' name="' + this._name(name, options.offset) + '" />';
+            html += '<span>' + h(raw) + '</span>';
+        html += '</div>';
         return html;
     };
     return w;
 };
+
+/**
+ * Creates a new computed input widget which sets the value of the field to
+ * the current user on new documents, responding to sessionChange events
+ *
+ * @name creator([options])
+ * @param options
+ * @returns {Widget Object}
+ * @api public
+ */
+
+exports.creator = function (options) {
+    var w = exports.computed(options);
+    var _toHTML = w.toHTML;
+    var el_name; // store input name provided by renderer
+    var el; // store reference to element so we can detect when its been removed
+
+    w.toHTML = function (name/*, ...*/) {
+        el_name = name;
+        return _toHTML.apply(this, arguments);
+    };
+    w.clientInit = function (field, path, value, raw, errors, options) {
+        if (options.operation === 'add') {
+
+            var id = w._id(el_name, options.offset, options.path_extra);
+
+            // store reference to container element
+            el = $('#' + id )[0];
+
+            var update_val = function (userCtx, req) {
+                var container = $('#' + id )[0];
+                if (el !== container) {
+                    // element has been removed
+                    events.removeListener('sessionChange', update_val);
+                    return;
+                }
+                if (container) {
+                    $('input', container).val(userCtx.name || '');
+                    $('span', container).text(userCtx.name || '');
+                }
+                else {
+                    // element has been removed from page (or was never there?)
+                    events.removeListener('sessionChange', update_val);
+                }
+            };
+            events.on('sessionChange', update_val);
+        }
+    };
+    return w;
+};
+
 
 
 /**
@@ -918,7 +972,7 @@ exports.defaultEmbedded = function (_options) {
             display_name = field.type.display_name(value);
         }
         var html = (
-            '<div class="embedded embed">' + 
+            '<div class="embedded embed">' +
                 '<input type="hidden" value="' + h(fval) + '" name="' +
                     h(this._name(name, options.offset)) + '" />' +
                 '<span class="value">' + h(display_name) + '</span>' +

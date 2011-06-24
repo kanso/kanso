@@ -340,6 +340,9 @@ Form.prototype.toHTML = function (/* optional */ req,
     }
     var values = this.values;
 
+    options = options || {};
+    options.operation = options.operation || (values ? 'update': 'add');
+
     if (create_defaults) {
         values = _.defaults(
             values, fieldset.createDefaults(this.fields, req)
@@ -355,8 +358,7 @@ Form.prototype.toHTML = function (/* optional */ req,
             errsWithoutFields(this.errors)
         ) +
         this.renderFields(
-            renderer, this.fields,
-                values, this.raw, this.errors, [], (options || {})
+            renderer, this.fields, values, this.raw, this.errors, [], options
         ) +
         renderer.end() +
         render.scriptTagForEvent('renderFinish')
