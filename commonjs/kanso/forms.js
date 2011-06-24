@@ -96,10 +96,10 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
     doc_a = doc_a || {};
 
     var fields_module = require('./fields');
-    var exclude_paths = (excludes || []).map(function (p) {
+    var exclude_paths = _.map((excludes || []), function (p) {
         return p.split('.');
     });
-    var subset_paths = (field_subset || []).map(function (p) {
+    var subset_paths = _.map((field_subset || []), function (p) {
         return p.split('.');
     });
 
