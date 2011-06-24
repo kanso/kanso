@@ -658,14 +658,14 @@ exports.creator = function (options) {
 
 
 /**
- * Creates a timestamp Field
+ * Creates a createdTime timestamp Field
  *
- * @name timestamp([options])
+ * @name createdTime([options])
  * @param {Object} options
  * @api public
  */
 
-exports.timestamp = function (options) {
+exports.createdTime = function (options) {
     options = options || {};
     if (!options.permissions) {
         options.permissions = {};
