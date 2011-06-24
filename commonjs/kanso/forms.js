@@ -96,10 +96,10 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
     doc_a = doc_a || {};
 
     var fields_module = require('./fields');
-    var exclude_paths = (excludes || []).map(function (p) {
+    var exclude_paths = _.map((excludes || []), function (p) {
         return p.split('.');
     });
-    var subset_paths = (field_subset || []).map(function (p) {
+    var subset_paths = _.map((field_subset || []), function (p) {
         return p.split('.');
     });
 
@@ -340,6 +340,9 @@ Form.prototype.toHTML = function (/* optional */ req,
     }
     var values = this.values;
 
+    options = options || {};
+    options.operation = options.operation || (values ? 'update': 'add');
+
     if (create_defaults) {
         values = _.defaults(
             values, fieldset.createDefaults(this.fields, req)
@@ -355,8 +358,7 @@ Form.prototype.toHTML = function (/* optional */ req,
             errsWithoutFields(this.errors)
         ) +
         this.renderFields(
-            renderer, this.fields,
-                values, this.raw, this.errors, [], (options || {})
+            renderer, this.fields, values, this.raw, this.errors, [], options
         ) +
         renderer.end() +
         render.scriptTagForEvent('renderFinish')

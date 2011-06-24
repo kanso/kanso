@@ -526,13 +526,13 @@ exports['Form.validate - empty strings'] = function (test) {
     f.validate({form: {}});
     test.strictEqual(f.isValid(), false);
 
-    f.validate({ form: { foo: null } });
+    f.validate({form: { foo: null }});
     test.strictEqual(f.isValid(), false);
 
-    f.validate({ foo: '' });
+    f.validate({form: { foo: '' }});
     test.strictEqual(f.isValid(), false);
 
-    f.validate({ foo: 'baz' });
+    f.validate({form: { foo: 'baz' }});
     test.strictEqual(f.isValid(), true);
 
     f.validate({form: { foo: 'baz', bar: null }});

@@ -4,6 +4,10 @@
 
 * Fixed default rewrites for changes in CouchDB 1.1
 
+* Renamed timestamp field to createdTime - BACKWARDS INCOMPATIBLE - please
+  make sure you change all references to fields.timestamp in your apps to
+  fields.createdTime.
+
 * Changes to db module:
 
   * Some db module functions now expect a JSON mime-type as the response and
@@ -34,6 +38,9 @@
     arrays
 
   * Added isSubPath to utils module
+
+  * isBrowser is now a function returning a Boolean, not a Boolean property
+    itself - BACKWARDS INCOMPATIBLE CHANGE
 
 
 * Added a testsuite app so kanso's commonjs module tests will run in the browser
