@@ -130,6 +130,45 @@ exports['parseRaw - embeddedList'] = function (test) {
     test.done();
 };
 
+exports['parseRaw - embeddedList empty item'] = function (test) {
+    var Type = types.Type;
+    var Field = fields.Field;
+
+    var t1 = new Type('t1', {
+        fields: {
+            one: fields.string()
+        }
+    });
+
+    var t2 = new Type('t2', {
+        fields: {
+            embed: new fields.EmbeddedList({
+                type: t1
+            })
+        }
+    });
+
+    var doc = forms.parseRaw(t2.fields, {
+        type: 't1',
+        embed: [
+            { type: 't2', one: 'one' },
+            '',
+            { type: 't2', one: 'three' }
+        ]
+    });
+
+    test.same(doc, {
+        type: 't1',
+        embed: [
+            { type: 't2', one: 'one' },
+            { },
+            { type: 't2', one: 'three' }
+        ]
+    });
+
+    test.done();
+};
+
 exports['Form.toHTML'] = function (test) {
     var f = new forms.Form({
         one: fields.string(),

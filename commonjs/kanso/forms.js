@@ -490,7 +490,7 @@ exports.formValuesToTree = function (form) {
  * document which follows the schema for the given type.
  *
  * @name parseRaw(fields, raw)
- * @param {Type} type
+ * @param {Object} fields
  * @param {Object} raw
  * @returns {Object}
  * @api public
@@ -505,7 +505,6 @@ exports.parseRaw = function (fields, raw) {
         var f = fields[k];
         var r = raw[k];
 
-
         if (f instanceof fields_module.Field) {
             if (!f.isEmpty(r)) {
                 doc[k] = f.parse(r);
@@ -519,6 +518,8 @@ exports.parseRaw = function (fields, raw) {
                 if (typeof r === 'string') {
                     if (r !== '') {
                         doc[k] = JSON.parse(r);
+                    } else {
+                        doc[k] = {};
                     }
                 }
                 else {
@@ -529,17 +530,15 @@ exports.parseRaw = function (fields, raw) {
         else if (f instanceof fields_module.EmbeddedList) {
             doc[k] = [];
             for (var i in r) {
-                var val;
                 if (typeof r[i] === 'string') {
                     if (r[i] !== '') {
-                        val = JSON.parse(r[i]);
+                        doc[k][i] = JSON.parse(r[i]);
+                    } else {
+                        doc[k][i] = {};
                     }
                 }
                 else {
-                    val = exports.parseRaw(f.type.fields, r[i]);
-                }
-                if (!f.isEmpty(val)) {
-                    doc[k][i] = val;
+                    doc[k][i] = exports.parseRaw(f.type.fields, r[i]);
                 }
             }
             if (!doc[k].length && f.omit_empty) {

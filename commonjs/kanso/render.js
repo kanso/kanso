@@ -260,7 +260,7 @@ exports.table = function () {
         events.once('renderFinish', function () {
             if (field.widget.clientInit) {
                 field.widget.clientInit(
-                    field, path, value, raw, errors, {}
+                    field, path, value, raw, errors, (options || {})
                 );
             }
         });

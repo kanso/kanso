@@ -259,7 +259,13 @@ exports.validate_doc_update = function (types, newDoc, oldDoc, userCtx) {
  */
 
 exports.reference = function (options) {
-    return new Type('reference', {
+    if (!(options.type instanceof Type)) {
+        throw new Error(
+            'reference: The `type` option was not specified,' +
+                'or is not an instance of the `Type` class.'
+        );
+    }
+    var type = new Type('reference', {
         fields: {
             ref: fields.string({
                 omit_empty: true,
@@ -272,6 +278,8 @@ exports.reference = function (options) {
             })
         }
     });
+    type.type = options.type;
+    return type;
 };
 
 /**
@@ -282,6 +290,12 @@ exports.reference = function (options) {
  */
 
 exports.uniqueReference = function (options) {
+    if (!(options.type instanceof Type)) {
+        throw new Error(
+            'uniqueReference: The `type` option was not specified,' +
+                'or is not an instance of the `Type` class.'
+        );
+    }
     var type = new Type('unique_reference', {
         fields: {}
     });
@@ -294,5 +308,6 @@ exports.uniqueReference = function (options) {
             return req.uuid;
         }
     });
+    type.type = options.type;
     return type;
 };
