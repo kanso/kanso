@@ -21,7 +21,8 @@ var db = require('./db'),
     querystring = require('./querystring'),
     _ = require('./underscore')._;
 
-var h = sanitize.escapeHtml;
+var h = sanitize.escapeHtml,
+    css = sanitize.escapeAttributeSelectorValue;
 
 
 /**
@@ -1116,24 +1117,18 @@ exports.documentSelector = function (_options) {
             name, options.offset
         );
         var container_id = this._id(
-            name, 'selector', options.offset, options.path_extra
-        );
-        var hidden_id = this._id(
-            name, options.offset, options.path_extra
+            name, 'widget', options.offset, options.path_extra
         );
         var select_id = this._id(
-            name, 'select', options.offset, options.path_extra
-        );
-        var input_html = (
-            '<input class="backing" type="hidden" value=""' +
-                'id="' + hidden_id + '" name="' + html_name + '" />'
+            name, options.offset, options.path_extra
         );
         var select_html = (
-            '<select class="selector" id="' + select_id + '"></select>'
+            '<select class="selector id="' + select_id +
+                '" name="' + html_name + '"></select>'
         );
         var html = (
             '<div id="' + container_id + '" class="selector widget">' +
-                input_html + select_html +
+                select_html +
                 '<div class="spinner" style="display: none;"></div>' +
             '</div>'
         );
@@ -1143,56 +1138,59 @@ exports.documentSelector = function (_options) {
 
     w.updateName = function (elt, path, options) {
         this.cacheInit();
-        var hidden_elt = this.discoverBackingElement(elt);
         var select_elt = this.discoverSelectionElement(elt);
 
         select_elt.attr('id', this._id(
-            path, 'select', options.offset, options.path_extra
-        ));
-        hidden_elt.attr('id', this._id(
             path, options.offset, options.path_extra
         ));
-        hidden_elt.attr('name', this._name(
+        select_elt.attr('name', this._name(
             path, options.offset
         ));
     };
 
     w.updateValue = function (elt, path, value, options) {
-        elt = $(elt);
-        value = this._stringify_value(value);
-
-        var hidden_elt = this.discoverBackingElement(elt);
+        var new_value = value;
         var select_elt = this.discoverSelectionElement(elt);
 
-        hidden_elt.val(value);
-        select_elt.val(value);
+        if (this.options.useJSON) {
+            new_value = this._stringify_value(new_value);
+        }
+
+        /* Update <select> element contents, if necessary:
+            If we're embedding the whole document as JSON, then
+            we need to modify the <option> affected by an edit. This 
+            ensures that the previously-selected item remains selected. */
+            
+        if (this.options.storeEntireDocument && this.options.useJSON) {
+            if (value && value._id) {
+                var selector = 'option[rel="' + css(value._id) + '"]';
+                var option_elt = $(selector, select_elt);
+                option_elt.val(new_value);
+            }
+        }
+
+        select_elt.val(new_value);
     };
 
     w.getValue = function (elt, path, options) {
-        var hidden_elt = this.discoverBackingElement(elt);
-        return this._parse_value(hidden_elt.attr('value'));
+        var select_elt = this.discoverSelectionElement(elt);
+        return this._parse_value(select_elt.val());
     };
 
     w.clientInit = function (field, path, value, raw, errors, options) {
+
         var id = this._id(
-            path, 'selector', options.offset, options.path_extra
+            path, 'widget', options.offset, options.path_extra
         );
         var container_elt = $('#' + id);
         var widget_options = (this.options || {});
         var spinner_elt = container_elt.closestChild('.spinner');
         var select_elt = this.discoverSelectionElement(container_elt);
-        var hidden_elt = this.discoverBackingElement(container_elt);
 
         /* Start progress */
         spinner_elt.show();
-
-        /* Copy data to backing element */
-        select_elt.bind('change', function () {
-            hidden_elt.val(select_elt.val());
-        });
-
         this.populateSelectElement(
-            select_elt, field, path, value, widget_options, function () {
+            container_elt, field, path, value, widget_options, function () {
                 spinner_elt.hide();
             }
         );
@@ -1200,8 +1198,10 @@ exports.documentSelector = function (_options) {
 
     /** private: **/
 
-    w.populateSelectElement = function (elt, field, path,
-                                        val, options, callback) {
+    w.populateSelectElement = function (container_elt, field,
+                                        path, val, options, callback) {
+        var select_elt =
+            this.discoverSelectionElement(container_elt);
 
         db.getView(
             options.viewName,
@@ -1220,7 +1220,7 @@ exports.documentSelector = function (_options) {
                 if (!val) {
                     nil_option.attr('selected', 'selected');
                 }
-                elt.append(nil_option);
+                select_elt.append(nil_option);
 
                 /* All other option elements */
                 _.each(rv.rows || [], utils.bindContext(this, function (r) {
@@ -1232,16 +1232,24 @@ exports.documentSelector = function (_options) {
                     this.generateOptionValue(
                         field, r, val, options,
                         utils.bindContext(this, function (err, v) {
+                            /* Problem with UUID generation? */
                             if (err) {
                                 throw new Error(
                                     'Failed to generate identifier for' +
                                         ' field `' + this._name(path) + '`'
                                 );
                             }
+
+                            /* Insert new <option> */
                             option_elt.val(v);
                             option_elt.text(r.value);
-                            elt.append(option_elt);
-                            elt.trigger('change');
+                            option_elt.attr('rel', r.id);
+                            select_elt.append(option_elt);
+
+                            /* Sync with <select> element */
+                            this.updateValue(
+                                container_elt, path, val, options
+                            );
                         })
                     );
 
@@ -1324,12 +1332,7 @@ exports.documentSelector = function (_options) {
     };
 
     w.cacheInit = function () {
-        this.discoverBackingElement = this._discoverBackingElement;
         this.discoverSelectionElement = this._discoverSelectionElement;
-    };
-
-    w._discoverBackingElement = function (container_elt) {
-        return $(container_elt).closestChild('input[type=hidden].backing');
     };
 
     w._discoverSelectionElement = function (container_elt) {
