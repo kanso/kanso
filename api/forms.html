@@ -1,0 +1,100 @@
+<html>
+  <head>
+    <title>API - forms - Kanso Framework</title>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+    <link rel="stylesheet" href="../css/kanso.css" />
+    <!--[if IE]>
+      <link rel="stylesheet" href="../css/kanso_ie.css" />
+    <![endif]-->
+  </head>
+  <body>
+    <div id="topbar">
+      <a id="logo" href="../index.html">
+        <img src="../images/kanso_small.png" />
+      </a>
+      <a id="site" href="../index.html">Framework</a>
+      <div id="rightmenu">
+        <ul id="topmenu">
+          <li>
+            <a href="../index.html">About</a>
+          </li>
+          <li>
+            <a href="../guides/index.html">Guides</a>
+          </li>
+          <li>
+            <a href="../community.html">Community</a>
+          </li>
+          <li class="active">
+            <a href="../api/index.html">API</a>
+          </li>
+          <li>
+            <a href="https://github.com/caolan/kanso">Code</a>
+          </li>
+          <li>
+            <a href="../download.html">Download</a>
+          </li>
+        </ul>
+        <!--
+        <ul id="sessionmenu">
+          <li><a href="#">Create Account</a></li>
+          <li><a href="#">Sign In</a></li>
+        </ul>
+        -->
+      </div>
+    </div>
+
+    <div id="content">
+      <h1>Kanso API Documentation</h1><p><a href="index.html">Index</a> | <a href="all.html">View on single page</a></p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#forms">forms</a><ul><li><a href="#forms.Form">Form(fields | type, [doc])</a></li><li><a href="#forms.override">override(excludes, field_subset, fields, doc_a, doc_b, path)</a></li><li><a href="#forms.Form.validate">Form.validate(req)</a></li><li><a href="#forms.Form.isValid">Form.isValid()</a></li><li><a href="#forms.Form.toHTML">Form.toHTML(req, [RendererClass])</a></li><li><a href="#forms.Form.renderFields">Form.renderFields(renderer, fields, values, raw, err, path)</a></li><li><a href="#forms.formValuesToTree">formValuesToTree(form)</a></li><li><a href="#forms.parseRaw">parseRaw(fields, raw)</a></li></ul></li></ul></div><h2 id="forms">forms</h2><p>Functions for the rendering, parsing and validation of forms.</p><h3 id="forms.Form">Form(fields | type, [doc])</h3><p>Form object, presents fields and parses responses.</p>
+
+<h4>Options</h4>
+
+<table class="options">
+  <tr>
+     <td class="name">exclude</td>
+     <td class="type">Array</td>
+     <td class="description">a list of field names to exclude</td>
+  </tr>
+  <tr>
+     <td class="name">fields</td>
+     <td class="type">Array</td>
+     <td class="description">
+         a subset of fields to use (inverse of excluded)
+     </td>
+  </tr>
+</table><h4>Parameters</h4><table class="params"><tr><td class="name">fields</td><td class="type">Object</td><td class="description">an object literal containing fields or a Type</td></tr><tr><td class="name">doc</td><td class="type">Object</td><td class="description">(optional) the original document being edited</td></tr><tr><td class="name">options</td><td class="type">Object</td><td class="description">(optional) see available options above</td></tr></table><h3 id="forms.override">override(excludes, field_subset, fields, doc_a, doc_b, path)</h3><p>Overrides values in doc_a with values in doc_b, only when a field is present
+for that value. This means properties not in fields (or in excluded fields)
+are retained, while properties which are covered by the fieldset are
+replaced.</p>
+
+<p>This is used when updating the form's values with a request when its been
+initiated with a previous document. You shouldn't normally need to call this
+directly.</p>
+
+<p>Returns the updated doc_a object.</p><h4>Parameters</h4><table class="params"><tr><td class="name">excludes</td><td class="type">Array | null</td><td class="description"></td></tr><tr><td class="name">field_subset</td><td class="type">Array | null</td><td class="description"></td></tr><tr><td class="name">Fields</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">doc_a</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">doc_b</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">path</td><td class="type">Array</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Object</span></div><h3 id="forms.Form.validate">Form.validate(req)</h3><p>Parses a request and validates the result, binding values and errors to
+the form instance.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Form</span></div><h3 id="forms.Form.isValid">Form.isValid()</h3><p>After a form has called validate, this function will return true if the form
+is valid, false otherwise.</p><div class="returns"><strong>Returns: </strong><span class="type">Boolean</span></div><h3 id="forms.Form.toHTML">Form.toHTML(req, [RendererClass])</h3><p>Converts current form to a HTML string, using an optional renderer class.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description">Kanso request object; null for most recent. (optional),{Renderer} RendererClass (optional),{Object} options An object containing widget options, whichwill ultimately be provided to each widget's toHTML method.,{Boolean} create_defaults (optional) Set this to true if you'veprovided a document in {doc}, but would still like defaultvalues to be merged in to it via createDefaults. For a field f,the default value is added to {doc} if and only if doc[f]is undefined, null, or not present. Defaults to off.</td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="forms.Form.renderFields">Form.renderFields(renderer, fields, values, raw, err, path)</h3><p>Iterates over fields and sub-objects calling the correct renderer function on
+each. Returns a HTML representation of the fields. Used internally by the
+toHTML method, you should not need to call this function directly.</p><h4>Parameters</h4><table class="params"><tr><td class="name">renderer,{Object}</td><td class="type">Object</td><td class="description">fields,{Object} values,{Array} errs,{Array} path,{Object} options An object containing widget options, whichwill ultimately be provided to each widget's toHTML method.</td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="forms.formValuesToTree">formValuesToTree(form)</h3><p>Transforms a flat object from a request query to a proper
+hierarchy of properties.</p>
+
+<pre>{'one.two': 'val'} --> {one: {two: 'val'}}</pre><h4>Parameters</h4><table class="params"><tr><td class="name">query</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="forms.parseRaw">parseRaw(fields, raw)</h3><p>Transforms a raw query object from formValuesToTree to a
+document which follows the schema for the given type.</p><h4>Parameters</h4><table class="params"><tr><td class="name">fields</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">raw</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Object</span></div>
+    </div>
+
+    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-20477836-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+  </body>
+</html>

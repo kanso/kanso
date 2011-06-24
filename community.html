@@ -1,0 +1,115 @@
+<html>
+  <head>
+    <title>Community - Kanso Framework</title>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+    <link rel="stylesheet" href="./css/kanso.css" />
+    <!--[if IE]>
+      <link rel="stylesheet" href="./css/kanso_ie.css" />
+    <![endif]-->
+  </head>
+  <body>
+    <div id="topbar">
+      <a id="logo" href="./index.html">
+        <img src="./images/kanso_small.png" />
+      </a>
+      <a id="site" href="./index.html">Framework</a>
+      <div id="rightmenu">
+        <ul id="topmenu">
+          <li>
+            <a href="./index.html">About</a>
+          </li>
+          <li>
+            <a href="./guides/index.html">Guides</a>
+          </li>
+          <li class="active">
+            <a href="./community.html">Community</a>
+          </li>
+          <li>
+            <a href="./api/index.html">API</a>
+          </li>
+          <li>
+            <a href="https://github.com/caolan/kanso">Code</a>
+          </li>
+          <li>
+            <a href="./download.html">Download</a>
+          </li>
+        </ul>
+        <!--
+        <ul id="sessionmenu">
+          <li><a href="#">Create Account</a></li>
+          <li><a href="#">Sign In</a></li>
+        </ul>
+        -->
+      </div>
+    </div>
+
+    <div id="content">
+      <h1>Community</h1>
+
+<h2>Support and Discussion</h2>
+
+<p>If you want to get involved or ask questions, these are good places to start:</p>
+
+<ul>
+<li><strong>IRC:</strong> #kansojs on FreeNode</li>
+<li><strong>Mailing List:</strong> <a href="http://groups.google.com/group/kanso" title="Kanso Mailing List">http://groups.google.com/group/kanso</a></li>
+</ul>
+
+<h2>Reporting Issues</h2>
+
+<p>Feature requests and bug reports should be added to the GitHub issues list</p>
+
+<ul>
+<li><strong>GitHub Issues:</strong> <a href="https://github.com/caolan/kanso/issues" title="GitHub Issues">https://github.com/caolan/kanso/issues</a></li>
+</ul>
+
+<h2>Contributors</h2>
+
+<p>Here is a list of contributors that have had patches accepted and released
+in a version of Kanso. If you'd like to appear on this list, there are plenty
+of <a href="https://github.com/caolan/kanso/issues?labels=easy&amp;sort=created&amp;direction=desc&amp;state=open&amp;page=1" title="Easy Issues in GitHub">issues in GitHub labelled 'easy'</a> for newcomers to the project!</p>
+
+<ul id="contributors">
+
+</ul>
+
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.6.1/jquery.min.js"></script>
+<script>
+    function kanso_contributors(result) {
+        var cs = result.contributors || [];
+        for (var i = 0, len = cs.length; i < len; i++) {
+            var c = cs[i];
+            var html = '<li>' +
+                '<a href="https://github.com/' + c.login + '">' +
+                    '<img src="http://gravatar.com/avatar/' + c.gravatar_id + '?size=48" />' +
+                '</a>' +
+                '<a href="https://github.com/' + c.login + '">' +
+                    '<span class="name">' + (c.name || c.login) + '</span>' +
+                '</a>' +
+                '<span class="location">' + (c.location || '') + '</span>' +
+            '</li>';
+            $('#contributors').append(html);
+        }
+    };
+</script>
+
+<script src="https://github.com/api/v2/json/repos/show/caolan/kanso/contributors?callback=kanso_contributors"></script>
+    </div>
+
+    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-20477836-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+  </body>
+</html>

@@ -1,0 +1,154 @@
+<html>
+  <head>
+    <title>API - fields - Kanso Framework</title>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+    <link rel="stylesheet" href="../css/kanso.css" />
+    <!--[if IE]>
+      <link rel="stylesheet" href="../css/kanso_ie.css" />
+    <![endif]-->
+  </head>
+  <body>
+    <div id="topbar">
+      <a id="logo" href="../index.html">
+        <img src="../images/kanso_small.png" />
+      </a>
+      <a id="site" href="../index.html">Framework</a>
+      <div id="rightmenu">
+        <ul id="topmenu">
+          <li>
+            <a href="../index.html">About</a>
+          </li>
+          <li>
+            <a href="../guides/index.html">Guides</a>
+          </li>
+          <li>
+            <a href="../community.html">Community</a>
+          </li>
+          <li class="active">
+            <a href="../api/index.html">API</a>
+          </li>
+          <li>
+            <a href="https://github.com/caolan/kanso">Code</a>
+          </li>
+          <li>
+            <a href="../download.html">Download</a>
+          </li>
+        </ul>
+        <!--
+        <ul id="sessionmenu">
+          <li><a href="#">Create Account</a></li>
+          <li><a href="#">Sign In</a></li>
+        </ul>
+        -->
+      </div>
+    </div>
+
+    <div id="content">
+      <h1>Kanso API Documentation</h1><p><a href="index.html">Index</a> | <a href="all.html">View on single page</a></p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#fields">fields</a><ul><li><a href="#fields.Field">Field</a></li><li><a href="#fields.Field.parse">Field.parse(raw)</a></li><li><a href="#fields.Field.isEmpty">Field.isEmpty(value, raw)</a></li><li><a href="#fields.Field.validate">Field.validate(doc, value, raw)</a></li><li><a href="#fields.Field.authorize">Field.authorize(newDoc, oldDoc, newVal, oldVal, userCtx)</a></li><li><a href="#fields.Embedded">Embedded</a></li><li><a href="#fields.Embedded.isEmpty">Embedded.isEmpty(value, raw)</a></li><li><a href="#fields.Embedded.validate">Embedded.validate(doc, value, raw)</a></li><li><a href="#fields.Embedded.authorize">Embedded.authorize(newDoc, oldDoc, newVal, oldVal, user)</a></li><li><a href="#fields.EmbeddedList">EmbeddedList</a></li><li><a href="#fields.EmbeddedList.isEmpty">EmbeddedList.isEmpty(value, raw)</a></li><li><a href="#fields.EmbeddedList.missingIDs">EmbeddedList.missingIDs(list)</a></li><li><a href="#fields.EmbeddedList.duplicateIDs">EmbeddedList.duplicateIDs(list)</a></li><li><a href="#fields.EmbeddedList.validate">EmbeddedList.validate(doc, value, raw)</a></li><li><a href="#fields.EmbeddedList.authorize">EmbeddedList.authorize(nDoc, oDoc, nVal, oVal, user)</a></li><li><a href="#fields.string">string([options])</a></li><li><a href="#fields.number">number([options])</a></li><li><a href="#fields.boolean">boolean([options])</a></li><li><a href="#fields.url">url([options])</a></li><li><a href="#fields.email">email([options])</a></li><li><a href="#fields.creator">creator([options])</a></li><li><a href="#fields.createdTime">createdTime([options])</a></li><li><a href="#fields.choice">choice([options])</a></li><li><a href="#fields.numberChoice">numberChoice([options])</a></li><li><a href="#fields.embed">embed([options])</a></li><li><a href="#fields.embedList">embedList([options])</a></li><li><a href="#fields.array">array([options])</a></li><li><a href="#fields.numberArray">numberArray([options])</a></li></ul></li></ul></div><h2 id="fields">fields</h2><p>The building blocks of Types and Forms, Fields help to validate and authorize
+changes to docuemnt values.</p><h3 id="fields.Field">Field</h3><p>Field objects are used when constructing content types and forms.</p>
+
+<h4>Options</h4>
+
+<ul>
+<li><strong>omit_empty</strong>  <em>Boolean</em> - whether to omit the field from a document when
+                          the field is empty</li>
+<li><strong>permissions</strong> <em>Object</em>  - a permissions check function or an object
+                          containing separate functions to run on create,
+                          edit and update operations.</li>
+<li><strong>validators</strong>  <em>Array</em>   - an array of validation functions (default: [])</li>
+<li><strong>required</strong>    <em>Boolean</em> - whether the field is required (default: true)</li>
+</ul><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.Field.parse">Field.parse(raw)</h3><p>Parses a raw value returning the correct JavaScript type for this field.
+This will usually be overridden by other field types.</p><h4>Parameters</h4><table class="params"><tr><td class="name">raw</td><td class="type"></td><td class="description"></td></tr></table><h3 id="fields.Field.isEmpty">Field.isEmpty(value, raw)</h3><p>Test values to see if field is considered empty.</p>
+
+<p>This function accepts the raw value even though by default it only
+checks the parsed value, so that other field types overridding this method
+have the raw data available.</p><h4>Parameters</h4><table class="params"><tr><td class="name">value</td><td class="type"></td><td class="description">the parsed value for the field</td></tr><tr><td class="name">raw</td><td class="type"></td><td class="description">the raw value for this field</td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Boolean</span></div><h3 id="fields.Field.validate">Field.validate(doc, value, raw)</h3><p>Run the field's validation functions against a value. Returns an
+array of validation errors, or an empty array if valid.</p><h4>Parameters</h4><table class="params"><tr><td class="name">doc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">value</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">raw</td><td class="type"></td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fields.Field.authorize">Field.authorize(newDoc, oldDoc, newVal, oldVal, userCtx)</h3><p>Check relevant field permissions to see if user is authorised to make
+changes. Returns an array of permissions errors, or an empty array if the
+changes are permissible.</p><h4>Parameters</h4><table class="params"><tr><td class="name">newDoc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">oldDoc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">newVal</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">oldVal</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">userCtx</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fields.Embedded">Embedded</h3><p>Embedded objects represent a Type embedded within another Type or set of
+Fields. Its not a true field, but like the Field constructor it acts as a
+marker when walking through the sub-objects that make up a schema.</p>
+
+<p>Exposes the same methods as Field objects.</p>
+
+<h4>Options</h4>
+
+<ul>
+<li><strong>type</strong>        <em>Type Object</em>  - Required, the Type definition to embed</li>
+<li><strong>omit_empty</strong>  <em>Boolean</em> - whether to omit the field from a document when
+                          the field is empty</li>
+<li><strong>permissions</strong> <em>Object</em>  - a permissions check function or an object
+                          containing separate functions to run on create,
+                          edit and update operations.</li>
+<li><strong>validators</strong>  <em>Array</em>   - an array of validation functions (default: [])</li>
+<li><strong>required</strong>    <em>Boolean</em> - whether the field is required (default: true)</li>
+</ul><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.Embedded.isEmpty">Embedded.isEmpty(value, raw)</h3><p>Test values to see if field is considered empty.</p>
+
+<p>This function accepts the raw value even though by default it only
+checks the parsed value, so that other field types overridding this method
+have the raw data available.</p><h4>Parameters</h4><table class="params"><tr><td class="name">value</td><td class="type"></td><td class="description">the parsed value for the field</td></tr><tr><td class="name">raw</td><td class="type"></td><td class="description">the raw value for this field</td></tr></table><h3 id="fields.Embedded.validate">Embedded.validate(doc, value, raw)</h3><p>Run the type's validate function against a value. Returns an
+array of validation errors, or an empty array if valid.</p><h4>Parameters</h4><table class="params"><tr><td class="name">doc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">value</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">raw</td><td class="type"></td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fields.Embedded.authorize">Embedded.authorize(newDoc, oldDoc, newVal, oldVal, user)</h3><p>Check relevant type permissions to see if user is authorised to make
+changes. Returns an array of permissions errors, or an empty array if the
+changes are permissible.</p><h4>Parameters</h4><table class="params"><tr><td class="name">newDoc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">oldDoc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">newVal</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">oldVal</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">user</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fields.EmbeddedList">EmbeddedList</h3><p>EmbeddedList objects represent multiple instances of a Type embedded within
+another Type or set of Fields. Its not a true field, but like the Field
+constructor it acts as a marker when walking through the sub-objects that
+make up a schema.</p>
+
+<p>Exposes the same methods as Field objects.</p>
+
+<h4>Options</h4>
+
+<ul>
+<li><strong>type</strong>        <em>Type Object</em>  - Required, the Type definition to embed</li>
+<li><strong>omit_empty</strong>  <em>Boolean</em> - whether to omit the field from a document when
+                          the field is empty</li>
+<li><strong>permissions</strong> <em>Object</em>  - a permissions check function or an object
+                          containing separate functions to run on create,
+                          edit and update operations.</li>
+<li><strong>validators</strong>  <em>Array</em>   - an array of validation functions (default: [])</li>
+<li><strong>required</strong>    <em>Boolean</em> - whether the field is required (default: true)</li>
+</ul><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.EmbeddedList.isEmpty">EmbeddedList.isEmpty(value, raw)</h3><p>Test values to see if field is considered empty.</p>
+
+<p>This function accepts the raw value even though by default it only
+checks the parsed value, so that other field types overridding this method
+have the raw data available.</p><h4>Parameters</h4><table class="params"><tr><td class="name">value</td><td class="type"></td><td class="description">the parsed value for the field</td></tr><tr><td class="name">raw</td><td class="type"></td><td class="description">the raw value for this field</td></tr></table><h3 id="fields.EmbeddedList.missingIDs">EmbeddedList.missingIDs(list)</h3><p>Detects embedded documents with missing _id properties and returns an
+array of Error objects for each occurence. Returns an empty array if
+all documents have a populated _id property.</p><h4>Parameters</h4><table class="params"><tr><td class="name">list</td><td class="type">Array</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fields.EmbeddedList.duplicateIDs">EmbeddedList.duplicateIDs(list)</h3><p>Detects embedded documents with duplicate _id properties and returns an
+array of Error objects for each occurence. Returns an empty array if
+all documents have a unique _id property.</p><h4>Parameters</h4><table class="params"><tr><td class="name">list</td><td class="type">Array</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fields.EmbeddedList.validate">EmbeddedList.validate(doc, value, raw)</h3><p>Checks for missing or duplicate _ids then runs the type's validate function
+against each embedded document. Returns an array of validation errors, or
+an empty array if valid.</p><h4>Parameters</h4><table class="params"><tr><td class="name">doc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">value</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">raw</td><td class="type"></td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fields.EmbeddedList.authorize">EmbeddedList.authorize(nDoc, oDoc, nVal, oVal, user)</h3><p>Check relevant type permissions to see if user is authorised to make
+changes. Returns an array of permissions errors, or an empty array if the
+changes are permissible.</p><h4>Parameters</h4><table class="params"><tr><td class="name">nDoc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">oDoc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">nVal</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">oVal</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">user</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fields.string">string([options])</h3><p>Creates a new string Field</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.number">number([options])</h3><p>Creates a new number Field</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.boolean">boolean([options])</h3><p>Creates a new boolean Field</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.url">url([options])</h3><p>Creates a URL Field</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.email">email([options])</h3><p>Creates an email Field</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.creator">creator([options])</h3><p>Creates a creator Field</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.createdTime">createdTime([options])</h3><p>Creates a createdTime timestamp Field</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.choice">choice([options])</h3><p>Creates a choice Field</p>
+
+<p>Required option: values - an array of possible choices, each an array
+with the first item as the value and the second as its label.</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.numberChoice">numberChoice([options])</h3><p>Creates a number choice Field</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.embed">embed([options])</h3><p>Creates an Embedded Field</p>
+
+<p>Required option: type - the Type definition to embed</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.embedList">embedList([options])</h3><p>Creates an EmbeddedList Field</p>
+
+<p>Required option: type - the Type definition to embed</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.array">array([options])</h3><p>Creates a array Field. The default parse function expects a single row of
+comma separated values.</p>
+
+<p>To accept an array of values other than strings, add a function to options
+called parseEach which accepts the string value for each item and performs
+the transformation.</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="fields.numberArray">numberArray([options])</h3><p>Creates a number array Field, same as the array field only each value is
+parsed as a number instead of a string.</p><h4>Parameters</h4><table class="params"><tr><td class="name">options</td><td class="type">Object</td><td class="description"></td></tr></table>
+    </div>
+
+    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-20477836-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+  </body>
+</html>

@@ -1,63 +1,164 @@
 <html>
-<head>
-  <title>Kanso</title>
-  <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
-  <link rel="stylesheet" href="stylesheets/kanso.css" />
-</head>
-<body>
-  <div id="topbar"></div>
-  <div id="topbar_overlay"></div>
-  <div id="container">
-
-    <ul id="navigation">
-      <li><a class="selected" href="index.html">Intro</a></li>
-      <li><a href="tutorial.html">Tutorial</a></li>
-      <li><a href="docs.html">Docs</a></li>
-      <li><a href="https://github.com/caolan/kanso">Code &rArr;</a></li>
-    </ul>
-
-    <a id="sitename" href="index.html">
-      <img src="images/kanso_ribbon.png" />
-    </a>
-
-    <h1>What is Kanso?</h1>
-
-    <h2>Future of web-apps</h2>
-    <p>
-      Modern web development increasingly means pushing more logic onto the client.
-      This provides us with fast and responsive interfaces, but not without cost.
-      When grafted onto traditional web-frameworks, rich interfaces require the
-      complete re-implementation of features on both the server and client-side.
-      Form validation, Templating and URL routing must either be handled at both
-      ends or become fragile and insecure.
-    </p>
-    <p>
-      What's needed is a harmonious environment which shares code between the
-      browser and server, without 'breaking the web'. Search engines and
-      other users should still have access to key content, even if we accept a
-      less featureful experience. This is the problem Kanso was designed to
-      solve, by implementing CouchDB's design doc API in the browser.
-    </p>
-
-    <div class="next">
-      <a class="call" href="tutorial.html">Start the tutorial</a>
-      or <a href="https://github.com/caolan/kanso">watch on GitHub</a>
+  <head>
+    <title>Kanso Framework</title>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+    <link rel="stylesheet" href="./css/kanso.css" />
+    <!--[if IE]>
+      <link rel="stylesheet" href="./css/kanso_ie.css" />
+    <![endif]-->
+  </head>
+  <body>
+    <div id="topbar">
+      <a id="logo" href="./index.html">
+        <img src="./images/kanso_small.png" />
+      </a>
+      <a id="site" href="./index.html">Framework</a>
+      <div id="rightmenu">
+        <ul id="topmenu">
+          <li class="active">
+            <a href="./index.html">About</a>
+          </li>
+          <li>
+            <a href="./guides/index.html">Guides</a>
+          </li>
+          <li>
+            <a href="./community.html">Community</a>
+          </li>
+          <li>
+            <a href="./api/index.html">API</a>
+          </li>
+          <li>
+            <a href="https://github.com/caolan/kanso">Code</a>
+          </li>
+          <li>
+            <a href="./download.html">Download</a>
+          </li>
+        </ul>
+        <!--
+        <ul id="sessionmenu">
+          <li><a href="#">Create Account</a></li>
+          <li><a href="#">Sign In</a></li>
+        </ul>
+        -->
+      </div>
     </div>
 
-  <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
-  <script>hljs.initHighlightingOnLoad();</script>
-  <script type="text/javascript">
+    <div id="content">
+      <h1>Kanso CouchApps</h1>
 
-    var _gaq = _gaq || [];
-    _gaq.push(['_setAccount', 'UA-20477836-1']);
-    _gaq.push(['_trackPageview']);
+<p>Kanso is a framework for creating web applications which run on
+<a href="http://couchdb.org">CouchDB</a>. You don't need anything else in your stack,
+meaning apps are easy to deploy and easy to distribute.</p>
 
-    (function() {
-      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-    })();
+<p>The Kanso framework was designed for <strong>rapid development</strong> and <strong>code
+maintainability</strong>. Because it only requires CouchDB to host an app, you
+can write web apps which run on <strong>Windows, Mac, Linux, and even mobile devices!</strong></p>
 
-  </script>
-</body>
+<p><a href="guides/getting_started.html">Start the tutorial &gt;&gt;</a></p>
+
+<h2>Easy Schemas</h2>
+
+<pre><code class="javascript">exports.author = new Type('author', {
+    fields: {
+        age:  fields.number(),
+        name: fields.string(),
+        web:  fields.url()
+    }
+});
+</code></pre>
+
+<p>Kanso ships with a number of tools to make defining your data model as easy
+as possible. The Types system provides powerful functions for document
+validation and permissions checks. Even allowing you to embed document types
+within each other! This system is incredibly flexible, and designed
+<strong>specifically</strong> for working with CouchDB.</p>
+
+<h2>Admin Interface</h2>
+
+<p><img src="guides/images/describing_the_data5.png" alt="Admin interface" /></p>
+
+<p>To help you get your app off the ground, Kanso provides an admin interface
+which can understand your data model and provide easy forms for getting data
+into the system and seeing how it fits together.</p>
+
+<h2>CommonJS Environment</h2>
+
+<pre><code class="javascript">var types = require('kanso/types'),
+    mymodule = require('./mymodule');
+
+
+// public function
+exports.hello = function () {
+    return "Hello World!";
+};
+</code></pre>
+
+<p>With Kanso, you work in a clean and maintainable environment structured as
+JavaScript modules. If you've ever worked with CouchApps directly,
+you may have wrestled with magic comments for including files and an unwieldy
+directory structure from which a JSON document is generated. Now, you can
+just <code>require()</code> modules to reference them, and organise files however
+you like!</p>
+
+<h2>Runs in the Browser!</h2>
+
+<p><em>
+Tired of writing the same code over and over again? Often in two different
+programming languages? 
+</em></p>
+
+<pre><code class="javascript">function validate(val) {
+    if (val.length > 10) {
+        throw new Error('Too long!');
+    }
+}
+</code></pre>
+
+<pre><code class="python">def validate(val):
+    if len(val) > 10:
+        raise ValueError('Too long!')
+</code></pre>
+
+<p>Kanso provides the <em>same</em> environment server-side and client-side.
+That means you can run the <em>same</em> field validation at either end,
+render the <em>same</em> templates dynamically in the client or pre-render on the
+server.</p>
+
+<p>Kanso automatically runs your code client-side when possible, and on CouchDB
+when JavaScript is not available. Helping you to write responsive web-interfaces
+without the overhead.</p>
+
+<h2>Search-Engine Friendly</h2>
+
+<p>Kanso makes it easy to write CouchApps which go beyond the "single-page" AJAX app.
+You get clean URLs which point to server-rendered pages containing your core
+content, making it easy for search-engines to index and providing a useful
+fall-back.</p>
+
+<p>You shouldn't need to break the web with "hash-bang" URLs that won't work at all
+in a browser without JavaScript. You should be able to describe fall-backs easily,
+then enhance the experience client-side.</p>
+
+<div class="next">
+  <a class="call" href="guides/getting_started.html">Start the tutorial</a>
+  or <a class="watch" href="https://github.com/caolan/kanso">Watch on GitHub</a>
+</div>
+    </div>
+
+    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-20477836-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+  </body>
 </html>

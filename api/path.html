@@ -1,0 +1,91 @@
+<html>
+  <head>
+    <title>API - path - Kanso Framework</title>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+    <link rel="stylesheet" href="../css/kanso.css" />
+    <!--[if IE]>
+      <link rel="stylesheet" href="../css/kanso_ie.css" />
+    <![endif]-->
+  </head>
+  <body>
+    <div id="topbar">
+      <a id="logo" href="../index.html">
+        <img src="../images/kanso_small.png" />
+      </a>
+      <a id="site" href="../index.html">Framework</a>
+      <div id="rightmenu">
+        <ul id="topmenu">
+          <li>
+            <a href="../index.html">About</a>
+          </li>
+          <li>
+            <a href="../guides/index.html">Guides</a>
+          </li>
+          <li>
+            <a href="../community.html">Community</a>
+          </li>
+          <li class="active">
+            <a href="../api/index.html">API</a>
+          </li>
+          <li>
+            <a href="https://github.com/caolan/kanso">Code</a>
+          </li>
+          <li>
+            <a href="../download.html">Download</a>
+          </li>
+        </ul>
+        <!--
+        <ul id="sessionmenu">
+          <li><a href="#">Create Account</a></li>
+          <li><a href="#">Sign In</a></li>
+        </ul>
+        -->
+      </div>
+    </div>
+
+    <div id="content">
+      <h1>Kanso API Documentation</h1><p><a href="index.html">Index</a> | <a href="all.html">View on single page</a></p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#path">path</a><ul><li><a href="#path.join">join(path, [...])</a></li><li><a href="#path.normalizeArray">normalizeArray(parts, [keepBlanks])</a></li><li><a href="#path.normalize">normalize(path, [keepBlanks])</a></li><li><a href="#path.dirname">dirname(path)</a></li><li><a href="#path.basename">basename(path, ext)</a></li><li><a href="#path.extname">extname(path)</a></li></ul></li></ul></div><h2 id="path">path</h2><p>Path functions ported from node.js to work in CouchDB and the browser.
+This module is used internally by Kanso, although you can use it in your
+apps too if you find the functions useful.</p><h3 id="path.join">join(path, [...])</h3><p>Joins multiple paths together using '/'. Accepts a arbitrary number of
+strings as arguments, returning the joined result as a single string.</p><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="path.normalizeArray">normalizeArray(parts, [keepBlanks])</h3><p>Normalizes a path split into an array, taking care of '..' and '.' parts.</p><h4>Parameters</h4><table class="params"><tr><td class="name">parts</td><td class="type">Array</td><td class="description"></td></tr><tr><td class="name">keepBlanks</td><td class="type">Boolean</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="path.normalize">normalize(path, [keepBlanks])</h3><p>Normalize a string path, taking care of '..' and '.' parts.</p><h4>Parameters</h4><table class="params"><tr><td class="name">path</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">keepBlanks</td><td class="type">Boolean</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">string</span></div><h3 id="path.dirname">dirname(path)</h3><p>Return the directory name of a path. Similar to the Unix dirname command.</p><h4>Parameters</h4><table class="params"><tr><td class="name">path</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="path.basename">basename(path, ext)</h3><p>Return the last portion of a path. Similar to the Unix basename command.</p>
+
+<p><strong>Example</strong></p>
+
+<pre><code class="javascript">path.basename('/foo/bar/baz/asdf/quux.html')
+// returns
+'quux.html'
+
+path.basename('/foo/bar/baz/asdf/quux.html', '.html')
+// returns
+'quux'
+</code></pre><h4>Parameters</h4><table class="params"><tr><td class="name">path</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">ext</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="path.extname">extname(path)</h3><p>Return the extension of the path. Everything after the last '.' in the last
+portion of the path. If there is no '.' in the last portion of the path or
+the only '.' is the first character, then it returns an empty string.</p>
+
+<pre><code class="javascript">path.extname('index.html')
+// returns
+'.html'
+
+path.extname('index')
+// returns
+''
+</code></pre><h4>Parameters</h4><table class="params"><tr><td class="name">path</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div>
+    </div>
+
+    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-20477836-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+  </body>
+</html>

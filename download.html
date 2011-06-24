@@ -1,6 +1,6 @@
 <html>
   <head>
-    <title>API - Kanso Framework</title>
+    <title>Kanso Framework</title>
     <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
     <link rel="stylesheet" href="./css/kanso.css" />
     <!--[if IE]>
@@ -24,13 +24,13 @@
           <li>
             <a href="./community.html">Community</a>
           </li>
-          <li class="active">
+          <li>
             <a href="./api/index.html">API</a>
           </li>
           <li>
             <a href="https://github.com/caolan/kanso">Code</a>
           </li>
-          <li>
+          <li class="active">
             <a href="./download.html">Download</a>
           </li>
         </ul>
@@ -44,7 +44,52 @@
     </div>
 
     <div id="content">
-      <p>This page has moved, please visit: <a href="api/index.html">api/index.html</a></p>
+      <h1>Installing Kanso</h1>
+
+<h2>Requirements</h2>
+
+<p>To use Kanso you'll need to install the latest <em>stable</em> version of node.js,
+which can be found at <a href="http://nodejs.org">http://nodejs.org</a>.</p>
+
+<h3>Why does Kanso need node.js?</h3>
+
+<p>Node.js is used for the command-line tools only. With Kanso, the end result is
+a pure <a href="http://couchapp.org">CouchApp</a> you can host using CouchDB alone.
+Using node to write the associated tools allows us to do some powerful things
+by interpreting the JavaScript of your application.</p>
+
+<h2>Install using Git</h2>
+
+<p>This is the preferred method of installing Kanso. First, clone the repository
+from GitHub:</p>
+
+<pre><code class="no-highlight">git clone git://github.com/caolan/kanso.git
+cd kanso</code></pre>
+
+<p>Then you'll need to fetch its dependencies using git submodules:</p>
+
+<pre><code>git submodule init
+git submodule update
+</code></pre>
+
+<p>Next, install using make:</p>
+
+<pre><code>make &amp;&amp; sudo make install
+</code></pre>
+
+<h2>Using NPM</h2>
+
+<p>If you already have node.js installed, and you're using npm
+(Node Package Manager), then you can install by simply doing the following:</p>
+
+<pre><code class="no-highlight">sudo npm install -g kanso</code></pre>
+
+<h2>CouchDB version</h2>
+
+<p>As of release 0.0.7, Kanso <strong>only supports CouchDB 1.1.0 or higher</strong>. This is due
+to a number of fixes in CouchDB 1.1.0 for CommonJS modules which make Kanso
+faster and helps to keep the framework code clean. If you're running an older
+version of CouchDB you'll want to upgrade it before continuing.</p>
     </div>
 
     <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>

@@ -1,0 +1,78 @@
+<html>
+  <head>
+    <title>API - sanitize - Kanso Framework</title>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+    <link rel="stylesheet" href="../css/kanso.css" />
+    <!--[if IE]>
+      <link rel="stylesheet" href="../css/kanso_ie.css" />
+    <![endif]-->
+  </head>
+  <body>
+    <div id="topbar">
+      <a id="logo" href="../index.html">
+        <img src="../images/kanso_small.png" />
+      </a>
+      <a id="site" href="../index.html">Framework</a>
+      <div id="rightmenu">
+        <ul id="topmenu">
+          <li>
+            <a href="../index.html">About</a>
+          </li>
+          <li>
+            <a href="../guides/index.html">Guides</a>
+          </li>
+          <li>
+            <a href="../community.html">Community</a>
+          </li>
+          <li class="active">
+            <a href="../api/index.html">API</a>
+          </li>
+          <li>
+            <a href="https://github.com/caolan/kanso">Code</a>
+          </li>
+          <li>
+            <a href="../download.html">Download</a>
+          </li>
+        </ul>
+        <!--
+        <ul id="sessionmenu">
+          <li><a href="#">Create Account</a></li>
+          <li><a href="#">Sign In</a></li>
+        </ul>
+        -->
+      </div>
+    </div>
+
+    <div id="content">
+      <h1>Kanso API Documentation</h1><p><a href="index.html">Index</a> | <a href="all.html">View on single page</a></p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#sanitize">sanitize</a><ul><li><a href="#sanitize.escapeHtml">escapeHtml(s)</a></li><li><a href="#sanitize.escapeJavascriptString">escapeJavascriptString(s)</a></li><li><a href="#sanitize.escapeJavascriptString">escapeJavascriptString(s)</a></li><li><a href="#sanitize.generateDomIdentifier">generateDomIdentifier(s)</a></li><li><a href="#sanitize.generateDomName">generateDomName(s)</a></li></ul></li></ul></div><h2 id="sanitize">sanitize</h2><p>Input sanitization, escaping, and construction functions
+covering security-sensitive areas.</p><h3 id="sanitize.escapeHtml">escapeHtml(s)</h3><p>Encodes required characters as HTML entities so a string
+can be included in a page. This function must be used to
+avoid Cross-site Scripting attacks.</p><h4>Parameters</h4><table class="params"><tr><td class="name">s</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="sanitize.escapeJavascriptString">escapeJavascriptString(s)</h3><p>Encodes selected characters in a string, so that the string
+can be safely used within a Javascript string constant. This
+function must be used to avoid cross-site scripting attacks
+(or, in some cases, arbitrary server-side code execution).</p><h4>Parameters</h4><table class="params"><tr><td class="name">s</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="sanitize.escapeJavascriptString">escapeJavascriptString(s)</h3><p>Encodes selected characters in a string, so that the string
+can be safely used within an XML character data section.
+This function must be used to avoid cross-site scripting attacks.</p><h4>Parameters</h4><table class="params"><tr><td class="name">s</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="sanitize.generateDomIdentifier">generateDomIdentifier(s)</h3><p>Takes any number of arguments, and combines them together
+to safely form a string that's suitable for use as a DOM
+element identifier.</p><h4>Parameters</h4><table class="params"><tr><td class="name">s</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="sanitize.generateDomName">generateDomName(s)</h3><p>Takes any number of arguments, and combines them together
+to safely form a string that's suitable for use in a DOM
+element's name attribute.</p><h4>Parameters</h4><table class="params"><tr><td class="name">s</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div>
+    </div>
+
+    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-20477836-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+  </body>
+</html>

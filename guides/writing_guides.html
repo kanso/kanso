@@ -1,0 +1,127 @@
+<html>
+  <head>
+    <title>Writing Guides - Kanso Framework</title>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+    <link rel="stylesheet" href="../css/kanso.css" />
+    <!--[if IE]>
+      <link rel="stylesheet" href="../css/kanso_ie.css" />
+    <![endif]-->
+  </head>
+  <body>
+    <div id="topbar">
+      <a id="logo" href="../index.html">
+        <img src="../images/kanso_small.png" />
+      </a>
+      <a id="site" href="../index.html">Framework</a>
+      <div id="rightmenu">
+        <ul id="topmenu">
+          <li>
+            <a href="../index.html">About</a>
+          </li>
+          <li class="active">
+            <a href="../guides/index.html">Guides</a>
+          </li>
+          <li>
+            <a href="../community.html">Community</a>
+          </li>
+          <li>
+            <a href="../api/index.html">API</a>
+          </li>
+          <li>
+            <a href="https://github.com/caolan/kanso">Code</a>
+          </li>
+          <li>
+            <a href="../download.html">Download</a>
+          </li>
+        </ul>
+        <!--
+        <ul id="sessionmenu">
+          <li><a href="#">Create Account</a></li>
+          <li><a href="#">Sign In</a></li>
+        </ul>
+        -->
+      </div>
+    </div>
+
+    <div id="content">
+      <h1>Writing Guides</h1>
+
+<p>One of the best ways to give back to the Kanso project is to help others get
+started. You don't have to be an expert, you just need to have learned something
+that should be better documented.</p>
+
+<p>To add a guide, you need to fork the Kanso repository on
+<a href="http://github.com">GitHub</a>. You'll find contributing a lot easier if you have
+an account there, so sign-up if you don't already have one.</p>
+
+<p>Once you've signed-up you can visit the <a href="https://github.com/caolan/kanso">Kanso</a>
+page and click the fork button. You should be presented you your own copy of
+the Kanso repository to work with. Get a copy of your new repository by doing the
+following (replacing USERNAME with your GitHub login):</p>
+
+<pre><code>git clone git@github.com:USERNAME/kanso.git
+cd kanso
+</code></pre>
+
+<p>You now have a copy of the Kanso code. You'll need to fetch some dependencies:</p>
+
+<pre><code>git submodule init
+git submodule update
+</code></pre>
+
+<p>After that finishes downloading, you're ready to get started. The guides are
+in the <code>docs/guides</code> directory and are written in
+<a href="http://daringfireball.net/projects/markdown/syntax">Markdown</a>. Simply add a
+new file with the <code>.md</code> extension to start a new guide. You can
+freely mix Markdown and normal HTML as you wish. If you want to add screenshots,
+put them in the <code>docs/guides/images</code> directory.</p>
+
+<p>Once you've finished authoring, you'll want to add an entry in the
+<code>guides/index.md</code> file with a short description of your guide.
+You can preview the changes by running the following command in the main
+Kanso project directory:</p>
+
+<pre><code>make docs
+</code></pre>
+
+<p>This will create a <code>www</code> directory containing the HTML files for the
+Kanso website. Open it up in your browser and see how your guide looks!</p>
+
+<pre><code>google-chrome www/index.html
+</code></pre>
+
+<p>When you're happy with the work, commit your changes and push back to your
+repository:</p>
+
+<pre><code>git add docs/guides
+git commit -m "My new guide"
+git push origin master
+</code></pre>
+
+<p>Visit your copy of Kanso on GitHub and you should see the new commit. Click the
+"pull request" button on the top right of the page to submit your work.</p>
+
+<p><strong>Congratulations</strong>, you've just helped your fellow developer, and learned how to
+send updates to the Kanso project at the same time. If you want to send patches,
+you can do it in the same way, committing your changes to your own branch,
+then sending a pull request. Why not take a look at the
+<a href="https://github.com/caolan/kanso/issues">issues page</a> and take a swing at one?</p>
+    </div>
+
+    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-20477836-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+  </body>
+</html>

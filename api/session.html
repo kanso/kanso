@@ -1,0 +1,67 @@
+<html>
+  <head>
+    <title>API - session - Kanso Framework</title>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+    <link rel="stylesheet" href="../css/kanso.css" />
+    <!--[if IE]>
+      <link rel="stylesheet" href="../css/kanso_ie.css" />
+    <![endif]-->
+  </head>
+  <body>
+    <div id="topbar">
+      <a id="logo" href="../index.html">
+        <img src="../images/kanso_small.png" />
+      </a>
+      <a id="site" href="../index.html">Framework</a>
+      <div id="rightmenu">
+        <ul id="topmenu">
+          <li>
+            <a href="../index.html">About</a>
+          </li>
+          <li>
+            <a href="../guides/index.html">Guides</a>
+          </li>
+          <li>
+            <a href="../community.html">Community</a>
+          </li>
+          <li class="active">
+            <a href="../api/index.html">API</a>
+          </li>
+          <li>
+            <a href="https://github.com/caolan/kanso">Code</a>
+          </li>
+          <li>
+            <a href="../download.html">Download</a>
+          </li>
+        </ul>
+        <!--
+        <ul id="sessionmenu">
+          <li><a href="#">Create Account</a></li>
+          <li><a href="#">Sign In</a></li>
+        </ul>
+        -->
+      </div>
+    </div>
+
+    <div id="content">
+      <h1>Kanso API Documentation</h1><p><a href="index.html">Index</a> | <a href="all.html">View on single page</a></p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#session">session</a><ul><li><a href="#session.fakeRequest">fakeRequest(userCtx, callback)</a></li><li><a href="#session.sessionChange">sessionChange(userCtx, callback)</a></li><li><a href="#session.logout">logout(callback)</a></li><li><a href="#session.login">login(username, password, callback)</a></li><li><a href="#session.info">info(callback)</a></li><li><a href="#session.userDb">userDb(callback)</a></li><li><a href="#session.signup">signup(username, password, callback)</a></li></ul></li></ul></div><h2 id="session">session</h2><p>Functions related to the management of user sessions and account information.</p><h3 id="session.fakeRequest">fakeRequest(userCtx, callback)</h3><p>Creates a fake request to /_session to pass to sessionChange, useful
+when using functions such as templates.render</p><h4>Parameters</h4><table class="params"><tr><td class="name">userCtx</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table><h3 id="session.sessionChange">sessionChange(userCtx, callback)</h3><p>Calls sessionChange if exported from the currently loaded app.</p><h4>Parameters</h4><table class="params"><tr><td class="name">userCtx</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table><h3 id="session.logout">logout(callback)</h3><p>Logs out the current user.</p><h4>Parameters</h4><table class="params"><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table><h3 id="session.login">login(username, password, callback)</h3><p>Attempt to login using the username and password provided.</p><h4>Parameters</h4><table class="params"><tr><td class="name">username</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">password</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table><h3 id="session.info">info(callback)</h3><p>Returns the current user's session information.</p><h4>Parameters</h4><table class="params"><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table><h3 id="session.userDb">userDb(callback)</h3><p>Returns the authentication database for the current user's session.</p><h4>Parameters</h4><table class="params"><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table><h3 id="session.signup">signup(username, password, callback)</h3><p>Creates a new user document with given username and password.</p><h4>Parameters</h4><table class="params"><tr><td class="name">username</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">password</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table>
+    </div>
+
+    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-20477836-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+  </body>
+</html>

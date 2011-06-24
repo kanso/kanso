@@ -1,0 +1,87 @@
+<html>
+  <head>
+    <title>API - flashmessages - Kanso Framework</title>
+    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
+    <link rel="stylesheet" href="../css/kanso.css" />
+    <!--[if IE]>
+      <link rel="stylesheet" href="../css/kanso_ie.css" />
+    <![endif]-->
+  </head>
+  <body>
+    <div id="topbar">
+      <a id="logo" href="../index.html">
+        <img src="../images/kanso_small.png" />
+      </a>
+      <a id="site" href="../index.html">Framework</a>
+      <div id="rightmenu">
+        <ul id="topmenu">
+          <li>
+            <a href="../index.html">About</a>
+          </li>
+          <li>
+            <a href="../guides/index.html">Guides</a>
+          </li>
+          <li>
+            <a href="../community.html">Community</a>
+          </li>
+          <li class="active">
+            <a href="../api/index.html">API</a>
+          </li>
+          <li>
+            <a href="https://github.com/caolan/kanso">Code</a>
+          </li>
+          <li>
+            <a href="../download.html">Download</a>
+          </li>
+        </ul>
+        <!--
+        <ul id="sessionmenu">
+          <li><a href="#">Create Account</a></li>
+          <li><a href="#">Sign In</a></li>
+        </ul>
+        -->
+      </div>
+    </div>
+
+    <div id="content">
+      <h1>Kanso API Documentation</h1><p><a href="index.html">Index</a> | <a href="all.html">View on single page</a></p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#flashmessages">flashmessages</a><ul><li><a href="#flashmessages.readRequestCookie">readRequestCookie(req)</a></li><li><a href="#flashmessages.readBrowserCookie">readBrowserCookie()</a></li><li><a href="#flashmessages.updateRequest">updateRequest(req)</a></li><li><a href="#flashmessages.getMessages">getMessages(req)</a></li><li><a href="#flashmessages.getOutgoingMessages">getOutgoingMessages(req)</a></li><li><a href="#flashmessages.updateResponse">updateResponse(req, res)</a></li><li><a href="#flashmessages.createMessage">createMessage(req, msg)</a></li><li><a href="#flashmessages.setBrowserCookie">setBrowserCookie(req, messages)</a></li><li><a href="#flashmessages.addMessage">addMessage(req, msg)</a></li></ul></li></ul></div><h2 id="flashmessages">flashmessages</h2><p>Flash messages help you store state between requests, such as reporting a
+successful or failed operation after a redirect.</p>
+
+<p>The flash message implementation in this module handles both fallback couchdb
+mode, using cookies to persist state between requests, as well as supporting
+client-side operation, correctly handling new messages even inside the
+callbacks of async functions.</p>
+
+<p>Flash messages only persist for the next request or the next template render!
+That means 2 redirects without explicitly currying the flash messages will
+cause the messages to be lost.</p><h3 id="flashmessages.readRequestCookie">readRequestCookie(req)</h3><p>Reads the flash messages cookie from a request object, returning an
+array of incoming messages.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="flashmessages.readBrowserCookie">readBrowserCookie()</h3><p>Reads the flash messages cookie from the browser, returning an
+array of incoming messages.</p><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="flashmessages.updateRequest">updateRequest(req)</h3><p>Adds a flash_messages property to a request containing all incoming
+messages.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Request Object</span></div><h3 id="flashmessages.getMessages">getMessages(req)</h3><p>Get's all current flash messages, stopping them from being outgoing on the
+next request so they're not repeated.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="flashmessages.getOutgoingMessages">getOutgoingMessages(req)</h3><p>Filters all available messages on a request object, returning only those
+flagged as outgoing (sending in the response to be made available to the next
+request).</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="flashmessages.updateResponse">updateResponse(req, res)</h3><p>Updates a response object after a list, show or update function has returned,
+setting the flash messages cookie to include the outgoing messages.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">res</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Response Object</span></div><h3 id="flashmessages.createMessage">createMessage(req, msg)</h3><p>Creates a new flash message object, associating it with the given request.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">msg</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Object</span></div><h3 id="flashmessages.setBrowserCookie">setBrowserCookie(req, messages)</h3><p>Stores a list of messages in the flash messages cookie. This function is for
+client-side use.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">messages</td><td class="type">Array</td><td class="description"></td></tr></table><h3 id="flashmessages.addMessage">addMessage(req, msg)</h3><p>Adds a new flash message for the current request. If the list, show or update
+function has not returned, it's added to the response Set-Cookie header,
+otherwise (if its the result of a client-side async operation) it's added
+directly to the browsers cookies.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">msg</td><td class="type">String</td><td class="description"></td></tr></table>
+    </div>
+
+    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
+    <script>hljs.initHighlightingOnLoad();</script>
+    <script type="text/javascript">
+
+      var _gaq = _gaq || [];
+      _gaq.push(['_setAccount', 'UA-20477836-1']);
+      _gaq.push(['_trackPageview']);
+
+      (function() {
+        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+      })();
+
+    </script>
+  </body>
+</html>
