@@ -54,6 +54,15 @@
   * Add ability to exclude fields from a form when initialized using a Type
     definition
 
+  * Added a new documentSelector widget for referring to external documents.
+
+  * Decoupled embedList and embed from administrative application; widgets now
+    use a well-defined interface for client-side setup.
+
+  * Decoupled the modal dialog from embedList via a new actions module.
+  
+  * Decoupled embedded form from the modal dialog via an embedForm widget.
+
 * Removed History.js dependency and integrated HTML5 history handling using
   pushState only - BACKWARDS INCOMPATIBLE CHANGE - older browsers will see
   some degradtion in performance
