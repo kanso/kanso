@@ -39,6 +39,9 @@
 
   * Added isSubPath to utils module
 
+  * isBrowser is now a function returning a Boolean, not a Boolean property
+    itself - BACKWARDS INCOMPATIBLE CHANGE
+
 
 * Added a testsuite app so kanso's commonjs module tests will run in the browser
 
