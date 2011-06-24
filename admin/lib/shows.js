@@ -304,8 +304,8 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
 
 exports.viewtype = adminShow(function (doc, ddoc, req) {
     var settings = loader.appRequire(ddoc, 'kanso/settings'),
-        fields = loader.appRequire(ddoc, 'kanso/fields'),
         app = loader.appRequire(ddoc, settings.load),
+        fields = loader.appRequire(ddoc, 'kanso/fields'),
         type = app.types ? app.types[doc.type]: undefined;
 
     if (!doc) {
