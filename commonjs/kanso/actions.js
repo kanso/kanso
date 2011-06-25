@@ -85,8 +85,8 @@ exports.parse = function (actions) {
  * which does the actual form rendering and presentation.
  */
 
-exports.modalDialog = function (action_options, action_name,
-                                type_name, data, options, callback) {
+exports.modalDialog = function (action_options,
+                                names, data, options, callback) {
     options = (options || {});
     action_options = (action_options || {});
 
@@ -95,8 +95,8 @@ exports.modalDialog = function (action_options, action_name,
     var name = sanitize.generateDomName(data.path);
     var path_extra = (options.path_extra || []).concat([ 'modal' ]);
 
-    if (action_name !== 'edit') {
-        operation = action_name;
+    if (names.action !== 'edit') {
+        operation = names.action;
     }
     var widget_options = {
         path_extra: path_extra,
@@ -128,8 +128,8 @@ exports.modalDialog = function (action_options, action_name,
 
         /* Generate strings for content */
         var cancel_label = 'Cancel';
-        var type_label = utils.titleize(type_name);
-        var action_label = utils.titleize(action_name);
+        var type_label = utils.titleize(names.type);
+        var action_label = utils.titleize(names.action);
 
         /* Generate inner elements */
         var title_elt = $(
@@ -197,8 +197,7 @@ exports.modalDialog = function (action_options, action_name,
 
                 setTimeout(function () {
                     exports.modalDialog(
-                        action_options, action_name,
-                            type_name, data, options, callback
+                        action_options, names, data, options, callback
                     );
                 }, 0);
 
@@ -252,7 +251,7 @@ exports.modalDialog = function (action_options, action_name,
             and initialized prior to client-side widget initialization. */
 
         widget.clientInit(
-            field, data.path, data.value,
+            data.field, data.path, data.value,
                 data.raw, data.errors, widget_options
         );
     };
@@ -265,8 +264,8 @@ exports.modalDialog = function (action_options, action_name,
  * Update the action originator (i.e. a widget) with a new value.
  * 
  */
-exports.defaultSave = function (action_options, action_name,
-                                type_name, data, options, callback) {
+exports.defaultSave = function (action_options, names, 
+                                data, options, callback) {
 
     
 };

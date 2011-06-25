@@ -868,12 +868,11 @@ exports.embedList = function (_options) {
 
         /* Trigger action */
         if (action_handler) {
-            var data = {
-                field: this.field, path: this.path,
-                value: value_for_action, raw: null, errors: []
-            };
             action_handler(
-                action_name, type_name, data, widget_options, cb
+                { action: action_name, type: type_name },
+                { field: this.field, path: this.path,
+                  value: value_for_action, raw: null, errors: [] },
+                widget_options, cb
             );
         }
     };
@@ -987,7 +986,7 @@ exports.embedList = function (_options) {
                     this, [ action_options ].concat(args)
                 );
             });
-            /* break */;
+            /* break */
         case 'delete':
             break;
         }
