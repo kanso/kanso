@@ -571,7 +571,8 @@ exports.embedList = function (_options) {
         this.discoverListElement = _.memoize(this._discoverListElement);
         this.discoverListName = _.memoize(this._discoverListName);
         this.discoverListType = _.memoize(this._discoverListType);
-        this.discoverListItemsElement = _.memoize(this._discoverListItemsElement);
+        this.discoverListItemsElement =
+            _.memoize(this._discoverListItemsElement);
     };
 
     w.normalizeValue = function (value) {
@@ -823,39 +824,56 @@ exports.embedList = function (_options) {
         );
     };
 
-    w.dispatchEventToAction = function (target_elt,
-                                        action_name, callback) {
+    w.dispatchEventToAction = function (target_elt, action_name,
+                                        value_for_action, callback) {
+
         var name = this._name(this.path);
         var type_name = this.discoverListType();
         var item_elt = $(target_elt).closest('.item');
         var offset = item_elt.prevAll('.item').length;
-        var value = this.widget.getValue(
-            item_elt, this.path, this.render_options
-        );
+
+        if (value_for_action === undefined) {
+
+            /* Action has no payload:
+                Query the widget for its current value, and use that. */
+
+            value_for_action = this.widget.getValue(
+                item_elt, this.path, this.render_options
+            );
+        }
 
         var widget_options = {
             offset: offset,
             path_extra: (this.render_options.path_extra || [])
         };
 
-        /* Action handler will transfer control here when finished */
-        var cb = utils.bindContext(this, function (successful, new_value) {
-            if (callback) {
-                callback.call(
-                    this, target_elt, offset, successful, new_value
-                );
-            }
-        });
-
+        /* Grab closure for action */
         var action_handler = (
             this.actions[action_name] ||
                 this.defaultActionFor(action_name)
         );
 
+        /* Create a completion callback:
+            The action handler will transfer control here when finished. */
+
+        var cb = utils.bindContext(this,
+            function (successful, new_value) {
+                if (callback) {
+                    callback.call(
+                        this, target_elt, offset, successful, new_value
+                    );
+                }
+            }
+        );
+
+        /* Trigger action */
         if (action_handler) {
+            var data = {
+                field: this.field, path: this.path,
+                value: value_for_action, raw: null, errors: []
+            };
             action_handler(
-                action_name, type_name, this.field, this.path,
-                    value, null, [], widget_options, cb
+                action_name, type_name, data, widget_options, cb
             );
         }
     };
@@ -878,7 +896,9 @@ exports.embedList = function (_options) {
         );
         this.insertNewItemAtEnd(
             utils.bindContext(this, function (item_elt) {
-                this.dispatchEventToAction(item_elt, 'add', callback);
+                this.dispatchEventToAction(
+                    item_elt, 'add', undefined, callback
+                );
             })
         );
     };
@@ -887,21 +907,29 @@ exports.embedList = function (_options) {
         var callback = utils.bindContext(
             this, this.handleEditCompletion
         );
-        this.dispatchEventToAction(ev.target, 'edit', callback);
+        this.dispatchEventToAction(
+            ev.target, 'edit', undefined, callback
+        );
     };
 
     w.handleDeleteButtonClick = function (ev) {
         var callback = utils.bindContext(
             this, this.handleDeleteCompletion
         );
-        var item_elt = $(ev.target).closest('.item', this);
-        this.deleteExistingItem(item_elt);
-        this.dispatchEventToAction(ev, 'delete');
+
+        this.deleteExistingItem(
+            $(ev.target).closest('.item', this)
+        );
+
+        this.dispatchEventToAction(
+            ev, 'delete', undefined, callback
+        );
     };
 
     w.handleAddCompletion = function (target_elt, offset,
                                       is_successful, new_value) {
-        var item_elt = $(target_elt).closest('.item', this);
+        var item_elt =
+            $(target_elt).closest('.item', this);
 
         if (is_successful) {
             this.setListItemValue(
@@ -914,12 +942,20 @@ exports.embedList = function (_options) {
 
     w.handleEditCompletion = function (target_elt, offset,
                                        is_successful, new_value) {
-        if (is_successful) {
-            var item_elt = $(target_elt).closest('.item', this);
-            this.setListItemValue(
-                item_elt, new_value, offset
-            );
+        if (!is_successful) {
+
+            /* Edit action was unsuccessful:
+                This means the edit was canceled or otherwise aborted,
+                and no changes should be made to the underlying data. */
+
+            return this;
         }
+
+        var item_elt = $(target_elt).closest('.item', this);
+
+        this.setListItemValue(
+            item_elt, new_value, offset
+        );
     };
 
     w.handleDeleteCompletion = function (target_elt, offset,
@@ -943,6 +979,15 @@ exports.embedList = function (_options) {
                 );
             });
             /* break */
+        case 'save':
+            return utils.bindContext(this, function () {
+                var action_options = {};
+                var args = Array.prototype.slice.apply(arguments);
+                actions.defaultSave.apply(
+                    this, [ action_options ].concat(args)
+                );
+            });
+            /* break */;
         case 'delete':
             break;
         }

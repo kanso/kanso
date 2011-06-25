@@ -86,15 +86,15 @@ exports.parse = function (actions) {
  */
 
 exports.modalDialog = function (action_options, action_name,
-                                type_name, field, path, value,
-                                raw, errors, options, callback) {
+                                type_name, data, options, callback) {
     options = (options || {});
     action_options = (action_options || {});
 
-    var widget = action_options.widget;
-    var name = sanitize.generateDomName(path);
-    var path_extra = (options.path_extra || []).concat([ 'modal' ]);
     var operation = 'update';
+    var widget = action_options.widget;
+    var name = sanitize.generateDomName(data.path);
+    var path_extra = (options.path_extra || []).concat([ 'modal' ]);
+
     if (action_name !== 'edit') {
         operation = action_name;
     }
@@ -115,8 +115,8 @@ exports.modalDialog = function (action_options, action_name,
     if (!widget) {
         throw new Error(
             'modalDialog: Unable to determine the widget to' +
-            ' use for the field named `' + path.join('.') + '`;' +
-            ' widget or field type was not correctly specified'
+            ' use for the field named `' + data.path.join('.') +
+            '`; widget or field type was not correctly specified'
         );
     }
 
@@ -154,7 +154,7 @@ exports.modalDialog = function (action_options, action_name,
         /* Draw widget */
         div.append(
             widget.toHTML(
-                name, value, raw, field, widget_options
+                name, data.value, data.raw, data.field, widget_options
             )
         );
 
@@ -183,9 +183,10 @@ exports.modalDialog = function (action_options, action_name,
                 This usually defers to a form type's implementation.
                 Most simple widgets just return true for this method. */
 
-            errors = widget.validate(div, path, widget_options);
+            data.errors =
+                widget.validate(div, data.path, widget_options);
 
-            if (errors.length > 0) {
+            if (data.errors.length > 0) {
 
                 /* Repost dialog box:
                     This will replace the current dialog box.
@@ -196,8 +197,8 @@ exports.modalDialog = function (action_options, action_name,
 
                 setTimeout(function () {
                     exports.modalDialog(
-                        action_options, action_name, type_name, field,
-                            path, value, raw, errors, options, callback
+                        action_options, action_name,
+                            type_name, data, options, callback
                     );
                 }, 0);
 
@@ -209,7 +210,7 @@ exports.modalDialog = function (action_options, action_name,
                     loop. If you depend upon closure, use setTimeout(). */
 
                 callback(
-                    true, widget.getValue(div, path, widget_options)
+                    true, widget.getValue(div, data.path, widget_options)
                 );
 
                 /* Order matters:
@@ -226,7 +227,7 @@ exports.modalDialog = function (action_options, action_name,
         /* Handle failure */
         cancel_elt.click(function () {
             callback(
-                false, widget.getValue(div, path, widget_options)
+                false, widget.getValue(div, data.path, widget_options)
             );
             $.modal.close();
         });
@@ -251,10 +252,22 @@ exports.modalDialog = function (action_options, action_name,
             and initialized prior to client-side widget initialization. */
 
         widget.clientInit(
-            field, path, value, raw, errors, widget_options
+            field, data.path, data.value,
+                data.raw, data.errors, widget_options
         );
     };
 
     return generateModalDialog();
+};
+
+
+/**
+ * Update the action originator (i.e. a widget) with a new value.
+ * 
+ */
+exports.defaultSave = function (action_options, action_name,
+                                type_name, data, options, callback) {
+
+    
 };
 
