@@ -4,7 +4,9 @@ var utils = require('kanso/utils');
 exports['getBaseURL - browser'] = function (test) {
     // TODO: update this so it changes isBrowser on the utils module instead
     // this is probably why this test is failing
-    utils.isBrowser = true;
+    utils.isBrowser = function () {
+        return true;
+    };
     var _getWindowLocation = utils.getWindowLocation;
     var testpath = function (p) {
         utils.getWindowLocation = function () {
@@ -23,12 +25,16 @@ exports['getBaseURL - browser'] = function (test) {
         '/db/_design/doc/_rewrite'
     );
     utils.getWindowLocation = _getWindowLocation;
-    utils.isBrowser = true;
+    utils.isBrowser = function () {
+        return true;
+    };
     test.done();
 };
 
 exports['getBaseURL - couchdb no vhost'] = function (test) {
-    utils.isBrowser = false;
+    utils.isBrowser = function () {
+        return false;
+    };
     var testpath = function (p) {
         return utils.getBaseURL({path: p, headers: {}});
     };
@@ -44,12 +50,16 @@ exports['getBaseURL - couchdb no vhost'] = function (test) {
         testpath(['db', '_design', 'doc']),
         '/db/_design/doc/_rewrite'
     );
-    utils.isBrowser = true;
+    utils.isBrowser = function () {
+        return true;
+    };
     test.done();
 };
 
 exports['getBaseURL - couchdb with vhost'] = function (test) {
-    utils.isBrowser = false;
+    utils.isBrowser = function () {
+        return false;
+    };
     var testpath = function (p) {
         var req = {
             path: ['db', '_design', 'doc', '_show', 'testshow'],
@@ -59,14 +69,20 @@ exports['getBaseURL - couchdb with vhost'] = function (test) {
     };
     test.equal(testpath('/'), '');
     test.equal(testpath('/some/path'), '');
-    utils.isBrowser = true;
+    utils.isBrowser = function () {
+        return true;
+    };
     test.done();
 };
 
 exports['getBaseURL - couchdb no request'] = function (test) {
-    utils.isBrowser = false;
+    utils.isBrowser = function () {
+        return false;
+    };
     test.notEqual(utils.getBaseURL(), undefined);
-    utils.isBrowser = true;
+    utils.isBrowser = function () {
+        return true;
+    };
     test.done();
 };
 
@@ -82,7 +98,9 @@ exports['getPropertyPath'] = function (test) {
         utils.getPropertyPath(obj, ['blah', 'blah', 'blah']),
         undefined
     );
-    utils.isBrowser = true;
+    utils.isBrowser = function () {
+        return true;
+    };
     test.done();
 };
 

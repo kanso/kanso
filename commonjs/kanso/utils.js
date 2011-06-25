@@ -18,6 +18,7 @@
  */
 
 var settings = require('./settings'), // settings module is auto-generated
+    events = require('./events'),
     _ = require('./underscore')._;
 
 
@@ -49,6 +50,15 @@ exports.currentRequest = function (v) {
     }
     return __kansojs_current_request;
 };
+
+// make sure currentRequest() always provided the latest session information
+events.on('sessionChange', function (userCtx, req) {
+    var curr_req = exports.currentRequest();
+    if (curr_req) {
+        curr_req.userCtx = userCtx;
+        exports.currentRequest(curr_req);
+    }
+});
 
 /**
  * This is because the first page hit also triggers kanso to handle the url

@@ -1028,8 +1028,8 @@ exports['creator - existing permissions'] = function (test) {
     test.done();
 };
 
-exports['timestamp'] = function (test) {
-    var f = fields.timestamp();
+exports['createdTime'] = function (test) {
+    var f = fields.createdTime();
     // should be uneditable
     f.permissions.update({}, {}, 'val', 'val', 'user');
     test.throws(function () {
@@ -1037,7 +1037,7 @@ exports['timestamp'] = function (test) {
     });
     // should keep any previous permissions
     var calls = [];
-    f = fields.timestamp({
+    f = fields.createdTime({
         permissions: {
             add: function () {
                 calls.push('add');

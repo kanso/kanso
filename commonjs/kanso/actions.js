@@ -94,7 +94,14 @@ exports.modalDialog = function (action_options, action_name,
     var widget = action_options.widget;
     var name = sanitize.generateDomName(path);
     var path_extra = (options.path_extra || []).concat([ 'modal' ]);
-    var widget_options = { path_extra: path_extra };
+    var operation = 'update';
+    if (action_name !== 'edit') {
+        operation = action_name;
+    }
+    var widget_options = {
+        path_extra: path_extra,
+        operation: operation
+    };
 
     /* Resolve widget */
     if (!widget && action_options.type) {
@@ -137,7 +144,7 @@ exports.modalDialog = function (action_options, action_name,
         var actions_elt = $(
             '<div class="actions" />'
         );
-        
+
         /* Create widget's parent element */
         var div = $('<div />');
 

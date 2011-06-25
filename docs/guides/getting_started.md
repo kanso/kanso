@@ -149,7 +149,7 @@ Let's create a type for describing blog posts. Add the following to
 
 exports.blogpost = new Type('blogpost', {
     fields: {
-        created: fields.timestamp(),
+        created: fields.createdTime(),
         title: fields.string(),
         text: fields.string({
             widget: widgets.textarea({cols: 40, rows: 10})
@@ -200,7 +200,7 @@ Of course, we haven't added any yet. Let's try adding one now. Click the
 
 As you can see, the admin app has read the field settings we defined earlier
 and presented us with a sensible form for adding blog posts. You'll notice the
-<code>timestamp</code> field is missing. This is because it's automatically
+<code>createdTime</code> field is missing. This is because it's automatically
 populated with the current time.
 
 Create a blog post by filling out the form with some test data and clicking
@@ -522,7 +522,7 @@ exports.blogpost = new Type('blogpost', {
         remove: permissions.hasRole('_admin')
     },
     fields: {
-        created: fields.timestamp(),
+        created: fields.createdTime(),
         title: fields.string(),
         text: fields.string({
             widget: widgets.textarea({cols: 40, rows: 10})
@@ -624,7 +624,7 @@ to include the following comments field:
         remove: permissions.hasRole('_admin')
     },
     fields: {
-        created: fields.timestamp(),
+        created: fields.createdTime(),
         title: fields.string({
             permissions: {
                 update: permissions.hasRole('_admin')

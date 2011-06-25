@@ -1,8 +1,12 @@
-----------, Version 0.0.7
+2011.06.24, Version 0.0.7
 
 * Dropped support for CouchDB < 1.1
 
 * Fixed default rewrites for changes in CouchDB 1.1
+
+* Renamed timestamp field to createdTime - BACKWARDS INCOMPATIBLE - please
+  make sure you change all references to fields.timestamp in your apps to
+  fields.createdTime.
 
 * Changes to db module:
 
@@ -35,6 +39,9 @@
 
   * Added isSubPath to utils module
 
+  * isBrowser is now a function returning a Boolean, not a Boolean property
+    itself - BACKWARDS INCOMPATIBLE CHANGE
+
 
 * Added a testsuite app so kanso's commonjs module tests will run in the browser
 
@@ -46,6 +53,15 @@
 
   * Add ability to exclude fields from a form when initialized using a Type
     definition
+
+  * Added a new documentSelector widget for referring to external documents.
+
+  * Decoupled embedList and embed from administrative application; widgets now
+    use a well-defined interface for client-side setup.
+
+  * Decoupled the modal dialog from embedList via a new actions module.
+  
+  * Decoupled embedded form from the modal dialog via an embedForm widget.
 
 * Removed History.js dependency and integrated HTML5 history handling using
   pushState only - BACKWARDS INCOMPATIBLE CHANGE - older browsers will see
@@ -83,6 +99,8 @@
 
 * Automatically save documents returned from update function when run in the
   browser, see new tutorial for example usage
+
+* Added sanitize module and did some anti-XSS work
 
 * Made it easier to share code between the normal app modules and CouchDB
   views, see new guide on sharing code with views for more info

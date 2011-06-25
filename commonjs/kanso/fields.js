@@ -108,7 +108,11 @@ Field.prototype.validate = function (doc, value, raw) {
     }
     return _.reduce(this.validators, function (errs, v) {
         try {
-            errs = errs.concat(v(doc, value, raw) || []);
+            // check that v is actually a function, since IE likes to
+            // insert nulls here for some reason
+            if (v) {
+                errs = errs.concat(v(doc, value, raw) || []);
+            }
         }
         catch (e) {
             errs.push(e);
@@ -649,7 +653,7 @@ exports.creator = function (options) {
     }
     return exports.string(_.defaults(options, {
         required: false,
-        widget: widgets.computed(),
+        widget: widgets.creator(),
         default_value: function (req) {
             return (req.userCtx && req.userCtx.name) || '';
         }
@@ -658,14 +662,14 @@ exports.creator = function (options) {
 
 
 /**
- * Creates a timestamp Field
+ * Creates a createdTime timestamp Field
  *
- * @name timestamp([options])
+ * @name createdTime([options])
  * @param {Object} options
  * @api public
  */
 
-exports.timestamp = function (options) {
+exports.createdTime = function (options) {
     options = options || {};
     if (!options.permissions) {
         options.permissions = {};

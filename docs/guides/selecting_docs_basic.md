@@ -29,7 +29,7 @@ exports.comment = new Type('comment', {
 
 exports.blogpost = new Type('blogpost', {
     fields: {
-        created: fields.timestamp(),
+        created: fields.createdTime(),
         title: fields.string(),
         text: fields.string({
             widget: widgets.textarea({cols: 40, rows: 10})
