@@ -15,13 +15,16 @@ $(shell if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi)
 
 all: build
 
-build: stamp-build
+build: init stamp-build
 
 stamp-build: $(wildcard  deps/* lib/*.js)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
 	cp -R bin deps project static commonjs lib admin package.json $(BUILDDIR)/kanso
 	printf '#!/bin/sh\n$(NODEJS) $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $$@' > $(BUILDDIR)/kanso.sh
+
+init:
+	git submodule update --init --recursive;
 
 test:
 	nodeunit test
