@@ -766,10 +766,10 @@ exports.embedList = function (_options) {
         }));
     };
 
-    w.setListItemValue = function (elt, value, offset) {
+    w.setListItemValue = function (item_elt, value, options) {
         if (this.widget.updateValue) {
             this.widget.updateValue(
-                elt, this.path, value, { offset: offset }
+                item_elt, this.path, value, options
             );
         }
     };
@@ -778,10 +778,8 @@ exports.embedList = function (_options) {
         var html = (
             '<div class="item">' +
                 '<div class="actions">' +
-                    (this.sortable ?
-                        this.htmlForDownButton() : '') +
-                    (this.sortable ?
-                        this.htmlForUpButton() : '') +
+                    (this.sortable ? this.htmlForDownButton() : '') +
+                    (this.sortable ? this.htmlForUpButton() : '') +
                     this.htmlForEditButton() +
                     this.htmlForDeleteButton() +
                 '</div>' +
@@ -870,8 +868,11 @@ exports.embedList = function (_options) {
         if (action_handler) {
             action_handler(
                 { action: action_name, type: type_name },
-                { field: this.field, path: this.path,
-                  value: value_for_action, raw: null, errors: [] },
+
+                { element: target_elt, raw: null,
+                  field: this.field, path: this.path,
+                  value: value_for_action, errors: [] },
+                
                 widget_options, cb
             );
         }
@@ -906,6 +907,7 @@ exports.embedList = function (_options) {
         var callback = utils.bindContext(
             this, this.handleEditCompletion
         );
+
         this.dispatchEventToAction(
             ev.target, 'edit', undefined, callback
         );
@@ -931,8 +933,11 @@ exports.embedList = function (_options) {
             $(target_elt).closest('.item', this);
 
         if (is_successful) {
-            this.setListItemValue(
-                item_elt, new_value, offset
+            var callback = utils.bindContext(
+                this, this.handleSaveCompletion
+            );
+            this.dispatchEventToAction(
+                item_elt, 'save', new_value, callback
             );
         } else {
             this.deleteExistingItem(item_elt);
@@ -941,7 +946,16 @@ exports.embedList = function (_options) {
 
     w.handleEditCompletion = function (target_elt, offset,
                                        is_successful, new_value) {
-        if (!is_successful) {
+        if (is_successful) {
+
+            var callback = utils.bindContext(
+                this, this.handleSaveCompletion
+            );
+            this.dispatchEventToAction(
+                target_elt, 'save', new_value, callback
+            );
+
+        } else {
 
             /* Edit action was unsuccessful:
                 This means the edit was canceled or otherwise aborted,
@@ -949,12 +963,6 @@ exports.embedList = function (_options) {
 
             return this;
         }
-
-        var item_elt = $(target_elt).closest('.item', this);
-
-        this.setListItemValue(
-            item_elt, new_value, offset
-        );
     };
 
     w.handleDeleteCompletion = function (target_elt, offset,
@@ -962,35 +970,39 @@ exports.embedList = function (_options) {
         return;
     };
 
-    w.defaultActionFor = function (action_name) {
-        switch (action_name) {
+    w.handleSaveCompletion = function (target_elt, offset,
+                                       is_successful, new_value) {
+        return;
+    };
+
+    w.defaultActionFor = function (name) {
+
+        switch (name) {
         case 'add':
         case 'edit':
-            return utils.bindContext(this, function () {
-                var action_options = {
-                    widget: exports.embedForm({
-                        type: this.field.type
-                    })
-                };
-                var args = Array.prototype.slice.apply(arguments);
-                actions.modalDialog.apply(
-                    this, [ action_options ].concat(args)
-                );
+            return this.makeDefaultAction('modalDialog', {
+                widget: exports.embedForm({
+                    type: this.field.type
+                })
             });
             /* break */
         case 'save':
-            return utils.bindContext(this, function () {
-                var action_options = {};
-                var args = Array.prototype.slice.apply(arguments);
-                actions.defaultSave.apply(
-                    this, [ action_options ].concat(args)
-                );
-            });
+            return this.makeDefaultAction('defaultEmbedSave', {});
             /* break */
         case 'delete':
             break;
         }
         return null;
+    };
+
+    w.makeDefaultAction = function (name, options) {
+        return utils.bindContext(this, function () {
+            actions[name].apply(
+                this, [ options ].concat(
+                    Array.prototype.slice.apply(arguments)
+                )
+            )
+        });
     };
 
     return w;

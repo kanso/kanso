@@ -264,9 +264,19 @@ exports.modalDialog = function (action_options,
  * Update the action originator (i.e. a widget) with a new value.
  * 
  */
-exports.defaultSave = function (action_options, names, 
-                                data, options, callback) {
+exports.defaultEmbedSave = function (action_options, names, 
+                                     data, options, callback) {
+    if (!data.element) {
+        return callback(false, data.value);
+    }
 
-    
+    var widget = utils.getPropertyPath(data, [ 'field', 'widget' ]);
+    var item_elt = $(data.element).closest('.item');
+
+    widget.setListItemValue(
+        item_elt, data.value, options
+    );
+
+    return callback(true, data.value);
 };
 
