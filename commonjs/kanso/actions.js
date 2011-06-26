@@ -146,7 +146,7 @@ exports.modalDialog = function (action_options,
         );
 
         /* Create widget's parent element */
-        var div = $('<div />');
+        var div = $('<div class="dialog" />');
 
         /* Add dialog title */
         div.append(title_elt);
@@ -176,8 +176,31 @@ exports.modalDialog = function (action_options,
             div = wrapper_elt;
         }
 
-        /* Handle success */
+        /* Insert elements:
+            This is the panel of actions, including ok and cancel. */
+        
+        actions_elt.append(ok_elt);
+        actions_elt.append(cancel_elt);
+        form_elt.append(actions_elt);
+
+        /* Insert elements:
+            This is a progress indicator / spinner element. */
+       
+        var spinner_elt = $(
+            '<div class="spinner" style="display: none;" />'
+        );
+
+        form_elt.append(spinner_elt);
+
+        /* Event handler:
+            Handle successful outcome. */
+
         ok_elt.click(function (ev) {
+
+            /* Show progress indicator:
+                This is deleted automatically when the dialog is closed. */
+
+            spinner_elt.show();
 
             /* Validate widget:
                 This usually defers to a form type's implementation.
@@ -203,10 +226,8 @@ exports.modalDialog = function (action_options,
 
             } else {
 
-                /* Close the dialog box:
-                    Again, note that the dialog box won't actually disappear
-                    until we've unwound and returned to the main event
-                    loop. If you depend upon closure, use setTimeout(). */
+                /* Invoke callback:
+                    Let the widget that invoked us know that we're done. */
 
                 callback(
                     true, widget.getValue(div, data.path, widget_options)
@@ -223,7 +244,9 @@ exports.modalDialog = function (action_options,
             ev.preventDefault();
         });
 
-        /* Handle failure */
+        /* Event handler:
+            Handle negative outcome, or cancellation. */
+
         cancel_elt.click(function () {
             callback(
                 false, widget.getValue(div, data.path, widget_options)
@@ -238,12 +261,9 @@ exports.modalDialog = function (action_options,
             return false;
         });
 
-        /* Insert dialog-managed elements */
-        actions_elt.append(ok_elt);
-        actions_elt.append(cancel_elt);
-        form_elt.append(actions_elt);
+        /* Launch dialog:
+            This wraps the <div> and inserts it in the DOM. */
 
-        /* Launch dialog */
         div.modal();
 
         /* Initialize widget:

@@ -399,6 +399,12 @@ td.actions .button {
     padding: 1em;
 }
 
+.dialog .spinner {
+    background: url("images/spinner.gif");
+    background-repeat: no-repeat;
+    background-position: center;
+}
+
 .widget .selector select {
     min-width: 10em;
 }
@@ -415,28 +421,35 @@ td.actions .button {
     overflow: hidden;
 }
 
-.embedlist .item {
+.embed_list .item {
     clear: both;
 }
 
-.embedlist .actions {
+.embed_list .actions {
     float: none;
     overflow: visible;
     padding-left: 0;
 }
 
-.embedlist .item .actions {
+.embed_list .item .actions {
     float: right;
     overflow: hidden;
 }
 
-.embedlist .embed {
+.embed_list .default_embed {
     float: none;
     overflow: visible;
 }
 
-.embedlist .item .embed {
+.embed_list .item .default_embed {
     float: left;
     overflow: hidden;
 }
 
+.dialog .spinner {
+    float: right;
+}
+
+.dialog .actions {
+    float: left;
+}

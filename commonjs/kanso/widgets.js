@@ -511,7 +511,7 @@ exports.embedList = function (_options) {
                 this.render_options.path_extra
         );
         var html = (
-            '<div class="embedlist" rel="' +
+            '<div class="embed_list" rel="' +
                 h(this.field.type.name) + '" id="' + h(id) + '">'
         );
 
@@ -1029,7 +1029,7 @@ exports.defaultEmbedded = function (_options) {
             display_name = field.type.display_name(value);
         }
         var html = (
-            '<div class="embedded embed">' +
+            '<div class="default_embed">' +
                 '<input type="hidden" value="' + h(fval) + '" name="' +
                     h(this._name(name, options.offset)) + '" />' +
                 '<span class="value">' + h(display_name) + '</span>' +
@@ -1180,12 +1180,12 @@ exports.documentSelector = function (_options) {
         );
         var select_html = (
             '<select class="selector id="' + select_id +
-                '" name="' + html_name + '"></select>'
+                '" name="' + html_name + '" />'
         );
         var html = (
             '<div id="' + container_id + '" class="selector widget">' +
                 select_html +
-                '<div class="spinner" style="display: none;"></div>' +
+                '<div class="spinner" style="display: none;" />' +
             '</div>'
         );
 
