@@ -1126,8 +1126,24 @@ exports.embedForm = function (_options) {
                                 ' reference document `' + value._id + '`'
                         );
                     }
+
+                    /* Render form:
+                        The enclosing div already exists; omit the form
+                        element, since we're being hosted in a component. */
+
                     var container_elt = this.discoverContainerElement(path);
                     $(container_elt).html(this.renderEmbedded(rv));
+
+                    /* Resize modalDialog:
+                        Force the CSS width/height to unrestricted values,
+                        then let the simplemodal code recompute its position
+                        and dimensions. This code belongs in modalDialog. */
+
+                    $('.simplemodal-container').width('auto');
+                    $('.simplemodal-container').height('auto');
+
+                    $.modal.setPosition();
+                    $.modal.setContainerDimensions();
                 })
             );
         }
