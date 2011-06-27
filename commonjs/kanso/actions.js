@@ -1,8 +1,5 @@
 /*global $: false, kanso: true*/
 
-var db = require('./db'),
-    utils = require('./utils');
-
 /**
  * Implementation of widget actions. These are procedures
  * that can be referenced by widgets to present/collect information,
@@ -16,7 +13,8 @@ var db = require('./db'),
  * Module dependencies
  */
 
-var widgets = require('./widgets'),
+var db = require('./db'),
+    utils = require('./utils'),
     sanitize = require('./sanitize'),
     _ = require('./underscore')._;
 
@@ -104,8 +102,12 @@ exports.modalDialog = function (action_options,
         operation: operation
     };
 
-    /* Resolve widget */
+    /* Shortcut:
+        If no widget is specified, assume embedForm, and
+        use the options to modalDialog as options to embedForm. */
+
     if (!widget && action_options.type) {
+        var widgets = require('./widgets');
         widget = widgets.embedForm(
             _.defaults(action_options.options || {}, {
                 type: action_options.type

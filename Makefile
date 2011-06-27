@@ -15,7 +15,10 @@ $(shell if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi)
 
 all: build
 
-build: stamp-build
+submodules:
+	git submodule update --init --recursive
+
+build: submodules stamp-build
 
 stamp-build: $(wildcard  deps/* lib/*.js)
 	touch $@;
