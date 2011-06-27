@@ -1,6 +1,7 @@
 /*global $: false, kanso: true*/
 
-var utils = require('./utils');
+var db = require('./db'),
+    utils = require('./utils');
 
 /**
  * Implementation of widget actions. These are procedures
@@ -128,12 +129,17 @@ exports.modalDialog = function (action_options,
 
         /* Generate strings for content */
         var cancel_label = 'Cancel';
-        var type_label = utils.titleize(names.type);
-        var action_label = utils.titleize(names.action);
+        var title_label = action_options.title;
+
+        if (!title_label) {
+            var type_label = utils.titleize(names.type);
+            var action_label = utils.titleize(names.action);
+            title_label = [ action_label, type_label ].join(' ');
+        }
 
         /* Generate inner elements */
         var title_elt = $(
-            '<h2>' + [ action_label, type_label ].join(' ') + '</h2>'
+            '<h2>' + h(title_label) + '</h2>'
         );
         var ok_elt = $(
             '<input type="submit" value="' + h(action_label) + '" />'
@@ -287,11 +293,18 @@ exports.modalDialog = function (action_options,
     return generateModalDialog();
 };
 
-
 /**
  * Update the action originator (i.e. a widget) with a new value.
- * 
+ * If the originating widget is not widget.embedList, it must provide
+ * a setListItemValue method, which accepts three arguments -- (i) a DOM
+ * element that wraps the widget; (ii) the new value for the widget; and
+ * (iii) a set of widget options, which sometimes contains information
+ * about the widget's nesting context and/or list item offset. It's
+ * important to note that this action doesn't cause any data to be
+ * saved on its own, but merely updates a widget's value for use
+ * in the next save operation.
  */
+
 exports.defaultEmbedSave = function (action_options, names, 
                                      data, options, callback) {
     if (!data.element) {
@@ -306,5 +319,41 @@ exports.defaultEmbedSave = function (action_options, names,
     );
 
     return callback(true, data.value);
+};
+
+/**
+ * Saves the document specified in data.value. This action is
+ * intended for use with the reference and uniqueReference types,
+ * but can in theory be used by any widget or action that handles
+ * external (i.e. non-embedded) documents. When combined with the
+ * embedForm widget's support for dereferencing these field types,
+ * this action provides a way to easily manage linked external
+ * documents in Kanso.
+ */
+
+exports.saveExternalDocument = function (action_options, names, 
+                                         data, options, callback) {
+    var doc = data.value;
+    delete doc._deleted;
+
+    if (!doc || !doc._id) {
+        throw new Error(
+            'saveExternalDocument: The value provided is not a valid' +
+                ' document, or does not contain a valid document identifier'
+        );
+    }
+
+    db.saveDoc(
+        doc, function (err, rv) {
+            if (err) {
+                throw new Error(
+                    'saveExternalDocument: Failed to save document' +
+                        ' with identifier `' + doc._id + '`'
+                );
+            }
+            /* Indicate success */
+            callback(true, doc);
+        }
+    );
 };
 

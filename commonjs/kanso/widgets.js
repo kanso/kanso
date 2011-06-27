@@ -1128,8 +1128,8 @@ exports.embedForm = function (_options) {
                 utils.bindContext(this, function (err, rv) {
                     if (err) {
                         throw new Error(
-                            'Unable to locate the document `' +
-                                document_id + '`, referenced from ' +
+                            'Unable to locate the identifier `' +
+                                document_id + '`, referenced from the' +
                                 ' reference document `' + value._id + '`'
                         );
                     }
