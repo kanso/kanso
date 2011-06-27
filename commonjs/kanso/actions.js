@@ -130,10 +130,10 @@ exports.modalDialog = function (action_options,
         /* Generate strings for content */
         var cancel_label = 'Cancel';
         var title_label = action_options.title;
+        var action_label = utils.titleize(names.action);
 
         if (!title_label) {
             var type_label = utils.titleize(names.type);
-            var action_label = utils.titleize(names.action);
             title_label = [ action_label, type_label ].join(' ');
         }
 

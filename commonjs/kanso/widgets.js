@@ -830,6 +830,11 @@ exports.embedList = function (_options) {
         var item_elt = $(target_elt).closest('.item');
         var offset = item_elt.prevAll('.item').length;
 
+        var widget_options = {
+            offset: offset,
+            path_extra: (this.render_options.path_extra || [])
+        };
+
         if (value_for_action === undefined) {
 
             /* Action has no payload:
@@ -845,11 +850,6 @@ exports.embedList = function (_options) {
                 this, target_elt, widget_options, false, undefined
             );
         }
-
-        var widget_options = {
-            offset: offset,
-            path_extra: (this.render_options.path_extra || [])
-        };
 
         /* Grab closure for action */
         var action_handler = (
@@ -1008,7 +1008,7 @@ exports.embedList = function (_options) {
                 this, [ options ].concat(
                     Array.prototype.slice.apply(arguments)
                 )
-            )
+            );
         });
     };
 
