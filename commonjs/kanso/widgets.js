@@ -840,6 +840,12 @@ exports.embedList = function (_options) {
             );
         }
 
+        if (!value_for_action) {
+            return callback(
+                this, target_elt, widget_options, false, undefined
+            );
+        }
+
         var widget_options = {
             offset: offset,
             path_extra: (this.render_options.path_extra || [])
@@ -858,7 +864,8 @@ exports.embedList = function (_options) {
             function (successful, new_value) {
                 if (callback) {
                     callback.call(
-                        this, target_elt, offset, successful, new_value
+                        this, target_elt,
+                            widget_options, successful, new_value
                     );
                 }
             }
@@ -944,7 +951,7 @@ exports.embedList = function (_options) {
         }
     };
 
-    w.handleEditCompletion = function (target_elt, offset,
+    w.handleEditCompletion = function (target_elt, options,
                                        is_successful, new_value) {
         if (is_successful) {
 
@@ -965,12 +972,12 @@ exports.embedList = function (_options) {
         }
     };
 
-    w.handleDeleteCompletion = function (target_elt, offset,
+    w.handleDeleteCompletion = function (target_elt, options,
                                          is_successful, new_value) {
         return;
     };
 
-    w.handleSaveCompletion = function (target_elt, offset,
+    w.handleSaveCompletion = function (target_elt, options,
                                        is_successful, new_value) {
         return;
     };
@@ -1128,11 +1135,13 @@ exports.embedForm = function (_options) {
                     }
 
                     /* Render form:
-                        The enclosing div already exists; omit the form
-                        element, since we're being hosted in a component. */
+                        The enclosing div already exists; include the form
+                        element, since we're replacing the whole contents. */
 
                     var container_elt = this.discoverContainerElement(path);
-                    $(container_elt).html(this.renderEmbedded(rv));
+                    $(container_elt).html(
+                        this.renderEmbedded(rv)
+                    );
 
                     /* Resize modalDialog:
                         Force the CSS width/height to unrestricted values,
@@ -1161,7 +1170,7 @@ exports.embedForm = function (_options) {
     w.validate = function (elt, path, options) {
         this.form.validate({
             form: this.getValue(elt, path, options),
-            userCtx: (utils.userCtx || utils.currentRequest().userCtx)
+            userCtx: utils.currentRequest().userCtx
         });
         return this.form.errors;
     };
@@ -1186,10 +1195,12 @@ exports.embedForm = function (_options) {
         this.form.values = value;
 
         var html = (
+            '<form>' +
             this.form.toHTML(
                 null, render.defaultRenderer(),
                     this.render_options, true /* create defaults */
-            )
+            ) +
+            '</form>'
         );
 
         return html;
