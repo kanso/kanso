@@ -371,16 +371,19 @@ exports.isSubPath = function (a, b) {
  */
 
 exports.titleize = function (str) {
-    return (str || '').toLowerCase().replace(/(?:^|\s+)\w/g, function (m) {
-        return m.toUpperCase();
-    });
+    return (str || '').toLowerCase().replace(/_+/, ' ').replace(
+        /(?:^|\s+)\w/g, function (m) {
+            return m.toUpperCase();
+        }
+    );
 };
 
 /**
  * Returns a function that executes {closure} in the context of {context}.
  * Use this function if you'd like to preserve the current context
  * across callbacks, event handlers, and other cases where the value of
- * {this} is set for you.
+ * {this} is set for you. If you're coming from the Prototype framework,
+ * this function is similar to bind() there.
  *
  * @name bindContext(context, closure)
  * @param {Object} context The context to use when executing closure.

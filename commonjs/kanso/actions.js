@@ -154,7 +154,8 @@ exports.modalDialog = function (action_options,
         /* Draw widget */
         div.append(
             widget.toHTML(
-                name, data.value, data.raw, data.field, widget_options
+                name, data.value,
+                    data.raw, data.field, widget_options
             )
         );
 
@@ -169,12 +170,18 @@ exports.modalDialog = function (action_options,
                 Generate one and wrap the contents of the dialog with it.
                 This provides support for widgets other than embedForm. */
 
-            var wrapper_elt = $('<div />');
+            var wrapper_elt = $('<div class="dialog" />');
+
+            /* Mark as a rendering context for CSS */
+            div.addClass('render');
+            div.removeClass('dialog');
+
             form_elt = $('<form />');
             form_elt.append(div);
             wrapper_elt.append(form_elt);
             div = wrapper_elt;
         }
+
 
         /* Insert elements:
             This is the panel of actions, including ok and cancel. */
@@ -191,6 +198,7 @@ exports.modalDialog = function (action_options,
         );
 
         form_elt.append(spinner_elt);
+        form_elt.append('<div class="clear" />');
 
         /* Event handler:
             Handle successful outcome. */

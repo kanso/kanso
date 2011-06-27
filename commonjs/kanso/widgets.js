@@ -511,7 +511,7 @@ exports.embedList = function (_options) {
                 this.render_options.path_extra
         );
         var html = (
-            '<div class="embed_list" rel="' +
+            '<div class="embed-list" rel="' +
                 h(this.field.type.name) + '" id="' + h(id) + '">'
         );
 
@@ -1029,7 +1029,7 @@ exports.defaultEmbedded = function (_options) {
             display_name = field.type.display_name(value);
         }
         var html = (
-            '<div class="default_embed">' +
+            '<div class="default-embed">' +
                 '<input type="hidden" value="' + h(fval) + '" name="' +
                     h(this._name(name, options.offset)) + '" />' +
                 '<span class="value">' + h(display_name) + '</span>' +
@@ -1053,31 +1053,84 @@ exports.defaultEmbedded = function (_options) {
 
 exports.embedForm = function (_options) {
     var w = new Widget('embedForm', _options);
-
-    w.embedded_type = _options.type;
-    w.form = new forms.Form(w.embedded_type);
+    w.options = (_options || {});
 
     w.toHTML = function (name, value, raw, field, options) {
 
+        this.cacheInit();
         this.field = field;
-        this.form.values = value;
         this.render_options = (options || {});
 
         var id = this._id(
             name, 'form', this.render_options.offset,
                 this.render_options.path_extra
         );
-        var html = (
-            '<div id="' + id + '" class="embedded form">' +
-                '<form>' +
-                    this.form.toHTML(
-                        null, render.defaultRenderer(),
-                            this.render_options, true /* create defaults */
-                    ) +
-                '</form>' +
-            '</div>'
+
+        this.is_reference = _.include(
+            [ 'reference', 'unique_reference' ], this.field.type.name
         );
-        return html;
+
+        if (this.is_reference && !this.options.noDereference) {
+
+            /* Start progress indicator:
+                We might be running server-side; show a progress indicator
+                until we're able to make the XHR request in clientInit. */
+
+            this.type = utils.getPropertyPath(field, [ 'type', 'type' ]);
+
+            return (
+                '<div id="' + id + '" class="embedded form">' +
+                    '<div class="spinner" />' +
+                '</div>'
+            );
+        } else {
+
+            /* Not a reference type:
+                Go ahead and render the full form synchronously. */
+
+            this.type = this.options.type;
+
+            return (
+                '<div id="' + id + '" class="embedded form">' +
+                    '<form>' +
+                        this.renderEmbedded(value) +
+                    '</form>' +
+                '</div>'
+            );
+        }
+    };
+
+    w.clientInit = function (field, path, value, raw, errors, options) {
+
+        this.cacheInit();
+        this.field = field;
+        this.render_options = (options || {});
+
+        if (this.is_reference) {
+
+            /* Dereference document:
+                Since we were provided with a reference type, we
+                need to use the reference's ref or id attribute to
+                look up the actual value to be used while rendering
+                the form. This has to be asynchronous, so we do it here. */
+
+            var document_id = (value.ref || value._id);
+
+            db.getDoc(
+                document_id,
+                utils.bindContext(this, function (err, rv) {
+                    if (err) {
+                        throw new Error(
+                            'Unable to locate the document `' +
+                                document_id + '`, referenced from ' +
+                                ' reference document `' + value._id + '`'
+                        );
+                    }
+                    var container_elt = this.discoverContainerElement(path);
+                    $(container_elt).html(this.renderEmbedded(rv));
+                })
+            );
+        }
     };
 
     w.getValue = function (elt, path, options) {
@@ -1099,12 +1152,31 @@ exports.embedForm = function (_options) {
 
     /** private: **/
 
+    w.cacheInit = function () {
+        this.discoverContainerElement = this._discoverContainerElement;
+    };
+
     w._discoverContainerElement = function (path) {
         var id = this._id(
             path, 'form', this.render_options.offset,
                 this.render_options.path_extra
         );
         return $('#' + id);
+    };
+
+    w.renderEmbedded = function (value) {
+
+        this.form = new forms.Form(this.type);
+        this.form.values = value;
+
+        var html = (
+            this.form.toHTML(
+                null, render.defaultRenderer(),
+                    this.render_options, true /* create defaults */
+            )
+        );
+
+        return html;
     };
 
     return w;
@@ -1179,11 +1251,12 @@ exports.documentSelector = function (_options) {
             name, options.offset, options.path_extra
         );
         var select_html = (
-            '<select class="selector id="' + select_id +
+            '<select class="document-selector" id="' + select_id +
                 '" name="' + html_name + '" />'
         );
         var html = (
-            '<div id="' + container_id + '" class="selector widget">' +
+            '<div id="' + container_id + '"' +
+                ' class="document-selector widget">' +
                 select_html +
                 '<div class="spinner" style="display: none;" />' +
             '</div>'
@@ -1234,7 +1307,6 @@ exports.documentSelector = function (_options) {
     };
 
     w.clientInit = function (field, path, value, raw, errors, options) {
-
         var id = this._id(
             path, 'widget', options.offset, options.path_extra
         );
@@ -1392,7 +1464,7 @@ exports.documentSelector = function (_options) {
     };
 
     w._discoverSelectionElement = function (container_elt) {
-        return $(container_elt).closestChild('select.selector');
+        return $(container_elt).closestChild('select.document-selector');
     };
 
     return w;
