@@ -10,7 +10,7 @@
  * Module dependencies
  */
 
-var core = require('./db_core');
+var core = require('./db.core');
 
 /**
  * Deletes an existing user document, given its username. You

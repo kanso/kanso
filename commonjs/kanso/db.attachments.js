@@ -10,5 +10,5 @@
  * Module dependencies
  */
 
-var core = require('./db_core');
+var core = require('./db.core');
 

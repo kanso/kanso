@@ -11,7 +11,7 @@
  * Module dependencies
  */
 
-var core = require('./widgets_core'),
+var core = require('./widgets.core'),
     db = require('kanso/db'),
     forms = require('kanso/forms'),
     actions = require('kanso/actions'),

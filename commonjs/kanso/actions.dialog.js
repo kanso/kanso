@@ -13,7 +13,7 @@
  * Module dependencies
  */
 
-var core = require('./actions_core'),
+var core = require('./actions.core'),
     utils = require('kanso/utils'),
     sanitize = require('kanso/sanitize'),
     _ = require('kanso/underscore')._;
