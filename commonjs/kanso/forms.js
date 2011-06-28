@@ -519,32 +519,30 @@ exports.parseRaw = function (fields, raw) {
             if (!f.isEmpty(r)) {
                 if (typeof r === 'string') {
                     if (r !== '') {
-                        doc[k] = JSON.parse(r);
+                        r = JSON.parse(r);
                     } else {
-                        doc[k] = {};
+                        r = {};
                     }
                 }
-                else {
-                    doc[k] = exports.parseRaw(f.type.fields, r);
-                }
+                doc[k] = exports.parseRaw(f.type.fields, r);
             }
         }
         else if (f instanceof fields_module.EmbeddedList) {
             doc[k] = [];
-            for (var i in r) {
-                if (typeof r[i] === 'string') {
-                    if (r[i] !== '') {
-                        doc[k][i] = JSON.parse(r[i]);
-                    } else {
-                        doc[k][i] = {};
+            if (!f.isEmpty(r)) {
+                for (var i in r) {
+                    if (typeof r[i] === 'string') {
+                        if (r[i] !== '') {
+                            r[i] = JSON.parse(r[i]);
+                        } else {
+                            r[i] = {};
+                        }
                     }
-                }
-                else {
                     doc[k][i] = exports.parseRaw(f.type.fields, r[i]);
                 }
-            }
-            if (!doc[k].length && f.omit_empty) {
-                delete doc[k];
+                if (!doc[k].length && f.omit_empty) {
+                    delete doc[k];
+                }
             }
         }
         else if (f instanceof Object) {

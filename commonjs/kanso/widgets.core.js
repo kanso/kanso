@@ -80,24 +80,18 @@ Widget.prototype._name = function (name /* , ... */) {
  * This function tries to interpret the string as JSON if it's
  * appropriate; otherwise the string is left alone.
  *
- * @name _parse_value(str, type_name)
- * @param {String} str The string value to parse
- * @param {String} type_name The type of field that the input control
- *          belongs to. This value may influence how str is parsed.
+ * @name _parse_value(value)
+ * @param {String} value The string value to parse. If value is
+ *          already an object, it it returned with no modifications.
  * @returns {Object}
  */
 
-Widget.prototype._parse_value = function (str, type_name)
+Widget.prototype._parse_value = function (value)
 {
-    /* TODO:
-        This function needs to actually check type_name. */
+    var rv = value;
 
-    var rv = null;
-
-    try {
-        rv = JSON.parse(str);
-    } catch (e) {
-        rv = str;
+    if (typeof(rv) === 'string') {
+        rv = JSON.parse(rv);
     }
 
     return rv;
@@ -108,24 +102,18 @@ Widget.prototype._parse_value = function (str, type_name)
  * document fragment in to an encoded string. If the value
  * passed is already encoded, this function does nothing.
  *
- * @name _stringify_value(str, type_name)
- * @param {String} value The value to encode.
- * @param {String} type_name The type of field that the input control
- *          belongs to. This value may influence how value is encoded.
+ * @name _stringify_value(value)
+ * @param {String} value The value to encode. If value is already
+ *          a string, it is returned with no modifications.
  * @returns {Object}
  */
 
-Widget.prototype._stringify_value = function (value, type_name)
+Widget.prototype._stringify_value = function (value)
 {
-    /* TODO:
-        This function needs to actually check type_name. */
+    var rv = value;
 
-    var rv = null;
-
-    try {
-        rv = JSON.stringify(value);
-    } catch (e) {
-        rv = value;
+    if (typeof(rv) !== 'string') {
+        rv = JSON.stringify(rv);
     }
 
     return rv;

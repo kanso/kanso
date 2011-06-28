@@ -121,6 +121,7 @@ exports.embedList = function (_options) {
     };
 
     w.normalizeValue = function (value) {
+        value = this._parse_value(value);
         if (this.singleton) {
             if (value && !_.isArray(value)) {
                 value = [ value ];
@@ -573,7 +574,9 @@ exports.embedList = function (_options) {
 
 exports.defaultEmbedded = function (_options) {
     var w = new core.Widget('defaultEmbedded', _options);
+
     w.toHTML = function (name, value, raw, field, options) {
+        value = this._parse_value(value);
         var display_name = (value ? value._id: '');
         var fval = (value ? this._stringify_value(value) : '');
 
@@ -612,6 +615,8 @@ exports.embedForm = function (_options) {
         this.cacheInit();
         this.field = field;
         this.render_options = (options || {});
+
+        value = this._parse_value(value);
 
         var id = this._id(
             name, 'form', this.render_options.offset,
@@ -709,6 +714,7 @@ exports.embedForm = function (_options) {
         var rv = querystring.parse(
             form_elt.serialize().replace(/\+/g, '%20')
         );
+        console.log([ 'getValue', rv ]);
         return rv;
     };
 
