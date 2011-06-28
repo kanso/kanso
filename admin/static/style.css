@@ -75,11 +75,18 @@ h1 strong a {
 }
 
 h2 {
-    margin: 18px 0;
+    margin: 0 0 1em 0;
 }
 
 .simplemodal-data h2 {
-    margin-top: 0;
+    padding: 0;
+    color: #333;
+    font-size: 1.15em;
+    border-bottom: solid 1px #bbb;
+}
+
+.simplemodal-data {
+    min-width: 30em;
 }
 
 table.typelist,
@@ -390,13 +397,26 @@ td.actions .button {
     font-weight: bold;
 }
 
-.spinner {
+.spinner, .dialog .render .widget .spinner {
     display: inline;
     background: url("images/spinner-small.gif");
     background-repeat: no-repeat;
     background-position: center;
     line-height: 1em;
-    padding: 1em;
+    padding: 8px 10px;
+}
+
+.dialog .spinner {
+    background: url("images/spinner.gif");
+    background-repeat: no-repeat;
+    background-position: center;
+    padding: 12px 14px;
+}
+
+.dialog .render .spinner {
+    float: none;
+    padding-left: 50%;
+    padding-right: 50%;
 }
 
 .widget .selector select {
@@ -415,28 +435,56 @@ td.actions .button {
     overflow: hidden;
 }
 
-.embedlist .item {
+.embed-list .item {
     clear: both;
 }
 
-.embedlist .actions {
+.embed-list .actions {
     float: none;
     overflow: visible;
     padding-left: 0;
 }
 
-.embedlist .item .actions {
+.embed-list .item .actions {
     float: right;
     overflow: hidden;
 }
 
-.embedlist .embed {
+.embed-list .default-embed {
     float: none;
     overflow: visible;
 }
 
-.embedlist .item .embed {
+.embed-list .item .default-embed {
     float: left;
     overflow: hidden;
+}
+
+.dialog .spinner {
+    float: right;
+}
+
+.dialog .actions {
+    float: left;
+}
+
+.dialog .actions input, .dialog .actions button {
+    vertical-align: middle;
+}
+
+.dialog .render {
+    border-bottom: solid 1px #bbb;
+    padding-bottom: 0.75em;
+    margin-bottom: 0.5em;
+}
+
+.dialog .render .render {
+    border: 0;
+    padding: 0;
+    margin: 0;
+}
+
+.clear {
+    clear: both;
 }
 
