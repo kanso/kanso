@@ -10,7 +10,7 @@
 var _ = require('kanso/underscore')._;
 
 var modules = [
-    './db_core', './db_replication', './db_attachments'
+    './db.core', './db.replication', './db.attachments'
 ];
 
 _.reduce(modules, function (a, m) {

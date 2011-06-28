@@ -10,8 +10,8 @@
 var _ = require('kanso/underscore')._;
 
 var modules = [
-    './widgets_core', './widgets_embed',
-        './widgets_selector', './widgets_jquery'
+    './widgets.core', './widgets.embed',
+        './widgets.selector', './widgets.jquery'
 ];
 
 _.reduce(modules, function (a, m) {

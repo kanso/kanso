@@ -10,7 +10,7 @@
 var _ = require('kanso/underscore')._;
 
 var modules = [
-    './actions_core', './actions_dialog', './actions_embed'
+    './actions.core', './actions.dialog', './actions.embed'
 ];
 
 _.reduce(modules, function (a, m) {
