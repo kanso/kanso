@@ -1,7 +1,5 @@
 /*global $: false, kanso: true*/
 
-var utils = require('./utils');
-
 /**
  * Implementation of widget actions. These are procedures
  * that can be referenced by widgets to present/collect information,
@@ -15,7 +13,8 @@ var utils = require('./utils');
  * Module dependencies
  */
 
-var widgets = require('./widgets'),
+var db = require('./db'),
+    utils = require('./utils'),
     sanitize = require('./sanitize'),
     _ = require('./underscore')._;
 
@@ -85,26 +84,30 @@ exports.parse = function (actions) {
  * which does the actual form rendering and presentation.
  */
 
-exports.modalDialog = function (action_options, action_name,
-                                type_name, field, path, value,
-                                raw, errors, options, callback) {
+exports.modalDialog = function (action_options,
+                                names, data, options, callback) {
     options = (options || {});
     action_options = (action_options || {});
 
-    var widget = action_options.widget;
-    var name = sanitize.generateDomName(path);
-    var path_extra = (options.path_extra || []).concat([ 'modal' ]);
     var operation = 'update';
-    if (action_name !== 'edit') {
-        operation = action_name;
+    var widget = action_options.widget;
+    var name = sanitize.generateDomName(data.path);
+    var path_extra = (options.path_extra || []).concat([ 'modal' ]);
+
+    if (names.action !== 'edit') {
+        operation = names.action;
     }
     var widget_options = {
         path_extra: path_extra,
         operation: operation
     };
 
-    /* Resolve widget */
+    /* Shortcut:
+        If no widget is specified, assume embedForm, and
+        use the options to modalDialog as options to embedForm. */
+
     if (!widget && action_options.type) {
+        var widgets = require('./widgets');
         widget = widgets.embedForm(
             _.defaults(action_options.options || {}, {
                 type: action_options.type
@@ -115,8 +118,8 @@ exports.modalDialog = function (action_options, action_name,
     if (!widget) {
         throw new Error(
             'modalDialog: Unable to determine the widget to' +
-            ' use for the field named `' + path.join('.') + '`;' +
-            ' widget or field type was not correctly specified'
+            ' use for the field named `' + data.path.join('.') +
+            '`; widget or field type was not correctly specified'
         );
     }
 
@@ -128,12 +131,17 @@ exports.modalDialog = function (action_options, action_name,
 
         /* Generate strings for content */
         var cancel_label = 'Cancel';
-        var type_label = utils.titleize(type_name);
-        var action_label = utils.titleize(action_name);
+        var title_label = action_options.title;
+        var action_label = utils.titleize(names.action);
+
+        if (!title_label) {
+            var type_label = utils.titleize(names.type);
+            title_label = [ action_label, type_label ].join(' ');
+        }
 
         /* Generate inner elements */
         var title_elt = $(
-            '<h2>' + [ action_label, type_label ].join(' ') + '</h2>'
+            '<h2>' + h(title_label) + '</h2>'
         );
         var ok_elt = $(
             '<input type="submit" value="' + h(action_label) + '" />'
@@ -146,7 +154,7 @@ exports.modalDialog = function (action_options, action_name,
         );
 
         /* Create widget's parent element */
-        var div = $('<div />');
+        var div = $('<div class="dialog" />');
 
         /* Add dialog title */
         div.append(title_elt);
@@ -154,7 +162,8 @@ exports.modalDialog = function (action_options, action_name,
         /* Draw widget */
         div.append(
             widget.toHTML(
-                name, value, raw, field, widget_options
+                name, data.value,
+                    data.raw, data.field, widget_options
             )
         );
 
@@ -169,23 +178,54 @@ exports.modalDialog = function (action_options, action_name,
                 Generate one and wrap the contents of the dialog with it.
                 This provides support for widgets other than embedForm. */
 
-            var wrapper_elt = $('<div />');
+            var wrapper_elt = $('<div class="dialog" />');
+
+            /* Mark as a rendering context for CSS */
+            div.addClass('render');
+            div.removeClass('dialog');
+
             form_elt = $('<form />');
             form_elt.append(div);
             wrapper_elt.append(form_elt);
             div = wrapper_elt;
         }
 
-        /* Handle success */
+
+        /* Insert elements:
+            This is the panel of actions, including ok and cancel. */
+        
+        actions_elt.append(ok_elt);
+        actions_elt.append(cancel_elt);
+        form_elt.append(actions_elt);
+
+        /* Insert elements:
+            This is a progress indicator / spinner element. */
+       
+        var spinner_elt = $(
+            '<div class="spinner" style="display: none;" />'
+        );
+
+        form_elt.append(spinner_elt);
+        form_elt.append('<div class="clear" />');
+
+        /* Event handler:
+            Handle successful outcome. */
+
         ok_elt.click(function (ev) {
+
+            /* Show progress indicator:
+                This is deleted automatically when the dialog is closed. */
+
+            spinner_elt.show();
 
             /* Validate widget:
                 This usually defers to a form type's implementation.
                 Most simple widgets just return true for this method. */
 
-            errors = widget.validate(div, path, widget_options);
+            data.errors =
+                widget.validate(div, data.path, widget_options);
 
-            if (errors.length > 0) {
+            if (data.errors.length > 0) {
 
                 /* Repost dialog box:
                     This will replace the current dialog box.
@@ -196,20 +236,17 @@ exports.modalDialog = function (action_options, action_name,
 
                 setTimeout(function () {
                     exports.modalDialog(
-                        action_options, action_name, type_name, field,
-                            path, value, raw, errors, options, callback
+                        action_options, names, data, options, callback
                     );
                 }, 0);
 
             } else {
 
-                /* Close the dialog box:
-                    Again, note that the dialog box won't actually disappear
-                    until we've unwound and returned to the main event
-                    loop. If you depend upon closure, use setTimeout(). */
+                /* Invoke callback:
+                    Let the widget that invoked us know that we're done. */
 
                 callback(
-                    true, widget.getValue(div, path, widget_options)
+                    true, widget.getValue(div, data.path, widget_options)
                 );
 
                 /* Order matters:
@@ -223,10 +260,12 @@ exports.modalDialog = function (action_options, action_name,
             ev.preventDefault();
         });
 
-        /* Handle failure */
+        /* Event handler:
+            Handle negative outcome, or cancellation. */
+
         cancel_elt.click(function () {
             callback(
-                false, widget.getValue(div, path, widget_options)
+                false, widget.getValue(div, data.path, widget_options)
             );
             $.modal.close();
         });
@@ -238,12 +277,9 @@ exports.modalDialog = function (action_options, action_name,
             return false;
         });
 
-        /* Insert dialog-managed elements */
-        actions_elt.append(ok_elt);
-        actions_elt.append(cancel_elt);
-        form_elt.append(actions_elt);
+        /* Launch dialog:
+            This wraps the <div> and inserts it in the DOM. */
 
-        /* Launch dialog */
         div.modal();
 
         /* Initialize widget:
@@ -251,10 +287,75 @@ exports.modalDialog = function (action_options, action_name,
             and initialized prior to client-side widget initialization. */
 
         widget.clientInit(
-            field, path, value, raw, errors, widget_options
+            data.field, data.path, data.value,
+                data.raw, data.errors, widget_options
         );
     };
 
     return generateModalDialog();
+};
+
+/**
+ * Update the action originator (i.e. a widget) with a new value.
+ * If the originating widget is not widget.embedList, it must provide
+ * a setListItemValue method, which accepts three arguments -- (i) a DOM
+ * element that wraps the widget; (ii) the new value for the widget; and
+ * (iii) a set of widget options, which sometimes contains information
+ * about the widget's nesting context and/or list item offset. It's
+ * important to note that this action doesn't cause any data to be
+ * saved on its own, but merely updates a widget's value for use
+ * in the next save operation.
+ */
+
+exports.defaultEmbedSave = function (action_options, names, 
+                                     data, options, callback) {
+    if (!data.element) {
+        return callback(false, data.value);
+    }
+
+    var widget = utils.getPropertyPath(data, [ 'field', 'widget' ]);
+    var item_elt = $(data.element).closest('.item');
+
+    widget.setListItemValue(
+        item_elt, data.value, options
+    );
+
+    return callback(true, data.value);
+};
+
+/**
+ * Saves the document specified in data.value. This action is
+ * intended for use with the reference and uniqueReference types,
+ * but can in theory be used by any widget or action that handles
+ * external (i.e. non-embedded) documents. When combined with the
+ * embedForm widget's support for dereferencing these field types,
+ * this action provides a way to easily manage linked external
+ * documents in Kanso.
+ */
+
+exports.saveExternalDocument = function (action_options, names, 
+                                         data, options, callback) {
+    var doc = data.value;
+    delete doc._deleted;
+
+    if (!doc || !doc._id) {
+        throw new Error(
+            'saveExternalDocument: The value provided is not a valid' +
+                ' document, or does not contain a valid document identifier'
+        );
+    }
+
+    db.saveDoc(
+        doc, function (err, rv) {
+            if (err) {
+                throw new Error(
+                    'saveExternalDocument: Failed to save document' +
+                        ' with identifier `' + doc._id + '`'
+                );
+            }
+            /* Indicate success */
+            callback(true, doc);
+        }
+    );
 };
 

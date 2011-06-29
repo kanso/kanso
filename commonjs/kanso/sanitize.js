@@ -78,6 +78,26 @@ exports.escapeXmlCharacterData = exports.cdata = function (s)
 
 
 /**
+ * Encodes selected characters in a string, so that the string
+ * can be safely used on the right side of a CSS attribute selector's
+ * equal sign. This function should be used when using a user-modifiable
+ * string to match an element by attribute -- either in jQuery, or as part
+ * of a dynamically-generated CSS selector.
+ *
+ * @name escapeAttributeSelectorValue(s)
+ * @param {String} s
+ * @returns {String}
+ * @api public
+ */
+
+exports.escapeAttributeSelectorValue = exports.css = function (s)
+{
+    s = ('' + s); /* Coerce to string */
+    s = s.replace(/['"\\=\[\]]/, '\\$1');
+    return s;
+};
+
+/**
  * Takes any number of arguments, and combines them together
  * to safely form a string that's suitable for use as a DOM
  * element identifier.

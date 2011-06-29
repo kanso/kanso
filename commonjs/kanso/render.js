@@ -186,7 +186,7 @@ exports.table = function () {
     */
     this.start = function (errs) {
         this.depth = 0;
-        var html = '<table class="render-table">';
+        var html = '<table class="render render-table">';
         if (errs && errs.length) {
             html += '<ul class="form-errors">';
             _.each(errs, function (e) {
@@ -323,7 +323,7 @@ exports.div = function () {
     */
     this.start = function (errs) {
         this.depth = 0;
-        var html = '<div class="render-div">';
+        var html = '<div class="render render-div">';
         if (errs && errs.length) {
             html += '<ul class="errors">';
             _.each(errs, function (e) {
