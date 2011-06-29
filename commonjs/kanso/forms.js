@@ -540,9 +540,9 @@ exports.parseRaw = function (fields, raw) {
                     }
                     doc[k][i] = exports.parseRaw(f.type.fields, r[i]);
                 }
-                if (!doc[k].length && f.omit_empty) {
-                    delete doc[k];
-                }
+            }
+            if (!doc[k].length && f.omit_empty) {
+                delete doc[k];
             }
         }
         else if (f instanceof Object) {
