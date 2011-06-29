@@ -1,4 +1,4 @@
-----------, Version 0.0.7
+2011.06.24, Version 0.0.7
 
 * Dropped support for CouchDB < 1.1
 
@@ -99,6 +99,8 @@
 
 * Automatically save documents returned from update function when run in the
   browser, see new tutorial for example usage
+
+* Added sanitize module and did some anti-XSS work
 
 * Made it easier to share code between the normal app modules and CouchDB
   views, see new guide on sharing code with views for more info
