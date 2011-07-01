@@ -155,7 +155,6 @@ table.viewlist {
 
 th.actions,
 td.actions {
-    width: 210px;
     padding: 0;
     margin: 0;
     padding-left: 50px !important;
