@@ -3,3 +3,4 @@ test/ensure_dir
 dist
 stamp-build
 www
+.*.swp
