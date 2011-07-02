@@ -54,7 +54,7 @@ kansorc.load(function (err, settings) {
                 });
             }
             else if (cmd in commands) {
-                commands[cmd].run(settings, args);
+                commands[cmd].run(settings, p, args);
             }
             else {
                 logger.error('No such command: ' + cmd);
