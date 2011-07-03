@@ -1,7 +1,7 @@
 @font-face {
     font-family: "Iconic Stroke";
-    src: url('fonts/iconic_stroke.eot') !important;
-		src: url('fonts/iconic_stroke.svg#iconic') format('svg'), url('fonts/iconic_stroke.ttf') format('truetype');
+    src: url('../fonts/iconic_stroke.eot') !important;
+		src: url('../fonts/iconic_stroke.svg#iconic') format('svg'), url('../fonts/iconic_stroke.ttf') format('truetype');
 }
 
 .icon {
@@ -59,7 +59,7 @@ h1 :link, h1 :visited, h1 strong {
     padding: .4em .5em;
 }
 h1 :link, h1 :visited {
-    background: url(./path.gif) 100% 50% no-repeat;
+    background: url(../images/path.gif) 100% 50% no-repeat;
     color: #bbb;
     cursor: pointer;
     padding-right: 2.2em;
@@ -78,15 +78,11 @@ h2 {
     margin: 0 0 1em 0;
 }
 
-.simplemodal-data h2 {
+.dialog h2 {
     padding: 0;
     color: #333;
     font-size: 1.15em;
     border-bottom: solid 1px #bbb;
-}
-
-.simplemodal-data {
-    min-width: 30em;
 }
 
 table.typelist,
@@ -399,7 +395,7 @@ td.actions .button {
 
 .spinner, .dialog .render .widget .spinner {
     display: inline;
-    background: url("images/spinner-small.gif");
+    background: url("../images/spinner-small.gif");
     background-repeat: no-repeat;
     background-position: center;
     line-height: 1em;
@@ -407,7 +403,7 @@ td.actions .button {
 }
 
 .dialog .spinner {
-    background: url("images/spinner.gif");
+    background: url("../images/spinner.gif");
     background-repeat: no-repeat;
     background-position: center;
     padding: 12px 14px;

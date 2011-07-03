@@ -1,0 +1,161 @@
+
+.upopup {
+    position: absolute;
+    overflow: visible;
+    padding: 0;
+}
+.upopup .adjust {
+    height: 2em;
+    width: 2em;
+    visibility: hidden;
+    background: transparent;
+}
+.upopup .largest {
+    font-size: 2em;
+}
+.upopup .larger {
+    font-size: 1.5em;
+}
+.upopup .large {
+    font-size: 1.25em;
+}
+.upopup .normal {
+    font-size: 1em;
+}
+.upopup .small {
+    font-size: 0.75em;
+}
+.upopup .smaller {
+    font-size: 0.5em;
+}
+.upopup .smallest {
+    font-size: 0.35em;
+}
+.upopup .direction {
+    overflow: visible;
+}
+.upopup .arrow {
+    height: 0;
+    width: 0;
+    border: 1.35em solid transparent;
+    background-color: transparent;
+}
+.upopup .n .arrow,
+.upopup .nw .arrow,
+.upopup .ne .arrow {
+    border-bottom-color: #999;
+}
+.upopup .s .arrow,
+.upopup .sw .arrow,
+.upopup .se .arrow {
+    border-top-color: #999;
+}
+.upopup .e .arrow,
+.upopup .ese .arrow,
+.upopup .ene .arrow {
+    border-left-color: #999;
+}
+.upopup .w .arrow,
+.upopup .wnw .arrow,
+.upopup .wsw .arrow {
+    border-right-color: #999;
+}
+.upopup .s .first-arrow,
+.upopup .sw .first-arrow,
+.upopup .se .first-arrow,
+.upopup .n .last-arrow,
+.upopup .nw .last-arrow,
+.upopup .ne .last-arrow,
+.upopup .e .last-arrow,
+.upopup .ese .last-arrow,
+.upopup .ene .last-arrow,
+.upopup .w .last-arrow,
+.upopup .wnw .last-arrow,
+.upopup .wsw .last-arrow {
+    display: none;
+}
+.upopup .border {
+    border: solid 0.15em #999;
+    border-radius: 2.25em;
+    -moz-border-radius: 2.25em;
+    -webkit-border-radius: 2.25em;
+    background-color: #aaa;
+    padding: 0.25em;
+}
+.upopup .n .border,
+.upopup .nw .border,
+.upopup .ne .border,
+.upopup .w .border,
+.upopup .wnw .border,
+.upopup .wsw .border {
+    box-shadow: 0.15em 0.15em 0.35em #555;
+    -webkit-box-shadow: 0.15em 0.15em 0.35em #555;
+    -moz-box-shadow: 0.15em 0.15em 0.35em #555;
+}
+.upopup .s .border,
+.upopup .sw .border {
+    box-shadow: -0.15em -0.15em 0.35em #555;
+    -webkit-box-shadow: -0.15em -0.15em 0.35em #555;
+    -moz-box-shadow: -0.15em -0.15em 0.35em #555;
+}
+.upopup .e .border,
+.upopup .ese .border,
+.upopup .ene .border {
+    box-shadow: 0.15em 0.15em 0.35em #555;
+    -webkit-box-shadow: -0.15em 0.15em 0.35em #555;
+    -moz-box-shadow: 0.15em -0.15em 0.35em #555;
+}
+.upopup .inner {
+    border: solid 0.15em #f5f5f5;
+    border-radius: 1.75em;
+    -moz-border-radius: 1.75em;
+    background-color: #f5f5f5;
+    min-width: 12em;
+    min-height: 8em;
+    padding: 1em;
+}
+.upopup .arrow {
+    position: absolute;
+}
+.upopup .n .arrow,
+.upopup .nw .arrow {
+    top: -2.64em;
+    left: 2.64em;
+}
+.upopup .e .arrow,
+.upopup .ene .arrow {
+    right: -2.64em;
+    top: 2em;
+}
+.upopup .ne .arrow {
+    right: 2em;
+    top: -2.64em;
+}
+.upopup .wsw .arrow,
+.upopup .ese .arrow {
+    bottom: 2.64em;
+}
+.upopup .wsw .arrow {
+    left: -2.64em;
+    bottom: 2em;
+}
+.upopup .ese .arrow {
+    right: -2.64em;
+    bottom: 2em;
+}
+.upopup .s .arrow,
+.upopup .sw .arrow {
+    bottom: -2.64em;
+    left: 2em;
+}
+.upopup .se .arrow {
+    right: 2em;
+}
+.upopup .w .arrow,
+.upopup .wnw .arrow {
+    top: 2em;
+    left: -2.64em;
+}
+.clear {
+    clear: both;
+}

@@ -450,7 +450,7 @@ exports.embedList = function (_options) {
         this.insertNewItemAtEnd(
             utils.bindContext(this, function (item_elt) {
                 this.dispatchEventToAction(
-                    item_elt, 'add', undefined, callback
+                    $('.edit', item_elt), 'add', undefined, callback
                 );
             })
         );
@@ -533,9 +533,10 @@ exports.embedList = function (_options) {
         switch (name) {
         case 'add':
         case 'edit':
-            return this.makeDefaultAction('modalDialog', {
+            return this.makeDefaultAction('showDialog', {
                 widget: exports.embedForm({
-                    type: this.field.type
+                    type: this.field.type,
+                    style: 'popup'
                 })
             });
             /* break */
