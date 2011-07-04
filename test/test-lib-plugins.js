@@ -21,7 +21,27 @@ exports.plugins = nodeunit.testCase({
             __dirname + '/fixtures/plugins/noconflict_two'
         ];
         var p = plugins.load(paths);
-        test.same(Object.keys(plugins.commands(p)), ['foo', 'bar', 'baz', 'qux']);
+        test.same(Object.keys(plugins.commands(p)), [
+            'foo',
+            'bar',
+            'baz',
+            'qux'
+        ]);
+        test.done();
+    },
+
+    'preprocessors': function (test) {
+        var paths = [
+            __dirname + '/fixtures/plugins/one',
+            __dirname + '/fixtures/plugins/noconflict_two'
+        ];
+        var p = plugins.load(paths);
+        test.same(plugins.preprocessors(p), [
+            'preprocessor one.a',
+            'preprocessor one.b',
+            'preprocessor two.a',
+            'preprocessor two.b'
+        ]);
         test.done();
     },
 
