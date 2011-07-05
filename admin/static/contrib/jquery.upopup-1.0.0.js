@@ -31,19 +31,19 @@
 
 /*
  * Special thanks to Medic Mobile, Inc. for making this project possible. Medic
- * Mobile is a US-based non-profit that works in developing countries to improve
- * health care systems and outcomes, by leveraging SMS and web technologies.
- * If this project has made your life easier in one way or another, and
- * you'd like to give back in some way, please consider donating directly at
- * medicmobile.org. Your donation is likely to be tax deductible if you reside
- * within the United States. Your donation will directly assist our construction
- * of open-source mobile health software.
+ * Mobile is a US-based non-profit, that works in developing countries to improve
+ * health care outcomes by leveraging SMS and web technologies.  If this project
+ * has made your life easier in one way or another, and you'd like to give back
+ * in some way, please consider donating directly at medicmobile.org. Your
+ * donation is likely to be tax deductible if you reside within the United
+ * States. Your donation will directly assist our construction of open-source
+ * mobile health software.
  */
 
 (function ($) {
 
     /**
-     * uPopup - Markup and CSS Overview:
+     * uPopup - Markup and CSS Overview
      *
      *  The uPopup plugin uses CSS for all layout and appearance,
      *  including rounded corners, arrow/pointer placement, and
@@ -65,7 +65,7 @@
      *      </div>
      *    </div>
      *
-     *  The popup dialog uses a triangular <div> (made with a thick
+     *  The popup dialog uses a triangular <div> (made using a thick
      *  border, with three transparent sides) to point at the target
      *  element that you provide. Only one arrow may be visible at a
      *  time; the visible arrow can be controlled by using one of the
@@ -83,6 +83,132 @@
      *  To modify the appearance of any uPopup-managed element, use a
      *  custom stylesheet to override properties found in the default
      *  uPopup CSS file.
+     */
+
+    /**
+     * uPopup - External API Overview
+     *
+     *  $.uPopup(_method, ...):
+     *      This function is the primary entry point for all uPopup
+     *      methods. To call a uPopup method, invoke this function on
+     *      any jQuery object. Supply the method name in the first
+     *      argument, followed by the arguments to the method. This
+     *      function will dispatch your call to the appropriate API
+     *      function.
+     *
+     *  create(this, _target_elts, _options):
+     *      Create one or more popup windows out of the selected elements.
+     *      The `this` object should be a jQuery selection, containing the
+     *      element(s) that you'd like to have displayed inside of popup
+     *      window. If the selection contains multiple elements, multiple
+     *      popups will be created -- one for each. If you need to add
+     *      multiple elements to a single popup dialog, wrap the elements
+     *      in a single <div> (e.g. using jQuery's {wrap} function) before
+     *      calling uPopup's {create} method.
+     *
+     *      this:
+     *          A jQuery selection. These are referred to as 'source
+     *          elements'; each element in the list will be wrapped inside
+     *          of a separate popup dialog and displayed.
+     *
+     *      _target_elts:
+     *          This argument is either (i) an array of elements,
+     *          (ii) an array of javascript functions, or (iii) a jQuery
+     *          selection. For each source element s[i] in {this}, the
+     *          positioning algorithm will place s[i]'s popup relative
+     *          to the target element t[i] in {_target_elts}. If t[i] is
+     *          not defined, the positioning algorithm will use the closest
+     *          previous element t[j] (max(j) | j < i) to determine an
+     *          optimal position. If t[i] is a function, it will be invoked
+     *          before positioning occurs, and must return an element.
+     *
+     *      _options:
+     *          A javascript object, containing options that influence the
+     *          behaviour of uPopup. A summary of the available options
+     *          appears below:
+     *
+     *              fx:
+     *                  A boolean value. True (default) if uPopup should be
+     *                  permitted to use jQuery effects when showing/hiding
+     *                  a popup dialog; false otherwise. Note that jQuery
+     *                  itself has a similar global option.
+     *
+     *              eventData:
+     *                  A jQuery event object, obtained from a mouse click
+     *                  or mouse move handler. Each source element in {this}
+     *                  will be placed directly underneath the coordinates
+     *                  specified by this object's pageX and pageY values.
+     *
+     *              centerX, centerY, center:
+     *                  A boolean value. Centres each source element in
+     *                  {this} on its respective target element from
+     *                  {_target_elts} -- either on the x-axis, y-axis,
+     *                  or on both axes, respectively.
+     *
+     *              vertical:
+     *                  A boolean value. If true, place each popup dialog's
+     *                  pointer (i.e. triangular arrow) on the top or bottom
+     *                  of the dialog, rather than on the left or right
+     *                  side. This is useful if a popup dialog appears close
+     *                  to the top or bottom edge of a window, and will be
+     *                  used automatically bu the positioning code if it
+     *                  isn't explicitly disabled here.
+     *
+     *              reposition:
+     *                  A boolean value. True (the default) if uPopup should
+     *                  attempt to reposition the popup dialog(s) when the
+     *                  browser window is resized; false otherwise.
+     *
+     *              onShow:
+     *                  A callback function. This function will be triggered
+     *                  by uPopup after a popup window has appeared. When
+     *                  this function is called, the popup window is
+     *                  guaranteed to be visible, and all effects will have
+     *                  completed.
+     *
+     *              onHide:
+     *                  A callback function. This function will be triggered
+     *                  by uPopup after a popup window has disappeared. When
+     *                  this function is called, the popup window is
+     *                  guaranteed to be invisible, and all effects will have
+     *                  completed.
+     *
+     *              useViewport:
+     *                  When set to true, the uPopup auto-positioning code
+     *                  only considers visible space -- that is, space
+     *                  appearing inside of the window element -- to be
+     *                  available for placement. This constrains the dialog's
+     *                  placement to visible locations only, and is the
+     *                  default. Set this to false if you're okay with the
+     *                  popup dialog occasionally being placed outside of
+     *                  the viewport (but still within the document).
+     *      
+     *  elements():
+     *      Returns the set of wrapper elements being maintained by the
+     *      uPopup library. This function returns an array whose size is
+     *      equal to the number of elements supplied to {create} in the
+     *      {this} parameter. Each element in the return value "wraps"
+     *      (i.e. contains) exactly one source element supplied to {create}.
+     *
+     *  show():
+     *      Show a set of popup dialogs created using the {create} method.
+     *      The value of {this} should contain only elements that have
+     *      already been supplied to the {create} method. To fire an action
+     *      when the popup dialogs are fully visible, use the {onShow}
+     *      callback function.
+     *
+     *  hide():
+     *      Hide a set of popup dialogs shown using the {show} method.
+     *      The value of {this} should contain only elements that have
+     *      already been supplied to the {create} method. To fire an action
+     *      when the popup dialogs are fully visible, use the {onHide}
+     *      callback function.
+     *
+     *  destroy():
+     *      Irreversibly destroy the popup dialog "wrapper", along with
+     *      the source elements you supplied in the {this} argument when
+     *      calling {create}. Elements supplied in other arguments,
+     *      including {_target_elts} and {_options}, are not affected.
      */
 
     $.uPopup = {};
@@ -122,7 +248,6 @@
 
                 /* Save instance state data */
                 popup_elt.data('upopup', {
-                    ratio: null,
                     elt: wrapper_elt,
                     options: options
                 });
@@ -156,10 +281,15 @@
          * You can disable animations by setting _options.fx = false
          * in the `create` method, or by disabling jQuery's effects.
          */
-        show: function (_callback) {
-            return $.uPopup.impl.priv.toggle.call(
-                this, true, _callback
-            );
+        show: function () {
+            var priv = $.uPopup.impl.priv;
+
+            $(this).each(function (i, popup_elt) {
+                var state = priv.instance_data_for(popup_elt);
+                $.uPopup.impl.priv.toggle.call(
+                    popup_elt, true, (state.options || {}).onShow
+                )
+            });
         },
 
         /**
@@ -168,9 +298,14 @@
          * in the `create` method, or by disabling jQuery's effects.
          */
         hide: function (_callback) {
-            return $.uPopup.impl.priv.toggle.call(
-                this, false, _callback
-            );
+            var priv = $.uPopup.impl.priv;
+
+            $(this).each(function (i, popup_elt) {
+                var state = priv.instance_data_for(popup_elt);
+                $.uPopup.impl.priv.toggle.call(
+                    popup_elt, false, (state.options || {}).onHide
+                )
+            });
         },
 
         /**
@@ -178,10 +313,12 @@
          * selected element(s), hiding the popup first if necessary.
          */
         destroy: function () {
-            $.uPopup.impl.hide.call(this, function (_wrapper_elt) {
-                _wrapper_elt.remove();
-                delete _wrapper_elt;
-            });
+            $.uPopup.impl.priv.toggle.call(
+                this, false, function (_wrapper_elt) {
+                    _wrapper_elt.remove();
+                    delete _wrapper_elt;
+                }
+            );
         },
 
         /**
@@ -294,7 +431,7 @@
                 _wrapper_elt.css('display', 'none');
                 _wrapper_elt.prependTo('body');
 
-                $.uPopup.impl.show.call(_popup_elt, _options.onShow)
+                $.uPopup.impl.show.call(_popup_elt)
             },
 
             /**
@@ -369,7 +506,7 @@
                     x: _target_elt.outerWidth(true),
                     y: _target_elt.outerHeight(true)
                 };
-                
+
                 /* Available space on each side of target:
                     { x: [ left, right ], y: [ top, bottom ] } */
                 
@@ -408,6 +545,32 @@
                     };
                 }
 
+                /* Placement relative to viewport:
+                    If the viewport option has been set, then
+                    only count space that's immediately visible. */
+
+                if (options.useViewport !== false) {
+
+                    var window_elt = $(window);
+
+                    var window_offset = {
+                        y: window_elt.scrollTop(),
+                        x: window_elt.scrollLeft()
+                    };
+
+                    avail.x[0] -= window_offset.x;
+                    avail.x[1] -= (
+                        container_size.x -
+                            (window_offset.x + window_elt.width())
+                    );
+                    avail.y[0] -= window_offset.y;
+                    avail.y[1] -= (
+                        container_size.y -
+                            (window_offset.y + window_elt.height())
+                    );
+
+                }
+                
                 /* Indices:
                     Each value is an index for `avail` and `offsets`. */
 
@@ -424,12 +587,12 @@
 
             /**
              * This is the core repositioning function. This is used as the
-             * back-end of auto_position, and can also be used if you want
+             * back-end of auto_position, and may be called directly to
              * force a popup to appear facing a certain direction. The
-             * _target_elt is the element that the popup should point
-             * to; _wrapper_elt is the return value obtained from calling
-             * priv.wrap; _x and _y are boolean values denoting left/right
-             * and top/bottom (each zero/one or true/false, respectively).
+             * {_target_elt} is the element that the popup should point
+             * to; {_wrapper_elt} is the return value obtained from calling
+             * {priv.wrap}; _x and _y are boolean values denoting left/right
+             * and top/bottom (each zero/one or false/true, respectively).
              */
             reposition: function (_wrapper_elt, _popup_elt,
                                   _target_elt, _x, _y, _options) {
@@ -463,8 +626,17 @@
                     y: arrow_elt.outerHeight()
                 };
 
-                /* Difference between arrow's point and edge */
+                /* Delta value:
+                    Distance between popup's edge and arrow's edge. */
+
                 var d = priv.calculate_arrow_delta(_wrapper_elt);
+
+                /* Coefficients:
+                    Arrow size, adjust width/x, adjust height/y */
+
+                var c = (
+                    options.vertical ? [ -1, 1, 0 ] : [ 1, 0, 1 ]
+                );
 
                 if (ev) {
 
@@ -480,33 +652,34 @@
 
                     offsets = {
                         x: [
-                            pt.x - wrapper_size.x - arrow_size.x / 2 + d.x,
-                            pt.x + arrow_size.x / 2 - d.x
+                            pt.x - wrapper_size.x - c[0] * arrow_size.x / 2
+                                + c[1] * d.x,
+                            pt.x + c[0] * arrow_size.x / 2 - c[1] * d.x
                         ],
                         y: [
-                            pt.y - wrapper_size.y + arrow_size.y / 2 + d.y,
-                            pt.y - arrow_size.y / 2 - d.y
+                            pt.y - wrapper_size.y + c[0] * arrow_size.y / 2
+                                + c[2] * d.y,
+                            pt.y - c[0] * arrow_size.y / 2 - c[2] * d.y
                         ]
                     };
-
 
                 } else {
 
                     /* No event object:
                         Possible offsets are the target's four corners. */
-     
+
                     offsets = {
                         x: [
-                            target_offset.left - wrapper_size.x + d.x
-                                + padding_size.x - arrow_size.x / 2,
-                            target_offset.left + target_size.x - d.x
-                                - padding_size.x + arrow_size.x / 2
+                            target_offset.left - wrapper_size.x + c[1] * d.x
+                                + padding_size.x - c[0] * arrow_size.x / 2,
+                            target_offset.left + target_size.x - c[1] * d.x
+                                - padding_size.x + c[0] * arrow_size.x / 2
                         ],
                         y: [
-                            target_offset.top - wrapper_size.y + d.y +
-                                padding_size.y + arrow_size.y / 2,
-                            target_offset.top + target_size.y - d.y -
-                                padding_size.y - arrow_size.y / 2
+                            target_offset.top - wrapper_size.y + c[2] * d.y
+                                + padding_size.y + c[0] * arrow_size.y / 2,
+                            target_offset.top + target_size.y - c[2] * d.y
+                                - padding_size.y - c[0] * arrow_size.y / 2
                         ]
                     };
                 }
@@ -517,25 +690,30 @@
                     space). Due to this fact, the following steps never
                     yield less room for dialog placement -- always more. */
 
-                if (!options.eventData && options.useCenter !== false) {
-                    var dx = target_size.x / 2;
-                    var dy = target_size.y / 2;
-
-                    offsets.x[0] += dx;
-                    offsets.x[1] -= dx;
-                    offsets.y[0] += dy;
-                    offsets.y[1] -= dy;
+                if (!options.eventData) {
+                    if (options.center || options.centerX) {
+                        var dx = target_size.x / 2;
+                        offsets.x[0] += dx;
+                        offsets.x[1] -= dx;
+                    }
+                    if (options.center || options.centerY) {
+                        var dy = target_size.y / 2;
+                        offsets.y[0] += dy;
+                        offsets.y[1] -= dy;
+                    }
                 }
 
                 /* Position arrow:
                     We place the arrow on the corner of the popup that
                     is closest to the near corner of the target element. */
 
-                var classes = [
-                    [ 'ese', 'e' ], [ 'wsw', 'w' ]
-                ]
+                var classes = (
+                    options.vertical ?
+                        [ [ 'se', 'ne' ], [ 's', 'n' ] ]
+                        : [ [ 'ese', 'e' ], [ 'wsw', 'w' ] ]
+                );
 
-                inner_elt.attr('class', 'direction');
+                inner_elt.removeClass('se ne s n ese e wsw w');
                 inner_elt.addClass(classes[_x][_y]);
 
                 /* Finally, reposition:
@@ -550,7 +728,9 @@
             /**
              * Use an invisible <div> to determine the number of additional
              * pixels needed to shift to the arrow element's exact point.
-             * This is required due to the use of absolute positioning.
+             * This is required due to the use of absolute positioning --
+             * we don't have a solid way to determine the offset-from-edge
+             * in pixels using position data alone.
              */
             calculate_arrow_delta: function (_wrapper_elt)
             {
@@ -558,7 +738,8 @@
                 _wrapper_elt.append(adjust_div)
 
                 var delta = {
-                    x: 0, y: adjust_div.height()
+                    x: adjust_div.width(),
+                    y: adjust_div.height()
                 };
 
                 adjust_div.remove();
@@ -575,6 +756,10 @@
                 var x = ev.pageX, y = ev.pageY;
 
                 if (state.ratio) {
+
+                    /* Do we have a offset-to-size ratio?
+                        If so, adjust x and y before returning. */
+
                     x = offset.left + state.ratio.x * size.x;
                     y = offset.top + state.ratio.y * size.y;
                 }
