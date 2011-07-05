@@ -1,0 +1,3 @@
+exports.preprocessors = [
+    require('./preprocessor')
+];
