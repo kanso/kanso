@@ -358,8 +358,9 @@ exports.getView = function (view, /*optional*/q, /*optional*/options, callback) 
     var viewname = exports.encode(view);
     var req = {
         url: (
-            base + (options.db ? '' : '/_db') + '/_design/' +
-                (options.db || name) + '/_view/' + viewname
+            base + (options.db ? '' : '/_db') +
+                '/_design/' + (options.appName || options.db || name) +
+                '/_view/' + viewname
         ),
         data: exports.stringifyQuery(q),
         expect_json: true
