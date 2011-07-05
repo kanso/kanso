@@ -16,6 +16,11 @@ module.exports = function (path, settings, doc, callback) {
         modules.addPath(path, p, doc, cb);
     },
     function (err) {
-        callback(err, doc);
+        // TODO: move manual loading of kanso commonjs modules to package
+        // loading code
+        var kanso_dir = __dirname + '/../../commonjs';
+        modules.addPath(kanso_dir, 'kanso', doc, function (err) {
+            callback(err, doc);
+        });
     });
 };

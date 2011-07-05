@@ -1,5 +1,7 @@
 var templates = require('./templates'),
-    async = require('../../deps/async');
+    modules = require('../../lib/modules'),
+    async = require('../../deps/async'),
+    fs = require('fs');
 
 
 /**
@@ -18,7 +20,41 @@ module.exports = function (path, settings, doc, callback) {
             'Only a single templates directory may be specified'
         ));
     }
-    templates.addPath(path, p, doc, function (err) {
-        callback(err, doc);
+
+    // load the dust source code
+    var dust_path = __dirname + '/../../deps/dustjs/lib/dust.js';
+    fs.readFile(dust_path, function (err, dust_src) {
+        if (err) {
+            return callback(err);
+        }
+        // load the templates
+        templates.addPath(path, p, doc, function (err) {
+            if (err) {
+                return callback(err);
+            }
+
+            // load the templates module bootstrap code
+            // TODO move this to post-processing once merging works
+            var f = __dirname + '/../../commonjs/kanso/templates.js';
+            fs.readFile(f, function (err, src) {
+                if (err) {
+                    return callback(err);
+                }
+
+                // prepend the code from dust the templates
+                // to commonjs/templates.js
+                var templates_src = 'var dust_module = {exports: {}};\n' +
+                    '(function (module, exports) {\n' +
+                        dust_src + '\n' +
+                        doc.kanso.templates + '\n}(' +
+                        'dust_module, dust_module.exports' +
+                    '));\n' +
+                    'var dust = dust_module.exports;\n' +
+                    src;
+
+                modules.add(doc, 'kanso/templates', templates_src);
+                callback(null, doc);
+            });
+        });
     });
 };
