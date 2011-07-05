@@ -46,22 +46,24 @@ exports.embedList = function (_options) {
     w.toHTML = function (name, value, raw, field, options) {
 
         this.cacheInit();
-        value = this.normalizeValue(value);
 
         this.field = field;
         this.render_options = (options || {});
+        value = this.normalizeValue(value || []);
 
         var id = this._id(
             name, 'list', this.render_options.offset,
                 this.render_options.path_extra
         );
+        var serialized_name = this._name(
+            name, this.render_options.offset
+        );
         var html = (
             '<div class="embed-list" rel="' +
-                h(this.field.type.name) + '" id="' + h(id) + '">'
+                h(this.field.type.name) + '" id="' + h(id) + '">' +
+                '<input type="hidden" name="' + h(serialized_name) + '" />' +
+                '<div class="items" rel="' + h(name) + '">'
         );
-
-        value = (value instanceof Array ? value : []);
-        html += '<div class="items" rel="' + h(name) + '">';
 
         for (var i = 0, len = value.length; i < len; ++i) {
             html += this.htmlForListItem({
@@ -84,11 +86,11 @@ exports.embedList = function (_options) {
     w.clientInit = function (field, path, value, raw, errors, options) {
 
         this.cacheInit();
-        value = this.normalizeValue(value);
 
         this.path = path;
         this.field = field;
         this.render_options = (options || {});
+        value = this.normalizeValue(value || []);
 
         var item_elts = (
             this.discoverListItemsElement().children('.item')
@@ -118,6 +120,28 @@ exports.embedList = function (_options) {
         this.discoverListType = _.memoize(this._discoverListType);
         this.discoverListItemsElement =
             _.memoize(this._discoverListItemsElement);
+    };
+
+    w.updateSerialized = function () {
+        var rv = [];
+        var elt = this.discoverListElement();
+        var list_elts = this.discoverListItems();
+        var input_elt = elt.closestChild('input[type=hidden]');
+
+        for (var i = 0, len = list_elts.length; i < len; ++i) {
+
+            var item_elt = $(list_elts[i]);
+            var rel = item_elt.attr('rel');
+            var offset = (rel !== '' ? parseInt(rel, 10) : null);
+
+            rv.push(
+                this.field.widget.getValue(
+                    item_elt, this.path, { offset: offset }
+                )
+            );
+        }
+
+        input_elt.val(this._stringify_value(rv));
     };
 
     w.normalizeValue = function (value) {
@@ -322,7 +346,7 @@ exports.embedList = function (_options) {
 
     w.htmlForListItem = function (item) {
         var html = (
-            '<div class="item">' +
+            '<div class="item" rel="' + h(item.offset || '') + '">' +
                 '<div class="actions">' +
                     (this.sortable ? this.htmlForDownButton() : '') +
                     (this.sortable ? this.htmlForUpButton() : '') +
@@ -520,12 +544,13 @@ exports.embedList = function (_options) {
 
     w.handleDeleteCompletion = function (target_elt, options,
                                          is_successful, new_value) {
-        return;
+        this.updateSerialized();
     };
 
     w.handleSaveCompletion = function (target_elt, options,
                                        is_successful, new_value) {
-        return;
+
+        this.updateSerialized();
     };
 
     w.defaultActionFor = function (name) {
@@ -693,17 +718,6 @@ exports.embedForm = function (_options) {
                     $(container_elt).html(
                         this.renderEmbedded(rv)
                     );
-
-                    /* Resize modalDialog:
-                        Force the CSS width/height to unrestricted values,
-                        then let the simplemodal code recompute its position
-                        and dimensions. This code belongs in modalDialog. */
-
-                    $('.simplemodal-container').width('auto');
-                    $('.simplemodal-container').height('auto');
-
-                    $.modal.setPosition();
-                    $.modal.setContainerDimensions();
                 })
             );
         }
@@ -715,7 +729,6 @@ exports.embedForm = function (_options) {
         var rv = querystring.parse(
             form_elt.serialize().replace(/\+/g, '%20')
         );
-        console.log([ 'getValue', rv ]);
         return rv;
     };
 

@@ -180,11 +180,9 @@ exports.showDialog = function (action_options,
 
                 _impl.close(div, options);
 
-                setTimeout(function () {
-                    exports.showDialog(
-                        action_options, names, data, options, callback
-                    );
-                }, 0);
+                exports.showDialog(
+                    action_options, names, data, options, callback
+                );
 
             } else {
 
@@ -240,24 +238,8 @@ exports.showDialog = function (action_options,
 
     /* Select dialog implementation */
     switch (action_options.style) {
-    case 'modal':
-
-        /* Modal dialog:
-            Javascript implementation provided by simplemodal. */
-
-        generateAbstractDialog({
-            open: function (elt, options) {
-                elt.modal();
-            },
-            close: function (elt, options) {
-                $.modal.close();
-            }
-        });
-        /* break */
-
     case 'popup':
     default:
-
         /* Pop-up style dialog:
             Javascript implementation provided by uPopup. */
 
@@ -265,7 +247,9 @@ exports.showDialog = function (action_options,
 
         generateAbstractDialog({
             open: function (elt) {
-                $(elt).uPopup('create', data.element);
+                $(elt).uPopup('create', data.element, {
+                    center: true
+                });
                 var popup = $(elt).uPopup('elements');
             },
             close: function (elt) {
