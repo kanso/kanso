@@ -55,14 +55,10 @@ exports.embedList = function (_options) {
             name, 'list', this.render_options.offset,
                 this.render_options.path_extra
         );
-        var serialized_name = this._name(
-            name, this.render_options.offset
-        );
         var html = (
             '<div class="embed-list" rel="' +
                 h(this.field.type.name) + '" id="' + h(id) + '">' +
-                '<input type="hidden" name="' + h(serialized_name) + '" />' +
-                '<div class="items" rel="' + h(name) + '">'
+                    '<div class="items" rel="' + h(name) + '">'
         );
 
         for (var i = 0, len = value.length; i < len; ++i) {
@@ -120,28 +116,6 @@ exports.embedList = function (_options) {
         this.discoverListType = _.memoize(this._discoverListType);
         this.discoverListItemsElement =
             _.memoize(this._discoverListItemsElement);
-    };
-
-    w.updateSerialized = function () {
-        var rv = [];
-        var elt = this.discoverListElement();
-        var list_elts = this.discoverListItems();
-        var input_elt = elt.closestChild('input[type=hidden]');
-
-        for (var i = 0, len = list_elts.length; i < len; ++i) {
-
-            var item_elt = $(list_elts[i]);
-            var rel = item_elt.attr('rel');
-            var offset = (rel !== '' ? parseInt(rel, 10) : null);
-
-            rv.push(
-                this.field.widget.getValue(
-                    item_elt, this.path, { offset: offset }
-                )
-            );
-        }
-
-        input_elt.val(this._stringify_value(rv));
     };
 
     w.normalizeValue = function (value) {
@@ -346,7 +320,7 @@ exports.embedList = function (_options) {
 
     w.htmlForListItem = function (item) {
         var html = (
-            '<div class="item" rel="' + h(item.offset || '') + '">' +
+            '<div class="item">' +
                 '<div class="actions">' +
                     (this.sortable ? this.htmlForDownButton() : '') +
                     (this.sortable ? this.htmlForUpButton() : '') +
@@ -544,13 +518,12 @@ exports.embedList = function (_options) {
 
     w.handleDeleteCompletion = function (target_elt, options,
                                          is_successful, new_value) {
-        this.updateSerialized();
+        return;
     };
 
     w.handleSaveCompletion = function (target_elt, options,
                                        is_successful, new_value) {
-
-        this.updateSerialized();
+        return;
     };
 
     w.defaultActionFor = function (name) {
@@ -715,6 +688,7 @@ exports.embedForm = function (_options) {
                         element, since we're replacing the whole contents. */
 
                     var container_elt = this.discoverContainerElement(path);
+
                     $(container_elt).html(
                         this.renderEmbedded(rv)
                     );
@@ -724,26 +698,41 @@ exports.embedForm = function (_options) {
     };
 
     w.getValue = function (elt, path, options) {
-        var container_elt = this._discoverContainerElement(path);
-        var form_elt = container_elt.closestChild('form');
-        var rv = querystring.parse(
-            form_elt.serialize().replace(/\+/g, '%20')
-        );
-        return rv;
+
+        this.validate(elt, path, options);
+        return this.parsed_value;
     };
 
     w.validate = function (elt, path, options) {
-        this.form.validate({
-            form: this.getValue(elt, path, options),
+
+        var f = this.form;
+        var container_elt = this.discoverContainerElement(path);
+        var form_elt = container_elt.closestChild('form');
+
+        f.validate({
+            form: this.serialize(form_elt),
             userCtx: utils.currentRequest().userCtx
         });
-        return this.form.errors;
+
+        if (f.errors.length <= 0) {
+            this.parsed_value = this.form.values;
+        } else {
+            this.parsed_value = undefined;
+        }
+
+        return f.errors;
     };
 
     /** private: **/
 
     w.cacheInit = function () {
         this.discoverContainerElement = this._discoverContainerElement;
+    };
+
+    w.serialize = function (form_elt) {
+        return querystring.parse(
+            form_elt.serialize().replace(/\+/g, '%20')
+        );
     };
 
     w._discoverContainerElement = function (path) {
