@@ -10,7 +10,7 @@ var modules = require('../../lib/modules'),
  * to the document.
  */
 
-module.exports = function (path, settings, doc, callback) {
+module.exports = function (root, path, settings, doc, callback) {
     var p = settings.load;
     if (!p) {
         return callback(null, doc);

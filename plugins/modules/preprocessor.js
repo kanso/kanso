@@ -7,7 +7,7 @@ var modules = require('../../lib/modules'),
  * to the document.
  */
 
-module.exports = function (path, settings, doc, callback) {
+module.exports = function (root, path, settings, doc, callback) {
     var paths = settings.modules || [];
     if (!Array.isArray(paths)) {
         paths = [paths];

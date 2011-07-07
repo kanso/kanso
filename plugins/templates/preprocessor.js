@@ -9,7 +9,7 @@ var templates = require('./templates'),
  * to the document.
  */
 
-module.exports = function (path, settings, doc, callback) {
+module.exports = function (root, path, settings, doc, callback) {
     var p = settings.templates;
     if (!p) {
         return callback(err, doc);

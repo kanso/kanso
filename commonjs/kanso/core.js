@@ -14,7 +14,7 @@
  * Module dependencies
  */
 
-var settings = require('./settings'), // module auto-generated
+var settings = require('settings/root'), // module auto-generated
     url = require('./url'),
     db = require('./db'),
     utils = require('./utils'),

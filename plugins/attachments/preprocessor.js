@@ -7,7 +7,7 @@ var attachments = require('../../lib/attachments'),
  * to the document.
  */
 
-module.exports = function (path, settings, doc, callback) {
+module.exports = function (root, path, settings, doc, callback) {
     var paths = settings.attachments || [];
     if (!Array.isArray(paths)) {
         paths = [paths];
