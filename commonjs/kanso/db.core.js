@@ -89,11 +89,18 @@ function onComplete(options, callback) {
         }
         else {
             if (options.expect_json) {
-                return callback(
-                    new Error('Expected JSON response, got ' + ctype)
-                );
+                try {
+                    resp = httpData(req, "json");
+                }
+                catch (e) {
+                    return callback(
+                        new Error('Expected JSON response, got ' + ctype)
+                    );
+                }
             }
-            resp = req.responseText;
+            else {
+                resp = req.responseText;
+            }
         }
         if (req.status === 401) {
             // returned 'Unauthorized', check the user's session if it's not
