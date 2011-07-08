@@ -298,7 +298,7 @@ exports.div = function () {
     */
     this.end = function () {
         return (
-                '<div class="clear final" />' +
+                '<div class="final" />' +
             '</div>'
         );
     };

@@ -454,7 +454,7 @@ td.actions .button {
     margin: 0;
 }
 
-.clear {
+.clear, .final {
     clear: both;
 }
 
@@ -467,15 +467,37 @@ td.actions .button {
 }
 
 .render-div .field {
-    min-width: 18em;
+    min-width: 12em;
     padding: 0 2em 1em 0;
     float: left;
 }
 
+.render-div .field .inner input[type='text'] {
+    width: 100%;
+}
+
+.render-div .field .document-selector {
+    float: left;
+}
+
+.render-div .field .default-embed {
+    line-height: 1.75em;
+}
+
+.render-div .group .field {
+    padding-left: 1em;
+}
+
+.render-div .group .heading {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #555;
+    border-bottom: solid 2px #eee;
+    margin-bottom: 0.5em;
+}
+
 .upopup .render-div .field {
-    float: none;
-    padding: 0.25em;
-    min-width: auto;
+    padding-right: 1em;
 }
 
 .upopup .render-div .embed-list {
@@ -484,7 +506,7 @@ td.actions .button {
 }
 
 .upopup .render-div {
-    max-width: 30em;
+    max-width: 28em;
 }
 
 .render-div .field .label {
@@ -493,12 +515,14 @@ td.actions .button {
     font-weight: bold;
     border-bottom: solid 2px #eee;
     margin-bottom: 0.35em;
+    padding-top: 0.25em;
 }
 
 .embed-list .actions {
     clear: both;
 }
 
-.embed-list .item .action {
+.embed-list .item .actions {
+    padding-left: 1em;
 }
 
