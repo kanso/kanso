@@ -161,152 +161,9 @@ exports.classes = function (field, errors) {
  */
 
 exports.defaultRenderer = function () {
-    return exports.table;
+    return exports.div;
 };
 
-/**
- * The default table renderer class, passed to the toHTML method of a
- * form. Renders a form using a single table, with <tbody> tags to
- * represent nested field groups. The <tbody>s are labelled with
- * specific CSS classes, including depth information. See style.css
- * for details on how to style this output.
- *
- * @name table
- * @constructor
- * @api public
- */
-
-exports.table = function () {
-
-    /**
-     * Constructor for renderer; initializes object. The string returned
-     * from this function is prepended to the form's markup.
-     *
-     * @constructor
-    */
-    this.start = function (errs) {
-        this.depth = 0;
-        var html = '<table class="render render-table">';
-        if (errs && errs.length) {
-            html += '<ul class="form-errors">';
-            _.each(errs, function (e) {
-                html += '<li>' + (e.message || e.toString()) + '</li>';
-            });
-            html += '</ul>';
-        }
-        return html;
-    };
-
-    /**
-     * Called by the forms layer when it encounters a new
-     * nesting context (i.e. a new grouping of fields). The
-     * path parameter is an array of strings that describes
-     * the path (in terms of document keys) to the new group.
-     * When concatenated together with a dot, this array yields
-     * the new prefix for named HTML form fields.
-     *
-     * @param {Array} path
-    */
-    this.beginGroup = function (path) {
-        this.depth += 1;
-        var name = _.last(path);
-        var css_class = 'level-' + this.depth;
-
-        return (
-            '<tbody class="head ' + h(css_class) + '">' +
-            '<tr>' +
-                '<th colspan="3">' +
-                    h(name.substr(0, 1).toUpperCase() +
-                        name.substr(1).replace(/_/g, ' ')) +
-                '</th>' +
-            '</tr>' +
-            '</tbody>' +
-            '<tbody class="group ' + h(css_class) + '">'
-        );
-    };
-
-    /**
-     * Called by the forms layer when it encounters the end
-     * of a nesting context. In the absence of errors, this
-     * function is guaranteed to be called once for each time
-     * that beginGroup is called; the order will be nested and
-     * properly balanced. The path argument is the same as it was
-     * for the corresponding beginGroup call; see beginGroup.
-     *
-     * @param {Array} path
-     */
-    this.endGroup = function (path) {
-        this.depth -= 1;
-        return '</tbody>';
-    };
-
-    /**
-     * Called by the forms layer when it encounters any regular
-     * field -- i.e. one that is neither an embed nor an embedList.
-     *
-     * @param {Object} field
-     * @param {Array} path
-     * @param {Object} value
-     * @param {String} raw
-     * @param {Array} errors
-     * @param {Object} options An object containing widget options, which
-     *          will ultimately be provided to each widget's toHTML method.
-     */
-    this.field = function (field, path, value, raw, errors, options) {
-        var name = path.join('.');
-        var id = (path.join('_') + '_field');
-        var caption = path.slice(this.depth).join(' ');
-
-        events.once('renderFinish', function () {
-            if (field.widget.clientInit) {
-                setTimeout(function () {
-                    field.widget.clientInit(
-                        field, path, value, raw, errors, (options || {})
-                    );
-                }, 0);
-            }
-        });
-
-        if (field.widget.type === 'hidden') {
-            return field.widget.toHTML(
-                name, value, raw, field, (options || {})
-            );
-        }
-
-        var rv = (
-            '<tr id="' + id + '" class="' +
-                exports.classes(field, errors).join(' ') + '">' +
-                '<th>' +
-                    exports.labelHTML(field, caption) +
-                    exports.descriptionHTML(field) +
-                '</th>' +
-                '<td>' +
-                    exports.errorHTML(errors) +
-                    field.widget.toHTML(
-                        name, value, raw, field, (options || {})
-                    ) +
-                    exports.hintHTML(field) +
-                '</td>' +
-            '</tr>'
-        );
-        return rv;
-    };
-
-    /**
-     * Called by the forms layer when it is finished rendering a form.
-     * Markup returned from this function is appended to the form output.
-     *
-     * @param {String} field
-     * @param {Array} path
-     * @param {Object} value
-     * @param {String} raw
-     * @param {Array} errors
-    */
-    this.end = function () {
-        return '</table>';
-    };
-
-};
 
 /**
  *  Renders a form using a series of properly-nested <div> tags.
@@ -347,9 +204,9 @@ exports.div = function () {
     this.beginGroup = function (path) {
         this.depth += 1;
         var name = _.last(path);
-        var css_class = 'level-' + this.depth;
+        var css_class = 'clear group level-' + this.depth;
         return (
-            '<div class="group ' + h(css_class) + '">' +
+            '<div class="' + h(css_class) + '">' +
             '<div class="heading">' +
                 h(name.substr(0, 1).toUpperCase() +
                     name.substr(1).replace(/_/g, ' ')) +
@@ -387,20 +244,29 @@ exports.div = function () {
     this.field = function (field, path, value, raw, errors, options) {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
+
+        events.once('renderFinish', function () {
+            if (field.widget.clientInit) {
+                setTimeout(function () {
+                    field.widget.clientInit(
+                        field, path, value, raw, errors, (options || {})
+                    );
+                }, 0);
+            }
+        });
+
         if (field.widget.type === 'hidden') {
             return field.widget.toHTML(
                 name, value, raw, field, (options || {})
             );
         }
+
         return (
             '<div class="' +
                 exports.classes(field, errors).join(' ') + '">' +
-            '<div class="scalar">' +
                 '<div class="label">' +
-                    '<label for="' + h(name) + '">' +
-                        exports.labelHTML(field, caption) +
-                        exports.descriptionHTML(field) +
-                    '</label>' +
+                    exports.labelHTML(field, caption) +
+                    exports.descriptionHTML(field) +
                 '</div>' +
                 '<div class="content">' +
                     '<div class="inner">' +
@@ -414,8 +280,8 @@ exports.div = function () {
                     '<div class="errors">' +
                         exports.errorHTML(errors) +
                     '</div>' +
+                    '<div class="clear" />' +
                 '</div>' +
-            '</div>' +
             '</div>'
         );
     };
@@ -431,7 +297,10 @@ exports.div = function () {
      * @param {Array} errors
     */
     this.end = function () {
-        return '</div>';
+        return (
+                '<div class="final" />' +
+            '</div>'
+        );
     };
 };
 
