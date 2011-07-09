@@ -484,6 +484,13 @@ td.actions .button {
     line-height: 1.75em;
 }
 
+.render-div .field .content .inner {
+    margin: 0;
+    padding: 0;
+    min-width: auto;
+    min-height: auto;
+}
+
 .render-div .group .field {
     padding-left: 1em;
 }

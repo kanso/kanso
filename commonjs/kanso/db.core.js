@@ -92,7 +92,7 @@ function onComplete(options, callback) {
                 try {
                     resp = httpData(req, "json");
                 }
-                catch (e) {
+                catch (ex) {
                     return callback(
                         new Error('Expected JSON response, got ' + ctype)
                     );

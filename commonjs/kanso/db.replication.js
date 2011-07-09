@@ -1,7 +1,8 @@
 /*global $: false, kanso: true */
 
 /**
- * Contains functions for querying and storing data in CouchDB.
+ * Contains functions for querying and setting data
+ * related to replication operations in CouchDB.
  *
  * @module
  */

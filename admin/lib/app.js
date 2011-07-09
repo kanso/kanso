@@ -101,7 +101,8 @@ exports.bindSessionControls = function () {
         });
 
         login_popup = div.uPopup('create', this, {
-            vertical: true, center: true
+            center: true,
+            vertical: true
         });
 
         return false;
@@ -169,7 +170,8 @@ exports.bindSessionControls = function () {
             return false;
         });
         signup_popup = div.uPopup('create', this, {
-            vertical: true, center: true
+            center: true,
+            vertical: true
         });
         return false;
     });
