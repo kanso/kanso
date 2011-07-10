@@ -41,6 +41,15 @@ exports.design_docs = {};
 
 
 /**
+ * Cache for use by exports.request -- keeps track of
+ * completed and in-process requests from Kanso to CouchDB.
+ */
+
+exports.request_cache = {};
+exports.request_cache_wait_queue = {};
+
+
+/**
  * Taken from jQuery 1.4.4 so we can support more recent versions of jQuery.
  */
 
@@ -84,7 +93,9 @@ function onComplete(options, callback) {
                 resp = httpData(req, "json");
             }
             catch (e) {
-                return callback(e);
+                return exports._invoke_request_callback(
+                    e, null, options, callback
+                );
             }
         }
         else {
@@ -110,18 +121,25 @@ function onComplete(options, callback) {
             }
         }
         if (req.status === 200 || req.status === 201 || req.status === 202) {
-            callback(null, resp);
+            exports._invoke_request_callback(
+                null, resp, options, callback
+            );
         }
         else if (resp.error) {
             var err = new Error(resp.reason || resp.error);
             err.error = resp.error;
             err.reason = resp.reason;
             err.status = req.status;
-            callback(err);
+            exports._invoke_request_callback(
+                err, null, options, callback
+            );
         }
         else {
             // TODO: map status code to meaningful error message
-            callback(new Error('Returned status code: ' + req.status));
+            exports._invoke_request_callback(
+                new Error('Returned status code: ' + req.status),
+                null, options, callback
+            );
         }
     };
 }
@@ -151,9 +169,150 @@ exports.encode = function (str) {
  */
 
 exports.request = function (options, callback) {
+
     options.complete = onComplete(options, callback);
     options.dataType = 'json';
-    $.ajax(options);
+
+    if (exports.__should_cache_request(options)) {
+        if (exports._begin_cached_request(options, callback)) {
+            $.ajax(options);
+        }
+    } else {
+        $.ajax(options);
+    }
+};
+
+
+/* Support for in-interpreter request caching:
+    The following functions are used to support the caching of
+    AJAX request results. If a to-be-cached resource has been
+    requested but not yet returned, a wait queue is employed. */
+
+/**
+ * If caching is not appropriate for the AJAX request described by
+ * {options}, invoke {callback} in the usual way. If caching is
+ * appropriate, add the result to the request cache, and notify all
+ * of the waiting requests that a response has arrived.
+ */
+exports._invoke_request_callback = function (err, resp, options, callback) {
+
+    if (exports.__should_cache_request(options)) {
+        exports._request_cache_add(err, resp, options);
+        exports._finish_cached_request(options);
+    } else {
+        callback(err, resp);
+    }
+};
+
+/**
+ * Returns true if the AJAX request described by {options}
+ * should be cached by the in-interpreter request caching
+ * code. In general, this sort of caching is limited to requests
+ * that (i) request caching explicitly, and (ii) have no side-effects.
+ */
+exports.__should_cache_request = function (options) {
+    return (options.type === 'GET' && options.useCache);
+};
+
+/**
+ * Returns a string that uniquely identifies the AJAX request
+ * described by {options}. This string is used to look up cache entries.
+ */
+exports._make_request_cache_key = function (options) {
+    return options.url;
+};
+
+/**
+ * Add information describing a completed AJAX request to the
+ * in-interpreter request cache. This information will be handed
+ * out to identical requests that occur in the future.
+ */
+exports._request_cache_add = function (error, response, options) {
+
+    var cache_key = exports._make_request_cache_key(options);
+
+    exports.request_cache[cache_key] = {
+        error: error,
+        response: response
+    };
+};
+
+/**
+ * Remove information describing a completed AJAX request from the
+ * in-interpreter request cache. This forces the next identical
+ * request to make an actual HTTP request.
+ */
+exports._request_cache_remove = function (options) {
+
+    var cache_key = exports._make_request_cache_key(options);
+    delete exports.request_cache[cache_key];
+};
+
+/**
+ * Start the process of issuing a cache request. This function
+ * has one of three outcomes: (i) in the case of a cache hit,
+ * the callback is immediately invoked, and given the cached
+ * response; (ii) if a cache miss occurs, and another request
+ * is already in progress, we place ourself on a queue to wait
+ * for that request's response; (iii) in any other case, we
+ * tell the caller to make an actual HTTP request, and add
+ * ourself as the first queue waiter.
+ */
+exports._begin_cached_request = function (options, callback) {
+
+    var should_send_request = false;
+    var cache_key = exports._make_request_cache_key(options);
+    var cache_item = exports.request_cache[cache_key];
+
+    if (cache_item) {
+
+        /* Cache hit: Invoke callback and return */
+        callback(cache_item.error, cache_item.response);
+
+    } else {
+        /* Cache miss */
+        if (!exports.request_cache_wait_queue[cache_key]) {
+
+            /* Request not already-in-progress:
+                Instruct caller to issue actual HTTP request. */
+
+            exports.request_cache_wait_queue[cache_key] = [];
+            should_send_request = true;
+        }
+
+        /* Add this request to notification queue */
+        exports.request_cache_wait_queue[cache_key].push(
+            { options: options, callback: callback }
+        );
+    }
+
+    return should_send_request;
+};
+
+/**
+ * Finish a request, using an item already in the request cache.
+ * First, the cached result is retrieved from the cache. Second,
+ * all waiters on the request cache's wait queue are notified.
+ * Finally, the wait queue is emptied. The cached result is
+ * removed as well if the result was an error.
+ */
+exports._finish_cached_request = function (options) {
+
+    var cache_key = exports._make_request_cache_key(options);
+    var cache_item = (exports.request_cache[cache_key]);
+    var request_queue = (exports.request_cache_wait_queue[cache_key] || []);
+
+    for (var i = 0, len = request_queue.length; i < len; ++i) {
+        request_queue[i].callback(
+            cache_item.error, cache_item.response
+        );
+    }
+
+    if (cache_item.error) {
+        exports._request_cache_remove(options);
+    }
+
+    delete exports.request_cache_wait_queue[cache_key];
 };
 
 

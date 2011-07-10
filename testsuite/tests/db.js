@@ -537,7 +537,8 @@ exports['bulk docs - simple'] = function (test)
                 test.equal(rv.rows.length, ids.length, 'bulkGet yields an array');
                 test.equal(
                     _.inject(rv.rows, function (a, x) {
-                        a += x.doc.offset; return a;
+                        a += x.doc.offset;
+                        return a;
                     }, 0),
                     ((max - 1) * max) / 2,
                     "sum of bulkGet's return value is correct"
