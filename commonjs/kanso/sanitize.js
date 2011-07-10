@@ -31,9 +31,7 @@ exports.escapeUrlParams = exports.url = function (obj)
         );
     }
 
-    var rv = (rv.length > 0 ? ('?' + rv.join('&')) : '');
-    console.log([ 'rv', rv ]);
-    return rv;
+    return (rv.length > 0 ? ('?' + rv.join('&')) : '');
 };
 
 
