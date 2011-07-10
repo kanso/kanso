@@ -25,12 +25,15 @@ exports.escapeUrlParams = exports.url = function (obj)
     var rv = [ ];
 
     for (var key in obj) {
-        rv.concat(
-            encodeURIComponent(key) + '=' + encodeURIComponent(obj[key])
+        rv.push(
+            encodeURIComponent(key) +
+                '=' + encodeURIComponent(obj[key])
         );
     }
 
-    return (rv.length > 0 ? ('?' + rv.join('&')) : '');
+    var rv = (rv.length > 0 ? ('?' + rv.join('&')) : '');
+    console.log([ 'rv', rv ]);
+    return rv;
 };
 
 

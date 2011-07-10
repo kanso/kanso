@@ -142,19 +142,19 @@ exports.bulkGet = function (keys, /*optional*/ q,
         If we have a list of keys, use a post request containing
         a JSON-encoded list of keys. Otherwise, use a get request. */
 
-    var req_options = 
+    var req = {
         expect_json: true,
         url: url + '/_all_docs' + sanitize.url(q)
     };
     if (keys) {
-        req_options = _.merge(req_options, {
+        req = _.extend(req, {
             type: 'POST',
             processData: false,
             contentType: 'application/json',
             data: JSON.stringify({ keys: keys })
         });
     } else {
-        req_options = _.merge(req_options, {
+        req = _.extend(req, {
             type: 'GET'
         });
     }

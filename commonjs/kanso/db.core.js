@@ -562,3 +562,50 @@ exports.getDesignDoc = function (name, callback, no_cache) {
     });
 };
 
+/**
+ * Creates a CouchDB database.
+ *
+ * If you're running behind a virtual host you'll need to set up
+ * appropriate rewrites for a PUT request to '/' and turn off safe rewrites.
+ *
+ * @name createDatabase(name, callback)
+ * @param {String} name
+ * @param {Function} callback
+ * @api public
+ */
+
+exports.createDatabase = function (name, callback) {
+    if (!utils.isBrowser()) {
+        throw new Error('createDatabase cannot be called server-side');
+    }
+    var req = {
+        type: 'PUT',
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Deletes a CouchDB database.
+ *
+ * If you're running behind a virtual host you'll need to set up
+ * appropriate rewrites for a DELETE request to '/' and turn off safe rewrites.
+ *
+ * @name deleteDatabase(name, callback)
+ * @param {String} name
+ * @param {Function} callback
+ * @api public
+ */
+
+exports.deleteDatabase = function (name, callback) {
+    if (!utils.isBrowser()) {
+        throw new Error('deleteDatabase cannot be called server-side');
+    }
+    var req = {
+        type: 'DELETE',
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
+    };
+    exports.request(req, callback);
+};
+
+
