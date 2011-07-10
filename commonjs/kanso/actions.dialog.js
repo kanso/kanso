@@ -236,28 +236,22 @@ exports.showDialog = function (action_options,
         );
     };
 
-    /* Select dialog implementation */
-    switch (action_options.style) {
-    case 'popup':
-    default:
-        /* Pop-up style dialog:
-            Javascript implementation provided by uPopup. */
+    /* Pop-up style dialog:
+        Javascript implementation provided by uPopup. */
 
-        var popup;
+    var popup;
 
-        generateAbstractDialog({
-            open: function (elt) {
-                $(elt).uPopup('create', data.element, {
-                    center: true
-                });
-                var popup = $(elt).uPopup('elements');
-            },
-            close: function (elt) {
-                $(elt).uPopup('destroy');
-            }
-        });
-        /* break */
-    }
+    generateAbstractDialog({
+        open: function (elt) {
+            $(elt).uPopup('create', data.element, {
+                center: true
+            });
+            var popup = $(elt).uPopup('elements');
+        },
+        close: function (elt) {
+            $(elt).uPopup('destroy');
+        }
+    });
 
     return;
 };

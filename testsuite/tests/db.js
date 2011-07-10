@@ -1,7 +1,8 @@
 
 var db = require('kanso/db'),
     utils = require('kanso/utils'),
-    async = require('lib/async');
+    async = require('lib/async'),
+    _ = require('kanso/underscore')._;
 
 
 exports['database creation/deletion'] = function (test)
@@ -504,3 +505,84 @@ exports['complex replication, async'] = function (test)
 
 };
 
+exports['bulk docs - simple'] = function (test)
+{
+    test.expect(7);
+    var max = 1024;
+
+    async.waterfall([
+        function (callback) {
+            var docs = [];
+            for (var i = 0; i < max; ++i) {
+                docs.push({
+                    offset: i,
+                    test: true,
+                    type: 'example'
+                });
+            }
+            db.bulkSave(docs, { transactional: true }, function (err, rv) {
+                test.equal(err, undefined, 'bulkSave has no error');
+                test.notEqual(rv, undefined, 'bulkSave returns a value');
+                test.equal(rv.length, max, 'bulkSave yields an array');
+                callback(null, rv);
+            });
+        },
+        function (ids, callback) {
+            var fetch = _.map(ids, function (x) {
+                return x.id;
+            });
+            db.bulkGet(fetch, { include_docs: true }, function (err, rv) {
+                test.equal(err, undefined, 'bulkGet has no error');
+                test.notEqual(rv, undefined, 'bulkGet returns a value');
+                test.equal(rv.rows.length, ids.length, 'bulkGet yields an array');
+                test.equal(
+                    _.inject(rv.rows, function (a, x) {
+                        a += x.doc.offset; return a;
+                    }, 0),
+                    ((max - 1) * max) / 2,
+                    "sum of bulkGet's return value is correct"
+                );
+                callback();
+            });
+        },
+    ], function () {
+        test.done();
+    });
+};
+
+exports['bulk docs - range'] = function (test)
+{
+    test.expect(6);
+    var s = 'abcdefghijklmnopqrstuvwxyz';
+
+    async.waterfall([
+        function (callback) {
+            var docs = [];
+            for (var i = 0, len = s.length; i < len; ++i) {
+                docs.push({
+                    _id: s[i],
+                    test: true,
+                    type: 'example'
+                });
+            }
+            db.bulkSave(docs, function (err, rv) {
+                test.equal(err, undefined, 'bulkSave has no error');
+                test.notEqual(rv, undefined, 'bulkSave returns a value');
+                test.equal(rv.length, s.length, 'bulkSave yields an array');
+                callback();
+            });
+        },
+        function (callback) {
+            db.bulkGet(
+                false,
+                { startkey: s[10], endkey: s.slice(-1) }, function (err, rv) {
+                test.equal(err, undefined, 'bulkGet has no error');
+                test.notEqual(rv, undefined, 'bulkGet returns a value');
+                test.equal(rv.rows.length, s.length - 10, 'bulkGet yields an array');
+                callback();
+            });
+        }
+    ], function () {
+        test.done();
+    });
+};
