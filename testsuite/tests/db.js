@@ -587,3 +587,60 @@ exports['bulk docs - range'] = function (test)
         test.done();
     });
 };
+
+exports['getDoc - cached'] = function (test)
+{
+    test.expect(15);
+
+    var doc = { data: '1234567890' };
+    var get_options = { useCache: true };
+    var replacement_data = '0987654321';
+
+    async.waterfall([
+        function (callback) {
+            db.saveDoc(doc, function (err, rv) {
+                test.equal(err, undefined, 'saveDoc has no error');
+                test.notEqual(rv, undefined, 'New document is defined');
+                test.notEqual(rv.id, undefined, 'id for new document is defined');
+                callback(null, rv.id);
+            });
+        },
+        function (id, callback) {
+            db.getDoc(id, {}, get_options, function (err, rv) {
+                test.equal(err, undefined, 'getDoc has no error');
+                test.notEqual(rv, undefined, 'Document is defined');
+                test.notEqual(rv._id, undefined, '_id for document is defined');
+                test.equal(rv.data, doc.data, 'Document data is correct');
+                callback(null, rv);
+            });
+        },
+        function (rdoc, callback) {
+            rdoc.data = replacement_data;
+            db.saveDoc(rdoc, function (err, rv) {
+                test.equal(err, undefined, 'saveDoc has no error');
+                callback(null, rv.id);
+            });
+        },
+        function (id, callback) {
+            db.getDoc(id, {}, get_options, function (err, rv) {
+                test.equal(err, undefined, 'getDoc has no error');
+                test.notEqual(rv, undefined, 'Document is defined');
+                test.equal(rv.data, doc.data, 'Cached document data is correct');
+                callback(null, id);
+            });
+        },
+        function (id, callback) {
+            get_options.flushCache = true;
+            db.getDoc(id, {}, get_options, function (err, rv) {
+                test.equal(err, undefined, 'getDoc has no error');
+                test.notEqual(rv, undefined, 'Document is defined');
+                test.notEqual(rv._id, undefined, '_id for document is defined');
+                test.equal(rv.data, replacement_data, 'Document data is correct');
+                callback();
+            });
+        }
+    ], function () {
+        test.done();
+    });
+};
+

@@ -12,6 +12,7 @@
 
 var utils = require('./utils'),
     settings = require('./settings'),
+    _ = require('kanso/underscore')._,
     session = null;
 
 /* Avoid a circular require in CouchDB */
@@ -31,13 +32,6 @@ if (utils.isBrowser) {
  */
 
 var last_session_check = 0;
-
-
-/**
- * Cache for design documents fetched via getDesignDoc.
- */
-
-exports.design_docs = {};
 
 
 /**
@@ -159,8 +153,9 @@ exports.encode = function (str) {
 
 
 /**
- * Make a request, with some default settings and proper callback
- * handling. Used behind-the-scenes by most other DB module functions.
+ * Make a request, with some default settings, proper callback
+ * handling, and optional caching. Used behind-the-scenes by
+ * most other DB module functions.
  *
  * @name request(options, callback)
  * @param {Object} options
@@ -173,7 +168,11 @@ exports.request = function (options, callback) {
     options.complete = onComplete(options, callback);
     options.dataType = 'json';
 
-    if (exports.__should_cache_request(options)) {
+    if (options.flush_cache) {
+        exports._request_cache_remove(options);
+    }
+
+    if (exports._should_cache_request(options)) {
         if (exports._begin_cached_request(options, callback)) {
             $.ajax(options);
         }
@@ -189,29 +188,16 @@ exports.request = function (options, callback) {
     requested but not yet returned, a wait queue is employed. */
 
 /**
- * If caching is not appropriate for the AJAX request described by
- * {options}, invoke {callback} in the usual way. If caching is
- * appropriate, add the result to the request cache, and notify all
- * of the waiting requests that a response has arrived.
- */
-exports._invoke_request_callback = function (err, resp, options, callback) {
-
-    if (exports.__should_cache_request(options)) {
-        exports._request_cache_add(err, resp, options);
-        exports._finish_cached_request(options);
-    } else {
-        callback(err, resp);
-    }
-};
-
-/**
  * Returns true if the AJAX request described by {options}
  * should be cached by the in-interpreter request caching
  * code. In general, this sort of caching is limited to requests
  * that (i) request caching explicitly, and (ii) have no side-effects.
  */
-exports.__should_cache_request = function (options) {
-    return (options.type === 'GET' && options.useCache);
+exports._should_cache_request = function (options) {
+    return (
+        (!options.type || options.type === 'GET') &&
+            options.use_cache
+    );
 };
 
 /**
@@ -223,6 +209,22 @@ exports._make_request_cache_key = function (options) {
 };
 
 /**
+ * If caching is not appropriate for the AJAX request described by
+ * {options}, invoke {callback} in the usual way. If caching is
+ * appropriate, add the result to the request cache, and notify all
+ * of the waiting requests that a response has arrived.
+ */
+exports._invoke_request_callback = function (err, resp, options, callback) {
+
+    if (exports._should_cache_request(options)) {
+        exports._request_cache_add(err, resp, options);
+        exports._finish_cached_request(options);
+    } else {
+        callback(err, resp);
+    }
+};
+
+/**
  * Add information describing a completed AJAX request to the
  * in-interpreter request cache. This information will be handed
  * out to identical requests that occur in the future.
@@ -230,11 +232,30 @@ exports._make_request_cache_key = function (options) {
 exports._request_cache_add = function (error, response, options) {
 
     var cache_key = exports._make_request_cache_key(options);
+    var response_json = JSON.stringify(response);
 
     exports.request_cache[cache_key] = {
         error: error,
-        response: response
+        response: response_json
     };
+};
+
+/**
+ * Retrieve information describing a completed AJAX request from
+ * the in-interpreter request cache. If no information is available,
+ * this function will return undefined.
+ */
+exports._request_cache_fetch = function (options) {
+
+    var cache_key = exports._make_request_cache_key(options);
+    var rv = exports.request_cache[cache_key];
+    
+    if (rv) {
+        rv = _.clone(rv);
+        rv.response = JSON.parse(rv.response);
+    }
+
+    return rv;
 };
 
 /**
@@ -262,7 +283,7 @@ exports._begin_cached_request = function (options, callback) {
 
     var should_send_request = false;
     var cache_key = exports._make_request_cache_key(options);
-    var cache_item = exports.request_cache[cache_key];
+    var cache_item = exports._request_cache_fetch(options);
 
     if (cache_item) {
 
@@ -298,8 +319,8 @@ exports._begin_cached_request = function (options, callback) {
  */
 exports._finish_cached_request = function (options) {
 
+    var cache_item = exports._request_cache_fetch(options);
     var cache_key = exports._make_request_cache_key(options);
-    var cache_item = (exports.request_cache[cache_key]);
     var request_queue = (exports.request_cache_wait_queue[cache_key] || []);
 
     for (var i = 0, len = request_queue.length; i < len; ++i) {
@@ -390,8 +411,10 @@ exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
     }
     var req = {
         url: url + '/' + exports.encode(id),
-        data: exports.stringifyQuery(q),
-        expect_json: true
+        expect_json: true,
+        use_cache: options.useCache,
+        flush_cache: options.flushCache,
+        data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
 };
@@ -528,8 +551,10 @@ exports.getView = function (view, /*optional*/q, /*optional*/options, callback) 
                 '/_design/' + (options.appName || options.db || name) +
                 '/_view/' + viewname
         ),
-        data: exports.stringifyQuery(q),
-        expect_json: true
+        expect_json: true,
+        use_cache: options.useCache,
+        flush_cache: options.flushCache,
+        data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
 };
@@ -709,14 +734,14 @@ exports.newUUID = function (cacheNum, callback) {
  */
 
 exports.getDesignDoc = function (name, callback, no_cache) {
-    if (!no_cache && exports.design_docs[name]) {
-        return callback(null, exports.design_docs[name]);
-    }
-    exports.getDoc('_design/' + name, {}, function (err, ddoc) {
+    var options = {
+        use_cache: !no_cache,
+        flush_cache: !!no_cache
+    };
+    exports.getDoc('_design/' + name, options, function (err, ddoc) {
         if (err) {
             return callback(err);
         }
-        exports.design_docs[name] = ddoc;
         return callback(null, exports.design_docs[name]);
     });
 };
