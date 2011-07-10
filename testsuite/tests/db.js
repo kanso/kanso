@@ -1,7 +1,8 @@
 
 var db = require('kanso/db'),
     utils = require('kanso/utils'),
-    async = require('lib/async');
+    async = require('lib/async'),
+    _ = require('kanso/underscore')._;
 
 
 exports['database creation/deletion'] = function (test)
@@ -504,3 +505,66 @@ exports['complex replication, async'] = function (test)
 
 };
 
+exports['bulk docs - simple'] = function (test)
+{
+    test.expect(6);
+
+    async.waterfall([
+        function (callback) {
+            var docs = [], max = 1024;
+            for (var i = 0; i < max; ++i) {
+                docs.push({
+                    test: true, type: 'example', offset: i
+                });
+            }
+            db.bulkSave(docs, { transactional: true }, function (err, rv) {
+                test.equal(err, undefined, 'bulkSave has no error');
+                test.notEqual(rv, undefined, 'bulkSave returns a value');
+                test.equal(rv.length, max, 'bulkSave yields an array');
+                callback(null, rv);
+            });
+        },
+        function (ids, callback) {
+            ids = _.map(ids, function(x) {
+                return x.id;
+            });
+            db.bulkGet(fetch, function (err, rv) {
+                test.equal(err, undefined, 'bulkGet has no error');
+                test.notEqual(rv, undefined, 'bulkGet returns a value');
+                test.equal(rv.length, ids.length, 'bulkGet yields an array');
+                callback();
+            });
+        }
+    ]);
+};
+
+exports['bulk docs - range'] = function (test)
+{
+    test.expect(6);
+
+    async.waterfall([
+        function (callback) {
+            var docs = [], max = 1024;
+            for (var i = 0; i < max; ++i) {
+                docs.push({
+                    _id: i, test: true, type: 'example'
+                });
+            }
+            db.bulkSave(docs, function (err, rv) {
+                test.equal(err, undefined, 'bulkSave has no error');
+                test.notEqual(rv, undefined, 'bulkSave returns a value');
+                test.equal(rv.length, max, 'bulkSave yields an array');
+                callback();
+            });
+        },
+        function (callback) {
+            db.bulkGet(
+                false, { startkey: 100, endkey: max }, function (err, rv) {
+                test.equal(err, undefined, 'bulkGet has no error');
+                test.notEqual(rv, undefined, 'bulkGet returns a value');
+                test.equal(rv.length, max - 100, 'bulkGet yields an array');
+                callback();
+            });
+        }
+    ]);
+};
