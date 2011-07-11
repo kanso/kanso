@@ -730,34 +730,32 @@ exports.newUUID = function (cacheNum, callback) {
         }
     }
 
-    var request_fn = function () {
-        exports.request(req, function (err, response) {
-            if (err) {
-                return callback(err);
-            }
-            /* Get reference to cached version of response */
-            var cache_entry = exports._request_cache_fetch(req, false);
-            var uuids = cache_entry.response.uuids;
+    exports.request(req, function (err, response) {
+        if (err) {
+            return callback(err);
+        }
+        /* Get reference to cached version of response */
+        var cache_entry = exports._request_cache_fetch(req, false);
+        var uuids = cache_entry.response.uuids;
 
-            if (uuids.length > 0) {
+        if (uuids.length > 0) {
 
-                /* Remove one uuid from cache:
-                    Because we asked _request_cache_fetch not to clone,
-                    our update here will affect the cache entry as well. */
+            /* Remove one uuid from cache:
+                Because we asked _request_cache_fetch not to clone,
+                our update here will affect the cache entry as well. */
 
-                callback(null, uuids.shift());
+            callback(null, uuids.shift());
 
-            } else {
+        } else {
 
-                /* Others requests got all of our uuids:
-                    Go around and retry the request again. */
+            /* Others requests got all of our uuids:
+                Flush the cache entry to force a re-request,
+                than go around and retry the request again. */
 
-                request_fn();
-            }
-        });
-    };
-
-    request_fn();
+            exports._request_cache_remove(req);
+            exports.newUUID(cacheNum, callback);
+        }
+    });
 };
 
 /**

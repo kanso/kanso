@@ -644,3 +644,37 @@ exports['getDoc - cached'] = function (test)
     });
 };
 
+exports['newUUID - simple'] = function (test)
+{
+    test.expect(9);
+
+    async.waterfall([
+        function (callback) {
+            db.newUUID(2, function (err, uuid) {
+                test.equal(err, undefined, 'newUUID has no error');
+                test.notEqual(uuid, undefined, 'UUID is defined');
+                callback(null, uuid);
+            });
+        },
+        function (prev_uuid, callback) {
+            db.newUUID(2, function (err, uuid) {
+                test.equal(err, undefined, 'newUUID has no error');
+                test.notEqual(uuid, undefined, 'UUID is defined');
+                test.notEqual(uuid, prev_uuid, 'UUID is non-repeating');
+                callback(null, uuid, prev_uuid);
+            });
+        },
+        function (prev_uuid, prev_prev_uuid, callback) {
+            db.newUUID(2, function (err, uuid) {
+                test.equal(err, undefined, 'newUUID re-request has no error');
+                test.notEqual(uuid, undefined, 'result of re-request is defined');
+                test.notEqual(uuid, prev_uuid, 'UUID is non-repeating');
+                test.notEqual(uuid, prev_prev_uuid, 'UUID is non-repeating');
+                callback();
+            });
+        }
+    ], function () {
+        test.done();
+    });
+};
+
