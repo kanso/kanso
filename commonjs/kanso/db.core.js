@@ -12,6 +12,7 @@
 
 var utils = require('./utils'),
     settings = require('./settings'),
+    sanitize = require('kanso/sanitize'),
     _ = require('kanso/underscore')._,
     session = null;
 
@@ -205,7 +206,10 @@ exports._should_cache_request = function (options) {
  * described by {options}. This string is used to look up cache entries.
  */
 exports._make_request_cache_key = function (options) {
-    return options.url;
+    return options.url + (
+        _.isString(options.data) ? '?' + options.data :
+            sanitize.escapeUrlParams(options.data || {})
+    );
 };
 
 /**
@@ -217,7 +221,7 @@ exports._make_request_cache_key = function (options) {
 exports._invoke_request_callback = function (err, resp, options, callback) {
 
     if (exports._should_cache_request(options)) {
-        exports._request_cache_add(err, resp, options);
+        exports._request_cache_add(err, resp, options, true);
         exports._finish_cached_request(options);
     } else {
         callback(err, resp);
@@ -227,32 +231,39 @@ exports._invoke_request_callback = function (err, resp, options, callback) {
 /**
  * Add information describing a completed AJAX request to the
  * in-interpreter request cache. This information will be handed
- * out to identical requests that occur in the future.
+ * out to identical requests that occur in the future. If {clone}
+ * is true, then the information provided will be cloned before
+ * it is entered in to the cache. Otherwise, you must take care
+ * not to later modify the values you provided -- unless you also
+ * want those modifications to occur in the cache as well.
  */
-exports._request_cache_add = function (error, response, options) {
+exports._request_cache_add = function (error, response, options, clone) {
 
     var cache_key = exports._make_request_cache_key(options);
-    var response_json = JSON.stringify(response);
+    var response_clone = JSON.parse(JSON.stringify(response));
 
     exports.request_cache[cache_key] = {
         error: error,
-        response: response_json
+        response: response_clone
     };
 };
 
 /**
  * Retrieve information describing a completed AJAX request from
  * the in-interpreter request cache. If no information is available,
- * this function will return undefined.
+ * this function will return undefined. If {clone} is true, then
+ * the completed request's response data will be deep-cloned
+ * before it is returned. Otherwise, this function will return the
+ * cache's internal version of the data, which should not be modified.
  */
-exports._request_cache_fetch = function (options) {
+exports._request_cache_fetch = function (options, clone) {
 
     var cache_key = exports._make_request_cache_key(options);
     var rv = exports.request_cache[cache_key];
     
-    if (rv) {
+    if (rv && clone) {
         rv = _.clone(rv);
-        rv.response = JSON.parse(rv.response);
+        rv.response = JSON.parse(JSON.stringify(rv.response));
     }
 
     return rv;
@@ -283,7 +294,7 @@ exports._begin_cached_request = function (options, callback) {
 
     var should_send_request = false;
     var cache_key = exports._make_request_cache_key(options);
-    var cache_item = exports._request_cache_fetch(options);
+    var cache_item = exports._request_cache_fetch(options, true);
 
     if (cache_item) {
 
@@ -319,8 +330,8 @@ exports._begin_cached_request = function (options, callback) {
  */
 exports._finish_cached_request = function (options) {
 
-    var cache_item = exports._request_cache_fetch(options);
     var cache_key = exports._make_request_cache_key(options);
+    var cache_item = exports._request_cache_fetch(options, true);
     var request_queue = (exports.request_cache_wait_queue[cache_key] || []);
 
     for (var i = 0, len = request_queue.length; i < len; ++i) {
@@ -693,8 +704,6 @@ exports.stringifyQuery = function (query) {
  * @api public
  */
 
-var uuidCache = [];
-
 exports.newUUID = function (cacheNum, callback) {
     if (!utils.isBrowser()) {
         throw new Error('newUUID cannot be called server-side');
@@ -703,22 +712,52 @@ exports.newUUID = function (cacheNum, callback) {
         callback = cacheNum;
         cacheNum = 1;
     }
-    if (uuidCache.length) {
-        return callback(null, uuidCache.shift());
-    }
-    var base = utils.getBaseURL();
     var req = {
         url: '/_uuids',
-        data: {count: cacheNum},
-        expect_json: true
+        use_cache: true,
+        expect_json: true,
+        data: { count: cacheNum }
     };
-    exports.request(req, function (err, resp) {
-        if (err) {
-            return callback(err);
+
+    /* Check cache; get reference to actual cache entry */
+    var cache_search = exports._request_cache_fetch(req, false);
+
+    if (cache_search) {
+        var uuids = cache_search.response.uuids;
+        if (uuids.length > 0) {
+            /* Remove one uuid from cache, return it */
+            return callback(null, uuids.shift());
         }
-        uuidCache = resp.uuids;
-        callback(null, uuidCache.shift());
-    });
+    }
+
+    var request_fn = function () {
+        exports.request(req, function (err, response) {
+            if (err) {
+                return callback(err);
+            }
+            /* Get reference to cached version of response */
+            var cache_entry = exports._request_cache_fetch(req, false);
+            var uuids = cache_entry.response.uuids;
+
+            if (uuids.length > 0) {
+
+                /* Remove one uuid from cache:
+                    Because we asked _request_cache_fetch not to clone,
+                    our update here will affect the cache entry as well. */
+
+                callback(null, uuids.shift());
+
+            } else {
+
+                /* Others requests got all of our uuids:
+                    Go around and retry the request again. */
+
+                request_fn();
+            }
+        });
+    };
+
+    request_fn();
 };
 
 /**
