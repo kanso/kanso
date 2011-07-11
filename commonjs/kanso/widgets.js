@@ -378,12 +378,16 @@ exports.select = function (_options) {
 
         var html = '<select';
         html += ' name="' + this._name(name, options.offset) + '" id="';
-        html += this._id(name, options.offset, options.path_extra) + '">';
-
+        html += this._id(name, options.offset, options.path_extra) + '"'; 
+     		if (_options.multiple)      
+		        html += ' multiple="multiple"';
+				html += '">';
+				
+				if (!_.isArray(value)) value = [value];
         for (var i = 0; i < this.values.length; i++) {
             var opt = this.values[i];
             html += '<option value="' + h(opt[0]) + '"';
-            if (opt[0] === value) {
+            if ($.inArray(opt[0],value) >= 0) {
                 html += ' selected="selected"';
             }
             html += '>';
