@@ -12,6 +12,7 @@
  */
 
 var sanitize = require('kanso/sanitize'),
+    //base64 = require('kanso/base64'),
     events = require('kanso/events'),
     _ = require('kanso/underscore')._;
 
@@ -458,3 +459,64 @@ exports.creator = function (options) {
     return w;
 };
 
+
+/**
+ * Creates a new file input widget.
+ *
+ * @name file([options])
+ * @param options
+ * @returns {Widget Object}
+ * @api public
+ */
+
+exports.file = function (options) {
+    var w = new Widget('file', options);
+    w.name;
+
+    w.toHTML = function (name, value, raw, field, options) {
+        this.name = name;
+        var strval = '';
+        if (raw === undefined) {
+            strval = value ? JSON.stringify(value): '';
+        }
+        else {
+            strval = JSON.stringify(raw);
+        }
+        var id = this._id(name, options.offset, options.path_extra);
+        var html = '<div id="' + id + '">';
+        html += '<input type="hidden" value="' + h(strval) + '"';
+        html += ' name="' + this._name(name, options.offset) + '" />';
+        html += '<span>' + h(strval) + '</span>';
+        html += '<input type="file" />';
+        html += '</div>';
+        return html;
+    };
+    w.updateValue = function (val, options) {
+        var str = JSON.stringify(val);
+        var id = this._id(this.name, options.offset, options.path_extra);
+        $('input[name="' + this.name + '"]').val(str);
+        $('#' + id + ' span').text(str);
+    };
+    w.clientInit = function (path, value, raw, field, options) {
+        var id = this._id(this.name, options.offset, options.path_extra);
+        $('#' + id + ' :file').change(function () {
+            var att = {};
+            _.each(this.files, function (f) {
+                var reader = new FileReader();
+                reader.onloadend = function (ev) {
+                    var result = ev.target.result;
+                    var data = result.slice(result.indexOf(',') + 1);
+                    att[f.name] = {
+                        content_type: f.type,
+                        length: f.size,
+                        data: data
+                    };
+                    w.updateValue(att, options);
+                };
+                reader.readAsDataURL(f);
+            });
+            w.updateValue(att, options);
+        });
+    };
+    return w;
+};

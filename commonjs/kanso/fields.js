@@ -848,3 +848,16 @@ exports.numberArray = function (options) {
     return exports.array(options);
 };
 
+/**
+ * Creates a file attachment field.
+ *
+ * @name attachment([options])
+ * @param {Object} options
+ * @api public
+ */
+
+exports.attachments = function (options) {
+    options = options || {};
+    options.widget = options.widget || widgets.file();
+    return new Field(options);
+};
