@@ -174,7 +174,7 @@ exports.documentSelector = function (_options) {
         db.getView(
             options.viewName,
             { include_docs: options.storeEntireDocument },
-            { db: options.db, appName: options.appName },
+            { useCache: true, db: options.db, appName: options.appName },
             utils.bindContext(this, function (err, rv) {
                 /* Error handling */
                 if (err) {

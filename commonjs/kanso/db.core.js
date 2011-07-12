@@ -798,7 +798,7 @@ exports.getDesignDoc = function (name, callback, no_cache) {
         if (err) {
             return callback(err);
         }
-        return callback(null, exports.design_docs[name]);
+        return callback(null, ddoc);
     });
 };
 
