@@ -127,26 +127,22 @@ exports.documentSelector = function (_options) {
         }
 
         /* Update <select> element contents, if necessary:
-            If we're embedding the whole document as JSON, then
-            we need to modify the <option> affected by an edit. This 
-            ensures that the previously-selected item remains selected. */
-            
-        if (this.options.storeEntireDocument && this.options.useJSON) {
+            If we're storing a JSON-encoded object, then we need to
+            modify the <option> affected by the value change. This
+            ensures that the selected item remains selected, despite
+            changes to other fields (and possible property reordering). */
+
+        if (this.options.useJSON) {
             if (value && value._id) {
                 var selector = (
                     'option[rel="' + css(
-                        (this.isReferenceType() ? value.ref : value._id)
+                        (this.useReferenceKey() ? value.ref : value._id)
                     ) + '"]'
                 );
                 var option_elt = $(selector, select_elt);
                 option_elt.val(new_value);
             }
         }
-
-        /* Fix me:
-            When storeEntireDocument is true, this can fail due to
-            arbitrary ordering of property names by JSON serializers.
-            We should iterate over the options and set .attr('selected'). */
 
         select_elt.val(new_value);
     };
@@ -237,7 +233,7 @@ exports.documentSelector = function (_options) {
         );
     };
 
-    w.isReferenceType = function () {
+    w.useReferenceKey = function () {
         return (
             this.options.useJSON && !this.options.unique &&
                 !this.options.storeEntireDocument
@@ -246,7 +242,7 @@ exports.documentSelector = function (_options) {
 
     w.isOptionSelected = function (row, value, options) {
         if (options.useJSON) {
-            if (this.isReferenceType()) {
+            if (this.useReferenceKey()) {
                 return ((value || {}).ref === row.id);
             } else {
                 return ((value || {})._id === row.id);
