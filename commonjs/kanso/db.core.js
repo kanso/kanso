@@ -189,6 +189,25 @@ exports.request = function (options, callback) {
     requested but not yet returned, a wait queue is employed. */
 
 /**
+ * Clear the in-interpreter request cache. Use this function if
+ * you need to ensure that the in-interpreter cache is empty,
+ * e.g. inside of a test case. If {options} is left undefined, this
+ * function destroys the *entire* request cache for *all* callers
+ * of subsystems that rely upon db.request. To be more selective
+ * and clear only a portion of the cache, supply the {options}
+ * argument. The {options} argument is in the same format as that
+ * used in options.request (i.e. with url and data properties).
+ */
+exports.clear_request_cache = function (options) {
+    if (options) {
+        var key = exports._make_request_cache_key(options);
+        delete exports.request_cache[key];
+    } else {
+        exports.request_cache = {};
+    }
+}
+
+/**
  * Returns true if the AJAX request described by {options}
  * should be cached by the in-interpreter request caching
  * code. In general, this sort of caching is limited to requests
@@ -736,9 +755,9 @@ exports.newUUID = function (cacheNum, callback) {
         }
         /* Get reference to cached version of response */
         var cache_entry = exports._request_cache_fetch(req, false);
-        var uuids = cache_entry.response.uuids;
+        var uuids = ((cache_entry || {}).response || {}).uuids;
 
-        if (uuids.length > 0) {
+        if (uuids && uuids.length > 0) {
 
             /* Remove one uuid from cache:
                 Because we asked _request_cache_fetch not to clone,
