@@ -81,6 +81,7 @@ exports.documentSelector = function (_options) {
 
     w.toHTML = function (name, value, raw, field, options) {
         this.cacheInit();
+
         var html_name = this._name(
             name, options.offset
         );
@@ -132,11 +133,20 @@ exports.documentSelector = function (_options) {
             
         if (this.options.storeEntireDocument && this.options.useJSON) {
             if (value && value._id) {
-                var selector = 'option[rel="' + css(value._id) + '"]';
+                var selector = (
+                    'option[rel="' + css(
+                        (this.isReferenceType() ? value.ref : value._id)
+                    ) + '"]'
+                );
                 var option_elt = $(selector, select_elt);
                 option_elt.val(new_value);
             }
         }
+
+        /* Fix me:
+            When storeEntireDocument is true, this can fail due to
+            arbitrary ordering of property names by JSON serializers.
+            We should iterate over the options and set .attr('selected'). */
 
         select_elt.val(new_value);
     };
@@ -157,6 +167,8 @@ exports.documentSelector = function (_options) {
 
         /* Start progress */
         spinner_elt.show();
+
+        /* Load options from view */
         this.populateSelectElement(
             container_elt, field, path, value, widget_options, function () {
                 spinner_elt.hide();
@@ -175,14 +187,16 @@ exports.documentSelector = function (_options) {
             options.viewName,
             { include_docs: options.storeEntireDocument },
             { useCache: true, db: options.db, appName: options.appName },
+
             utils.bindContext(this, function (err, rv) {
-                /* Error handling */
+                /* Error handling for getView */
                 if (err) {
                     throw new Error(
                         'Failed to request content from view `' +
                             options.viewName + '`'
                     );
                 }
+
                 /* Option element for 'no selection' */
                 var nil_option = $('<option />');
                 if (!val) {
@@ -200,39 +214,42 @@ exports.documentSelector = function (_options) {
                     this.generateOptionValue(
                         field, r, val, options,
                         utils.bindContext(this, function (err, v) {
-                            /* Problem with UUID generation? */
                             if (err) {
                                 throw new Error(
-                                    'Failed to generate identifier for' +
+                                    'Failed to generate uuid for' +
                                         ' field `' + this._name(path) + '`'
                                 );
                             }
-
                             /* Insert new <option> */
                             option_elt.val(v);
                             option_elt.text(r.value);
                             option_elt.attr('rel', r.id);
                             select_elt.append(option_elt);
-
-                            /* Sync with <select> element */
-                            this.updateValue(
-                                container_elt, path, val, options
-                            );
                         })
                     );
-
                 }));
+
+                /* Finished:
+                    Flow will transfer back to clientInit. */
+
                 callback();
             })
         );
     };
 
+    w.isReferenceType = function () {
+        return (
+            this.options.useJSON && !this.options.unique &&
+                !this.options.storeEntireDocument
+        );
+    };
+
     w.isOptionSelected = function (row, value, options) {
         if (options.useJSON) {
-            if (options.storeEntireDocument || options.unique) {
-                return ((value || {})._id === row.id);
-            } else {
+            if (this.isReferenceType()) {
                 return ((value || {}).ref === row.id);
+            } else {
+                return ((value || {})._id === row.id);
             }
         } else {
             return (value === row.id);
