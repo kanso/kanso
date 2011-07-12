@@ -537,7 +537,8 @@ exports['bulk docs - simple'] = function (test)
                 test.equal(rv.rows.length, ids.length, 'bulkGet yields an array');
                 test.equal(
                     _.inject(rv.rows, function (a, x) {
-                        a += x.doc.offset; return a;
+                        a += x.doc.offset;
+                        return a;
                     }, 0),
                     ((max - 1) * max) / 2,
                     "sum of bulkGet's return value is correct"
@@ -586,3 +587,206 @@ exports['bulk docs - range'] = function (test)
         test.done();
     });
 };
+
+exports['getDoc - cached'] = function (test)
+{
+    test.expect(15);
+
+    var doc = { data: '1234567890' };
+    var get_options = { useCache: true };
+    var replacement_data = '0987654321';
+
+    async.waterfall([
+        function (callback) {
+            db.saveDoc(doc, function (err, rv) {
+                test.equal(err, undefined, 'saveDoc has no error');
+                test.notEqual(rv, undefined, 'New document is defined');
+                test.notEqual(rv.id, undefined, 'id for new document is defined');
+                callback(null, rv.id);
+            });
+        },
+        function (id, callback) {
+            db.getDoc(id, {}, get_options, function (err, rv) {
+                test.equal(err, undefined, 'getDoc has no error');
+                test.notEqual(rv, undefined, 'Document is defined');
+                test.notEqual(rv._id, undefined, '_id for document is defined');
+                test.equal(rv.data, doc.data, 'Document data is correct');
+                callback(null, rv);
+            });
+        },
+        function (rdoc, callback) {
+            rdoc.data = replacement_data;
+            db.saveDoc(rdoc, function (err, rv) {
+                test.equal(err, undefined, 'saveDoc has no error');
+                callback(null, rv.id);
+            });
+        },
+        function (id, callback) {
+            db.getDoc(id, {}, get_options, function (err, rv) {
+                test.equal(err, undefined, 'getDoc has no error');
+                test.notEqual(rv, undefined, 'Document is defined');
+                test.equal(rv.data, doc.data, 'Cached document data is correct');
+                callback(null, id);
+            });
+        },
+        function (id, callback) {
+            get_options.flushCache = true;
+            db.getDoc(id, {}, get_options, function (err, rv) {
+                test.equal(err, undefined, 'getDoc has no error');
+                test.notEqual(rv, undefined, 'Document is defined');
+                test.notEqual(rv._id, undefined, '_id for document is defined');
+                test.equal(rv.data, replacement_data, 'Document data is correct');
+                callback();
+            });
+        }
+    ], function () {
+        test.done();
+    });
+};
+
+exports['newUUID - simple'] = function (test)
+{
+    test.expect(9);
+    db.clear_request_cache();
+
+    async.waterfall([
+        function (callback) {
+            db.newUUID(2, function (err, uuid) {
+                test.equal(err, undefined, 'newUUID has no error');
+                test.notEqual(uuid, undefined, 'UUID is defined');
+                callback(null, uuid);
+            });
+        },
+        function (prev_uuid, callback) {
+            db.newUUID(2, function (err, uuid) {
+                test.equal(err, undefined, 'newUUID has no error');
+                test.notEqual(uuid, undefined, 'UUID is defined');
+                test.notEqual(uuid, prev_uuid, 'UUID is non-repeating');
+                callback(null, uuid, prev_uuid);
+            });
+        },
+        function (prev_uuid, prev_prev_uuid, callback) {
+            db.newUUID(2, function (err, uuid) {
+                test.equal(err, undefined, 'newUUID re-request has no error');
+                test.notEqual(uuid, undefined, 'result of re-request is defined');
+                test.notEqual(uuid, prev_uuid, 'UUID is non-repeating');
+                test.notEqual(uuid, prev_prev_uuid, 'UUID is non-repeating');
+                callback();
+            });
+        }
+    ], function () {
+        test.done();
+    });
+};
+
+exports['newUUID - cache miss'] = function (test)
+{
+    var uuids = [];
+    var uuid_count = 100;
+    var ajax_request_count = 0;
+    
+    test.expect(2 * uuid_count + 5);
+    db.clear_request_cache();
+
+    async.waterfall([
+        function (callback) {
+            $(document).bind('ajaxSend', function () {
+                ajax_request_count += 1;
+                console.log([ '** req', ajax_request_count ]);
+            });
+            callback();
+        },
+        function (callback) {
+            var steps = [];
+            var make_step = function (i) {
+                return function (finished) {
+                    db.newUUID(uuid_count, function (err, uuid) {
+                        test.equal(err, undefined, 'newUUID has no error');
+                        test.notEqual(uuid, undefined, 'UUID is defined');
+                        uuids.push(uuid);
+                        console.log([ i, uuid ]);
+                        finished();
+                    });
+                }
+            };
+            for (var i = 0; i < uuid_count; ++i) {
+                steps.push(make_step(i));
+            }
+            async.parallel(steps, function () {
+                callback();
+            });
+        },
+        function (callback) {
+            test.equal(ajax_request_count, 1, 'Only one request');
+            callback();
+        },
+        function (callback) {
+            db.newUUID(uuid_count, function (err, uuid) {
+                console.log(uuid);
+                test.equal(err, undefined, 're-request has no error');
+                test.notEqual(uuid, undefined, 're-request uuid is defined');
+                uuids.push(uuid);
+                callback();
+            });
+        },
+        function (callback) {
+            console.log(ajax_request_count);
+            test.equal(
+                ajax_request_count, 2,
+                    'Cache requests additional uuids when needed'
+            );
+            test.equal(
+                _.uniq(uuids).length, uuids.length,
+                    'All document identifiers are unique'
+            );
+            callback();
+        }
+
+    ], function () {
+        test.done();
+    });
+};
+
+exports['newUUID - cache concurrency'] = function (test)
+{
+    test.expect(5);
+    db.clear_request_cache();
+
+    var ajax_request_count = 0;
+
+    async.waterfall([
+        function (callback) {
+            $(document).bind('ajaxSend', function () {
+                ajax_request_count += 1;
+            });
+            callback();
+        },
+        function (callback) {
+            async.parallel([
+                function (finished) {
+                    db.newUUID(2, function (err, uuid) {
+                        test.equal(err, undefined, 'newUUID has no error');
+                        test.notEqual(uuid, undefined, 'UUID is defined');
+                        finished();
+                    });
+                },
+                function (finished) {
+                    db.newUUID(2, function (err, uuid) {
+                        test.equal(err, undefined, 'newUUID has no error');
+                        test.notEqual(uuid, undefined, 'UUID is defined');
+                        finished();
+                    });
+                }
+            ], function () {
+                callback();
+            });
+        },
+        function (callback) {
+            test.equal(ajax_request_count, 1, 'Only one request');
+            callback();
+        }
+    ], function () {
+        test.done();
+    });
+};
+
