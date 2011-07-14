@@ -159,13 +159,7 @@ exports.validate = function (fields, doc, values, raw, path, extra) {
             fn = exports.validateField;
         }
         if (f instanceof fields_module.AttachmentField) {
-            var dir = path.concat([k]).join('/');
-            val = {};
-            for (var ak in doc._attachments) {
-                if (ak.substr(0, dir.length + 1) === dir + '/') {
-                    val[ak.substr(dir.length + 1)] = doc._attachments[ak];
-                }
-            };
+            val = utils.attachmentsBelowPath(doc, path.concat([k]));
         }
         return errs.concat(
             fn.call(this, f, doc, val, raw[k], path.concat([k]), extra)
@@ -271,19 +265,8 @@ exports.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path, extra) {
             fn = exports.authField;
         }
         if (field instanceof fields_module.AttachmentField) {
-            var dir = path.concat([k]).join('/');
-            nv = {};
-            for (var ak in nDoc._attachments) {
-                if (ak.substr(0, dir.length + 1) === dir + '/') {
-                    nv[ak.substr(dir.length + 1)] = nDoc._attachments[ak];
-                }
-            };
-            ov = {};
-            for (var ak in oDoc._attachments) {
-                if (ak.substr(0, dir.length + 1) === dir + '/') {
-                    ov[ak.substr(dir.length + 1)] = oDoc._attachments[ak];
-                }
-            };
+            nv = utils.attachmentsBelowPath(nDoc, path.concat([k]));
+            ov = utils.attachmentsBelowPath(oDoc, path.concat([k]));
         }
         return errs.concat(fn(
             field, nDoc, oDoc, nv, ov, user, path.concat([k]), extra
