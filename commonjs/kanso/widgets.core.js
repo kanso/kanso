@@ -12,7 +12,6 @@
  */
 
 var sanitize = require('kanso/sanitize'),
-    //base64 = require('kanso/base64'),
     events = require('kanso/events'),
     _ = require('kanso/underscore')._;
 
