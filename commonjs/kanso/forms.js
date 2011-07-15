@@ -106,6 +106,9 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
     var keys = _.keys(doc_b);
 
     _.each(keys, function (k) {
+        if (path.length === 0 && k === '_attachments') {
+            return;
+        }
         var f = fields[k];
         var b = doc_b[k];
         var f_path = path.concat([k]);
@@ -141,6 +144,86 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
             );
         }
     });
+    if (path.length === 0) {
+        return exports.overrideAttachments(
+            excludes, field_subset, fields, doc_a, doc_b
+        );
+    }
+    return doc_a;
+};
+
+exports.overrideAttachments = function (excludes, field_subset, fields, doc_a, doc_b) {
+    // TODO: perhaps try this instead:
+    // - get a complete list of all attachments in a and b
+    // - find field for each
+    // - test if in a and/or b
+    // - test if field included/excluded
+    // - update a accordingly
+
+    var exclude_paths = _.map((excludes || []), function (p) {
+        return p.split('.');
+    });
+    var subset_paths = _.map((field_subset || []), function (p) {
+        return p.split('.');
+    });
+
+    var a = doc_a._attachments || {};
+    var b = doc_b._attachments || {};
+
+    var a_keys = _.keys(a);
+    var b_keys = _.keys(b);
+    var all_keys = _.uniq(a_keys.concat(b_keys).sort(), true);
+
+    var fields_module = require('./fields');
+
+    _.each(all_keys, function (k) {
+        var dir = k.split('/');
+        var filename = dir.pop();
+        var f = utils.getPropertyPath(fields, dir);
+
+        if (f instanceof fields_module.AttachmentField) {
+            if (excludes) {
+                for (var i = 0; i < exclude_paths.length; i++) {
+                    if (utils.isSubPath(exclude_paths[i], dir)) {
+                        return;
+                    }
+                }
+            }
+            if (field_subset) {
+                var in_subset = false;
+                for (var j = 0; j < subset_paths.length; j++) {
+                    if (utils.isSubPath(subset_paths[j], dir)) {
+                        in_subset = true;
+                    }
+                }
+                if (!in_subset) {
+                    return;
+                }
+            }
+            // clear existing attachments
+            for (var ak in a) {
+                if (ak.slice(0, dir.length + 1) === dir.join('/') + '/') {
+                    delete a[ak];
+                }
+            }
+            // copy over new attachments
+            for (var bk in b) {
+                if (bk.slice(0, dir.length + 1) === dir.join('/') + '/') {
+                    if (!doc_a._attachments) {
+                        a = doc_a._attachments = {};
+                    }
+                    a[bk] = b[bk];
+                }
+            }
+        }
+        else if (b.hasOwnProperty(k)) {
+            if (!doc_a._attachments) {
+                a = doc_a._attachments = {};
+            }
+            a[k] = b[k];
+        }
+    });
+
     return doc_a;
 };
 

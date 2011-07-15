@@ -920,3 +920,101 @@ exports['override'] = function (test) {
     );
     test.done();
 };
+
+
+exports['override - attachments'] = function (test) {
+    test.same(
+        forms.override(
+            null, // excludes
+            null, // subset
+            {a: fields.attachments()}, // fields
+            {_attachments: {
+                'a/foo.ext': {data: 'one'},
+                'b/bar.ext': {data: 'two'}
+            }}, // doc a
+            {}, // doc b
+            [] // path
+        ),
+        {_attachments: {
+            'b/bar.ext': {data: 'two'}
+        }}
+    );
+    test.same(
+        forms.override(
+            null, // excludes
+            null, // subset
+            {a: fields.attachments()}, // fields
+            {_attachments: {
+                'a/foo.ext': {data: 'one'}
+            }}, // doc a
+            {_attachments: {
+                'b/bar.ext': {data: 'two'}
+            }}, // doc b
+            [] // path
+        ),
+        {_attachments: {
+            'b/bar.ext': {data: 'two'}
+        }}
+    );
+    // override if directory paths match
+    test.same(
+        forms.override(
+            null, // excludes
+            null, // subset
+            {a: fields.attachments()}, // fields
+            {_attachments: {
+                'a/foo.ext': {data: 'one'}
+            }}, // doc a
+            {_attachments: {
+                'a/bar.ext': {data: 'two'}
+            }}, // doc b
+            [] // path
+        ),
+        {_attachments: {
+            'a/bar.ext': {data: 'two'}
+        }}
+    );
+    // don't override if field is excluded
+    test.same(
+        forms.override(
+            ['a'], // excludes
+            null, // subset
+            {a: fields.attachments()}, // fields
+            {_attachments: {
+                'a/foo.ext': {data: 'one'}
+            }}, // doc a
+            {_attachments: {
+                'a/bar.ext': {data: 'two'}
+            }}, // doc b
+            [] // path
+        ),
+        {_attachments: {
+            'a/foo.ext': {data: 'one'}
+        }}
+    );
+    // override only if field is in subset (if specified)
+    test.same(
+        forms.override(
+            null, // excludes
+            ['a'], // subset
+            {
+                a: fields.attachments(),
+                b: fields.attachments()
+            }, // fields
+            {_attachments: {
+                'a/foo.ext': {data: 'one'},
+                'b/foo.ext': {data: 'three'}
+            }}, // doc a
+            {_attachments: {
+                'a/bar.ext': {data: 'two'},
+                'b/bar.ext': {data: 'four'}
+            }}, // doc b
+            [] // path
+        ),
+        {_attachments: {
+            'a/bar.ext': {data: 'two'},
+            'b/foo.ext': {data: 'three'}
+        }}
+    );
+    test.done();
+};
