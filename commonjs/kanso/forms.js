@@ -480,9 +480,10 @@ var errsBelowPath = function (errs, path) {
  */
 
 Form.prototype.renderFields = function (renderer, fields, values,
-                                        raw, errs, path, options) {
+                                        raw, errs, path, options, root) {
     fields = fields || {};
     values = values || {};
+    root = root || values;
     raw = raw || {};
     errs = errs || [];
     path = path || [];
@@ -512,9 +513,19 @@ Form.prototype.renderFields = function (renderer, fields, values,
         var f_errs = errsBelowPath(errs, f_path);
         var f = fields[k];
 
-        if (f instanceof fields_module.Field ||
-            f instanceof fields_module.Embedded ||
-            f instanceof fields_module.EmbeddedList) {
+        if (f instanceof fields_module.AttachmentField) {
+            return html + renderer.field(
+                f,
+                f_path,
+                utils.attachmentsBelowPath(root, f_path),
+                (raw[k] === undefined) ? values[k]: raw[k],
+                f_errs,
+                (options || {})
+            );
+        }
+        else if (f instanceof fields_module.Field ||
+                 f instanceof fields_module.Embedded ||
+                 f instanceof fields_module.EmbeddedList) {
 
             return html + renderer.field(
                 f,
@@ -534,7 +545,8 @@ Form.prototype.renderFields = function (renderer, fields, values,
                     (raw[k] === undefined) ? values[k]: raw[k],
                     errs,
                     f_path,
-                    (options || {})
+                    (options || {}),
+                    root
                 ) + (k ? renderer.endGroup(f_path) : '');
         } else {
             throw new Error(
