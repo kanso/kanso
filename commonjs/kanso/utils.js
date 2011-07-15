@@ -398,3 +398,40 @@ exports.bindContext = function (context, closure) {
     };
 };
 
+
+/**
+ * Returns attachments below a given path from a document, returning an object
+ * with the attachment names relative to that path. Example:
+ *
+ *     var doc = {_attachments: {
+ *         'foo/bar.ext': {data: 'one', ...},
+ *         'foo/baz.ext': {data: 'two', ...},
+ *         'asdf.ext':    {data: 'blah', ...}
+ *     }};
+ *
+ *     utils.attachmentsBelowPath(doc, 'foo') => {
+ *         'bar.ext': {data: 'one', ...},
+ *         'baz.ext': {data: 'two', ...}
+ *     }
+ *
+ * @name attachmentsBelowPath(doc, path)
+ * @param {Object} doc
+ * @param {String | Array} path
+ * @api public
+ */
+
+exports.attachmentsBelowPath = function (doc, path) {
+    if (!doc || !doc._attachments) {
+        return {};
+    }
+    if (_.isArray(path)) {
+        path = path.join('/');
+    }
+    var results = {};
+    for (var k in doc._attachments) {
+        if (k.substr(0, path.length + 1) === path + '/') {
+            results[k.substr(path.length + 1)] = doc._attachments[k];
+        }
+    };
+    return results;
+};

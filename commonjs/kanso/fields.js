@@ -848,3 +848,47 @@ exports.numberArray = function (options) {
     return exports.array(options);
 };
 
+
+/**
+ * AttachmentField objects are used when constructing content types and forms,
+ * and are handled slightly differently than Field objects when parsing requests
+ * and validating.
+ *
+ * AttachmentField 'inherits' from Field (so an AttachmentField object will
+ * return true for instanceof Field and instanceof AttachmentField).
+ *
+ * #### Options ####
+ *
+ * * **omit_empty**  *Boolean* - whether to omit the field from a document when
+ *                               the field is empty
+ * * **permissions** *Object*  - a permissions check function or an object
+ *                               containing separate functions to run on create,
+ *                               edit and update operations.
+ * * **validators**  *Array*   - an array of validation functions (default: [])
+ * * **required**    *Boolean* - whether the field is required (default: true)
+ *
+ * @constructor
+ * @name Field
+ * @param {Object} options
+ * @api public
+ */
+
+exports.AttachmentField = function AttachmentField(options) {
+    exports.Field.call(this, options);
+};
+exports.AttachmentField.prototype = new exports.Field();
+
+
+/**
+ * Creates a file attachment field.
+ *
+ * @name attachment([options])
+ * @param {Object} options
+ * @api public
+ */
+
+exports.attachments = function (options) {
+    options = options || {};
+    options.widget = options.widget || widgets.file();
+    return new exports.AttachmentField(options);
+};

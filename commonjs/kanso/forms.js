@@ -106,6 +106,9 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
     var keys = _.keys(doc_b);
 
     _.each(keys, function (k) {
+        if (path.length === 0 && k === '_attachments') {
+            return;
+        }
         var f = fields[k];
         var b = doc_b[k];
         var f_path = path.concat([k]);
@@ -141,6 +144,81 @@ exports.override = function (excludes, field_subset, fields, doc_a, doc_b, path)
             );
         }
     });
+    if (path.length === 0) {
+        return exports.overrideAttachments(
+            excludes, field_subset, fields, doc_a, doc_b
+        );
+    }
+    return doc_a;
+};
+
+exports.overrideAttachments = function (excludes, field_subset, fields, doc_a, doc_b) {
+    var exclude_paths = _.map((excludes || []), function (p) {
+        return p.split('.');
+    });
+    var subset_paths = _.map((field_subset || []), function (p) {
+        return p.split('.');
+    });
+
+    var a = doc_a._attachments || {};
+    var b = doc_b._attachments || {};
+
+    var a_keys = _.keys(a);
+    var b_keys = _.keys(b);
+    var all_keys = _.uniq(a_keys.concat(b_keys).sort(), true);
+
+    var fields_module = require('./fields');
+
+    _.each(all_keys, function (k) {
+        var parts = k.split('/');
+        var filename = parts.pop();
+        var dir = parts.join('/');
+        var f = utils.getPropertyPath(fields, dir);
+
+
+        if (f instanceof fields_module.AttachmentField) {
+            if (excludes) {
+                for (var i = 0; i < exclude_paths.length; i++) {
+                    if (utils.isSubPath(exclude_paths[i], dir.split('/'))) {
+                        return;
+                    }
+                }
+            }
+            if (field_subset) {
+                var in_subset = false;
+                for (var j = 0; j < subset_paths.length; j++) {
+                    if (utils.isSubPath(subset_paths[j], dir.split('/'))) {
+                        in_subset = true;
+                    }
+                }
+                if (!in_subset) {
+                    return;
+                }
+            }
+            // clear existing attachments
+            for (var ak in a) {
+                if (ak.slice(0, dir.length + 1) === dir + '/') {
+                    delete a[ak];
+                }
+            }
+            // copy over new attachments
+            for (var bk in b) {
+                if (bk.slice(0, dir.length + 1) === dir + '/') {
+                    if (!doc_a._attachments) {
+                        a = doc_a._attachments = {};
+                    }
+                    a[bk] = b[bk];
+                }
+            }
+        }
+        else if (b.hasOwnProperty(k)) {
+            if (!doc_a._attachments) {
+                a = doc_a._attachments = {};
+            }
+            a[k] = b[k];
+        }
+    });
+
     return doc_a;
 };
 
@@ -402,9 +480,10 @@ var errsBelowPath = function (errs, path) {
  */
 
 Form.prototype.renderFields = function (renderer, fields, values,
-                                        raw, errs, path, options) {
+                                        raw, errs, path, options, root) {
     fields = fields || {};
     values = values || {};
+    root = root || values;
     raw = raw || {};
     errs = errs || [];
     path = path || [];
@@ -434,9 +513,19 @@ Form.prototype.renderFields = function (renderer, fields, values,
         var f_errs = errsBelowPath(errs, f_path);
         var f = fields[k];
 
-        if (f instanceof fields_module.Field ||
-            f instanceof fields_module.Embedded ||
-            f instanceof fields_module.EmbeddedList) {
+        if (f instanceof fields_module.AttachmentField) {
+            return html + renderer.field(
+                f,
+                f_path,
+                utils.attachmentsBelowPath(root, f_path),
+                (raw[k] === undefined) ? values[k]: raw[k],
+                f_errs,
+                (options || {})
+            );
+        }
+        else if (f instanceof fields_module.Field ||
+                 f instanceof fields_module.Embedded ||
+                 f instanceof fields_module.EmbeddedList) {
 
             return html + renderer.field(
                 f,
@@ -456,7 +545,8 @@ Form.prototype.renderFields = function (renderer, fields, values,
                     (raw[k] === undefined) ? values[k]: raw[k],
                     errs,
                     f_path,
-                    (options || {})
+                    (options || {}),
+                    root
                 ) + (k ? renderer.endGroup(f_path) : '');
         } else {
             throw new Error(
@@ -498,16 +588,35 @@ exports.formValuesToTree = function (form) {
  * @api public
  */
 
-exports.parseRaw = function (fields, raw) {
+exports.parseRaw = function (fields, raw, root, path) {
     var doc = {};
+    path = path || [];
+    root = root || doc;
     raw = raw || {};
     var fields_module = require('./fields');
 
     for (var k in fields) {
         var f = fields[k];
+        var f_path = path.concat([k]);
         var r = raw[k];
 
-        if (f instanceof fields_module.Field) {
+        if (f instanceof fields_module.AttachmentField) {
+            if (typeof r === 'string' && r !== '') {
+                r = JSON.parse(r);
+            }
+            else {
+                r = {};
+            }
+            var att = {};
+            for (var rk in r) {
+                att[f_path.join('/') + '/' + rk] = r[rk];
+            }
+            if (!root._attachments) {
+                root._attachments = {};
+            }
+            _.extend(root._attachments, att);
+        }
+        else if (f instanceof fields_module.Field) {
             if (!f.isEmpty(r)) {
                 doc[k] = f.parse(r);
             }
@@ -524,7 +633,7 @@ exports.parseRaw = function (fields, raw) {
                         r = {};
                     }
                 }
-                doc[k] = exports.parseRaw(f.type.fields, r);
+                doc[k] = exports.parseRaw(f.type.fields, r, root, f_path);
             }
         }
         else if (f instanceof fields_module.EmbeddedList) {
@@ -538,7 +647,9 @@ exports.parseRaw = function (fields, raw) {
                             r[i] = {};
                         }
                     }
-                    doc[k][i] = exports.parseRaw(f.type.fields, r[i]);
+                    doc[k][i] = exports.parseRaw(
+                        f.type.fields, r[i], root, f_path.concat([i])
+                    );
                 }
             }
             if (!doc[k].length && f.omit_empty) {
@@ -546,7 +657,7 @@ exports.parseRaw = function (fields, raw) {
             }
         }
         else if (f instanceof Object) {
-            doc[k] = exports.parseRaw(f, r);
+            doc[k] = exports.parseRaw(f, r, root, f_path);
         } else {
             throw new Error(
                 'The field type `' + (typeof f) + '` is not supported.'
