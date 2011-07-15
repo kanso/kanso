@@ -421,6 +421,9 @@ exports.bindContext = function (context, closure) {
  */
 
 exports.attachmentsBelowPath = function (doc, path) {
+    if (!doc || !doc._attachments) {
+        return {};
+    }
     if (_.isArray(path)) {
         path = path.join('/');
     }
