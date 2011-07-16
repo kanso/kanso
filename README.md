@@ -25,11 +25,12 @@ How to contribute
 3. Create and checkout dev branch: `git checkout -b dev origin/dev`
 4. Create and checkout feature/bugfix branch: `git checkout -b _branch_ dev`
 5. Create CouchDB database for Kanso (eg. kanso_testsuite).
-6. Run tests and check that all pass: `make && sudo make install && kanso push http://_couchdb_host_/kanso_testsuite testsuite` and visit http://_couchdb_host_/kanso_testsuite/_design/testsuite/_rewrite/
-7. Write tests in testsuite/tests
-8. Write source (eg. in commonjs/kanso).
-9. Run tests and check that all pass.
-10. Save changes: `git add --all && git commit -m "_message_"
-11. Merge feature/bugfix branch with dev branch: `git checkout dev && git merge _branch_`
-12. Push your changes to GitHub: `git push origin dev`
-13. Make pull request for your forked repository's dev branch into the original repository's dev branch.
+6. Setup for development: `make all && sudo npm link`
+7. Run tests and check that all pass: `kanso push http://_couchdb_host_/kanso_testsuite testsuite` and visit http://_couchdb_host_/kanso_testsuite/_design/testsuite/_rewrite/
+8. Write tests in testsuite/tests
+9. Write source (eg. in commonjs/kanso).
+10. Run tests and check that all pass.
+11. Save changes: `git add --all && git commit -m "_message_"
+12. Merge feature/bugfix branch with dev branch: `git checkout dev && git merge _branch_`
+13. Push your changes to GitHub: `git push origin dev`
+14. Make pull request for your forked repository's dev branch into the original repository's dev branch.
