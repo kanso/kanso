@@ -33,6 +33,8 @@ How to contribute
 11. Write source (eg. in commonjs/kanso).
 12. Run tests and check that all pass.
 13. Save changes: `git add --all && git commit -m "_message_"
-14. Create another feature/bugfix by following steps 4-13 or merge feature/bugfix branch back to dev branch: `git checkout dev && git merge _branch_`
+14. Create another feature/bugfix by following steps 4-13
+    Merge feature/bugfix branch back to dev branch: `git checkout dev && git merge _branch_`
+    Delete feature/bugfix branch: `git branch -d _branch_`
 15. Push your changes to GitHub: `git push origin dev`
 16. Make pull request for your forked repository's dev branch into the original repository's dev branch.
