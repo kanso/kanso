@@ -848,4 +848,31 @@ exports.deleteDatabase = function (name, callback) {
     exports.request(req, callback);
 };
 
+/**
+ * Checks whether or not a CouchDB database exists.
+ *
+ * If you're running behind a virtual host you'll need to set up
+ * appropriate rewrites for a GET request to '/' and turn off safe rewrites.
+ *
+ * @name exists(name, callback)
+ * @param {String} name
+ * @param {Function} callback
+ * @api public
+ */
 
+exports.exists = function (name, callback) {
+    if (!utils.isBrowser()) {
+        throw new Error('exists cannot be called server-side');
+    }
+    var req = {
+        type: 'GET',
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
+    };
+    exports.request(req, function (err) {
+        if (err && err.status === 404) { /* no_db_file */
+            callback(false);
+        } else {
+            callback(true);
+        }
+    });
+};

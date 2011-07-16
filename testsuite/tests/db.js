@@ -30,6 +30,51 @@ exports['database creation/deletion'] = function (test)
     });
 };
 
+exports['database existence'] = function (test)
+{
+    test.expect(8);
+    var database_name = 'kanso_testsuite_database';
+
+    async.waterfall([
+        function (callback) {
+            db.createDatabase(database_name, function (err, rv) {
+                if (err) {
+                    test.done(err);
+                }
+                test.equal(err, undefined, 'createDatabase has no error');
+                test.notEqual(rv, undefined, 'createDatabase returns a value');
+                test.equal(rv.ok, true, 'createDatabase returns okay');
+                callback();
+            });
+        },
+        function (callback) {
+            db.exists(database_name, function (exists) {
+                test.equal(exists, true, 'Database exists');
+                callback();
+            });
+        },
+        function (callback) {
+            db.deleteDatabase('/' + database_name, function (err, rv) {
+                if (err) {
+                    test.done(err);
+                }
+                test.equal(err, undefined, 'deleteDatabase has no error');
+                test.notEqual(rv, undefined, 'deleteDatabase returns a value');
+                test.equal(rv.ok, true, 'deleteDatabase returns okay');
+                callback();
+            });
+        },
+        function (callback) {
+            db.exists(database_name, function (exists) {
+                test.equal(exists, false, 'Database does not exist');
+                callback();
+            });
+        }
+    ], function () {
+        test.done();
+    });
+};
+
 exports['options.db for saveDoc/getDoc/removeDoc, async'] = function (test)
 {
     test.expect(16);
