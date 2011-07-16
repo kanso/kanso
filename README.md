@@ -17,3 +17,16 @@ This means highly-responsive web-apps, that are still search-engine friendly.
 Kanso provides a whole host of tools for making serious CouchApp development easier,
 to find out more about this new approach to web development take a look at the
 [Kanso website](http://kansojs.org).
+
+How to contribute
+----------
+1. Fork repository on GitHub.
+2. Clone forked repository: `git clone git@github.com:_username_/kanso.git`
+3. Checkout dev branch: `git checkout -b dev origin/dev`
+4. Create CouchDB database for Kanso (eg. kanso_testsuite).
+5. Run tests and check that all pass: `make && sudo make install && kanso push http://_couchdb_host_/kanso_testsuite testsuite` and visit http://_couchdb_host_/kanso_testsuite/_design/testsuite/_rewrite/
+6. Write tests in testsuite/tests
+7. Write source (eg. in commonjs/kanso).
+8. Run tests and check that all pass.
+9. Save changes: `git add --all && git commit -m "_message_" && git push origin dev`
+10. Make pull request on GitHub for your forked repository's dev branch into the original repository's dev branch.
