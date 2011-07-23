@@ -17,7 +17,7 @@
  * Module dependencies
  */
 
-var settings = require('./settings'), // settings module is auto-generated
+var settings = require('settings/root'), // settings module is auto-generated
     events = require('./events'),
     _ = require('./underscore')._;
 

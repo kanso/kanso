@@ -11,7 +11,7 @@
  */
 
 var utils = require('./utils'),
-    settings = require('./settings'),
+    settings = require('settings/root'),
     session = null;
 
 /* Avoid a circular require in CouchDB */
