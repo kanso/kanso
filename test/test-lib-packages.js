@@ -77,7 +77,7 @@ exports['load calls preprocessors'] = function (test) {
     var calls = [];
     var plugins = [
         {preprocessors: [
-            function (path, settings, doc, callback) {
+            function (root, path, settings, doc, callback) {
                 test.equal(path, './testpkg');
                 test.equal(settings, cfg);
                 doc.test = ['one'];
@@ -86,7 +86,7 @@ exports['load calls preprocessors'] = function (test) {
             }
         ]},
         {preprocessors: [
-            function (path, settings, doc, callback) {
+            function (root, path, settings, doc, callback) {
                 test.equal(path, './testpkg');
                 test.equal(settings, cfg);
                 test.same(doc.test, ['one']);
@@ -94,7 +94,7 @@ exports['load calls preprocessors'] = function (test) {
                 calls.push(['two', path, settings, doc]);
                 callback(null, doc);
             },
-            function (path, settings, doc, callback) {
+            function (root, path, settings, doc, callback) {
                 test.equal(path, './testpkg');
                 test.equal(settings, cfg);
                 test.same(doc.test, ['one', 'two']);
