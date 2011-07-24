@@ -14,7 +14,7 @@ exports.usage = '' +
 
 exports.run = function (settings, plugins, args) {
     var dir = utils.abspath(args[0] || '.');
-    packages.load(plugins, dir, [], null, function (err, doc) {
+    packages.load(plugins, dir, true, [], null, function (err, doc) {
         if (err) {
             return logger.error(err);
         }

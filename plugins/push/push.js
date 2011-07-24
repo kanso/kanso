@@ -43,7 +43,8 @@ exports.run = function (settings, plugins, args) {
 };
 
 exports.loadApp = function (plugins, dir, url, callback) {
-    packages.load(plugins, dir, [], null, function (err, doc, cfg) {
+    var paths = [__dirname + '/../../packages'];
+    packages.load(plugins, dir, true, paths, null, function (err, doc, cfg) {
         if (err) {
             if (callback) {
                 return callback(err);
