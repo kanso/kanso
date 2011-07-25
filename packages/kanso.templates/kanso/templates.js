@@ -39,7 +39,14 @@
  */
 
 var utils = require('./utils'),
+    flashmessages;
+
+try {
     flashmessages = require('./flashmessages');
+}
+catch (e) {
+    // flashmessages module may not be available
+}
 
 
 /**
@@ -59,7 +66,7 @@ exports.render = function (name, req, context) {
     context.baseURL = utils.getBaseURL(req);
     context.isBrowser = utils.isBrowser();
     context.userCtx = req.userCtx;
-    if (!context.flashMessages) {
+    if (!context.flashMessages && flashmessages) {
         context.flashMessages = flashmessages.getMessages(req);
     }
     var r = '';

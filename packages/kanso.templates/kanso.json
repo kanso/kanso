@@ -1,0 +1,7 @@
+{
+    "name": "kanso.templates",
+    "modules": "kanso",
+    "dependencies": {
+        "kanso.core": null
+    }
+}
