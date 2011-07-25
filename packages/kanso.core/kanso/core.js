@@ -20,13 +20,27 @@ var settings = require('settings/root'), // module auto-generated
     utils = require('./utils'),
     session = require('./session'),
     cookies = require('./cookies'),
-    flashmessages = require('./flashmessages'),
-    templates = require('./templates'),
     events = require('./events'),
     urlParse = url.parse,
     urlFormat = url.format,
-    _ = require('./underscore')._;
+    _ = require('./underscore')._,
+    flashmessages,
+    templates;
 
+
+try {
+    flashmessages = require('./flashmessages');
+}
+catch (e) {
+    // may not be available
+}
+
+try {
+    templates = require('./templates');
+}
+catch (e) {
+    // may not be available
+}
 
 /**
  * This is because the first page hit also triggers kanso to handle the url
@@ -506,7 +520,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
                 else {
                     // returned without response, meaning cookies won't be set
                     // by handleResponseHeaders
-                    if (req.outgoing_flash_messages) {
+                    if (flashmessages && req.outgoing_flash_messages) {
                         flashmessages.setCookieBrowser(
                             req, req.outgoing_flash_messages
                         );
@@ -525,7 +539,7 @@ exports.runShowBrowser = function (req, name, docid, callback) {
         else {
             // returned without response, meaning cookies won't be set by
             // handleResponseHeaders
-            if (req.outgoing_flash_messages) {
+            if (flashmessages && req.outgoing_flash_messages) {
                 flashmessages.setCookieBrowser(
                     req, req.outgoing_flash_messages
                 );
@@ -559,6 +573,11 @@ exports.parseResponse = function (req, res) {
         _.each(ids, function (id) {
             context[id] = res[id];
         });
+        if (!templates) {
+            throw new Error(
+                'Short-hand response style requires template module'
+            );
+        }
         var body = templates.render(
             settings.base_template || 'base.html', req, context
         );
@@ -601,6 +620,11 @@ exports.parseResponse = function (req, res) {
         _.each(ids, function (id) {
             context[id] = res[id];
         });
+        if (!templates) {
+            throw new Error(
+                'Short-hand response style requires templates module'
+            );
+        }
         var body = templates.render(
             settings.base_template || 'base.html', req, context
         );
@@ -618,7 +642,9 @@ exports.parseResponse = function (req, res) {
 };
 
 exports.runShow = function (fn, doc, req) {
-    req = flashmessages.updateRequest(req);
+    if (flashmessages) {
+        req = flashmessages.updateRequest(req);
+    }
     utils.currentRequest(req);
     var info = {
         type: 'show',
@@ -639,7 +665,9 @@ exports.runShow = function (fn, doc, req) {
     events.emit('beforeResponseStart', info, req, res);
     events.emit('beforeResponseData', info, req, res, res.body || '');
 
-    res = flashmessages.updateResponse(req, res);
+    if (flashmessages) {
+        res = flashmessages.updateResponse(req, res);
+    }
     req.response_received = true;
     return res;
 };
@@ -687,7 +715,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
                     else {
                         // returned without response, meaning cookies won't be
                         // set by handleResponseHeaders
-                        if (req.outgoing_flash_messages) {
+                        if (flashmessages && req.outgoing_flash_messages) {
                             flashmessages.setCookieBrowser(
                                 req, req.outgoing_flash_messages
                             );
@@ -711,7 +739,7 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
             else {
                 // returned without response, meaning cookies won't be set by
                 // handleResponseHeaders
-                if (req.outgoing_flash_messages) {
+                if (flashmessages && req.outgoing_flash_messages) {
                     flashmessages.setCookieBrowser(
                         req, req.outgoing_flash_messages
                     );
@@ -734,7 +762,9 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
  */
 
 exports.runUpdate = function (fn, doc, req, cb) {
-    req = flashmessages.updateRequest(req);
+    if (flashmessages) {
+        req = flashmessages.updateRequest(req);
+    }
     utils.currentRequest(req);
     var info = {
         type: 'update',
@@ -756,10 +786,10 @@ exports.runUpdate = function (fn, doc, req, cb) {
     events.emit('beforeResponseStart', info, req, res);
     events.emit('beforeResponseData', info, req, res, res.body || '');
 
-    var r = [
-        val ? val[0]: null,
-        flashmessages.updateResponse(req, res)
-    ];
+    if (flashmessages) {
+        res = flashmessages.updateResponse(req, res);
+    }
+    var r = [val ? val[0]: null, res];
     if (req.client && r[0]) {
         db.saveDoc(r[0], function (err, res) {
             if (err) {
@@ -846,7 +876,7 @@ exports.runListBrowser = function (req, name, view, callback) {
                 else {
                     // returned without response, meaning cookies won't be set
                     // by handleResponseHeaders
-                    if (req.outgoing_flash_messages) {
+                    if (flashmessages && req.outgoing_flash_messages) {
                         flashmessages.setCookieBrowser(
                             req, req.outgoing_flash_messages
                         );
@@ -883,7 +913,9 @@ exports.runListBrowser = function (req, name, view, callback) {
  */
 
 exports.runList = function (fn, head, req) {
-    req = flashmessages.updateRequest(req);
+    if (flashmessages) {
+        req = flashmessages.updateRequest(req);
+    }
     utils.currentRequest(req);
     var info = {
         type: 'list',
@@ -901,7 +933,10 @@ exports.runList = function (fn, head, req) {
         if (res.body) {
             events.emit('beforeResponseData', info, req, res, res.body);
         }
-        _start(flashmessages.updateResponse(req, res));
+        if (flashmessages) {
+            res = flashmessages.updateResponse(req, res);
+        }
+        _start(res);
     };
     var _send = send;
     send = function (data) {
