@@ -36,7 +36,7 @@ module.exports = function (root, path, settings, doc, callback) {
             // load the templates module bootstrap code
             // TODO move this to post-processing once merging works
             //var f = __dirname + '/../../commonjs/kanso/templates.js';
-            var f = __dirname + '/../../packages/kanso/kanso/templates.js';
+            var f = __dirname + '/../../packages/kanso.core/kanso/templates.js';
             fs.readFile(f, function (err, src) {
                 if (err) {
                     return callback(err);
