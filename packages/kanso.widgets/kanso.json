@@ -1,0 +1,12 @@
+{
+    "name": "kanso.widgets",
+    "modules": "kanso",
+    "dependencies": {
+        "underscore": null,
+        "kanso.utils": null,
+        "kanso.sanitize": null,
+        "kanso.db": null,
+        "kanso.events": null,
+        "kanso.forms": null
+    }
+}

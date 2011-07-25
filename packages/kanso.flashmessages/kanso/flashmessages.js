@@ -20,9 +20,9 @@
  * Module dependencies
  */
 
-var utils = require('./utils'),
-    cookies = require('./cookies'),
-    _ = require('./underscore');
+var utils = require('kanso/utils'),
+    cookies = require('kanso/cookies'),
+    _ = require('underscore');
 
 
 /**

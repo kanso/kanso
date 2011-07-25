@@ -1,0 +1,7 @@
+{
+    "name": "kanso.validators",
+    "modules": "kanso",
+    "dependencies": {
+        "underscore": null
+    }
+}

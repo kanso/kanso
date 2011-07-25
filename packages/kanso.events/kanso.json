@@ -1,0 +1,7 @@
+{
+    "name": "kanso.events",
+    "modules": "kanso",
+    "dependencies": {
+        "underscore": null
+    }
+}

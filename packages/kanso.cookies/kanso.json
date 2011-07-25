@@ -1,5 +1,5 @@
 {
-    "name": "kanso.templates",
+    "name": "kanso.cookies",
     "modules": "kanso",
     "dependencies": {
         "kanso.utils": null

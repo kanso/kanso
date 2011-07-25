@@ -1,9 +1,11 @@
 {
-    "name": "kanso.flashmessages",
+    "name": "kanso.session",
     "modules": "kanso",
     "dependencies": {
-        "underscore": null,
+        "kanso.db": null,
+        "kanso.sha1": null,
         "kanso.cookies": null,
+        "kanso.events": null,
         "kanso.utils": null
     }
 }

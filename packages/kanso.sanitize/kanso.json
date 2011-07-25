@@ -1,0 +1,7 @@
+{
+    "name": "kanso.sanitize",
+    "modules": "kanso",
+    "dependencies": {
+        "underscore": null
+    }
+}

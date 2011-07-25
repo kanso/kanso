@@ -15,15 +15,15 @@
  */
 
 var settings = require('settings/root'), // module auto-generated
-    url = require('./url'),
-    db = require('./db'),
-    utils = require('./utils'),
-    session = require('./session'),
-    cookies = require('./cookies'),
-    events = require('./events'),
+    url = require('kanso/url'),
+    db = require('kanso/db'),
+    utils = require('kanso/utils'),
+    session = require('kanso/session'),
+    cookies = require('kanso/cookies'),
+    events = require('kanso/events'),
     urlParse = url.parse,
     urlFormat = url.format,
-    _ = require('./underscore')._,
+    _ = require('underscore')._,
     flashmessages,
     templates;
 

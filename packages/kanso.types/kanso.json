@@ -1,0 +1,13 @@
+{
+    "name": "kanso.types",
+    "modules": "kanso",
+    "dependencies": {
+        "underscore": null,
+        "kanso.utils": null,
+        "kanso.db": null,
+        "kanso.fields": null,
+        "kanso.fieldset": null,
+        "kanso.widgets": null,
+        "kanso.permissions": null
+    }
+}
