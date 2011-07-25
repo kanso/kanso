@@ -11,8 +11,6 @@ var fs = require('fs'),
  */
 
 module.exports = function (path, settings, doc, callback) {
-    logger.info('Creating kanso.js attachment from modules');
-
     if (!doc._modules) {
         // TODO: should this throw?
         return callback(null, doc);
