@@ -1,8 +1,6 @@
 var modules = require('../../lib/modules'),
-    mime = require('../../deps/node-mime/mime'),
     async = require('../../deps/async'),
-    apputils = require('./apputils'),
-    fs = require('fs');
+    apputils = require('./apputils');
 
 
 /**
@@ -48,32 +46,5 @@ module.exports = function (root, path, settings, doc, callback) {
         {from: '/_db', to: '../..'}
     ].concat(doc.rewrites || []);
 
-    // create kanso.js attachment
-    var static_dir = __dirname + '/../../static';
-    var file = static_dir + '/kanso.js';
-    fs.readFile(file, function (err, content) {
-        if (err) {
-            return callback(err);
-        }
-        var data = content.toString();
-        data += doc._wrapped_modules || '';
-        data += '\nkanso.init();';
-
-        if (settings.minify) {
-            logger.info('compressing', 'kanso.js');
-            data = minify(data);
-        }
-
-        if (!doc._attachments) {
-            doc._attachments = {};
-        }
-        doc._attachments['kanso.js'] = {
-            'content_type': mime.lookup('kanso.js'),
-            'data': new Buffer(data).toString('base64')
-        };
-        delete doc._wrapped_modules;
-
-        doc.format = 'kanso';
-        callback(null, doc);
-    });
+    callback(null, doc);
 };

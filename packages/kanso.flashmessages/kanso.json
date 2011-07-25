@@ -1,0 +1,7 @@
+{
+    "name": "kanso.flashmessages",
+    "modules": "kanso",
+    "dependencies": {
+        "kanso.core": null
+    }
+}
