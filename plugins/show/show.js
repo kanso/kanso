@@ -1,6 +1,8 @@
 var utils = require('../../lib/utils'),
     packages = require('../../lib/packages'),
-    logger = require('../../lib/logger');
+    logger = require('../../lib/logger'),
+    couchdb = require('../../lib/couchdb'),
+    argParse = require('../../lib/args').parse;
 
 
 exports.summary = 'Load a project and output resulting JSON';
@@ -13,13 +15,26 @@ exports.usage = '' +
 
 
 exports.run = function (settings, plugins, args) {
-    var dir = utils.abspath(args[0] || '.');
-    packages.load(plugins, dir, true, [], null, function (err, doc) {
+    var a = argParse(args, {
+        'minify': {match: '--minify'},
+        'minify_attachments': {match: '--minify-attachments'},
+        'baseURL': {match: '--baseURL', value: true}
+    });
+    var dir = utils.abspath(a.positional[0] || '.');
+
+    // suppress logger output
+    logger.level = 'error';
+
+    exports.loadApp(plugins, dir, function (err, doc, cfg) {
         if (err) {
             return logger.error(err);
         }
-        // output to console (not a log entry, actual output)
-        console.log(JSON.stringify(doc, null, 4));
         logger.clean_exit = true;
+        console.log(JSON.stringify(doc, null, 4));
     });
+};
+
+exports.loadApp = function (plugins, dir, callback) {
+    var paths = [__dirname + '/../../packages'];
+    packages.load(plugins, dir, true, paths, null, callback);
 };
