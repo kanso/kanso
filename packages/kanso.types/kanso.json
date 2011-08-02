@@ -2,6 +2,7 @@
     "name": "kanso.types",
     "modules": "kanso",
     "dependencies": {
+        "modules": null,
         "underscore": null,
         "kanso.utils": null,
         "kanso.db": null,

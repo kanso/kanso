@@ -1,4 +1,4 @@
-var utils = require('../../lib/utils');
+var utils = require('../../../lib/utils');
 
 
 exports.proxyShowFn = function (path, app, doc, props) {

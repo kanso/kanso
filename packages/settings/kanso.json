@@ -1,0 +1,6 @@
+{
+    "name": "settings",
+    "preprocessors": {
+        "add": "build/add"
+    }
+}

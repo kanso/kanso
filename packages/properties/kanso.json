@@ -1,0 +1,9 @@
+{
+    "name": "properties",
+    "postprocessors": {
+        "load": "build/load"
+    },
+    "dependencies": {
+        "modules": null
+    }
+}

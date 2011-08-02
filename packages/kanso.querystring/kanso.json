@@ -2,6 +2,7 @@
     "name": "kanso.querystring",
     "modules": "kanso",
     "dependencies": {
+        "modules": null,
         "underscore": null
     }
 }

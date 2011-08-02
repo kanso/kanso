@@ -1,6 +1,6 @@
 var templates = require('./templates'),
-    modules = require('../../lib/modules'),
-    async = require('../../deps/async'),
+    modules = require('../../../lib/modules'),
+    async = require('../../../deps/async'),
     fs = require('fs');
 
 
@@ -22,7 +22,7 @@ module.exports = function (root, path, settings, doc, callback) {
     }
 
     // load the dust source code
-    var dust_path = __dirname + '/../../deps/dustjs/lib/dust.js';
+    var dust_path = __dirname + '/../../../deps/dustjs/lib/dust.js';
     fs.readFile(dust_path, function (err, dust_src) {
         if (err) {
             return callback(err);
@@ -36,7 +36,7 @@ module.exports = function (root, path, settings, doc, callback) {
             // load the templates module bootstrap code
             // TODO move this to post-processing once merging works
             //var f = __dirname + '/../../commonjs/kanso/templates.js';
-            var f = __dirname + '/../../packages/kanso.templates/kanso/templates.js';
+            var f = __dirname + '/../kanso/templates.js';
             fs.readFile(f, function (err, src) {
                 if (err) {
                     return callback(err);

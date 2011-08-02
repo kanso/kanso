@@ -1,6 +1,9 @@
 var packages = require('../lib/packages'),
     settings = require('../lib/settings'),
-    utils = require('../lib/utils');
+    utils = require('../lib/utils'),
+    logger = require('../lib/logger');
+
+logger.clean_exit = true;
 
 
 var fixtures_dir = __dirname + '/fixtures';
@@ -58,60 +61,6 @@ exports['resolve earlier paths take precedence'] = function (test) {
             return test.done(err);
         }
         test.equal(p, packages_dir + '/one');
-        test.done();
-    });
-};
-
-exports['load calls preprocessors'] = function (test) {
-    var _loadSettings = settings.load;
-    var _resolve = packages.resolve;
-    packages.resolve = function (name, paths, source, cb) {
-        cb(null, './testpkg');
-    };
-    var cfg = {
-        name: 'testpkg'
-    };
-    settings.load = function (p, cb) {
-        cb(null, cfg);
-    };
-    var calls = [];
-    var plugins = [
-        {preprocessors: [
-            function (root, path, settings, doc, callback) {
-                test.equal(path, './testpkg');
-                test.equal(settings, cfg);
-                doc.test = ['one'];
-                calls.push(['one', path, settings, doc]);
-                callback(null, doc);
-            }
-        ]},
-        {preprocessors: [
-            function (root, path, settings, doc, callback) {
-                test.equal(path, './testpkg');
-                test.equal(settings, cfg);
-                test.same(doc.test, ['one']);
-                doc.test.push('two');
-                calls.push(['two', path, settings, doc]);
-                callback(null, doc);
-            },
-            function (root, path, settings, doc, callback) {
-                test.equal(path, './testpkg');
-                test.equal(settings, cfg);
-                test.same(doc.test, ['one', 'two']);
-                doc.test.push('three');
-                calls.push(['three', path, settings, doc]);
-                callback(null, doc);
-            }
-        ]}
-    ];
-    packages.load(plugins, './testpkg', [], null, function (err, doc) {
-        if (err) {
-            return test.done(err);
-        }
-        console.log(doc);
-        test.same(doc.test, ['one', 'two', 'three']);
-        packages.resolve = _resolve;
-        settings.load = _loadSettings;
         test.done();
     });
 };

@@ -1,7 +1,11 @@
 {
     "name": "kanso.templates",
     "modules": "kanso",
+    "preprocessors": {
+        "compile": "build/compile"
+    },
     "dependencies": {
+        "modules": null,
         "kanso.utils": null
     }
 }

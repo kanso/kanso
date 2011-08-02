@@ -2,6 +2,7 @@
     "name": "kanso.widgets",
     "modules": "kanso",
     "dependencies": {
+        "modules": null,
         "underscore": null,
         "kanso.utils": null,
         "kanso.sanitize": null,

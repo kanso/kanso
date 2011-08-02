@@ -1,14 +1,12 @@
-var modules = require('../../lib/modules'),
-    async = require('../../deps/async'),
-    apputils = require('./apputils');
-
+var apputils = require('./apputils'),
+    modules = require('../../../lib/modules');
 
 /**
  * Loads module directories specified in kanso.json and adds the modules
  * to the document.
  */
 
-module.exports = function (root, path, settings, doc, callback) {
+module.exports = function (path, settings, doc, callback) {
     var p = settings.load;
     if (!p) {
         return callback(null, doc);
@@ -17,20 +15,6 @@ module.exports = function (root, path, settings, doc, callback) {
     var module_cache = {};
     var app = modules.require(module_cache, doc, '/', p);
 
-    for (var k in app) {
-        if (app.hasOwnProperty(k)) {
-            if (doc[k] && typeof doc[k] === 'object' &&
-                app[k] && typeof app[k] === 'object') {
-                // extend exisiting object
-                for (var k2 in app[k]) {
-                    doc[k][k2] = app[k][k2];
-                }
-            }
-            else {
-                doc[k] = app[k];
-            }
-        }
-    }
     apputils.proxyFns(p, app, doc, 'shows', apputils.proxyShowFn);
     apputils.proxyFns(p, app, doc, 'lists', apputils.proxyListFn);
     apputils.proxyFns(p, app, doc, 'updates', apputils.proxyUpdateFn);

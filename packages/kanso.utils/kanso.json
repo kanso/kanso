@@ -2,6 +2,8 @@
     "name": "kanso.utils",
     "modules": "kanso",
     "dependencies": {
+        "settings": null,
+        "modules": null,
         "underscore": null,
         "kanso.events": null
     }

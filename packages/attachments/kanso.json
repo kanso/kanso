@@ -1,0 +1,6 @@
+{
+    "name": "attachments",
+    "preprocessors": {
+        "add": "build/add"
+    }
+}

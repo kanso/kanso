@@ -2,6 +2,7 @@
     "name": "kanso.url",
     "modules": "kanso",
     "dependencies": {
+        "modules": null,
         "underscore": null,
         "kanso.path": null,
         "kanso.querystring": null

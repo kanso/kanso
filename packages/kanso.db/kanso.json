@@ -2,6 +2,8 @@
     "name": "kanso.db",
     "modules": "kanso",
     "dependencies": {
+        "settings": null,
+        "modules": null,
         "underscore": null,
         "kanso.utils": null
     }

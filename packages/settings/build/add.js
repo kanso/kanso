@@ -1,4 +1,4 @@
-var modules = require('../../lib/modules');
+var modules = require('../../../lib/modules');
 
 /**
  * Wraps the settings JSON as a CommonJS Module and includes in the document

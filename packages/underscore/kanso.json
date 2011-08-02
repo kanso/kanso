@@ -1,4 +1,7 @@
 {
     "name": "underscore",
-    "modules": "underscore.js"
+    "modules": "underscore.js",
+    "dependencies": {
+        "modules": null
+    }
 }

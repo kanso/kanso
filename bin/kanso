@@ -2,9 +2,9 @@
 
 var path = require('path'),
     utils = require('../lib/utils'),
-    plugins = require('../lib/plugins'),
     kansorc = require('../lib/kansorc'),
-    logger = require('../lib/logger');
+    logger = require('../lib/logger'),
+    commands = require('../lib/commands');
 
 
 var args = process.argv.slice(2);
@@ -18,19 +18,16 @@ for (var i = 0; i < args.length; i += 1) {
 
 kansorc.load(function (err, settings) {
 
-    var p = plugins.load(settings.plugins || []);
-    var commands = plugins.commands(p);
-
     function usage() {
         console.log('Usage: kanso COMMAND [ARGS]');
         console.log('');
         console.log('Available commands:');
         var len = utils.longest(Object.keys(commands));
-        Object.keys(commands).forEach(function (k) {
+        for (var k in commands) {
             console.log(
                 '  ' + utils.padRight(k, len) + '    ' + commands[k].summary
             );
-        });
+        }
         logger.clean_exit = true;
     }
 
@@ -52,7 +49,7 @@ kansorc.load(function (err, settings) {
             });
         }
         else if (cmd in commands) {
-            commands[cmd].run(settings, p, args);
+            commands[cmd].run(settings, args);
         }
         else {
             logger.error('No such command: ' + cmd);

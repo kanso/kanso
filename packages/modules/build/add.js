@@ -1,19 +1,19 @@
-var attachments = require('../../lib/attachments'),
-    async = require('../../deps/async');
+var modules = require('../../../lib/modules'),
+    async = require('../../../deps/async');
 
 
 /**
- * Loads attachment directories specified in kanso.json and adds the attachments
+ * Loads module directories specified in kanso.json and adds the modules
  * to the document.
  */
 
 module.exports = function (root, path, settings, doc, callback) {
-    var paths = settings.attachments || [];
+    var paths = settings.modules || [];
     if (!Array.isArray(paths)) {
         paths = [paths];
     }
     async.forEach(paths, function (p, cb) {
-        attachments.addPath(path, p, doc, cb);
+        modules.addPath(path, p, doc, cb);
     },
     function (err) {
         callback(err, doc);

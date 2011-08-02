@@ -1,4 +1,4 @@
-var kanso = require('../static/kanso');
+var kanso = require('../packages/modules/build/bootstrap');
 
 
 exports['normalizePath'] = function (test) {

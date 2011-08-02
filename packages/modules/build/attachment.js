@@ -1,8 +1,8 @@
 var fs = require('fs'),
-    mime = require('../../deps/node-mime/mime'),
-    modules = require('../../lib/modules'),
-    logger = require('../../lib/logger'),
-    utils = require('../../lib/utils');
+    mime = require('../../../deps/node-mime/mime'),
+    modules = require('../../../lib/modules'),
+    logger = require('../../../lib/logger'),
+    utils = require('../../../lib/utils');
 
 
 /**
@@ -23,7 +23,7 @@ module.exports = function (path, settings, doc, callback) {
 
     delete doc._modules;
 
-    fs.readFile(__dirname + '/kanso.js', function (err, content) {
+    fs.readFile(__dirname + '/bootstrap.js', function (err, content) {
         if (err) {
             return callback(err);
         }

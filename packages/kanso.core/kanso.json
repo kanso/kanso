@@ -2,6 +2,9 @@
     "name": "kanso.core",
     "modules": "kanso",
     "dependencies": {
+        "settings": null,
+        "modules": null,
+        "properties": null,
         "underscore": null,
         "kanso.url": null,
         "kanso.db": null,
@@ -9,5 +12,8 @@
         "kanso.session": null,
         "kanso.cookies": null,
         "kanso.events": null
+    },
+    "postprocessors": {
+        "app": "build/app"
     }
 }

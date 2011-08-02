@@ -2,6 +2,7 @@
     "name": "kanso.flashmessages",
     "modules": "kanso",
     "dependencies": {
+        "modules": null,
         "underscore": null,
         "kanso.cookies": null,
         "kanso.utils": null

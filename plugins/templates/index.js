@@ -1,3 +1,0 @@
-exports.preprocessors = [
-    require('./preprocessor')
-];
