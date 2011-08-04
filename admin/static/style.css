@@ -1,7 +1,7 @@
 @font-face {
     font-family: "Iconic Stroke";
     src: url('fonts/iconic_stroke.eot') !important;
-		src: url('fonts/iconic_stroke.svg#iconic') format('svg'), url('fonts/iconic_stroke.ttf') format('truetype');
+    src: url('fonts/iconic_stroke.ttf') format('truetype');
 }
 
 .icon {
