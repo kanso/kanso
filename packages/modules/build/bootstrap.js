@@ -1,8 +1,7 @@
 /*global window: false, $: false, pageTracker: false, kanso: true */
 
 /**
- * bootstrapped kanso code,
- * required before the commonjs environment is available.
+ * Code required to bootstrap the browser CommonJS environment.
  */
 
 (function (exports) {
@@ -80,8 +79,7 @@
 
 
 /**
- * lib/app.js adds the wrapped and concatenated list of commonjs modules after
- * this code.
+ * CommonJS modules are wrapped and appended to this file.
  */
 
 

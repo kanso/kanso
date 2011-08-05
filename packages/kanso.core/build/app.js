@@ -30,5 +30,7 @@ module.exports = function (path, settings, doc, callback) {
         {from: '/_db', to: '../..'}
     ].concat(doc.rewrites || []);
 
+    doc.format = 'kanso';
+
     callback(null, doc);
 };

@@ -44,7 +44,6 @@ module.exports = function (path, settings, doc, callback) {
             'data': new Buffer(data).toString('base64')
         };
 
-        doc.format = 'kanso';
         callback(null, doc);
     });
 };
