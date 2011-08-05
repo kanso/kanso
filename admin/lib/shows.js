@@ -9,7 +9,7 @@ var utils = require('./utils'),
     widgets = require('kanso/widgets'),
     templates = require('kanso/templates'),
     querystring = require('kanso/querystring'),
-    _ = require('kanso/underscore');
+    _ = require('underscore')._;
 
 
 var adminShow = function (fn) {
@@ -30,7 +30,7 @@ var adminShow = function (fn) {
 };
 
 exports.types = adminShow(function (doc, ddoc, req) {
-    var settings = loader.appRequire(ddoc, 'kanso/settings');
+    var settings = loader.appRequire(ddoc, 'settings/root');
     var app = loader.appRequire(ddoc, settings.load);
 
     var baseURL = kanso_utils.getBaseURL(req);
@@ -88,7 +88,7 @@ exports.types = adminShow(function (doc, ddoc, req) {
 });
 
 exports.addtype = adminShow(function (doc, ddoc, req) {
-    var settings = loader.appRequire(ddoc, 'kanso/settings'),
+    var settings = loader.appRequire(ddoc, 'settings/root'),
         app = loader.appRequire(ddoc, settings.load),
         type = app.types ? app.types[req.query.type]: undefined;
 
@@ -114,7 +114,7 @@ exports.addtype = adminShow(function (doc, ddoc, req) {
 });
 
 exports.edittype = adminShow(function (doc, ddoc, req) {
-    var settings = loader.appRequire(ddoc, 'kanso/settings'),
+    var settings = loader.appRequire(ddoc, 'settings/root'),
         app = loader.appRequire(ddoc, settings.load),
         type = app.types ? app.types[doc.type]: undefined;
 
@@ -199,7 +199,7 @@ exports.fieldPairs = function (fields_module, fields, doc, path) {
 
 exports.viewlist = adminShow(function (doc, ddoc, req) {
     var base = kanso_utils.getBaseURL(),
-        settings = loader.appRequire(ddoc, 'kanso/settings'),
+        settings = loader.appRequire(ddoc, 'settings/root'),
         app = loader.appRequire(ddoc, settings.load);
 
     var view_req = {
@@ -303,7 +303,7 @@ exports.viewlist = adminShow(function (doc, ddoc, req) {
 
 
 exports.viewtype = adminShow(function (doc, ddoc, req) {
-    var settings = loader.appRequire(ddoc, 'kanso/settings'),
+    var settings = loader.appRequire(ddoc, 'settings/root'),
         app = loader.appRequire(ddoc, settings.load),
         fields = loader.appRequire(ddoc, 'kanso/fields'),
         type = app.types ? app.types[doc.type]: undefined;

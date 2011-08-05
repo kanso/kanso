@@ -19,7 +19,7 @@ exports.addtype = function (doc, req) {
         })];
     }
     db.getDesignDoc(req.query.app, function (err, ddoc) {
-        var settings = loader.appRequire(ddoc, 'kanso/settings'),
+        var settings = loader.appRequire(ddoc, 'settings/root'),
             types = loader.appRequire(ddoc, 'kanso/types'),
             app = loader.appRequire(ddoc, settings.load),
             type = app.types ? app.types[req.query.type]: undefined;
@@ -89,7 +89,7 @@ exports.updatetype = function (doc, req) {
         })];
     }
     db.getDesignDoc(req.query.app, function (err, ddoc) {
-        var settings = loader.appRequire(ddoc, 'kanso/settings'),
+        var settings = loader.appRequire(ddoc, 'settings/root'),
             app = loader.appRequire(ddoc, settings.load),
             type = app.types ? app.types[doc.type]: undefined;
 

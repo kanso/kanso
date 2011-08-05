@@ -7,7 +7,7 @@ var utils = require('./utils'),
     kanso_utils = require('kanso/utils'),
     templates = require('kanso/templates'),
     flashmessages = require('kanso/flashmessages'),
-    _ = require('kanso/underscore');
+    _ = require('underscore')._;
 
 
 /**
@@ -60,7 +60,7 @@ exports.applist = function (head, req) {
 };
 
 exports.typelist = adminList(function (rows, ddoc, req) {
-    var settings = loader.appRequire(ddoc, 'kanso/settings'),
+    var settings = loader.appRequire(ddoc, 'settings/root'),
         app = loader.appRequire(ddoc, settings.load),
         fields = loader.appRequire(ddoc, 'kanso/fields'),
         type = app.types ? app.types[req.query.type]: undefined;
