@@ -10,5 +10,8 @@
         "kanso.fieldset": null,
         "kanso.widgets": null,
         "kanso.permissions": null
+    },
+    "postprocessors": {
+        "remove_property": "build/remove_property"
     }
 }
