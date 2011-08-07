@@ -4,5 +4,15 @@
     "modules": "lib",
     "templates": "templates",
     "attachments": "static",
-    "base_template": "base.html"
+    "base_template": "base.html",
+    "dependencies": {
+        "modules": null,
+        "properties": null,
+        "attachments": null,
+        "settings": null,
+        "kanso.core": null,
+        "kanso.templates": null,
+        "kanso.types": null,
+        "kanso.forms": null
+    }
 }
