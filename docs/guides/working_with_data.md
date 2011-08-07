@@ -3,8 +3,18 @@
 Kanso includes some tools for working with CouchDB documents on the filesystem.
 These commands use a streaming JSON parser to handle large documents.
 
+## Table of Contents
 
-## Data formats
+<ul class="toc">
+    <li><a href="#data_formats">Data formats</a></li>
+    <li><a href="#pushing_a_basic_document">Pushing a basic document</a></li>
+    <li><a href="#converting_from_csv">Converting from CSV</a></li>
+    <li><a href="#adding_removing_ids">Adding / removing ids</a></li>
+    <li><a href="#more_complex_tranformations">More complex transformations</a></li>
+</ul>
+
+
+<h2 id="data_formats">Data formats</h2>
 
 The documents are stored in JSON format and each file can contain either a single
 document or an array of documents.
@@ -39,7 +49,7 @@ Example .json file with multiple documents:
     ]
 
 
-## Pushing a basic document
+<h2 id="pushing_a_basic_document">Pushing a basic document</h2>
 
 Create an <code>example.json</code> file containing some simple data structure
 (such as first example above). In a Kanso project, this would normally be stored
@@ -68,7 +78,7 @@ You can also push an entire directory of data files:
 <pre><code class="no-highlight">kanso pushdata http://localhost:5984/dbname data</code></pre>
 
 
-## Converting from CSV
+<h2 id="converting_from_csv">Converting from CSV</h2>
 
 The Comma-separated Values (CSV) format is commonly used and usually easy to
 export to from other systems. Kanso provides a CSV transform tool for converting
@@ -167,13 +177,45 @@ the following to <code>example.json</code>:
         }
     ]
 
+<h2 id="adding_removing_ids">Adding / removing ids</h2>
+
 As explained earlier in this guide, before you push this data to CouchDB you'll
 need to add \_id attributes to each of these documents. You can do this using
 the following command:
 
-    kanso transform add-ids example.json example_with_ids.json
+<pre><code class="no-highlight">kanso transform add-ids example.json example_with_ids.json</code></pre>
 
 If for any reason you wanted to clear these \_id properties again, you can do that
 with the following command:
 
-    kanso transform clear-ids example_with_ids.json example_without_ids.json
+<pre><code class="no-highlight">kanso transform clear-ids example_with_ids.json example_without_ids.json</code></pre>
+
+
+<h2 id="more_complex_tranformations">More complex transformations</h2>
+
+It's also possible to pass JSON documents in a data file through a map function and
+output the results. This allows you to perform pretty much any transformation.
+
+There are two ways to specify the map function. First, you can specify the source on
+the command-line:
+
+<pre><code class="no-highlight">kanso transform map \
+    --src="function (doc) { doc.type = 'example'; return doc; }" \
+    input.json output.json</code></pre>
+
+This would add a type property with value "example" to every document in input.json
+and save the result to output.json.
+
+It's also possible to define your map function in a module:
+
+<pre><code class="javascript">module.exports = function (doc) {
+    doc.type = 'example';
+    return doc;
+};</code></pre>
+
+You can then use it from the command-line like so:
+
+<pre><code class="no-highlight">kanso transform map --module="map.js" input.json output.json</code></pre>
+
+To remove a document and have it omitted from the results, just return nothing from
+the map function.

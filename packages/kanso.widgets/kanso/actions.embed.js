@@ -14,6 +14,7 @@
  */
 
 var core = require('./actions.core'),
+    db = require('kanso/db.core'),
     utils = require('kanso/utils'),
     _ = require('underscore')._;
 

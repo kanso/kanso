@@ -10,7 +10,8 @@
 var _ = require('underscore')._;
 
 var modules = [
-    './db.core', './db.replication', './db.attachments'
+    './db.core', './db.replication',
+    './db.authorization', './db.bulk', './db.attachments'
 ];
 
 _.reduce(modules, function (a, m) {

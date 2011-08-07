@@ -166,6 +166,12 @@ exports.init = function () {
                 for (var i = 0; i < fields.length; i++) {
                     data[fields[i].name] = fields[i].value;
                 }
+                if (method === 'GET' || method === 'HEAD') {
+                    var parsed = urlParse(url);
+                    parsed.query = data;
+                    data = {};
+                    url = urlFormat(parsed);
+                }
                 exports.setURL(method, url, data);
             }
         });

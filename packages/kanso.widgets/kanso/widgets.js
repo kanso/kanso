@@ -11,7 +11,7 @@ var _ = require('underscore')._;
 
 var modules = [
     './widgets.core', './widgets.embed',
-        './widgets.selector', './widgets.jquery'
+    './widgets.selector', './widgets.jquery'
 ];
 
 _.reduce(modules, function (a, m) {

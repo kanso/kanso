@@ -458,3 +458,92 @@ exports.creator = function (options) {
     return w;
 };
 
+
+/**
+ * Creates a new file input widget.
+ *
+ * @name file([options])
+ * @param options
+ * @returns {Widget Object}
+ * @api public
+ */
+
+exports.file = function (options) {
+    var w = new Widget('file', options);
+    w.name;
+    w.val = {};
+
+    w.toHTML = function (name, value, raw, field, options) {
+        this.name = name;
+        this.val = value || {};
+
+        var id = this._id(name, options.offset, options.path_extra);
+        var html = '<div id="' + id + '">';
+        html += '<input type="hidden" value="' + h(JSON.stringify(value)) + '"';
+        html += ' name="' + this._name(name, options.offset) + '" />';
+
+        html += '<ul class="files">';
+        for (var k in this.val) {
+            html += '<li>';
+            html += h(k + ' (' + this.val[k].length + ' bytes) ');
+            html += '<a class="remove" href="#" rel="';
+            html += escape(k) + '">Remove</a>';
+            html += '</li>';
+        }
+        html += '</ul>';
+
+        html += '<input type="file" />';
+        html += '</div>';
+        return html;
+    };
+    w.updateValue = function (options) {
+        var str = JSON.stringify(this.val);
+        var id = this._id(this.name, options.offset, options.path_extra);
+        $('input[name="' + this.name + '"]').val(str);
+        var html = '';
+        for (var k in this.val) {
+            html += '<li>';
+            html += h(k + ' (' + this.val[k].length + ' bytes) ');
+            html += '<a class="remove" href="#" rel="';
+            html += escape(k) + '">Remove</a>';
+            html += '</li>';
+        }
+        $('#' + id + ' ul.files').html(html);
+    };
+    w.addFile = function (name, obj, options) {
+        this.val[name] = obj;
+        this.updateValue(options);
+    };
+    w.removeFile = function (name, options) {
+        delete this.val[name];
+        this.updateValue(options);
+    };
+    w.clientInit = function (path, value, raw, field, options) {
+        var id = this._id(this.name, options.offset, options.path_extra);
+        $('#' + id + ' :file').change(function () {
+            var att = {};
+            _.each(this.files, function (f) {
+                var reader = new FileReader();
+                reader.onloadend = function (ev) {
+                    var result = ev.target.result;
+                    var data = result.slice(result.indexOf(',') + 1);
+                    var obj = {
+                        content_type: f.type,
+                        length: f.size,
+                        data: data
+                    };
+                    w.addFile(f.name, obj, options);
+                };
+                reader.readAsDataURL(f);
+            });
+            w.updateValue(att, options);
+        });
+        $('#' + id + ' ul.files li a.remove').click(function (ev) {
+            ev.preventDefault();
+            var filename = unescape($(this).attr('rel'));
+            w.removeFile(filename, options);
+            return false;
+        });
+    };
+    return w;
+};

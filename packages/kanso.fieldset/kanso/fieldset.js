@@ -23,16 +23,37 @@ var _ = require('underscore')._,
  * @api public
  */
 
-exports.createDefaults = function (fields, /*optional*/req) {
+exports.createDefaults = function (fields, /*optional*/req, doc, path) {
     if (!req) {
         req = utils.currentRequest();
     }
+    path = path || [];
     var fields_module = require('./fields');
     return _.reduce(_.keys(fields), function (result, k) {
         var f = fields[k];
-        if (f instanceof fields_module.Field ||
-            f instanceof fields_module.Embedded ||
-            f instanceof fields_module.EmbeddedList) {
+        if (f instanceof fields_module.AttachmentField) {
+            if (f.hasOwnProperty('default_value')) {
+                var val,
+                    dir = path.concat([k]).join('/');
+                if (_.isFunction(f.default_value)) {
+                    val = f.default_value(req);
+                }
+                else {
+                    val = f.default_value;
+                }
+                var d = doc || result;
+                if (!d._attachments) {
+                    d._attachments = {};
+                }
+                for (var ak in val) {
+                    d._attachments[dir + '/' + ak] = val[ak];
+                }
+            }
+        }
+        else if (f instanceof fields_module.Field ||
+                 f instanceof fields_module.Embedded ||
+                 f instanceof fields_module.EmbeddedList) {
+
             if (f.hasOwnProperty('default_value')) {
                 if (_.isFunction(f.default_value)) {
                     result[k] = f.default_value(req);
@@ -43,7 +64,9 @@ exports.createDefaults = function (fields, /*optional*/req) {
             }
         }
         else if (f instanceof Object) {
-            result[k] = exports.createDefaults(f, req);
+            result[k] = exports.createDefaults(
+                f, req, doc || result, path.concat([k])
+            );
         } else {
             throw new Error(
                 'The field type `' + (typeof f) + '` is not supported.'
@@ -128,14 +151,18 @@ exports.validate = function (fields, doc, values, raw, path, extra) {
             }
             return errs;
         }
+        var val = values[k];
         var fn = exports.validate;
         if (f instanceof fields_module.Field ||
             f instanceof fields_module.Embedded ||
             f instanceof fields_module.EmbeddedList) {
             fn = exports.validateField;
         }
+        if (f instanceof fields_module.AttachmentField) {
+            val = utils.attachmentsBelowPath(doc, path.concat([k]));
+        }
         return errs.concat(
-            fn.call(this, f, doc, values[k], raw[k], path.concat([k]), extra)
+            fn.call(this, f, doc, val, raw[k], path.concat([k]), extra)
         );
     }, []);
 };
@@ -230,13 +257,19 @@ exports.authFieldSet = function (f, nDoc, oDoc, nVal, oVal, user, path, extra) {
             return errs;
         }
         var fn = exports.authFieldSet;
+        var nv = nVal[k];
+        var ov = oVal[k];
         if (field instanceof fields_module.Field ||
             field instanceof fields_module.Embedded ||
             field instanceof fields_module.EmbeddedList) {
             fn = exports.authField;
         }
+        if (field instanceof fields_module.AttachmentField) {
+            nv = utils.attachmentsBelowPath(nDoc, path.concat([k]));
+            ov = utils.attachmentsBelowPath(oDoc, path.concat([k]));
+        }
         return errs.concat(fn(
-            field, nDoc, oDoc, nVal[k], oVal[k], user, path.concat([k]), extra
+            field, nDoc, oDoc, nv, ov, user, path.concat([k]), extra
         ));
     }, []);
 };

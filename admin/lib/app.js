@@ -38,6 +38,7 @@ exports.updates = require('./updates');
 
 
 exports.bindSessionControls = function () {
+    var login_popup, signup_popup;
     $('#session .logout a').click(function (ev) {
         ev.preventDefault();
         session.logout();
@@ -46,31 +47,38 @@ exports.bindSessionControls = function () {
     $('#session .login a').click(function (ev) {
         ev.preventDefault();
         var div = $('<div><h2>Login</h2></div>');
-        div.append('<form id="login_form" action="/_session" method="POST">' +
-            '<div class="general_errors"></div>' +
-            '<div class="username field">' +
-                '<label for="id_name">Username</label>' +
-                '<input id="id_name" name="name" type="text" />' +
-                '<div class="errors"></div>' +
+        div.append(
+            '<form id="login_form" action="/_session" method="POST">' +
+            '<div class="render">' +
+                '<div class="general_errors"></div>' +
+                '<div class="username field">' +
+                    '<label for="id_name">Username</label>' +
+                    '<input id="id_name" name="name" type="text" />' +
+                    '<div class="errors"></div>' +
+                '</div>' +
+                '<div class="password field">' +
+                    '<label for="id_password">Password</label>' +
+                    '<input id="id_password" name="password"' +
+                        ' type="password" />' +
+                    '<div class="errors"></div>' +
+                '</div>' +
             '</div>' +
-            '<div class="password field">' +
-                '<label for="id_password">Password</label>' +
-                '<input id="id_password" name="password" type="password" />' +
-                '<div class="errors"></div>' +
-            '</div>' +
+            '<div class="clear spinner" style="display: none;" />' +
             '<div class="actions">' +
                 '<input type="submit" id="id_login" value="Login" />' +
                 '<input type="button" id="id_cancel" value="Cancel" />' +
             '</div>' +
-        '</form>');
+            '<div class="clear" />' +
+            '</form>'
+        );
         $('#id_cancel', div).click(function () {
-            $.modal.close();
+            login_popup.uPopup('destroy');
         });
         $('form', div).submit(function (ev) {
             ev.preventDefault();
+            var spinner_elt = $('#login_form > .spinner', div).show();
             var username = $('input[name="name"]', div).val();
             var password = $('input[name="password"]', div).val();
-            console.log($('.username .errors', div));
             $('.username .errors', div).text(
                 username ? '': 'Please enter a username'
             );
@@ -79,47 +87,61 @@ exports.bindSessionControls = function () {
             );
             if (username && password) {
                 session.login(username, password, function (err) {
-                    $('.general_errors', div).text(err ? err.toString(): '');
                     if (!err) {
-                        $(div).fadeOut('slow', function () {
-                            $.modal.close();
-                        });
+                        login_popup.uPopup('destroy');
+                    } else {
+                        $('.general_errors', div).text(err.toString());
+                        spinner_elt.hide();
                     }
                 });
+            } else {
+                spinner_elt.hide();
             }
             return false;
         });
-        div.modal({autoResize: true, overlayClose: true});
+
+        login_popup = div.uPopup('create', this, {
+            center: true,
+            vertical: true
+        });
+
         return false;
     });
     $('#session .signup a').click(function (ev) {
         ev.preventDefault();
         var div = $('<div><h2>Create account</h2></div>');
-        div.append('<form id="signup_form" action="/_session" method="POST">' +
-            '<div class="general_errors"></div>' +
-            '<div class="username field">' +
-                '<label for="id_name">Username</label>' +
-                '<input id="id_name" name="name" type="text" />' +
-                '<div class="errors"></div>' +
+        div.append(
+            '<form id="signup_form" action="/_session" method="POST">' +
+            '<div class="render">' +
+                '<div class="general_errors"></div>' +
+                '<div class="username field">' +
+                    '<label for="id_name">Username</label>' +
+                    '<input id="id_name" name="name" type="text" />' +
+                    '<div class="errors"></div>' +
+                '</div>' +
+                '<div class="password field">' +
+                    '<label for="id_password">Password</label>' +
+                    '<input id="id_password" name="password"' +
+                        ' type="password" />' +
+                    '<div class="errors"></div>' +
+                '</div>' +
             '</div>' +
-            '<div class="password field">' +
-                '<label for="id_password">Password</label>' +
-                '<input id="id_password" name="password" type="password" />' +
-                '<div class="errors"></div>' +
-            '</div>' +
+            '<div class="clear spinner" style="display: none;" />' +
             '<div class="actions">' +
                 '<input type="submit" id="id_create" value="Create" />' +
                 '<input type="button" id="id_cancel" value="Cancel" />' +
             '</div>' +
-        '</form>');
+            '<div class="clear" />' +
+            '</form>'
+        );
         $('#id_cancel', div).click(function () {
-            $.modal.close();
+            signup_popup.uPopup('destroy');
         });
         $('form', div).submit(function (ev) {
             ev.preventDefault();
+            var spinner_elt = $('#signup_form > .spinner', div).show();
             var username = $('input[name="name"]', div).val();
             var password = $('input[name="password"]', div).val();
-            console.log($('.username .errors', div));
             $('.username .errors', div).text(
                 username ? '': 'Please enter a username'
             );
@@ -128,20 +150,29 @@ exports.bindSessionControls = function () {
             );
             if (username && password) {
                 session.signup(username, password, function (err) {
-                    $('.general_errors', div).text(err ? err.toString(): '');
                     if (!err) {
                         session.login(username, password, function (err) {
-                            $('.general_errors', div).text(err ? err.toString(): '');
-                            $(div).fadeOut('slow', function () {
-                                $.modal.close();
-                            });
+                            if (!err) {
+                                signup_popup.uPopup('destroy');
+                            } else {
+                                $('.general_errors', div).text(err.toString());
+                                spinner_elt.hide();
+                            }
                         });
+                    } else {
+                        $('.general_errors', div).text(err.toString());
+                        spinner_elt.hide();
                     }
                 });
+            } else {
+                spinner_elt.hide();
             }
             return false;
         });
-        div.modal({autoResize: true, overlayClose: true});
+        signup_popup = div.uPopup('create', this, {
+            center: true,
+            vertical: true
+        });
         return false;
     });
 };

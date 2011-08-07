@@ -1,7 +1,7 @@
 @font-face {
     font-family: "Iconic Stroke";
-    src: url('fonts/iconic_stroke.eot') !important;
-    src: url('fonts/iconic_stroke.ttf') format('truetype');
+    src: url('../fonts/iconic_stroke.eot') !important;
+    src: url('../fonts/iconic_stroke.ttf') format('truetype');
 }
 
 .icon {
@@ -23,6 +23,9 @@ body {
     font-family: 'Lucida Grande', 'Lucida Sans Unicode', verdana, geneva, sans-serif;
     color: #292626;
     margin: 0;
+    overflow: scroll;
+    overflow-y: scroll;
+    overflow-x: hidden;
 }
 
 th {
@@ -59,7 +62,7 @@ h1 :link, h1 :visited, h1 strong {
     padding: .4em .5em;
 }
 h1 :link, h1 :visited {
-    background: url(./path.gif) 100% 50% no-repeat;
+    background: url(../images/path.gif) 100% 50% no-repeat;
     color: #bbb;
     cursor: pointer;
     padding-right: 2.2em;
@@ -78,15 +81,11 @@ h2 {
     margin: 0 0 1em 0;
 }
 
-.simplemodal-data h2 {
+.upopup h2 {
     padding: 0;
     color: #333;
     font-size: 1.15em;
     border-bottom: solid 1px #bbb;
-}
-
-.simplemodal-data {
-    min-width: 30em;
 }
 
 table.typelist,
@@ -155,7 +154,6 @@ table.viewlist {
 
 th.actions,
 td.actions {
-    width: 210px;
     padding: 0;
     margin: 0;
     padding-left: 50px !important;
@@ -167,24 +165,6 @@ form.delete_form {
     padding: 0;
 }
 
-.render-table th {
-    text-align: left;
-    padding-right: 20px;
-    vertical-align: top;
-}
-
-.render-table td {
-    vertical-align: top;
-}
-
-.render-table tbody.head th {
-    color: #555;
-    font-weight: bold;
-    font-size: 1.1em;
-    padding-top: 1.5em;
-    border-bottom: solid 1px #888;
-}
-
 .description,
 .hint {
     font-weight: normal;
@@ -194,20 +174,6 @@ form.delete_form {
 }
 p.description {
     margin-bottom: 2em;
-}
-
-.render-table ul.errors {
-    margin: 0;
-    padding: 0;
-    font-size: 0.9em;
-    font-weight: bold;
-    list-style-type: none;
-}
-
-.render-table ul.errors li {
-    padding: 0;
-    margin: 0;
-    color: #f88;
 }
 
 .button {
@@ -270,6 +236,7 @@ p.description {
 }
 .bottom_actions {
     margin: 12px 0;
+    clear: both;
 }
 
 .bottom_actions .button input.icon {
@@ -379,15 +346,13 @@ td.actions .button {
 
 #login_form label,
 #signup_form label {
-    display: inline-block;
-    width: 90px;
+    display: block;
 }
 
 #login_form .errors,
 #signup_form .errors {
     font-size: 0.8em;
     color: red;
-    padding-left: 90px;
 }
 
 #login_form .general_errors,
@@ -397,23 +362,27 @@ td.actions .button {
     font-weight: bold;
 }
 
-.spinner, .dialog .render .widget .spinner {
+.upopup {
+    min-width: 16em;
+}
+
+.spinner, .upopup .render .widget .spinner {
     display: inline;
-    background: url("images/spinner-small.gif");
+    background: url("../images/spinner-small.gif");
     background-repeat: no-repeat;
     background-position: center;
     line-height: 1em;
     padding: 8px 10px;
 }
 
-.dialog .spinner {
-    background: url("images/spinner.gif");
+.upopup .spinner {
+    background: url("../images/spinner.gif");
     background-repeat: no-repeat;
     background-position: center;
     padding: 12px 14px;
 }
 
-.dialog .render .spinner {
+.upopup .render .spinner {
     float: none;
     padding-left: 50%;
     padding-right: 50%;
@@ -456,35 +425,110 @@ td.actions .button {
 }
 
 .embed-list .item .default-embed {
-    float: left;
     overflow: hidden;
 }
 
-.dialog .spinner {
+.upopup .spinner {
     float: right;
 }
 
-.dialog .actions {
+.upopup .actions {
     float: left;
+    clear: both;
 }
 
-.dialog .actions input, .dialog .actions button {
+.upopup .actions input, .upopup .actions button {
     vertical-align: middle;
 }
 
-.dialog .render {
+.upopup .render {
     border-bottom: solid 1px #bbb;
     padding-bottom: 0.75em;
     margin-bottom: 0.5em;
 }
 
-.dialog .render .render {
+.upopup .render .render {
     border: 0;
     padding: 0;
     margin: 0;
 }
 
-.clear {
+.clear, .final {
     clear: both;
+}
+
+.render-div .field .inner,
+.render-div .field .hint {
+    border: 0;
+    padding: 0;
+    margin: 0;
+    background-color: transparent;
+}
+
+.render-div .field {
+    min-width: 12em;
+    padding: 0 2em 1em 0;
+    float: left;
+}
+
+.render-div .field .inner input[type='text'] {
+    width: 100%;
+}
+
+.render-div .field .document-selector {
+    float: left;
+}
+
+.render-div .field .default-embed {
+    line-height: 1.75em;
+}
+
+.render-div .field .content .inner {
+    margin: 0;
+    padding: 0;
+    min-width: auto;
+    min-height: auto;
+}
+
+.render-div .group .field {
+    padding-left: 1em;
+}
+
+.render-div .group .heading {
+    font-size: 1.1em;
+    font-weight: bold;
+    color: #555;
+    border-bottom: solid 2px #eee;
+    margin-bottom: 0.5em;
+}
+
+.upopup .render-div .field {
+    padding-right: 1em;
+}
+
+.upopup .render-div .embed-list {
+    float: none;
+    clear: both;
+}
+
+.upopup .render-div {
+    max-width: 28em;
+}
+
+.render-div .field .label {
+    font-size: 0.85em;
+    color: #222;
+    font-weight: bold;
+    border-bottom: solid 2px #eee;
+    margin-bottom: 0.35em;
+    padding-top: 0.25em;
+}
+
+.embed-list .actions {
+    clear: both;
+}
+
+.embed-list .item .actions {
+    padding-left: 1em;
 }
 

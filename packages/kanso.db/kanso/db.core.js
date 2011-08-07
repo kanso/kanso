@@ -12,6 +12,8 @@
 
 var utils = require('kanso/utils'),
     settings = require('settings/root'),
+    sanitize = require('kanso/sanitize'),
+    _ = require('kanso/underscore')._,
     session = null;
 
 /* Avoid a circular require in CouchDB */
@@ -39,10 +41,12 @@ var last_session_check = 0;
 
 
 /**
- * Cache for design documents fetched via getDesignDoc.
+ * Cache for use by exports.request -- keeps track of
+ * completed and in-process requests from Kanso to CouchDB.
  */
 
-exports.design_docs = {};
+exports.request_cache = {};
+exports.request_cache_wait_queue = {};
 
 
 /**
@@ -89,7 +93,9 @@ function onComplete(options, callback) {
                 resp = httpData(req, "json");
             }
             catch (e) {
-                return callback(e);
+                return exports._invoke_request_callback(
+                    e, null, options, callback
+                );
             }
         }
         else {
@@ -97,7 +103,7 @@ function onComplete(options, callback) {
                 try {
                     resp = httpData(req, "json");
                 }
-                catch (e) {
+                catch (ex) {
                     return callback(
                         new Error('Expected JSON response, got ' + ctype)
                     );
@@ -115,18 +121,25 @@ function onComplete(options, callback) {
             }
         }
         if (req.status === 200 || req.status === 201 || req.status === 202) {
-            callback(null, resp);
+            exports._invoke_request_callback(
+                null, resp, options, callback
+            );
         }
-        else if (resp.error) {
+        else if (resp.error || resp.reason) {
             var err = new Error(resp.reason || resp.error);
             err.error = resp.error;
             err.reason = resp.reason;
+            err.code = resp.code;
             err.status = req.status;
-            callback(err);
+            exports._invoke_request_callback(
+                err, null, options, callback
+            );
         }
         else {
             // TODO: map status code to meaningful error message
-            callback(new Error('Returned status code: ' + req.status));
+            var err2 = new Error('Returned status code: ' + req.status);
+            err2.status = req.status;
+            exports._invoke_request_callback(err2, null, options, callback);
         }
     };
 }
@@ -146,8 +159,9 @@ exports.encode = function (str) {
 
 
 /**
- * Make a request, with some default settings and proper callback
- * handling. Used behind-the-scenes by most other DB module functions.
+ * Make a request, with some default settings, proper callback
+ * handling, and optional caching. Used behind-the-scenes by
+ * most other DB module functions.
  *
  * @name request(options, callback)
  * @param {Object} options
@@ -156,9 +170,205 @@ exports.encode = function (str) {
  */
 
 exports.request = function (options, callback) {
+
     options.complete = onComplete(options, callback);
     options.dataType = 'json';
-    $.ajax(options);
+
+    if (options.flush_cache) {
+        exports._request_cache_remove(options);
+    }
+
+    if (exports._should_cache_request(options)) {
+        if (exports._begin_cached_request(options, callback)) {
+            $.ajax(options);
+        }
+    } else {
+        $.ajax(options);
+    }
+};
+
+
+/* Support for in-interpreter request caching:
+    The following functions are used to support the caching of
+    AJAX request results. If a to-be-cached resource has been
+    requested but not yet returned, a wait queue is employed. */
+
+/**
+ * Clear the in-interpreter request cache. Use this function if
+ * you need to ensure that the in-interpreter cache is empty,
+ * e.g. inside of a test case. If {options} is left undefined, this
+ * function destroys the *entire* request cache for *all* callers
+ * of subsystems that rely upon db.request. To be more selective
+ * and clear only a portion of the cache, supply the {options}
+ * argument. The {options} argument is in the same format as that
+ * used in options.request (i.e. with url and data properties).
+ */
+exports.clear_request_cache = function (options) {
+    if (options) {
+        var key = exports._make_request_cache_key(options);
+        delete exports.request_cache[key];
+    } else {
+        exports.request_cache = {};
+    }
+}
+
+/**
+ * Returns true if the AJAX request described by {options}
+ * should be cached by the in-interpreter request caching
+ * code. In general, this sort of caching is limited to requests
+ * that (i) request caching explicitly, and (ii) have no side-effects.
+ */
+exports._should_cache_request = function (options) {
+    return (
+        (!options.type || options.type === 'GET') &&
+            options.use_cache
+    );
+};
+
+/**
+ * Returns a string that uniquely identifies the AJAX request
+ * described by {options}. This string is used to look up cache entries.
+ */
+exports._make_request_cache_key = function (options) {
+    return options.url + (
+        _.isString(options.data) ? '?' + options.data :
+            sanitize.escapeUrlParams(options.data || {})
+    );
+};
+
+/**
+ * If caching is not appropriate for the AJAX request described by
+ * {options}, invoke {callback} in the usual way. If caching is
+ * appropriate, add the result to the request cache, and notify all
+ * of the waiting requests that a response has arrived.
+ */
+exports._invoke_request_callback = function (err, resp, options, callback) {
+
+    if (exports._should_cache_request(options)) {
+        exports._request_cache_add(err, resp, options, true);
+        exports._finish_cached_request(options);
+    } else {
+        callback(err, resp);
+    }
+};
+
+/**
+ * Add information describing a completed AJAX request to the
+ * in-interpreter request cache. This information will be handed
+ * out to identical requests that occur in the future. If {clone}
+ * is true, then the information provided will be cloned before
+ * it is entered in to the cache. Otherwise, you must take care
+ * not to later modify the values you provided -- unless you also
+ * want those modifications to occur in the cache as well.
+ */
+exports._request_cache_add = function (error, response, options, clone) {
+
+    var cache_key = exports._make_request_cache_key(options);
+    var response_clone = JSON.parse(JSON.stringify(response));
+
+    exports.request_cache[cache_key] = {
+        error: error,
+        response: response_clone
+    };
+};
+
+/**
+ * Retrieve information describing a completed AJAX request from
+ * the in-interpreter request cache. If no information is available,
+ * this function will return undefined. If {clone} is true, then
+ * the completed request's response data will be deep-cloned
+ * before it is returned. Otherwise, this function will return the
+ * cache's internal version of the data, which should not be modified.
+ */
+exports._request_cache_fetch = function (options, clone) {
+
+    var cache_key = exports._make_request_cache_key(options);
+    var rv = exports.request_cache[cache_key];
+    
+    if (rv && clone) {
+        rv = _.clone(rv);
+        rv.response = JSON.parse(JSON.stringify(rv.response));
+    }
+
+    return rv;
+};
+
+/**
+ * Remove information describing a completed AJAX request from the
+ * in-interpreter request cache. This forces the next identical
+ * request to make an actual HTTP request.
+ */
+exports._request_cache_remove = function (options) {
+
+    var cache_key = exports._make_request_cache_key(options);
+    delete exports.request_cache[cache_key];
+};
+
+/**
+ * Start the process of issuing a cache request. This function
+ * has one of three outcomes: (i) in the case of a cache hit,
+ * the callback is immediately invoked, and given the cached
+ * response; (ii) if a cache miss occurs, and another request
+ * is already in progress, we place ourself on a queue to wait
+ * for that request's response; (iii) in any other case, we
+ * tell the caller to make an actual HTTP request, and add
+ * ourself as the first queue waiter.
+ */
+exports._begin_cached_request = function (options, callback) {
+
+    var should_send_request = false;
+    var cache_key = exports._make_request_cache_key(options);
+    var cache_item = exports._request_cache_fetch(options, true);
+
+    if (cache_item) {
+
+        /* Cache hit: Invoke callback and return */
+        callback(cache_item.error, cache_item.response);
+
+    } else {
+        /* Cache miss */
+        if (!exports.request_cache_wait_queue[cache_key]) {
+
+            /* Request not already-in-progress:
+                Instruct caller to issue actual HTTP request. */
+
+            exports.request_cache_wait_queue[cache_key] = [];
+            should_send_request = true;
+        }
+
+        /* Add this request to notification queue */
+        exports.request_cache_wait_queue[cache_key].push(
+            { options: options, callback: callback }
+        );
+    }
+
+    return should_send_request;
+};
+
+/**
+ * Finish a request, using an item already in the request cache.
+ * First, the cached result is retrieved from the cache. Second,
+ * all waiters on the request cache's wait queue are notified.
+ * Finally, the wait queue is emptied. The cached result is
+ * removed as well if the result was an error.
+ */
+exports._finish_cached_request = function (options) {
+
+    var cache_key = exports._make_request_cache_key(options);
+    var cache_item = exports._request_cache_fetch(options, true);
+    var request_queue = (exports.request_cache_wait_queue[cache_key] || []);
+
+    for (var i = 0, len = request_queue.length; i < len; ++i) {
+        request_queue[i].callback(
+            cache_item.error, cache_item.response
+        );
+    }
+
+    if (cache_item.error) {
+        exports._request_cache_remove(options);
+    }
+
+    delete exports.request_cache_wait_queue[cache_key];
 };
 
 
@@ -236,8 +446,10 @@ exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
     }
     var req = {
         url: url + '/' + exports.encode(id),
-        data: exports.stringifyQuery(q),
-        expect_json: true
+        expect_json: true,
+        use_cache: options.useCache,
+        flush_cache: options.flushCache,
+        data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
 };
@@ -370,11 +582,14 @@ exports.getView = function (view, /*optional*/q, /*optional*/options, callback) 
     var viewname = exports.encode(view);
     var req = {
         url: (
-            base + (options.db ? '' : '/_db') + '/_design/' +
-                (options.db || name) + '/_view/' + viewname
+            base + (options.db ? '' : '/_db') +
+                '/_design/' + (options.appName || options.db || name) +
+                '/_view/' + viewname
         ),
-        data: exports.stringifyQuery(q),
-        expect_json: true
+        expect_json: true,
+        use_cache: options.useCache,
+        flush_cache: options.flushCache,
+        data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
 };
@@ -513,8 +728,6 @@ exports.stringifyQuery = function (query) {
  * @api public
  */
 
-var uuidCache = [];
-
 exports.newUUID = function (cacheNum, callback) {
     if (!utils.isBrowser()) {
         throw new Error('newUUID cannot be called server-side');
@@ -523,21 +736,49 @@ exports.newUUID = function (cacheNum, callback) {
         callback = cacheNum;
         cacheNum = 1;
     }
-    if (uuidCache.length) {
-        return callback(null, uuidCache.shift());
-    }
-    var base = utils.getBaseURL();
     var req = {
         url: '/_uuids',
-        data: {count: cacheNum},
-        expect_json: true
+        use_cache: true,
+        expect_json: true,
+        data: { count: cacheNum }
     };
-    exports.request(req, function (err, resp) {
+
+    /* Check cache; get reference to actual cache entry */
+    var cache_search = exports._request_cache_fetch(req, false);
+
+    if (cache_search) {
+        var uuids = cache_search.response.uuids;
+        if (uuids.length > 0) {
+            /* Remove one uuid from cache, return it */
+            return callback(null, uuids.shift());
+        }
+    }
+
+    exports.request(req, function (err, response) {
         if (err) {
             return callback(err);
         }
-        uuidCache = resp.uuids;
-        callback(null, uuidCache.shift());
+        /* Get reference to cached version of response */
+        var cache_entry = exports._request_cache_fetch(req, false);
+        var uuids = ((cache_entry || {}).response || {}).uuids;
+
+        if (uuids && uuids.length > 0) {
+
+            /* Remove one uuid from cache:
+                Because we asked _request_cache_fetch not to clone,
+                our update here will affect the cache entry as well. */
+
+            callback(null, uuids.shift());
+
+        } else {
+
+            /* Others requests got all of our uuids:
+                Flush the cache entry to force a re-request,
+                than go around and retry the request again. */
+
+            exports._request_cache_remove(req);
+            exports.newUUID(cacheNum, callback);
+        }
     });
 };
 
@@ -554,15 +795,62 @@ exports.newUUID = function (cacheNum, callback) {
  */
 
 exports.getDesignDoc = function (name, callback, no_cache) {
-    if (!no_cache && exports.design_docs[name]) {
-        return callback(null, exports.design_docs[name]);
-    }
-    exports.getDoc('_design/' + name, {}, function (err, ddoc) {
+    var options = {
+        use_cache: !no_cache,
+        flush_cache: !!no_cache
+    };
+    exports.getDoc('_design/' + name, options, function (err, ddoc) {
         if (err) {
             return callback(err);
         }
-        exports.design_docs[name] = ddoc;
-        return callback(null, exports.design_docs[name]);
+        return callback(null, ddoc);
     });
 };
+
+/**
+ * Creates a CouchDB database.
+ *
+ * If you're running behind a virtual host you'll need to set up
+ * appropriate rewrites for a PUT request to '/' and turn off safe rewrites.
+ *
+ * @name createDatabase(name, callback)
+ * @param {String} name
+ * @param {Function} callback
+ * @api public
+ */
+
+exports.createDatabase = function (name, callback) {
+    if (!utils.isBrowser()) {
+        throw new Error('createDatabase cannot be called server-side');
+    }
+    var req = {
+        type: 'PUT',
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Deletes a CouchDB database.
+ *
+ * If you're running behind a virtual host you'll need to set up
+ * appropriate rewrites for a DELETE request to '/' and turn off safe rewrites.
+ *
+ * @name deleteDatabase(name, callback)
+ * @param {String} name
+ * @param {Function} callback
+ * @api public
+ */
+
+exports.deleteDatabase = function (name, callback) {
+    if (!utils.isBrowser()) {
+        throw new Error('deleteDatabase cannot be called server-side');
+    }
+    var req = {
+        type: 'DELETE',
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
+    };
+    exports.request(req, callback);
+};
+
 

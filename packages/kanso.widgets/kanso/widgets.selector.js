@@ -81,6 +81,7 @@ exports.documentSelector = function (_options) {
 
     w.toHTML = function (name, value, raw, field, options) {
         this.cacheInit();
+
         var html_name = this._name(
             name, options.offset
         );
@@ -126,13 +127,18 @@ exports.documentSelector = function (_options) {
         }
 
         /* Update <select> element contents, if necessary:
-            If we're embedding the whole document as JSON, then
-            we need to modify the <option> affected by an edit. This 
-            ensures that the previously-selected item remains selected. */
-            
-        if (this.options.storeEntireDocument && this.options.useJSON) {
+            If we're storing a JSON-encoded object, then we need to
+            modify the <option> affected by the value change. This
+            ensures that the selected item remains selected, despite
+            changes to other fields (and possible property reordering). */
+
+        if (this.options.useJSON) {
             if (value && value._id) {
-                var selector = 'option[rel="' + css(value._id) + '"]';
+                var selector = (
+                    'option[rel="' + css(
+                        (this.useReferenceKey() ? value.ref : value._id)
+                    ) + '"]'
+                );
                 var option_elt = $(selector, select_elt);
                 option_elt.val(new_value);
             }
@@ -157,6 +163,8 @@ exports.documentSelector = function (_options) {
 
         /* Start progress */
         spinner_elt.show();
+
+        /* Load options from view */
         this.populateSelectElement(
             container_elt, field, path, value, widget_options, function () {
                 spinner_elt.hide();
@@ -174,15 +182,17 @@ exports.documentSelector = function (_options) {
         db.getView(
             options.viewName,
             { include_docs: options.storeEntireDocument },
-            { db: options.db },
+            { useCache: true, db: options.db, appName: options.appName },
+
             utils.bindContext(this, function (err, rv) {
-                /* Error handling */
+                /* Error handling for getView */
                 if (err) {
                     throw new Error(
                         'Failed to request content from view `' +
                             options.viewName + '`'
                     );
                 }
+
                 /* Option element for 'no selection' */
                 var nil_option = $('<option />');
                 if (!val) {
@@ -200,39 +210,42 @@ exports.documentSelector = function (_options) {
                     this.generateOptionValue(
                         field, r, val, options,
                         utils.bindContext(this, function (err, v) {
-                            /* Problem with UUID generation? */
                             if (err) {
                                 throw new Error(
-                                    'Failed to generate identifier for' +
+                                    'Failed to generate uuid for' +
                                         ' field `' + this._name(path) + '`'
                                 );
                             }
-
                             /* Insert new <option> */
                             option_elt.val(v);
                             option_elt.text(r.value);
                             option_elt.attr('rel', r.id);
                             select_elt.append(option_elt);
-
-                            /* Sync with <select> element */
-                            this.updateValue(
-                                container_elt, path, val, options
-                            );
                         })
                     );
-
                 }));
+
+                /* Finished:
+                    Flow will transfer back to clientInit. */
+
                 callback();
             })
         );
     };
 
+    w.useReferenceKey = function () {
+        return (
+            this.options.useJSON && !this.options.unique &&
+                !this.options.storeEntireDocument
+        );
+    };
+
     w.isOptionSelected = function (row, value, options) {
         if (options.useJSON) {
-            if (options.storeEntireDocument || options.unique) {
-                return ((value || {})._id === row.id);
-            } else {
+            if (this.useReferenceKey()) {
                 return ((value || {}).ref === row.id);
+            } else {
+                return ((value || {})._id === row.id);
             }
         } else {
             return (value === row.id);

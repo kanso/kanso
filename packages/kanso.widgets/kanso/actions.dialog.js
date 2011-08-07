@@ -22,23 +22,24 @@ var h = sanitize.escapeHtml;
 
 
 /**
- * An action that produces a modal dialog box, with buttons along
+ * An action that produces a dialog box or popup, with buttons along
  * its bottom. The contents of the dialog can be controlled by
  * setting either options.widget or options.type. If both are
  * specified, the widget will be used. If only type is specified,
  * this function transparently instansiates an embedForm widget,
- * which does the actual form rendering and presentation.
+ * which does the actual form rendering and presentation. To control
+ * which dialog implementation is used, set action_options.style.
  */
 
-exports.modalDialog = function (action_options,
-                                names, data, options, callback) {
+exports.showDialog = function (action_options,
+                               names, data, options, callback) {
     options = (options || {});
     action_options = (action_options || {});
 
     var operation = 'update';
     var widget = action_options.widget;
     var name = sanitize.generateDomName(data.path);
-    var path_extra = (options.path_extra || []).concat([ 'modal' ]);
+    var path_extra = (options.path_extra || []).concat([ 'dialog' ]);
 
     if (names.action !== 'edit') {
         operation = names.action;
@@ -50,7 +51,7 @@ exports.modalDialog = function (action_options,
 
     /* Shortcut:
         If no widget is specified, assume embedForm, and
-        use the options to modalDialog as options to embedForm. */
+        use the options to showDialog as options to embedForm. */
 
     if (!widget && action_options.type) {
         var widgets = require('./widgets');
@@ -63,7 +64,7 @@ exports.modalDialog = function (action_options,
 
     if (!widget) {
         throw new Error(
-            'modalDialog: Unable to determine the widget to' +
+            'showDialog: Unable to determine the widget to' +
             ' use for the field named `' + data.path.join('.') +
             '`; widget or field type was not correctly specified'
         );
@@ -73,7 +74,7 @@ exports.modalDialog = function (action_options,
         This is wrapped in a closure to allow it to easily be
         used inside both synchronous and asynchronous functions. */
 
-    var generateModalDialog = function () {
+    var generateAbstractDialog = function (_impl) {
 
         /* Generate strings for content */
         var cancel_label = 'Cancel';
@@ -147,9 +148,8 @@ exports.modalDialog = function (action_options,
         /* Insert elements:
             This is a progress indicator / spinner element. */
        
-        var spinner_elt = $(
-            '<div class="spinner" style="display: none;" />'
-        );
+        var spinner_elt = $('<div class="spinner" />');
+        spinner_elt.hide();
 
         form_elt.append(spinner_elt);
         form_elt.append('<div class="clear" />');
@@ -175,16 +175,14 @@ exports.modalDialog = function (action_options,
 
                 /* Repost dialog box:
                     This will replace the current dialog box.
-                    The modal dialog returns to the event loop before
-                    actually removing its elements, so we do the same. */
+                    some dialog box implementations return to the event loop
+                    before actually removing its elements, so we do the same. */
 
-                $.modal.close();
+                _impl.close(div, options);
 
-                setTimeout(function () {
-                    exports.modalDialog(
-                        action_options, names, data, options, callback
-                    );
-                }, 0);
+                exports.showDialog(
+                    action_options, names, data, options, callback
+                );
 
             } else {
 
@@ -196,11 +194,11 @@ exports.modalDialog = function (action_options,
                 );
 
                 /* Order matters:
-                    The callback may refer to elements inside of the modal
+                    The callback may refer to elements inside of the
                     dialog, so don't destroy it until after it returns, and
                     has had a chance to register any callbacks / timeouts. */
 
-                $.modal.close();
+                _impl.close(div, options);
             }
 
             ev.preventDefault();
@@ -213,7 +211,7 @@ exports.modalDialog = function (action_options,
             callback(
                 false, widget.getValue(div, data.path, widget_options)
             );
-            $.modal.close();
+            _impl.close(div, options);
         });
 
         /* Make default form action 'ok' */
@@ -226,7 +224,7 @@ exports.modalDialog = function (action_options,
         /* Launch dialog:
             This wraps the <div> and inserts it in the DOM. */
 
-        div.modal();
+        _impl.open(div, options);
 
         /* Initialize widget:
             We do this last -- this makes sure all elements are present
@@ -238,6 +236,24 @@ exports.modalDialog = function (action_options,
         );
     };
 
-    return generateModalDialog();
+    /* Pop-up style dialog:
+        Javascript implementation provided by uPopup. */
+
+    var popup;
+
+    generateAbstractDialog({
+        open: function (elt) {
+            $(elt).uPopup('create', data.element, {
+                center: true
+            });
+            var popup = $(elt).uPopup('elements');
+        },
+        close: function (elt) {
+            $(elt).uPopup('destroy');
+        }
+    });
+
+    return;
 };
+
 
