@@ -9,7 +9,7 @@ NODEJSLIBDIR ?= $(LIBDIR)/$(NODEJS)
 
 BUILDDIR = dist
 
-COMMONJSFILES = $(shell find ./commonjs/kanso/*.js | grep -v ./commonjs/kanso/sha1.js | grep -v ./commonjs/kanso/underscore.js)
+COMMONJSFILES = $(shell find ./packages | grep /*.js$$ | grep -v ./packages/kanso.sha1/kanso/sha1.js | grep -v ./packages/underscore/underscore.js)
 
 $(shell if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi)
 
@@ -23,7 +23,7 @@ build: submodules stamp-build
 stamp-build: $(wildcard  deps/* lib/*.js)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
-	cp -R bin deps project static commonjs lib admin package.json $(BUILDDIR)/kanso
+	cp -R bin deps project packages lib admin package.json $(BUILDDIR)/kanso
 	printf '#!/bin/sh\n$(NODEJS) $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $$@' > $(BUILDDIR)/kanso.sh
 
 test:
@@ -49,6 +49,6 @@ clean:
 	rm -rf $(BUILDDIR) stamp-build
 
 lint:
-	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./lib/*.js ./static/kanso.js ./admin/lib/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
+	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./lib/*.js ./admin/lib/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
 
 .PHONY: test install uninstall build all clean lint docs
