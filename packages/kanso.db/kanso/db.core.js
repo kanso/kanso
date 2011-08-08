@@ -13,7 +13,7 @@
 var utils = require('kanso/utils'),
     settings = require('settings/root'),
     sanitize = require('kanso/sanitize'),
-    _ = require('kanso/underscore')._,
+    _ = require('underscore')._,
     session = null;
 
 /* Avoid a circular require in CouchDB */
