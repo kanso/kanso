@@ -33,7 +33,12 @@ module.exports = function (path, settings, doc, callback) {
     }
 
     var module_cache = {};
-    var app = modules.require(module_cache, doc, '/', p);
+    try {
+        var app = modules.require(module_cache, doc, '/', p);
+    }
+    catch (err) {
+        return callback(err);
+    }
 
     for (var k in app) {
         if (app.hasOwnProperty(k)) {
