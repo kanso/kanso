@@ -28,13 +28,10 @@ exports.addFile = function (template_dir, file, doc, callback) {
             return callback(err);
         }
         var rel = utils.relpath(file, template_dir);
-        if (!doc.kanso) {
-            doc.kanso = {};
+        if (!doc.templates) {
+            doc.templates = {};
         }
-        if (!doc.kanso.templates) {
-            doc.kanso.templates = '';
-        }
-        doc.kanso.templates += dust.compile(content.toString(), rel);
+        doc.templates[rel] = dust.compile(content.toString(), rel);
         callback();
     });
 };
