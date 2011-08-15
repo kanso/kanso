@@ -11,7 +11,7 @@ var templates = require('./templates'),
 
 module.exports = {
     before: 'modules/attachment',
-    run: function (path, settings, doc, callback) {
+    run: function (root, path, settings, doc, callback) {
 
         // load the dust source code
         var dust_path = __dirname + '/../../../deps/dustjs/lib/dust.js';

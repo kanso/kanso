@@ -20,7 +20,7 @@ function minify(src) {
  * design doc and wrap them with the appropriate boilerplate.
  */
 
-module.exports = function (path, settings, doc, callback) {
+module.exports = function (root, path, settings, doc, callback) {
     if (!doc._modules) {
         // TODO: should this throw?
         return callback(null, doc);

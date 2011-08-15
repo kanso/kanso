@@ -6,7 +6,7 @@
 
 module.exports = {
     after: 'properties',
-    run: function (path, settings, doc, callback) {
+    run: function (root, path, settings, doc, callback) {
         delete doc.types;
         callback(null, doc);
     }
