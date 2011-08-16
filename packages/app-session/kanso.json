@@ -1,0 +1,14 @@
+{
+    "name": "app-session",
+    "load": "app-session/app",
+    "modules": "app-session",
+    "templates": "templates",
+    "dependencies": {
+        "modules": null,
+        "properties": null,
+        "settings": null,
+        "kanso.core": null,
+        "kanso.session": null,
+        "kanso.templates": null
+    }
+}
