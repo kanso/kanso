@@ -842,6 +842,7 @@ exports.createDatabase = function (name, callback) {
  * @api public
  */
 
+// TODO: detect when 'name' argument is a url and don't construct a url then
 exports.deleteDatabase = function (name, callback) {
     if (!utils.isBrowser()) {
         throw new Error('deleteDatabase cannot be called server-side');
@@ -854,3 +855,114 @@ exports.deleteDatabase = function (name, callback) {
 };
 
 
+/**
+ * Gets information about the database.
+ *
+ * @name info([options], callback)
+ * @param {Object} options (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+exports.info = function (/*optional*/options, callback) {
+    if (!utils.isBrowser()) {
+        throw new Error('info cannot be called server-side');
+    }
+    if (!callback) {
+        callback = options;
+        options = {};
+    }
+
+    var url;
+    if (options.db) {
+        /* Force leading slash; make absolute path */
+        url = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db;
+    } else {
+        url = utils.getBaseURL() + '/_db';
+    }
+
+    var req = {
+        url: url,
+        expect_json: true,
+        use_cache: options.useCache,
+        flush_cache: options.flushCache
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Listen to the changes feed for a database.
+ *
+ * Options:
+ * __db__ - the db url to use (defaults to current app's db)
+ * __filter__ - the filter function to use
+ * __since__ - the update_seq to start listening from
+ * __heartbeat__ - the heartbeat time (defaults to 10 seconds)
+ * __include_docs__ - whether to include docs in the results
+ *
+ * Returning false from the callback will cancel the changes listener
+ *
+ * @name changes([options], callback)
+ * @param {Object} options (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+exports.changes = function (options, callback) {
+    if (!utils.isBrowser()) {
+        throw new Error('deleteDatabase cannot be called server-side');
+    }
+
+    if (!callback) {
+        callback = options;
+        options = {};
+    }
+
+    var url;
+    if (options.db) {
+        /* Force leading slash; make absolute path */
+        url = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db;
+    } else {
+        url = utils.getBaseURL() + '/_db';
+    }
+
+    function getChanges(since) {
+        var q = {
+            feed: 'longpoll',
+            since: since,
+            filter: options.filter,
+            heartbeat: options.heartbeat || 10000,
+            include_docs: options.include_docs
+        };
+        var req = {
+            type: 'GET',
+            expect_json: true,
+            url: url + '/_changes',
+            data: exports.stringifyQuery(q)
+        };
+        var cb = function (err, data) {
+            var result = callback.apply(this, arguments);
+            if (result !== false) {
+                getChanges(data.last_seq);
+            }
+        }
+        exports.request(req, cb);
+    }
+
+    if (options.hasOwnProperty('since')) {
+        getChanges(options.since);
+    }
+    else {
+        var opts = {};
+        if (options.db) {
+            opts.db = db;
+        }
+        exports.info(opts, function (err, info) {
+            if (err) {
+                return callback(err);
+            }
+            getChanges(info.update_seq);
+        });
+    }
+};
