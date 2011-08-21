@@ -909,14 +909,22 @@ exports.info = function (/*optional*/options, callback) {
  * @api public
  */
 
-exports.changes = function (options, callback) {
+exports.changes = function (q, options, callback) {
     if (!utils.isBrowser()) {
         throw new Error('deleteDatabase cannot be called server-side');
     }
 
     if (!callback) {
-        callback = options;
-        options = {};
+        if (!options) {
+            /* Arity = 2: Omits q, options */
+            callback = q;
+            options = {};
+            q = {};
+        } else {
+          /* Arity = 3: Omits options */
+            callback = options;
+            options = {};
+        }
     }
 
     var url;
@@ -927,14 +935,12 @@ exports.changes = function (options, callback) {
         url = utils.getBaseURL() + '/_db';
     }
 
+    q = q || {};
+    q.feed = 'longpoll';
+    q.heartbeat = q.heartbeat || 10000;
+
     function getChanges(since) {
-        var q = {
-            feed: 'longpoll',
-            since: since,
-            filter: options.filter,
-            heartbeat: options.heartbeat || 10000,
-            include_docs: options.include_docs
-        };
+        q.since = since;
         var req = {
             type: 'GET',
             expect_json: true,
@@ -953,8 +959,8 @@ exports.changes = function (options, callback) {
     // use setTimeout to pass control back to the browser briefly to
     // allow the loading spinner to stop on page load
     setTimeout(function () {
-        if (options.hasOwnProperty('since')) {
-            getChanges(options.since);
+        if (q.hasOwnProperty('since')) {
+            getChanges(q.since);
         }
         else {
             var opts = {};
