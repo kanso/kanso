@@ -950,19 +950,23 @@ exports.changes = function (options, callback) {
         exports.request(req, cb);
     }
 
-    if (options.hasOwnProperty('since')) {
-        getChanges(options.since);
-    }
-    else {
-        var opts = {};
-        if (options.db) {
-            opts.db = db;
+    // use setTimeout to pass control back to the browser briefly to
+    // allow the loading spinner to stop on page load
+    setTimeout(function () {
+        if (options.hasOwnProperty('since')) {
+            getChanges(options.since);
         }
-        exports.info(opts, function (err, info) {
-            if (err) {
-                return callback(err);
+        else {
+            var opts = {};
+            if (options.db) {
+                opts.db = db;
             }
-            getChanges(info.update_seq);
-        });
-    }
+            exports.info(opts, function (err, info) {
+                if (err) {
+                    return callback(err);
+                }
+                getChanges(info.update_seq);
+            });
+        }
+    }, 0);
 };
