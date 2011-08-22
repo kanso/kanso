@@ -9,10 +9,12 @@ exports.bind = function () {
     });
     $('#session .login a').click(function (ev) {
         ev.preventDefault();
+        $('#session .login').addClass('active');
         $('#login_dropdown').show();
         return false;
     });
     $('#login_form_cancel').click(function (ev) {
+        $('#session .login').removeClass('active');
         $('#login_dropdown').hide();
     });
     $('#login_form').submit(function (ev) {
