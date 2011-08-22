@@ -11,6 +11,7 @@ exports.bind = function () {
         ev.preventDefault();
         $('#session .login').addClass('active');
         $('#login_dropdown').show();
+        $('#login_dropdown input[name="name"]').focus();
         return false;
     });
     $('#login_form_cancel').click(function (ev) {
