@@ -24,12 +24,22 @@ exports.bind = function () {
         var spinner_elt = $('.spinner', form).show();
         var username = $('input[name="name"]', form).val();
         var password = $('input[name="password"]', form).val();
-        $('.username .errors', form).text(
-            username ? '': 'Please enter a username'
-        );
-        $('.password .errors', form).text(
-            password ? '': 'Please enter a password'
-        );
+        if (!username) {
+            $('.username .errors', form).text('Please enter a username');
+            $('.username').addClass('validation_error');
+        }
+        else {
+            $('.username .errors', form).text('');
+            $('.username').removeClass('validation_error');
+        }
+        if (!password) {
+            $('.password .errors', form).text('Please enter a password');
+            $('.password').addClass('validation_error');
+        }
+        else {
+            $('.password .errors', form).text('');
+            $('.password').removeClass('validation_error');
+        }
         if (username && password) {
             session.login(username, password, function (err) {
                 if (err) {
