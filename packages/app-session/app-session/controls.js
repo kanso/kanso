@@ -12,7 +12,7 @@ exports.clearErrors = function (form) {
 exports.showDropDown = function () {
     $('#session .login').addClass('active');
     $('#login_dropdown').show();
-    $('#login_dropdown input[name="name"]').focus();
+    $('#login_dropdown input[name="name"]').focus().select();
 };
 
 exports.hideDropDown = function () {
