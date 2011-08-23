@@ -23,7 +23,8 @@ build: submodules stamp-build
 stamp-build: $(wildcard  deps/* lib/*.js)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
-	cp -fR bin deps project packages lib admin package.json $(BUILDDIR)/kanso
+	cp -R bin project packages lib admin package.json $(BUILDDIR)/kanso
+	tar --exclude='.git' -c -f - deps | (cd dist ; tar xfp -)
 	printf '#!/bin/sh\n$(NODEJS) $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $$@' > $(BUILDDIR)/kanso.sh
 
 test:
@@ -39,7 +40,7 @@ docs:
 
 install: build
 	#install --directory $(NODEJSLIBDIR)
-	cp -fRa $(BUILDDIR)/kanso $(NODEJSLIBDIR)
+	cp -Ra $(BUILDDIR)/kanso $(NODEJSLIBDIR)
 	install -m 0755 $(BUILDDIR)/kanso.sh $(BINDIR)/kanso
 
 uninstall:
