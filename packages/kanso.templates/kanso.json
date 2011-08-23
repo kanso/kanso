@@ -4,6 +4,9 @@
     "preprocessors": {
         "compile": "build/compile"
     },
+    "postprocessors": {
+        "create_module": "build/create_module"
+    },
     "dependencies": {
         "modules": null,
         "kanso.utils": null

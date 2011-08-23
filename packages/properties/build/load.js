@@ -26,14 +26,19 @@ var proxyFns = function (path, app, doc, prop) {
  * to the document.
  */
 
-module.exports = function (path, settings, doc, callback) {
+module.exports = function (root, path, settings, doc, callback) {
     var p = settings.load;
     if (!p) {
         return callback(null, doc);
     }
 
     var module_cache = {};
-    var app = modules.require(module_cache, doc, '/', p);
+    try {
+        var app = modules.require(module_cache, doc, '/', p);
+    }
+    catch (err) {
+        return callback(err);
+    }
 
     for (var k in app) {
         if (app.hasOwnProperty(k)) {

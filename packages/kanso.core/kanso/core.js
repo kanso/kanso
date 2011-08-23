@@ -133,14 +133,34 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
 /**
  * The module loaded as the design document (load property in kanso.json).
  * Likely to cause circular require in couchdb so only run browser side.
- * TODO: when circular requires are fixed in couchdb, remove the isBrowser check
  */
 
-if (utils.isBrowser) {
-    exports.app = {};
-    if (settings.load) {
-        exports.app = require(settings.load);
+exports.app = {};
+
+function loadDeps(deps) {
+    if (!deps) {
+        return;
     }
+    for (var k in deps) {
+        var s = null;
+        try {
+            s = require('settings/packages/' + k);
+        }
+        catch (e) {
+            // no settings, skip
+        }
+        if (s) {
+            if (s.load) {
+                var a = require(s.load);
+                _.extend(exports.app, a);
+            }
+            loadDeps(s.dependencies);
+        }
+    }
+}
+if (settings.load) {
+    exports.app = require(settings.load);
+    loadDeps(settings.dependencies);
 }
 
 
