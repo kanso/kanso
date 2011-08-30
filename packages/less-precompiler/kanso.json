@@ -1,0 +1,6 @@
+{
+    "name": "less-precompiler",
+    "postprocessors": {
+        "compile": "build/compile"
+    }
+}
