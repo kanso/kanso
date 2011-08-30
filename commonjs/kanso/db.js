@@ -17,7 +17,7 @@ var utils = require('./utils'),
 
 /* Avoid a circular require in CouchDB */
 
-if (utils.isBrowser) {
+if (utils.isBrowser()) {
     session = require('./session');
 }
 
