@@ -28,6 +28,3 @@
 [submodule "deps/node-parser"]
 	path = deps/node-parser
 	url = git://github.com/Floby/node-parser.git
-[submodule "packages/less-precompiler/less.js"]
-	path = packages/less-precompiler/less.js
-	url = git://github.com/cloudhead/less.js
