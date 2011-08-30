@@ -2,5 +2,8 @@
     "name": "attachments",
     "preprocessors": {
         "add": "build/add"
+    },
+    "postprocessors": {
+        "cleanup": "build/cleanup"
     }
 }
