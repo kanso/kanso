@@ -18,7 +18,7 @@ var utils = require('kanso/utils'),
 
 /* Avoid a circular require in CouchDB */
 
-if (utils.isBrowser) {
+if (utils.isBrowser()) {
     try {
         session = require('./session');
     }
