@@ -2,13 +2,12 @@ var scrawl = require('../deps/scrawl'),
     Showdown = require('../deps/showdown'),
     async = require('../deps/async'),
     utils = require('../lib/utils'),
-    templates = require('../lib/templates'),
+    templates = require('../packages/kanso.templates/build/templates'),
     dust = require('../deps/dustjs/lib/dust'),
     path = require('path'),
     fs = require('fs');
 
 
-var commonjs_dir = __dirname + '/../commonjs/kanso';
 var output_dir = __dirname + '/../www';
 var template_dir = __dirname + '/templates';
 
@@ -66,95 +65,6 @@ function item_id(module, item) {
     return module.name + '.' + item.name.replace(/\(.*$/, '');
 }
 
-function render_toc(modules, subitems, pagelinks) {
-    var html = '<h1>Kanso API Documentation</h1>';
-    html += '<p><a href="index.html">Index</a> | ' +
-            '<a href="all.html">View on single page</a></p>';
-    html += '<div class="toc">';
-    html += '<h2>Table of Contents</h2>';
-    html += '<ul>';
-    html += modules.reduce(function (html, m) {
-        html += '<li>';
-        if (pagelinks) {
-            html += '<a href="' + m.name + '.html">' + m.name + '</a>';
-        }
-        else {
-            html += '<a href="#' + m.name + '">' + m.name + '</a>';
-        }
-        var items = get_named_public_apis(m.comments);
-        if (subitems) {
-            html += '<ul>';
-            html += items.reduce(function (html, c) {
-                html += '<li>';
-                if (pagelinks) {
-                    html += '<a href="' + m.name + '.html#' + item_id(m, c) + '">';
-                }
-                else {
-                    html += '<a href="#' + item_id(m, c) + '">';
-                }
-                html += c.name + '</a></li>';
-                return html;
-            }, '');
-            html += '</ul>';
-        }
-        html += '</li>';
-        return html;
-    }, '');
-    html += '</ul>';
-    html += '</div>';
-    return html;
-}
-
-function create_api_index_page(modules, path, callback) {
-    var content = render_toc(modules, false, true);
-    var context = {
-        content: content,
-        rootURL: '..',
-        nav: {api: true},
-        title: 'API'
-    };
-    dust.render('base.html', context, function (err, result) {
-        if (err) {
-            return callback(err);
-        }
-        fs.writeFile(path, result, callback);
-    });
-}
-
-function create_api_module_page(module, path, callback) {
-    var content = render_toc([module], true) + render_module(module);
-    var context = {
-        content: content,
-        rootURL: '..',
-        nav: {api: true},
-        title: 'API - ' + module.name
-    };
-    dust.render('base.html', context, function (err, result) {
-        if (err) {
-            return callback(err);
-        }
-        fs.writeFile(path, result, callback);
-    });
-}
-
-function create_api_all_page(modules, path, callback) {
-    var content = render_toc(modules, true);
-    content += modules.map(render_module).join('');
-    var context = {
-        content: content,
-        rootURL: '..',
-        nav: {api: true},
-        title: 'API - all'
-    };
-    dust.render('base.html', context, function (err, result) {
-        if (err) {
-            return callback(err);
-        }
-        fs.writeFile(path, result, callback);
-    });
-}
-
-
 function create_page(infile, outfile, nav, title, rootURL, callback) {
     if (!callback) {
         callback = rootURL;
@@ -203,7 +113,7 @@ function create_guides(dir, outdir, callback) {
 }
 
 function load_templates(path, callback) {
-    templates.find(path, path, function (err, paths) {
+    templates.find(path, function (err, paths) {
         if (err) {
             return callback(err);
         }
@@ -223,9 +133,7 @@ function load_templates(path, callback) {
 
 async.parallel({
     load_templates: async.apply(load_templates, template_dir),
-    parseModules: async.apply(scrawl.parseModules, commonjs_dir),
-    ensureDir:    async.apply(utils.ensureDir, output_dir),
-    ensureDir:    async.apply(utils.ensureDir, output_dir + '/api')
+    ensureDir:    async.apply(utils.ensureDir, output_dir)
 },
 function (err, results) {
     if (err) {
@@ -234,8 +142,6 @@ function (err, results) {
     }
     var modules = results.parseModules;
     async.parallel([
-        async.apply(create_api_index_page, modules, output_dir + '/api/index.html'),
-        async.apply(create_api_all_page, modules, output_dir + '/api/all.html'),
         async.apply(
             create_page,
             __dirname + '/index.md',
@@ -275,14 +181,7 @@ function (err, results) {
             create_guides,
             __dirname + '/guides',
             output_dir + '/guides'
-        ),
-        function (callback) {
-            async.forEach(modules, function (m, cb) {
-                create_api_module_page(
-                    m, output_dir + '/api/' + m.name + '.html', cb
-                );
-            }, callback);
-        }
+        )
     ],
     function (err) {
         if (err) {
