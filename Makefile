@@ -24,7 +24,7 @@ stamp-build: $(wildcard  deps/* lib/*.js)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
 	cp -R bin project packages lib admin package.json $(BUILDDIR)/kanso
-	tar --exclude='.git' -c -f - deps | (cd dist ; tar xfp -)
+	tar --exclude='.git' -c -f - deps | (cd $(BUILDDIR)/kanso ; tar xfp -)
 	printf '#!/bin/sh\n$(NODEJS) $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $$@' > $(BUILDDIR)/kanso.sh
 
 test:
