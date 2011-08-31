@@ -1,0 +1,13 @@
+{
+    "name": "kanso-forms",
+    "modules": "kanso",
+    "dependencies": {
+        "modules": null,
+        "underscore": null,
+        "kanso-core": null,
+        "kanso-utils": null,
+        "kanso-fieldset": null,
+        "kanso-events": null,
+        "kanso-sanitize": null
+    }
+}

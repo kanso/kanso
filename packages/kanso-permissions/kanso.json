@@ -1,0 +1,9 @@
+{
+    "name": "kanso-permissions",
+    "modules": "kanso",
+    "dependencies": {
+        "modules": null,
+        "underscore": null,
+        "kanso-utils": null
+    }
+}

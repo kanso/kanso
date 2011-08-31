@@ -1,0 +1,17 @@
+{
+    "name": "kanso-types",
+    "modules": "kanso",
+    "dependencies": {
+        "modules": null,
+        "underscore": null,
+        "kanso-utils": null,
+        "kanso-db": null,
+        "kanso-fields": null,
+        "kanso-fieldset": null,
+        "kanso-widgets": null,
+        "kanso-permissions": null
+    },
+    "postprocessors": {
+        "remove_property": "build/remove_property"
+    }
+}

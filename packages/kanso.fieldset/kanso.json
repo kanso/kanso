@@ -1,9 +1,0 @@
-{
-    "name": "kanso.fieldset",
-    "modules": "kanso",
-    "dependencies": {
-        "modules": null,
-        "underscore": null,
-        "kanso.utils": null
-    }
-}
