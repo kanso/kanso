@@ -10,7 +10,7 @@ var templates = require('./templates'),
  */
 
 module.exports = {
-    before: ['modules/attachment', 'properties/load', 'kanso.core/app'],
+    before: ['modules/attachment', 'properties/load', 'kanso-core/app'],
     run: function (root, path, settings, doc, callback) {
 
         // load the dust source code
