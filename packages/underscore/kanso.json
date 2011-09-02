@@ -1,5 +1,6 @@
 {
     "name": "underscore",
+    "version": "1.1.5",
     "modules": "underscore.js",
     "dependencies": {
         "modules": null
