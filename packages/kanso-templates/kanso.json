@@ -1,5 +1,6 @@
 {
     "name": "kanso-templates",
+    "version": "0.0.8",
     "modules": "kanso",
     "preprocessors": {
         "compile": "build/compile"
