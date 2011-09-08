@@ -9,11 +9,11 @@
         "modules": null,
         "settings": null,
         "attachments": null,
-        "kanso.core": null,
-        "kanso.templates": null,
-        "kanso.sanitize": null,
-        "kanso.flashmessages": null,
-        "kanso.forms": null,
-        "kanso.widgets": null
+        "kanso-core": null,
+        "kanso-templates": null,
+        "kanso-sanitize": null,
+        "kanso-flashmessages": null,
+        "kanso-forms": null,
+        "kanso-widgets": null
     }
 }
