@@ -1,0 +1,16 @@
+{
+    "name": "async",
+    "version": "0.1.9",
+    "maintainers": [
+        {
+            "name": "Caolan McMahon",
+            "website": "http://caolanmcmahon.com"
+        }
+    ],
+    "website": "http://github.com/caolan/async",
+    "modules": "async.js",
+    "dependencies": {
+        "modules": null
+    },
+    "description": "Higher-order functions and common patterns for asynchronous code"
+}
