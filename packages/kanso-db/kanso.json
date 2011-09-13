@@ -5,6 +5,7 @@
         "settings": null,
         "modules": null,
         "underscore": null,
-        "kanso-utils": null
+        "kanso-utils": null,
+        "kanso-sanitize": null
     }
 }
