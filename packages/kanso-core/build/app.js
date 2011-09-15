@@ -1,18 +1,15 @@
 var apputils = require('./apputils'),
-    modules = require('../../../lib/modules');
+    modules = require('../../../lib/modules'),
+    _ = require('../../../deps/underscore/underscore')._;
 
 /**
  * Loads module directories specified in kanso.json and adds the modules
  * to the document.
  */
 
-module.exports = function (root, path, settings, doc, callback) {
+function load(module_cache, doc, settings) {
     var p = settings.load;
-    if (!p) {
-        return callback(null, doc);
-    }
 
-    var module_cache = {};
     try {
         var app = modules.require(module_cache, doc, '/', p);
     }
@@ -27,15 +24,40 @@ module.exports = function (root, path, settings, doc, callback) {
     if (app.hasOwnProperty('validate_doc_update')) {
         apputils.proxyFn(p, app, doc, ['validate_doc_update']);
     }
+    return doc;
+};
 
-    // prepend required kanso rewrites
-    doc.rewrites = [
-        {from: '/kanso.js', to: 'kanso.js'},
-        {from: '/_db/*', to: '../../*'},
-        {from: '/_db', to: '../..'}
-    ].concat(doc.rewrites || []);
+// TODO: loop through doc._kanso_core_load keys and update each like above,
+// see packages/load postprocessor for more details
+
+module.exports = function (root, path, settings, doc, callback) {
+    var module_cache = {};
+
+    for (var k in doc._kanso_core_load) {
+        if (doc._kanso_core_load[k] && doc._kanso_core_load[k].load) {
+
+            // check that this package wants its exports wrapped by kanso-core
+            if ('kanso-core' in doc._kanso_core_load[k].dependencies || {}) {
+                try {
+                    load(module_cache, doc, doc._kanso_core_load[k]);
+                }
+                catch (e) {
+                    return callback(e);
+                }
+            }
+
+        }
+    }
 
     doc.format = 'kanso';
 
+    // prepend required kanso rewrites and flatten
+    doc.rewrites = _.flatten([
+        {from: '/kanso.js', to: 'kanso.js'},
+        {from: '/_db/*', to: '../../*'},
+        {from: '/_db', to: '../..'}
+    ].concat(doc.rewrites || []));
+
+    delete doc._kanso_core_load;
     callback(null, doc);
 };
