@@ -8,6 +8,7 @@
         "properties": null,
         "settings": null,
         "kanso-core": null,
+        "kanso-events": null,
         "kanso-session": null,
         "kanso-templates": null
     }

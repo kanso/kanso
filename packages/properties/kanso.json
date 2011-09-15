@@ -1,5 +1,8 @@
 {
     "name": "properties",
+    "preprocessors": {
+        "queue": "build/queue"
+    },
     "postprocessors": {
         "load": "build/load"
     },

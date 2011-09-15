@@ -128,16 +128,14 @@ if (typeof log === 'undefined' && typeof window !== 'undefined') {
 //exports.userCtx = utils.userCtx;
 
 
+exports._rewrites = [];
+exports._shows = {};
+exports._lists = {};
+exports._updates = {};
 
-
-/**
- * The module loaded as the design document (load property in kanso.json).
- * Likely to cause circular require in couchdb so only run browser side.
- */
-
-exports.app = {};
 
 function loadDeps(deps) {
+    // TODO: ignore deps already merged in
     if (!deps) {
         return;
     }
@@ -151,16 +149,43 @@ function loadDeps(deps) {
         }
         if (s) {
             if (s.load) {
+                /*
+                log('loading ' + k);
                 var a = require(s.load);
+                log('shows before: ' + _.keys(exports.app.shows || {}));
                 _.extend(exports.app, a);
+                // TODO: this is blowing away the previous show functions
+                // instead of extending the app module itself, keep a local
+                // variable containing all show functions (same for list,
+                // update, and anything else used by kanso core)
+                log('shows after: ' + _.keys(exports.app.shows || {}));
+                */
+                var a = require(s.load);
+                // should these always be concatenated?
+                exports._rewrites = exports._rewrites.concat(a.rewrites || []);
+                // TODO: detect conflicting properties as the merge build step
+                // would report them
+                _.extend(exports._shows, a.shows);
+                _.extend(exports._lists, a.lists);
+                _.extend(exports._updates, a.updates);
             }
             loadDeps(s.dependencies);
         }
     }
 }
 if (settings.load) {
-    exports.app = require(settings.load);
+    // load root app
+    var tmp = {};
+    tmp[settings.name] = null;
+    loadDeps(tmp);
+
+    // load dependencies of root app
     loadDeps(settings.dependencies);
+
+    // TODO: update kanso-core postprocessor to properly wrap show functions etc
+    // from deps (like I've updated the properties postprocessor here)
+
+    exports._rewrites = _.flatten(exports._rewrites);
 }
 
 
@@ -342,7 +367,7 @@ exports.rewriteSplat = function (pattern, url) {
 
 exports.matchURL = function (method, url) {
     var pathname = urlParse(url).pathname;
-    var rewrites = kanso.app.rewrites;
+    var rewrites = exports._rewrites;
     for (var i = 0; i < rewrites.length; i++) {
         var r = rewrites[i];
         if (!r.method || method === r.method) {
@@ -520,7 +545,7 @@ exports.handleResponse = function (req, res) {
 
 exports.runShowBrowser = function (req, name, docid, callback) {
     var result;
-    var fn = kanso.app.shows[name];
+    var fn = exports._shows[name];
 
     var info = {
         type: 'show',
@@ -711,7 +736,7 @@ exports.runShow = function (fn, doc, req) {
 
 exports.runUpdateBrowser = function (req, name, docid, callback) {
     var result;
-    var fn = kanso.app.updates[name];
+    var fn = exports._updates[name];
 
     var info = {
         type: 'update',
@@ -865,7 +890,7 @@ exports.createHead = function (data) {
  */
 
 exports.runListBrowser = function (req, name, view, callback) {
-    var fn = kanso.app.lists[name];
+    var fn = exports._lists[name];
 
     var info = {
         type: 'list',

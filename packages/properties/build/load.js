@@ -1,5 +1,6 @@
 var modules = require('../../../lib/modules'),
-    utils = require('../../../lib/utils');
+    utils = require('../../../lib/utils'),
+    _ = require('../../../deps/underscore/underscore')._;
 
 
 var proxyFn = function (path, app, doc, props) {
@@ -21,24 +22,9 @@ var proxyFns = function (path, app, doc, prop) {
     }
 };
 
-/**
- * Loads module directories specified in kanso.json and adds the modules
- * to the document.
- */
-
-module.exports = function (root, path, settings, doc, callback) {
+var load = function (module_cache, doc, settings) {
     var p = settings.load;
-    if (!p) {
-        return callback(null, doc);
-    }
-
-    var module_cache = {};
-    try {
-        var app = modules.require(module_cache, doc, '/', p);
-    }
-    catch (err) {
-        return callback(err);
-    }
+    var app = modules.require(module_cache, doc, '/', p);
 
     for (var k in app) {
         if (app.hasOwnProperty(k)) {
@@ -54,6 +40,7 @@ module.exports = function (root, path, settings, doc, callback) {
             }
         }
     }
+
     // if undefined or null, assume default value of 'true'
     if (settings.proxy_functions !== false) {
         proxyFns(p, app, doc, 'shows');
@@ -65,5 +52,27 @@ module.exports = function (root, path, settings, doc, callback) {
         }
     }
 
+    return doc;
+};
+
+/**
+ * Loads module directories specified in kanso.json and adds the modules
+ * to the document.
+ */
+
+module.exports = function (root, path, settings, doc, callback) {
+    var module_cache = {};
+    for (var k in doc._load) {
+        if (doc._load[k] && doc._load[k].load) {
+            try {
+                load(module_cache, doc, doc._load[k]);
+            }
+            catch (e) {
+                return callback(e);
+            }
+        }
+    }
+    doc.rewrites = _.flatten(doc.rewrites);
+    delete doc._load;
     callback(null, doc);
 };
