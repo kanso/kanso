@@ -5,5 +5,6 @@
 
 module.exports = {
     shows: require('./shows'),
-    rewrites: require('./rewrites')
+    // rewrites now have to be manually included
+    //rewrites: require('./rewrites')
 };
