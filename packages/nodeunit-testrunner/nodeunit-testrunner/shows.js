@@ -4,7 +4,7 @@ var templates = require('kanso/templates'),
     utils = require('./utils');
 
 
-exports.module_list = function (doc, req) {
+exports['nodeunit-testrunner:module_list'] = function (doc, req) {
     var modules = [];
     if (req.client) {
         modules = utils.getTestModuleNames();
@@ -31,11 +31,11 @@ function run (modules, name, req) {
     };
 };
 
-exports.run_module = function (doc, req) {
+exports['nodeunit-testrunner:run_module'] = function (doc, req) {
     var name = req.query.name;
     return run({'tests': require('tests/' + name)}, name, req);
 };
 
-exports.run_all = function (doc, req) {
+exports['nodeunit-testrunner:run_all'] = function (doc, req) {
     return run(req.client ? utils.getTestModules(): {}, 'all', req);
 };

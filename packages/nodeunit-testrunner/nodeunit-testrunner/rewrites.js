@@ -4,9 +4,9 @@
 
 module.exports = [
     {from: '/test/static/*', to: 'static/nodeunit-testrunner/*'},
-    {from: '/test', to: '_show/module_list'},
-    {from: '/test/', to: '_show/module_list'},
-    {from: '/test/all', to: '_show/run_all'},
-    {from: '/test/:name', to: '_show/run_module'}
+    {from: '/test',          to: '_show/nodeunit-testrunner:module_list'},
+    {from: '/test/',         to: '_show/nodeunit-testrunner:module_list'},
+    {from: '/test/all',      to: '_show/nodeunit-testrunner:run_all'},
+    {from: '/test/:name',    to: '_show/nodeunit-testrunner:run_module'}
 ];
 
