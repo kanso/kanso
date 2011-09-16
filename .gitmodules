@@ -28,3 +28,6 @@
 [submodule "deps/node-parser"]
 	path = deps/node-parser
 	url = git://github.com/Floby/node-parser.git
+[submodule "deps/node-semver"]
+	path = deps/node-semver
+	url = git://github.com/isaacs/node-semver.git
