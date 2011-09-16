@@ -26,6 +26,11 @@ module.exports = function (root, path, settings, doc, callback) {
         return callback(null, doc);
     }
 
+    if (settings.modules_attachment === false) {
+        delete doc._modules;
+        return callback(null, doc);
+    }
+
     var wrapped_modules = '';
     for (var k in doc._modules) {
         wrapped_modules += modules.wrap(k, utils.getPropertyPath(doc, k));
