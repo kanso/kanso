@@ -1,5 +1,7 @@
 {
     "name": "kanso-forms",
+    "version": "0.0.8",
+    "description": "Handles the rendering and validation of forms",
     "modules": "kanso",
     "dependencies": {
         "modules": null,

@@ -1,5 +1,7 @@
 {
     "name": "less-precompiler",
+    "version": "0.0.1",
+    "description": "Precompiles .less CSS templates when building a package and attaches a compiled .css file to reduce parsing time in the browser",
     "postprocessors": {
         "compile": "build/compile"
     }

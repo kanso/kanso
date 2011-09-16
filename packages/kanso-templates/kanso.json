@@ -1,6 +1,7 @@
 {
     "name": "kanso-templates",
     "version": "0.0.8",
+    "description": "Provides convenient functions for rendering DustJS templates in CouchDB or the browser",
     "modules": "kanso",
     "preprocessors": {
         "compile": "build/compile"

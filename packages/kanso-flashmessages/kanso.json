@@ -1,5 +1,7 @@
 {
     "name": "kanso-flashmessages",
+    "version": "0.0.8",
+    "description": "Displays transient messages across Kanso page requests, useful for success and error messages on form submission. Works without client-side JavaScript through the use of cookies.",
     "modules": "kanso",
     "dependencies": {
         "modules": null,

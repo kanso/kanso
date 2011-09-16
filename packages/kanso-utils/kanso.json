@@ -1,5 +1,7 @@
 {
     "name": "kanso-utils",
+    "version": "0.0.8",
+    "description": "Utility functions used by the Kanso framework",
     "modules": "kanso",
     "dependencies": {
         "settings": null,

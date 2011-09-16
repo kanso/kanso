@@ -1,5 +1,7 @@
 {
     "name": "kanso-core",
+    "version": "0.0.8",
+    "description": "The central part of the Kanso framework. Implements the CouchDB design doc API in the browser and handles the dispatching of URLs",
     "modules": "kanso",
     "dependencies": {
         "settings": null,

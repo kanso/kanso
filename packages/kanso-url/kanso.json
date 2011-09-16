@@ -1,5 +1,7 @@
 {
     "name": "kanso-url",
+    "version": "0.2.6",
+    "description": "Functions for manipulating and parsing URL strings. Based on the Node.js url module.",
     "modules": "kanso",
     "dependencies": {
         "modules": null,

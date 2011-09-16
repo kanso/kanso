@@ -1,5 +1,7 @@
 {
     "name": "kanso-session",
+    "version": "0.0.8",
+    "description": "Utilities for managing the current user's session, including login, logout etc",
     "modules": "kanso",
     "dependencies": {
         "modules": null,

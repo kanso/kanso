@@ -1,5 +1,7 @@
 {
     "name": "kanso-fields",
+    "version": "0.0.8",
+    "description": "Common fields for use with the Kanso forms and types systems",
     "modules": "kanso",
     "dependencies": {
         "modules": null,

@@ -1,5 +1,7 @@
 {
     "name": "kanso-validators",
+    "version": "0.0.8",
+    "description": "Common validation functions for use with the Kanso types and forms systems",
     "modules": "kanso",
     "dependencies": {
         "modules": null,

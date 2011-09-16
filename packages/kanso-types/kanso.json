@@ -1,5 +1,7 @@
 {
     "name": "kanso-types",
+    "version": "0.0.8",
+    "description": "Provides a powerful and flexible schema system for describing and validating JSON documents in CouchDB",
     "modules": "kanso",
     "dependencies": {
         "modules": null,

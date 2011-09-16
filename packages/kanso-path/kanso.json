@@ -1,5 +1,7 @@
 {
     "name": "kanso-path",
+    "version": "0.2.6",
+    "description": "Utility functions for manipulating and parsing paths, based on the Node.js path module",
     "modules": "kanso",
     "dependencies": {
         "modules": null

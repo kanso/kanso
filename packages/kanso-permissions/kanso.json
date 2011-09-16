@@ -1,5 +1,7 @@
 {
     "name": "kanso-permissions",
+    "version": "0.0.8",
+    "description": "Common permissions for use with the Kanso types and forms systems",
     "modules": "kanso",
     "dependencies": {
         "modules": null,

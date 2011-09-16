@@ -9,6 +9,7 @@
     ],
     "website": "http://documentcloud.github.com/underscore/",
     "modules": "underscore.js",
+    "modules_attachment": false,
     "dependencies": {
         "modules": null
     },
