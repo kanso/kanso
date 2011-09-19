@@ -1,6 +1,6 @@
 {
-    "name": "kanso-path",
-    "modules": "kanso",
+    "name": "path",
+    "modules": "path.js",
     "dependencies": {
         "modules": null
     }
