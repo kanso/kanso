@@ -15,7 +15,7 @@
  */
 
 var settings = require('settings/root'), // module auto-generated
-    url = require('kanso/url'),
+    url = require('url'),
     db = require('kanso/db'),
     utils = require('kanso/utils'),
     session = require('kanso/session'),

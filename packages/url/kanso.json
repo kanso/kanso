@@ -1,10 +1,10 @@
 {
-    "name": "kanso-url",
-    "modules": "kanso",
+    "name": "url",
+    "modules": "url.js",
     "dependencies": {
         "modules": null,
         "underscore": null,
-        "kanso-path": null,
+        "path": null,
         "kanso-querystring": null
     }
 }
