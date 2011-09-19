@@ -5,6 +5,6 @@
         "modules": null,
         "underscore": null,
         "path": null,
-        "kanso-querystring": null
+        "querystring": null
     }
 }

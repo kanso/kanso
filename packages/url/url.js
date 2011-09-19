@@ -32,7 +32,7 @@
  */
 
 var path = require('path'),
-    querystring = require('kanso/querystring'),
+    querystring = require('querystring'),
     _ = require('underscore')._;
 
 
