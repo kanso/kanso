@@ -76,6 +76,16 @@ exports.current_state = null;
 exports.set_called = false;
 
 
+/**
+ * This is set to true when the initial page request is to an unknown URL
+ * rewrite target (such as a static .html page). This tells kanso whether to
+ * handle urls internally or let the browser refresh the page when clicking
+ * links etc
+ */
+
+exports.unknown_target = false;
+
+
 if (typeof window !== 'undefined') {
     if (!window.console) {
         // console.log is going to cause errors, just stub the functions
@@ -1036,6 +1046,12 @@ exports.runList = function (fn, head, req) {
  */
 
 exports.handle = function (method, url, data) {
+    if (exports.unknown_target) {
+        // if we're currently on an unknown rewrite target page (such as a
+        // static .html file), don't attempt to intercept the request
+        window.location = exports.getBaseURL() + url;
+        return;
+    }
     var match = exports.matchURL(method, url);
     if (match) {
         var parsed = urlParse(url);
@@ -1097,17 +1113,26 @@ exports.handle = function (method, url, data) {
             }
             else {
                 console.log('Unknown rewrite target: ' + req.path.join('/'));
-                var newurl = exports.getBaseURL() + '/_db/_design/' +
-                    settings.name + '/' + req.path.join('/');
-                console.log('redirecting to: ' + newurl);
-                window.location = newurl;
+                if (!utils.initial_hit) {
+                    var newurl = exports.getBaseURL() + url;
+                    console.log('redirecting to: ' + newurl);
+                    window.location = newurl;
+                }
+                else {
+                    exports.unknown_target = true;
+                    console.log(
+                        'Initial hit is an uknown rewrite target, kanso will ' +
+                        'not fetch from server in order to avoid redirect loop'
+                    );
+                }
             }
-
+            utils.initial_hit = false;
         });
     }
     else {
         console.log(method + ' ' + url + ' -> [404]');
         window.location = exports.getBaseURL() + url;
+        return;
     }
 
     /**
@@ -1119,7 +1144,6 @@ exports.handle = function (method, url, data) {
     if (window.pageTracker && !utils.initial_hit) {
         pageTracker._trackPageview(url);
     }
-    utils.initial_hit = false;
 };
 
 
