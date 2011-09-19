@@ -13,7 +13,6 @@ exports.getTestModuleNames = function () {
     var test_names = _.map(test_ids, function (id) {
         return id.replace(/^tests\//, '');
     });
-    console.log(test_names);
     return test_names.sort();
 };
 

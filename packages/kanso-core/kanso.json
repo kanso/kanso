@@ -1,10 +1,12 @@
 {
     "name": "kanso-core",
     "modules": "kanso",
+    "attachments": "kanso.js",
     "dependencies": {
         "settings": null,
         "modules": null,
         "properties": null,
+        "attachments": null,
         "underscore": null,
         "kanso-url": null,
         "kanso-db": null,

@@ -65,21 +65,9 @@
         this.require = exports.createRequire('');
     }
 
-    exports.init = function () {
-        var kanso = require('kanso/core');
-        for (var k in kanso) {
-            if (kanso.hasOwnProperty(k)) {
-                exports[k] = kanso[k];
-            }
-        }
-        kanso.init();
-    };
-
 }((typeof exports === 'undefined') ? this.kanso = {}: module.exports));
 
 
 /**
  * CommonJS modules are wrapped and appended to this file.
  */
-
-

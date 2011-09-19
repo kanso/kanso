@@ -23,7 +23,7 @@
             baseURL = match[1];
         }
 
-        $.getScript(baseURL + '/kanso.js', function (data, textStatus) {
+        $.getScript(baseURL + '/modules.js', function (data, textStatus) {
             require('nodeunit-testrunner/ui').init(baseURL);
         });
     </script>
