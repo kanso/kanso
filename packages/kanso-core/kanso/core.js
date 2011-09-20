@@ -1115,8 +1115,8 @@ exports.handle = function (method, url, data) {
                 console.log('Unknown rewrite target: ' + req.path.join('/'));
                 if (!utils.initial_hit) {
                     var newurl = exports.getBaseURL() + url;
-                    console.log('redirecting to: ' + newurl);
-                    window.location = newurl;
+                    console.log('opening new window for: ' + newurl);
+                    window.open(newurl);
                 }
                 else {
                     exports.unknown_target = true;
