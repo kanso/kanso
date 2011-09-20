@@ -237,7 +237,19 @@ exports.init = function () {
             if (href && exports.isAppURL(href)) {
                 var url = exports.appPath(href);
                 ev.preventDefault();
-                exports.setURL('GET', url, {});
+                var match = exports.matchURL('GET', url);
+                if (/^_show\//.test(match.to) ||
+                    /^_list\//.test(match.to) ||
+                    /^_update\//.test(match.to)) {
+                    exports.setURL('GET', url, {});
+                }
+                else {
+                    // unknown rewrite target, don't create history entry
+                    // but open in a new window since the new page probably
+                    // doesn't have pushstate support and will break the back
+                    // button
+                    window.open(exports.getBaseURL() + url);
+                }
             }
         });
 
