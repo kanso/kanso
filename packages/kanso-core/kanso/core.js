@@ -1116,6 +1116,10 @@ exports.handle = function (method, url, data) {
                 if (!utils.initial_hit) {
                     var newurl = exports.getBaseURL() + url;
                     console.log('opening new window for: ' + newurl);
+                    // reset url
+                    window.history.go(-1);
+                    // open in new window, since this page is unlikely to have
+                    // pushstate support and would break the back button
                     window.open(newurl);
                 }
                 else {
