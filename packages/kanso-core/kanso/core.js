@@ -227,6 +227,9 @@ exports.init = function () {
                     data = {};
                     url = urlFormat(parsed);
                 }
+                // TODO: should this post form data to a new window using
+                // target="_blank" if the action is to an unrecognized rewrite
+                // target?
                 exports.setURL(method, url, data);
             }
         });
