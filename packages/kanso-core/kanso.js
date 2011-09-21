@@ -1,0 +1,1 @@
+require('kanso/core').init();

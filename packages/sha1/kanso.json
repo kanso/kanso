@@ -1,6 +1,6 @@
 {
-    "name": "kanso-sha1",
-    "modules": "kanso",
+    "name": "sha1",
+    "modules": "sha1.js",
     "dependencies": {
         "modules": null
     }

@@ -31,8 +31,8 @@
  * From node.js v0.2.6
  */
 
-var path = require('kanso/path'),
-    querystring = require('kanso/querystring'),
+var path = require('path'),
+    querystring = require('querystring'),
     _ = require('underscore')._;
 
 

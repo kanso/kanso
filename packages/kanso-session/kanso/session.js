@@ -9,7 +9,7 @@
  */
 
 var db = require('kanso/db'),
-    sha1 = require('kanso/sha1'),
+    sha1 = require('sha1'),
     cookies = require('kanso/cookies'),
     events = require('kanso/events'),
     utils = require('kanso/utils');

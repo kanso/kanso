@@ -1,0 +1,10 @@
+{
+    "name": "url",
+    "modules": "url.js",
+    "dependencies": {
+        "modules": null,
+        "underscore": null,
+        "path": null,
+        "querystring": null
+    }
+}

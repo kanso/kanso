@@ -1,6 +1,6 @@
 {
-    "name": "kanso-querystring",
-    "modules": "kanso",
+    "name": "querystring",
+    "modules": "querystring.js",
     "dependencies": {
         "modules": null,
         "underscore": null
