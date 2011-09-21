@@ -14,7 +14,7 @@ module.exports = {
     run: function (root, path, settings, doc, callback) {
 
         // load the dust source code
-        var dust_path = __dirname + '/../../../deps/dustjs/lib/dust.js';
+        var dust_path = __dirname + '/../deps/dustjs/lib/dust.js';
         fs.readFile(dust_path, function (err, dust_src) {
             if (err) {
                 return callback(err);
