@@ -1,6 +1,6 @@
-var dust = require('../../../deps/dustjs/lib/dust'),
-    async = require('../../../deps/async'),
-    utils = require('../../../lib/utils'),
+var dust = require('kanso/deps/dustjs/lib/dust'),
+    async = require('kanso/deps/async'),
+    utils = require('kanso/lib/utils'),
     path = require('path'),
     fs = require('fs');
 

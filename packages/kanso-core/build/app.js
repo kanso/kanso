@@ -1,6 +1,6 @@
 var apputils = require('./apputils'),
-    modules = require('../../../lib/modules'),
-    _ = require('../../../deps/underscore/underscore')._;
+    modules = require('kanso/lib/modules'),
+    _ = require('kanso/deps/underscore/underscore')._;
 
 /**
  * Loads module directories specified in kanso.json and adds the modules
