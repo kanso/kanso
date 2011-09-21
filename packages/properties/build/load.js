@@ -1,6 +1,6 @@
-var modules = require('../../../lib/modules'),
-    utils = require('../../../lib/utils'),
-    _ = require('../../../deps/underscore/underscore')._;
+var modules = require('kanso/lib/modules'),
+    utils = require('kanso/lib/utils'),
+    _ = require('kanso/deps/underscore/underscore')._;
 
 
 var proxyFn = function (path, app, doc, props) {

@@ -1,10 +1,10 @@
 var fs = require('fs'),
-    mime = require('../../../deps/node-mime/mime'),
-    jsp = require('../../../deps/UglifyJS/lib/parse-js'),
-    pro = require('../../../deps/UglifyJS/lib/process'),
-    modules = require('../../../lib/modules'),
-    logger = require('../../../lib/logger'),
-    utils = require('../../../lib/utils');
+    mime = require('kanso/deps/node-mime/mime'),
+    jsp = require('kanso/deps/UglifyJS/lib/parse-js'),
+    pro = require('kanso/deps/UglifyJS/lib/process'),
+    modules = require('kanso/lib/modules'),
+    logger = require('kanso/lib/logger'),
+    utils = require('kanso/lib/utils');
 
 
 function minify(src) {
