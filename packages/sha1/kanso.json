@@ -1,8 +1,8 @@
 {
-    "name": "kanso-sha1",
+    "name": "sha1",
     "version": "2.1.0",
     "description": "A JavaScript implementation of the Secure Hash Algorithm, SHA-1, as defined in FIPS PUB 180-1. This module is used to hash user passwords in a way that's compatible with CouchDB.",
-    "modules": "kanso",
+    "modules": "sha1.js",
     "dependencies": {
         "modules": null
     }

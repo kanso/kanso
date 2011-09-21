@@ -6,6 +6,7 @@
     "dependencies": {
         "modules": null,
         "underscore": null,
+        "querystring": null,
         "kanso-utils": null,
         "kanso-sanitize": null,
         "kanso-db": null,

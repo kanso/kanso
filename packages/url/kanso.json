@@ -1,12 +1,12 @@
 {
-    "name": "kanso-url",
+    "name": "url",
     "version": "0.2.6",
     "description": "Functions for manipulating and parsing URL strings. Based on the Node.js url module.",
-    "modules": "kanso",
+    "modules": "url.js",
     "dependencies": {
         "modules": null,
         "underscore": null,
-        "kanso-path": null,
-        "kanso-querystring": null
+        "path": null,
+        "querystring": null
     }
 }

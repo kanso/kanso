@@ -53,6 +53,7 @@ module.exports = function (root, path, settings, doc, callback) {
 
     // prepend required kanso rewrites and flatten
     doc.rewrites = _.flatten([
+        {from: '/modules.js', to: 'modules.js'},
         {from: '/kanso.js', to: 'kanso.js'},
         {from: '/_db/*', to: '../../*'},
         {from: '/_db', to: '../..'}

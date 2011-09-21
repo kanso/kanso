@@ -16,7 +16,7 @@ function minify(src) {
 
 
 /**
- * Create kanso.js attachment using _modules property to find modules in the
+ * Create modules.js attachment using _modules property to find modules in the
  * design doc and wrap them with the appropriate boilerplate.
  */
 
@@ -42,20 +42,18 @@ module.exports = function (root, path, settings, doc, callback) {
         if (err) {
             return callback(err);
         }
-        var data = content.toString();
-        data += wrapped_modules || '';
-        data += '\nkanso.init();';
+        var data = content.toString() + (wrapped_modules || '');
 
         if (settings.minify) {
-            logger.info('compressing', 'kanso.js');
+            logger.info('compressing', 'modules.js');
             data = minify(data);
         }
 
         if (!doc._attachments) {
             doc._attachments = {};
         }
-        doc._attachments['kanso.js'] = {
-            'content_type': mime.lookup('kanso.js'),
+        doc._attachments['modules.js'] = {
+            'content_type': mime.lookup('modules.js'),
             'data': new Buffer(data).toString('base64')
         };
 

@@ -18,7 +18,7 @@ var core = require('./widgets.core'),
     render = require('kanso/render'),
     sanitize = require('kanso/sanitize'),
     utils = require('kanso/utils'),
-    querystring = require('kanso/querystring'),
+    querystring = require('querystring'),
     _ = require('underscore')._;
 
 var h = sanitize.escapeHtml;

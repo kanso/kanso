@@ -6,7 +6,7 @@
     "dependencies": {
         "modules": null,
         "kanso-db": null,
-        "kanso-sha1": null,
+        "sha1": null,
         "kanso-cookies": null,
         "kanso-events": null,
         "kanso-utils": null

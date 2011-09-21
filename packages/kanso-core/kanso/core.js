@@ -15,7 +15,7 @@
  */
 
 var settings = require('settings/root'), // module auto-generated
-    url = require('kanso/url'),
+    url = require('url'),
     db = require('kanso/db'),
     utils = require('kanso/utils'),
     session = require('kanso/session'),
@@ -74,6 +74,16 @@ exports.current_state = null;
  */
 
 exports.set_called = false;
+
+
+/**
+ * This is set to true when the initial page request is to an unknown URL
+ * rewrite target (such as a static .html page). This tells kanso whether to
+ * handle urls internally or let the browser refresh the page when clicking
+ * links etc
+ */
+
+exports.unknown_target = false;
 
 
 if (typeof window !== 'undefined') {
@@ -217,6 +227,9 @@ exports.init = function () {
                     data = {};
                     url = urlFormat(parsed);
                 }
+                // TODO: should this post form data to a new window using
+                // target="_blank" if the action is to an unrecognized rewrite
+                // target?
                 exports.setURL(method, url, data);
             }
         });
@@ -227,7 +240,19 @@ exports.init = function () {
             if (href && exports.isAppURL(href)) {
                 var url = exports.appPath(href);
                 ev.preventDefault();
-                exports.setURL('GET', url, {});
+                var match = exports.matchURL('GET', url);
+                if (/^_show\//.test(match.to) ||
+                    /^_list\//.test(match.to) ||
+                    /^_update\//.test(match.to)) {
+                    exports.setURL('GET', url, {});
+                }
+                else {
+                    // unknown rewrite target, don't create history entry
+                    // but open in a new window since the new page probably
+                    // doesn't have pushstate support and will break the back
+                    // button
+                    window.open(exports.getBaseURL() + url);
+                }
             }
         });
 
@@ -1036,6 +1061,12 @@ exports.runList = function (fn, head, req) {
  */
 
 exports.handle = function (method, url, data) {
+    if (exports.unknown_target) {
+        // if we're currently on an unknown rewrite target page (such as a
+        // static .html file), don't attempt to intercept the request
+        window.location = exports.getBaseURL() + url;
+        return;
+    }
     var match = exports.matchURL(method, url);
     if (match) {
         var parsed = urlParse(url);
@@ -1097,17 +1128,30 @@ exports.handle = function (method, url, data) {
             }
             else {
                 console.log('Unknown rewrite target: ' + req.path.join('/'));
-                var newurl = exports.getBaseURL() + '/_db/_design/' +
-                    settings.name + '/' + req.path.join('/');
-                console.log('redirecting to: ' + newurl);
-                window.location = newurl;
+                if (!utils.initial_hit) {
+                    var newurl = exports.getBaseURL() + url;
+                    console.log('opening new window for: ' + newurl);
+                    // reset url
+                    window.history.go(-1);
+                    // open in new window, since this page is unlikely to have
+                    // pushstate support and would break the back button
+                    window.open(newurl);
+                }
+                else {
+                    exports.unknown_target = true;
+                    console.log(
+                        'Initial hit is an uknown rewrite target, kanso will ' +
+                        'not fetch from server in order to avoid redirect loop'
+                    );
+                }
             }
-
+            utils.initial_hit = false;
         });
     }
     else {
         console.log(method + ' ' + url + ' -> [404]');
         window.location = exports.getBaseURL() + url;
+        return;
     }
 
     /**
@@ -1119,7 +1163,6 @@ exports.handle = function (method, url, data) {
     if (window.pageTracker && !utils.initial_hit) {
         pageTracker._trackPageview(url);
     }
-    utils.initial_hit = false;
 };
 
 
