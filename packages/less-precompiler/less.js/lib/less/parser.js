@@ -476,7 +476,7 @@ less.Parser = function Parser(env) {
                 //
                 keyword: function () {
                     var k;
-                    if (k = $(/^[_A-Za-z-][_A-Za-z0-9-]*/)) { return new(tree.Keyword)(k) }
+                    if (k = $(/^[A-Za-z-]+/)) { return new(tree.Keyword)(k) }
                 },
 
                 //
@@ -889,11 +889,16 @@ less.Parser = function Parser(env) {
                 var selectors = [], s, rules, match;
                 save();
 
-                while (s = $(this.selector)) {
-                    selectors.push(s);
-                    $(this.comment);
-                    if (! $(',')) { break }
-                    $(this.comment);
+                if (match = /^([.#:% \w-]+)[\s\n]*\{/.exec(chunks[j])) {
+                    i += match[0].length - 1;
+                    selectors = [new(tree.Selector)([new(tree.Element)(null, match[1])])];
+                } else {
+                    while (s = $(this.selector)) {
+                        selectors.push(s);
+                        $(this.comment);
+                        if (! $(',')) { break }
+                        $(this.comment);
+                    }
                 }
 
                 if (selectors.length > 0 && (rules = $(this.block))) {
@@ -961,7 +966,7 @@ less.Parser = function Parser(env) {
 
                 if (value = $(this['import'])) {
                     return value;
-                } else if (name = $(/^@media|@page/) || $(/^@(?:-webkit-|-moz-)?keyframes/)) {
+                } else if (name = $(/^@media|@page/) || $(/^@(?:-webkit-)?keyframes/)) {
                     types = ($(/^[^{]+/) || '').trim();
                     if (rules = $(this.block)) {
                         return new(tree.Directive)(name + " " + types, rules);
