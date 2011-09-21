@@ -24,7 +24,7 @@ stamp-build: $(wildcard  deps/* lib/*.js)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
 	cp -R bin deps project packages lib admin package.json $(BUILDDIR)/kanso
-	printf '#!/bin/sh\nexport NODE_PATH="$$(NODE_PATH):$(NODEJSLIBDIR)"\n$(NODEJS) $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $$@' > $(BUILDDIR)/kanso.sh
+	printf '#!/bin/sh\nexport NODE_PATH="$$NODE_PATH:$(NODEJSLIBDIR)"\n$(NODEJS) $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $$@' > $(BUILDDIR)/kanso.sh
 
 test:
 	nodeunit test
