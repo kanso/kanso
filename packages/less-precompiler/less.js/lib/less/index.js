@@ -39,7 +39,6 @@ var less = {
         var message = "";
         var extract = ctx.extract;
         var error = [];
-        var stylize = options.color ? less.stylize : function (str) { return str };
 
         options = options || {};
 
@@ -135,5 +134,4 @@ function stylize(str, style) {
     return '\033[' + styles[style][0] + 'm' + str +
            '\033[' + styles[style][1] + 'm';
 }
-less.stylize = stylize;
 

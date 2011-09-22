@@ -7,25 +7,11 @@ tree.Selector = function (elements) {
     }
 };
 tree.Selector.prototype.match = function (other) {
-    var value = this.elements[0].value,
-        len   = this.elements.length,
-        olen  = other.elements.length;
-
-    if (len > olen) {
-        return value === other.elements[0].value;
+    if (this.elements[0].value === other.elements[0].value) {
+        return true;
+    } else {
+        return false;
     }
-
-    for (var i = 0; i < olen; i ++) {
-        if (value === other.elements[i].value) {
-            for (var j = 1; j < len; j ++) {
-                if (this.elements[j].value !== other.elements[i + j].value) {
-                    return false;
-                }
-            }
-            return true;
-        }
-    }
-    return false;
 };
 tree.Selector.prototype.toCSS = function (env) {
     if (this._css) { return this._css }
