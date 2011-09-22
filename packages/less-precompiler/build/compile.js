@@ -1,7 +1,7 @@
 var less = require('../less.js/lib/less'),
-    async = require('../../../deps/async'),
-    logger = require('../../../lib/logger'),
-    utils = require('../../../lib/utils'),
+    async = require('kanso/deps/async'),
+    logger = require('kanso/lib/logger'),
+    utils = require('kanso/lib/utils'),
     spawn = require('child_process').spawn,
     path = require('path');
 
