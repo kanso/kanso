@@ -86,13 +86,6 @@ tree.functions = {
         hsl.a = clamp(hsl.a);
         return hsla(hsl);
     },
-    fade: function (color, amount) {
-        var hsl = color.toHSL();
-
-        hsl.a = amount.value / 100;
-        hsl.a = clamp(hsl.a);
-        return hsla(hsl);
-    },
     spin: function (color, amount) {
         var hsl = color.toHSL();
         var hue = (hsl.h + amount.value) % 360;
@@ -154,10 +147,6 @@ tree.functions = {
                 message: "math functions take numbers as parameters"
             };
         }
-    },
-    argb: function (color) {
-        return new(tree.Anonymous)(color.toARGB());
-
     }
 };
 

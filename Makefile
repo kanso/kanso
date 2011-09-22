@@ -23,7 +23,8 @@ build: submodules stamp-build
 stamp-build: $(wildcard  deps/* lib/*.js)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
-	cp -R bin scripts deps project packages lib admin package.json $(BUILDDIR)/kanso
+	cp -R bin scripts project packages lib admin package.json $(BUILDDIR)/kanso
+	tar --exclude='.git' -c -f - deps | (cd $(BUILDDIR)/kanso ; tar xfp -)
 
 test:
 	nodeunit test

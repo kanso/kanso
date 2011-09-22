@@ -101,14 +101,8 @@ function loadStyles() {
     for (var i = 0; i < styles.length; i++) {
         if (styles[i].type.match(typePattern)) {
             new(less.Parser)().parse(styles[i].innerHTML || '', function (e, tree) {
-                var css = tree.toCSS();
-                var style = styles[i];
-                try {
-                    style.innerHTML = css;
-                } catch (_) {
-                    style.styleSheets.cssText = css;
-                }
-                style.type = 'text/css';
+                styles[i].type      = 'text/css';
+                styles[i].innerHTML = tree.toCSS();
             });
         }
     }
