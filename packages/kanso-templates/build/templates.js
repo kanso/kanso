@@ -1,6 +1,7 @@
 var dust = require('kanso/deps/dustjs/lib/dust'),
     async = require('kanso/deps/async'),
     utils = require('kanso/lib/utils'),
+    logger = require('kanso/lib/logger'),
     path = require('path'),
     fs = require('fs');
 
@@ -31,7 +32,16 @@ exports.addFile = function (template_dir, file, doc, callback) {
         if (!doc.templates) {
             doc.templates = {};
         }
-        doc.templates[rel] = dust.compile(content.toString(), rel);
+        try {
+            doc.templates[rel] = dust.compile(content.toString(), rel);
+        }
+        catch (e) {
+            logger.error('Error compiling template: ' + file);
+            logger.error(e);
+            // don't continue processing
+            //return callback(e);
+            return;
+        }
         callback();
     });
 };
