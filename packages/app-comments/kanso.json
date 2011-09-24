@@ -12,7 +12,9 @@
         "kanso-core": null,
         "kanso-events": null,
         "kanso-db": null,
-        "kanso-session": null,
-        "kanso-templates": null
+        "kanso-templates": null,
+        "kanso-types": null,
+        "kanso-fields": null,
+        "kanso-permissions": null
     }
 }

@@ -5,5 +5,6 @@
 
 
 module.exports = {
+    //types: require('./types'),
     views: require('./views')
 };
