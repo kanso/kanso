@@ -1,0 +1,31 @@
+{?comments}
+<ol class="comments">
+  {#comments}
+  <li class="comment">
+    <div class="meta">
+      <span class="user">
+        {?user_link}
+          <a href="{user_link}">{user}</a>
+        {:else}
+          {user}
+        {/user_link}
+      </span>
+      on
+      <span class="target">
+        {?target_link}
+          <a href="{target_link}">{target}</a>
+        {:else}
+          {target}
+        {/target_link}
+      </span>
+      <span class="time">{pptime}</span>
+    </div>
+    {?monospace}
+      <pre class="text">{text}</pre>
+    {:else}
+      <div class="text">{text}</div>
+    {/monospace}
+  </li>
+  {/comments}
+</ol>
+{/comments}
