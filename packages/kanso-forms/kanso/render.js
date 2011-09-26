@@ -89,9 +89,11 @@ exports.labelText = function (field, name) {
  * @api public
  */
 
-exports.labelHTML = function (field, name, id) {
-    return '<label for="' + h(id || sanitize.id(name)) + '">' +
-        h(exports.labelText(field, name, id)) +
+exports.labelHTML = function (field, name, opt) {
+    opt = opt || {};
+    var id = opt.id || field.widget._id(name, opt.offset, opt.path_extra);
+    return '<label for="' + h(id) + '">' +
+        h(exports.labelText(field, (opt.caption || name), id)) +
     '</label>';
 };
 
@@ -261,11 +263,12 @@ exports.div = function () {
             );
         }
 
+        options.caption = caption;
         return (
             '<div class="' +
                 exports.classes(field, errors).join(' ') + '">' +
                 '<div class="label">' +
-                    exports.labelHTML(field, caption) +
+                    exports.labelHTML(field, name, options) +
                     exports.descriptionHTML(field) +
                 '</div>' +
                 '<div class="content">' +
