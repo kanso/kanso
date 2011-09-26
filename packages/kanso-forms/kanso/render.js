@@ -24,9 +24,11 @@ exports.scriptTagForEvent = function (name) {
     var rv = (
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
-            "require('kanso/events').emit('" +
+            "if (typeof require !== 'undefined') {\n" +
+            "  require('kanso/events').emit('" +
                 sanitize.cdata(sanitize.js(name)) +
-            "');" +
+            "');\n" +
+            "}" +
         "// ]]>" +
         '</script>'
     );
