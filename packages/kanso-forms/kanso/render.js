@@ -91,7 +91,9 @@ exports.labelText = function (field, name) {
 
 exports.labelHTML = function (field, name, opt) {
     opt = opt || {};
-    var id = opt.id || field.widget._id(name, opt.offset, opt.path_extra);
+    var id = opt.id || sanitize.generateDomIdentifier(
+        name, opt.offset, opt.path_extra
+    );
     return '<label for="' + h(id) + '">' +
         h(exports.labelText(field, (opt.caption || name), id)) +
     '</label>';
