@@ -71,7 +71,7 @@ exports.embedList = function (_options) {
         }
         html += (
                 '</div>' +
-                '<div class="actions">' +
+                '<div class="embed-actions">' +
                     this.htmlForAddButton() +
                 '</div>' +
             '</div>'
@@ -137,7 +137,7 @@ exports.embedList = function (_options) {
 
     w._discoverListName = function () {
         var list_elt = this.discoverListElement();
-        var actions_elt = $(list_elt).closestChild('.actions');
+        var actions_elt = $(list_elt).closestChild('.embed-actions');
         return actions_elt.attr('rel');
     };
     
@@ -163,7 +163,7 @@ exports.embedList = function (_options) {
 
     w.bindEventsForList = function () {
         var list_elt = this.discoverListElement();
-        var add_elt = $(list_elt).closestChild('.actions .add');
+        var add_elt = $(list_elt).closestChild('.embed-actions .add');
 
         add_elt.bind('click', utils.bindContext(this, function (ev) {
             return this.handleAddButtonClick(ev);
@@ -172,8 +172,8 @@ exports.embedList = function (_options) {
 
     w.bindEventsForListItem = function (item_elt) {
         item_elt = $(item_elt);
-        var edit_elt = item_elt.closestChild('.actions .edit');
-        var delete_elt = item_elt.closestChild('.actions .delete');
+        var edit_elt = item_elt.closestChild('.embed-actions .edit');
+        var delete_elt = item_elt.closestChild('.embed-actions .delete');
 
         edit_elt.bind('click', utils.bindContext(this, function (ev) {
             return this.handleEditButtonClick(ev);
@@ -184,8 +184,8 @@ exports.embedList = function (_options) {
         }));
 
         if (this.sortable) {
-            var up_elt = item_elt.closestChild('.actions .up');
-            var down_elt = item_elt.closestChild('.actions .down');
+            var up_elt = item_elt.closestChild('.embed-actions .up');
+            var down_elt = item_elt.closestChild('.embed-actions .down');
 
             up_elt.bind('click', utils.bindContext(this, function (ev) {
                 return this.handleUpButtonClick(ev);
@@ -221,7 +221,7 @@ exports.embedList = function (_options) {
 
     w.updateListActions = function (offset) {
         var list_elt = this.discoverListElement();
-        var add_elt = list_elt.closestChild('.actions .add');
+        var add_elt = list_elt.closestChild('.embed-actions .add');
 
         if (this.singleton && offset > 0) {
             add_elt.hide();
@@ -234,8 +234,8 @@ exports.embedList = function (_options) {
     w.updateListItemActions = function (item_elt, offset, count) {
         if (this.sortable) {
             var attr = 'disabled';
-            var up_elt = item_elt.closestChild('.actions .up');
-            var down_elt = item_elt.closestChild('.actions .down');
+            var up_elt = item_elt.closestChild('.embed-actions .up');
+            var down_elt = item_elt.closestChild('.embed-actions .down');
 
             if (offset <= 0) {
                 up_elt.attr(attr, attr);
@@ -321,7 +321,7 @@ exports.embedList = function (_options) {
     w.htmlForListItem = function (item) {
         var html = (
             '<div class="item">' +
-                '<div class="actions">' +
+                '<div class="embed-actions">' +
                     (this.sortable ? this.htmlForDownButton() : '') +
                     (this.sortable ? this.htmlForUpButton() : '') +
                     this.htmlForEditButton() +

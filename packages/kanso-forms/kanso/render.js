@@ -210,11 +210,11 @@ exports.div = function () {
         var name = _.last(path);
         var css_class = 'clear group level-' + this.depth;
         return (
-            '<div class="' + h(css_class) + '">' +
-            '<div class="heading">' +
+            '<fieldset class="' + h(css_class) + '">' +
+            '<legend>' +
                 h(name.substr(0, 1).toUpperCase() +
                     name.substr(1).replace(/_/g, ' ')) +
-            '</div>'
+            '</legend>'
         );
     };
 
@@ -230,7 +230,7 @@ exports.div = function () {
     */
     this.endGroup = function (path) {
         this.depth -= 1;
-        return '</div>';
+        return '</fieldset>';
     };
 
     /**
@@ -269,11 +269,11 @@ exports.div = function () {
         return (
             '<div class="' +
                 exports.classes(field, errors).join(' ') + '">' +
-                '<div class="label">' +
+                '<div class="form-label">' +
                     exports.labelHTML(field, name, options) +
                     exports.descriptionHTML(field) +
                 '</div>' +
-                '<div class="content">' +
+                '<div class="form-content">' +
                     '<div class="inner">' +
                         field.widget.toHTML(
                             name, value, raw, field, (options || {})
