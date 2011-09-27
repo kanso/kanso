@@ -1236,8 +1236,11 @@ exports.getBaseURL = utils.getBaseURL;
 exports.getURL = function () {
     var re = new RegExp('\\/_rewrite(.*)$');
 
-    var loc = urlParse(window.location),
+    var locstr = '' + window.location,
+        loc = urlParse(locstr),
         match = re.exec(loc.pathname);
+
+    var baseURL = exports.getBaseURL();
 
     if (match) {
         var newurl = {
@@ -1249,11 +1252,17 @@ exports.getURL = function () {
         }
         return urlFormat(newurl) || '/';
     }
-    return '' + window.location || '/';
+    else if (locstr.substr(0, baseURL.length) === baseURL) {
+        return locstr.substr(baseURL.length) || '/';
+    }
+    else if (loc.pathname.substr(0, baseURL.length) === baseURL) {
+        return loc.pathname.substr(baseURL.length) || '/';
+    }
+    return locstr || '/';
 };
 
 /**
- * Tests is two urls are of the same origin. Accepts parsed url objects
+ * Tests if two urls are of the same origin. Accepts parsed url objects
  * or strings as arguments.
  *
  * @name sameOrigin(a, b)
