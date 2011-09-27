@@ -24,9 +24,11 @@ exports.scriptTagForEvent = function (name) {
     var rv = (
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
-            "require('kanso/events').emit('" +
+            "if (typeof require !== 'undefined') {\n" +
+            "  require('kanso/events').emit('" +
                 sanitize.cdata(sanitize.js(name)) +
-            "');" +
+            "');\n" +
+            "}" +
         "// ]]>" +
         '</script>'
     );
@@ -89,9 +91,13 @@ exports.labelText = function (field, name) {
  * @api public
  */
 
-exports.labelHTML = function (field, name, id) {
-    return '<label for="' + h(id || sanitize.id(name)) + '">' +
-        h(exports.labelText(field, name, id)) +
+exports.labelHTML = function (field, name, opt) {
+    opt = opt || {};
+    var id = opt.id || sanitize.generateDomIdentifier(
+        name, opt.offset, opt.path_extra
+    );
+    return '<label for="' + h(id) + '">' +
+        h(exports.labelText(field, (opt.caption || name), id)) +
     '</label>';
 };
 
@@ -206,11 +212,11 @@ exports.div = function () {
         var name = _.last(path);
         var css_class = 'clear group level-' + this.depth;
         return (
-            '<div class="' + h(css_class) + '">' +
-            '<div class="heading">' +
+            '<fieldset class="' + h(css_class) + '">' +
+            '<legend>' +
                 h(name.substr(0, 1).toUpperCase() +
                     name.substr(1).replace(/_/g, ' ')) +
-            '</div>'
+            '</legend>'
         );
     };
 
@@ -226,7 +232,7 @@ exports.div = function () {
     */
     this.endGroup = function (path) {
         this.depth -= 1;
-        return '</div>';
+        return '</fieldset>';
     };
 
     /**
@@ -261,14 +267,15 @@ exports.div = function () {
             );
         }
 
+        options.caption = caption;
         return (
             '<div class="' +
                 exports.classes(field, errors).join(' ') + '">' +
-                '<div class="label">' +
-                    exports.labelHTML(field, caption) +
+                '<div class="form-label">' +
+                    exports.labelHTML(field, name, options) +
                     exports.descriptionHTML(field) +
                 '</div>' +
-                '<div class="content">' +
+                '<div class="form-content">' +
                     '<div class="inner">' +
                         field.widget.toHTML(
                             name, value, raw, field, (options || {})
