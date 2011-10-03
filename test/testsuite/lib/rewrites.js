@@ -4,10 +4,9 @@
 
 module.exports = [
     {from: '/static/*', to: 'static/*'},
-    {from: '/', to: '_show/test_module_list'},
-    {from: '/all', to: '_show/run_all_modules'},
     {from: '/shows/test', to: '_show/test'},
-    {from: '/:name', to: '_show/run_test_module'},
+    {from: '/', to: '_show/redirect_to_tests'},
+    require('nodeunit-testrunner/rewrites'),
     {from: '*', to: '_show/not_found'}
 ];
 

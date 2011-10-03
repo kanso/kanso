@@ -1,7 +1,7 @@
 var types = require('kanso/types'),
     fields = require('kanso/fields'),
     db = require('kanso/db'),
-    _ = require('kanso/underscore');
+    _ = require('underscore')._;
 
 
 exports['Type - defaults'] = function (test) {

@@ -1,8 +1,8 @@
 
 var db = require('kanso/db'),
     utils = require('kanso/utils'),
-    async = require('lib/async'),
-    _ = require('kanso/underscore')._;
+    async = require('async'),
+    _ = require('underscore')._;
 
 
 exports['database creation/deletion'] = function (test)

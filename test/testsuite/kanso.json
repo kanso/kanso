@@ -1,7 +1,28 @@
 {
     "name": "testsuite",
+    "version": "0.0.8",
+    "description": "Test suite CouchApp for the Kanso framework packages",
     "load": "lib/app",
     "modules": ["lib", "tests"],
     "templates": "templates",
-    "attachments": "static"
+    "attachments": "static",
+    "dependencies": {
+        "settings": "0.0.8",
+        "properties": "0.0.8",
+        "modules": "0.0.8",
+        "async": "0.1.9",
+        "kanso-core": "0.0.8",
+        "kanso-db": "0.0.8",
+        "kanso-events": "0.0.8",
+        "kanso-fields": "0.0.8",
+        "kanso-fieldset": "0.0.8",
+        "kanso-forms": "0.0.8",
+        "kanso-permissions": "0.0.8",
+        "kanso-types": "0.0.8",
+        "kanso-utils": "0.0.8",
+        "kanso-validators": "0.0.8",
+        "kanso-templates": "0.0.9",
+        "nodeunit-testrunner": "0.0.2",
+        "underscore": "1.1.5"
+    }
 }
