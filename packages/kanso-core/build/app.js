@@ -9,13 +9,7 @@ var apputils = require('./apputils'),
 
 function load(module_cache, doc, settings) {
     var p = settings.load;
-
-    try {
-        var app = modules.require(module_cache, doc, '/', p);
-    }
-    catch (err) {
-        return callback(err);
-    }
+    var app = modules.require(module_cache, doc, '/', p);
 
     apputils.proxyFns(p, app, doc, 'shows', apputils.proxyShowFn);
     apputils.proxyFns(p, app, doc, 'lists', apputils.proxyListFn);
