@@ -32,6 +32,7 @@ var h = sanitize.escapeHtml;
 var Widget = exports.Widget = function Widget(type, options) {
     options = (options || {});
     this.classes = (options.classes || []);
+    this.options = options;
     this.id = options.id;
     this.type = type;
 };
@@ -144,6 +145,20 @@ Widget.prototype.toHTML = function (name, value, raw, field, options) {
     html += ' value="' + h(raw) + '"';
     html += ' name="' + this._name(name, options.offset) + '" id="';
     html += this._id(name, options.offset, options.path_extra) + '"';
+
+    // additionaly parameters optionally passed to widget
+    if ('maxlength' in this.options) {
+        html += ' maxlength="' + h(this.options.maxlength) + '"';
+    }
+    if ('size' in this.options) {
+        html += ' size="' + h(this.options.size) + '"';
+    }
+    if ('disabled' in this.options) {
+        html += ' disabled="' + h(this.options.disabled) + '"';
+    }
+    if ('readonly' in this.options) {
+        html += ' readonly="' + h(this.options.readonly) + '"';
+    }
     return html + ' />';
 };
 
