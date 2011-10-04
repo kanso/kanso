@@ -157,14 +157,14 @@ exports['parseRaw - embeddedList empty item'] = function (test) {
         ]
     });
 
-    test.same(doc, {
+    test.same(JSON.stringify(doc), JSON.stringify({
         type: 't1',
         embed: [
             { type: 't2', one: 'one' },
             { },
             { type: 't2', one: 'three' }
         ]
-    });
+    }));
 
     test.done();
 };
@@ -695,10 +695,13 @@ exports['Form.validate - don\'t merge embedded'] = function (test) {
 
     olddoc = {t1_single: {_id: 'id1', name: 'test'}, t1_list: []};
     f = new forms.Form(fieldset, olddoc);
-    f.validate({form: {t1_single: '{"_id": "id1", "foo":"bar"}'}});
+    f.validate({form: {t1_single: '{"_id": "id1", "name":"foo"}'}});
 
     // check that the t1_single wasn't merged
-    test.same(f.values.t1_single, {_id: 'id1', foo: 'bar'});
+    test.same(
+        JSON.stringify(f.values.t1_single),
+        JSON.stringify({_id: 'id1', name: 'foo'})
+    );
 
 
     olddoc = {t1_list: [
@@ -707,11 +710,14 @@ exports['Form.validate - don\'t merge embedded'] = function (test) {
     ]};
     f = new forms.Form(fieldset, olddoc);
     f.validate({form: {
-        't1_list.0': '{"_id": "id1", "foo":"bar"}'
+        't1_list.0': '{"_id": "id1", "name":"foo"}'
     }});
 
     // check that the t1_single wasn't merged
-    test.same(f.values.t1_list, [{_id: 'id1', foo: 'bar'}]);
+    test.same(
+        JSON.stringify(f.values.t1_list),
+        JSON.stringify([{_id: 'id1', name: 'foo'}])
+    );
 
 
     test.done();

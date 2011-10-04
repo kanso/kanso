@@ -75,6 +75,7 @@ exports['getBaseURL - couchdb with vhost'] = function (test) {
     test.done();
 };
 
+/* No longer supported - CouchDB 1.1 now minimum version
 exports['getBaseURL - couchdb no request'] = function (test) {
     utils.isBrowser = function () {
         return false;
@@ -85,6 +86,7 @@ exports['getBaseURL - couchdb no request'] = function (test) {
     };
     test.done();
 };
+*/
 
 exports['getPropertyPath'] = function (test) {
     var obj = {some: {nested: {path: 'yay'}}};
