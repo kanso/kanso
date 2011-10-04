@@ -1,7 +1,8 @@
 var utils = require('../lib/utils'),
     kansorc = require('../lib/kansorc'),
     nodeunit = require('../deps/nodeunit'),
-    path = require('path');
+    path = require('path'),
+    _ = require('../deps/underscore/underscore')._;
 
 
 exports.kansorc = nodeunit.testCase({
@@ -34,7 +35,7 @@ exports.kansorc = nodeunit.testCase({
             cb(null, rcdata);
         };
         kansorc.load(function (err, data) {
-            test.same(rcdata, data);
+            test.same(_.defaults(rcdata, kansorc.DEFAULTS), data);
             test.same(paths, [
                 '/etc/kansorc',
                 '/usr/local/etc/kansorc',

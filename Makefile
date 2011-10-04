@@ -27,7 +27,7 @@ stamp-build: $(wildcard  deps/* lib/*.js)
 	tar --exclude='.git' -c -f - deps | (cd $(BUILDDIR)/kanso ; tar xfp -)
 
 test:
-	nodeunit test
+	./scripts/run_tests.js test
 
 docs:
 	rm -rf www
