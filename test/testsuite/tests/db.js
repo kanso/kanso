@@ -790,3 +790,18 @@ exports['newUUID - cache concurrency'] = function (test)
     });
 };
 
+exports['listUsers'] = function (test)
+{
+    async.waterfall([
+        function(callback) {
+            db.listUsers(function(err, users) {
+                test.equal(err, undefined, 'listUsers has no error');
+                test.notEqual(users, undefined, 'users are defined');
+                callback();
+            });            
+        }
+    ], function () {
+        test.done();
+    });
+    
+};
