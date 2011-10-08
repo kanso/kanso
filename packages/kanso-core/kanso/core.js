@@ -237,10 +237,14 @@ exports.init = function () {
         $('a').live('click', function (ev) {
             var href = $(this).attr('href');
 
+            console.log('clicked ' + href);
             if (href && exports.isAppURL(href)) {
+                console.log('isAppURL');
                 var url = exports.appPath(href);
+                console.log('app path: ' + url);
                 ev.preventDefault();
                 var match = exports.matchURL('GET', url);
+                console.log(['match', match]);
                 if (/^_show\//.test(match.to) ||
                     /^_list\//.test(match.to) ||
                     /^_update\//.test(match.to)) {
@@ -1348,5 +1352,10 @@ exports.appPath = function (p) {
 
 exports.isAppURL = function (url) {
     // coerce window.location to a real string in IE
-    return exports.sameOrigin(url, '' + window.location);
+    var loc = '' + window.location;
+    var base = exports.getBaseURL();
+    if (!exports.sameOrigin(url, loc)) {
+        return false;
+    }
+    return url.substr(0, base.length + 1) === base + '/';
 };
