@@ -1,5 +1,7 @@
 {
     "name": "admin",
+    "version": "0.0.8",
+    "description": "Kanso admin app",
     "load": "lib/app",
     "modules": "lib",
     "templates": "templates",

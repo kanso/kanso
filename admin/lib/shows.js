@@ -8,7 +8,7 @@ var utils = require('./utils'),
     loader = require('./loader'),
     widgets = require('kanso/widgets'),
     templates = require('kanso/templates'),
-    querystring = require('kanso/querystring'),
+    querystring = require('querystring'),
     _ = require('underscore')._;
 
 
