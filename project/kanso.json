@@ -12,9 +12,9 @@
         "properties": null,
         "attachments": null,
         "settings": null,
-        "kanso.core": null,
-        "kanso.templates": null,
-        "kanso.types": null,
-        "kanso.forms": null
+        "kanso-core": null,
+        "kanso-templates": null,
+        "kanso-types": null,
+        "kanso-forms": null
     }
 }
