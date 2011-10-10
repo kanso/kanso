@@ -10,7 +10,33 @@
  * Module dependencies
  */
 
-var core = require('./db.core');
+var core = require('./db.core'),
+    utils = require('kanso/utils'),
+    _ = require('underscore')._;
+
+
+/**
+ * Returns the authentication database for the current user's session.
+ *
+ * @name authDb(callback)
+ * @param {Function} callback
+ * @api public
+ */
+
+var authDb = function(callback) {
+    core.request({
+        type: "GET",
+        url: "/_session"
+    },
+    function (err, resp) {
+        if(err) {
+            callback(err, null);
+        } else {
+            callback(null, resp.info.authentication_db);
+        }
+    });
+};
+
 
 /**
  * Deletes an existing user document, given its username. You
@@ -26,13 +52,13 @@ var core = require('./db.core');
 exports.deleteUser = function (username, callback) {
     var id = 'org.couchdb.user:' + username;
 
-    exports.userDb(function (err, userdb) {
+    authDb(function (err, authDb) {
         if (err) {
-            return callback(err);
+            callback(err);
         }
         var req = {
             type: 'DELETE',
-            url: '/' + exports.encode(userdb) + '/' + exports.encode(id),
+            url: '/' + core.encode(authDb) + '/' + core.encode(id),
             contentType: 'application/json'
         };
         core.request(req, callback);
@@ -40,3 +66,39 @@ exports.deleteUser = function (username, callback) {
 };
 
 
+/**
+ * Lists users.
+ *
+ * @name listUsers(callback)
+ * @param {Function} callback
+ * @api public
+ */
+
+exports.listUsers = function(callback, options) {
+    if(options && options.include_docs) {
+        var include_docs = 'true';
+    } else {
+        var include_docs = 'false';
+    }
+    
+    authDb(function (err, authDb) {
+        if (err) {
+            callback(err, null);
+        }
+        var req = {
+            type: 'GET',
+            url: '/' + core.encode(authDb) + '/_all_docs?include_docs=' + include_docs,
+            contentType: 'application/json'
+        };
+        core.request(req, function(err, result) {
+            if(err) {
+                callback(err, null);
+            } else {
+                var users = _(result.rows).select(function(row) {
+                    return row.id.match(/org\.couchdb\.user/);
+                });
+                callback(null, users);
+            }
+        });
+    });    
+};
