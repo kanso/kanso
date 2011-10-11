@@ -197,3 +197,26 @@ exports['hasRole'] = function (test) {
 
     test.done();
 };
+
+exports['hasAnyOfTheRoles'] = function (test) {
+    var fn = permissions.hasAnyOfTheRoles(['a', 'b']);
+
+    fn({}, {}, 'newVal', 'oldVal', {name: 'testuser', roles: ['c', 'a', 'd']});
+    fn({}, {}, 'newVal', 'oldVal', {name: 'testuser', roles: ['b']});
+    fn({}, {}, 'newVal', 'oldVal', {name: 'testuser', roles: ['b', 'a']});
+    
+    test.throws(function () {
+        fn({}, {}, 'newVal', 'oldVal', {name: 'testuser', roles: []});
+    });
+    test.throws(function () {
+        fn({}, {}, 'newVal', 'oldVal', {name: 'testuser', roles: ['c','d']});
+    });
+    test.throws(function () {
+        fn({}, {}, 'newVal', 'oldVal', {});
+    });
+    test.throws(function () {
+        fn({}, {}, 'newVal', 'oldVal', undefined);
+    });
+
+    test.done();    
+};

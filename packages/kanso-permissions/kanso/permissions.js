@@ -54,6 +54,25 @@ exports.hasRole = function (role) {
 };
 
 /**
+ * Checks if the user has one of the given roles
+ *
+ * @name hasAnyOfTheRoles(roles)
+ * @param {Array} roles
+ * @returns {Function}
+ * @api public
+ */
+
+exports.hasAnyOfTheRoles = function (expectedRoles) {
+    return function (newDoc, oldDoc, newVal, oldVal, userCtx) {
+        var actualRoles = userCtx ? (userCtx.roles || []): [];
+        if (_.intersect(expectedRoles, actualRoles).length === 0) {
+            throw new Error('You must have the appropriate roles.');
+        }
+    };
+};
+
+
+/**
  * The value of this field should never change after the document has been
  * created.
  *
