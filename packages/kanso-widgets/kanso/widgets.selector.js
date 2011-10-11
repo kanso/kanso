@@ -65,6 +65,15 @@ var h = sanitize.escapeHtml,
  *          then this option is ignored and treated as if it were false.
  *      </td>
  *   </tr>
+ *   <tr>
+ *      <td class="name">optionDesc</td>
+ *      <td class="type">Function</td>
+ *      <td class="description">
+ *          Pass in another function to help with rendering of the &lt;option&gt;
+ *          html element.  The only param to this function is the row that is
+ *          fetched from the view. This is the text displayed in the select box. 
+ *      </td>
+ *   </tr>
  * </table>
  *
  * @constructor
@@ -218,7 +227,11 @@ exports.documentSelector = function (_options) {
                             }
                             /* Insert new <option> */
                             option_elt.val(v);
-                            option_elt.text(r.value);
+                            if (options.optionDesc) {
+                                option_elt.text(options.optionDesc(r));
+                            } else {
+                                option_elt.text(r.value);
+                            }
                             option_elt.attr('rel', r.id);
                             select_elt.append(option_elt);
                         })
