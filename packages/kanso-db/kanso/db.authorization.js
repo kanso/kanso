@@ -53,15 +53,35 @@ exports.deleteUser = function (username, callback) {
     var id = 'org.couchdb.user:' + username;
 
     authDb(function (err, authDb) {
-        if (err) {
-            callback(err);
-        }
-        var req = {
-            type: 'DELETE',
+        if (err) { callback(err); }
+    
+        core.request({
+            type: 'GET',
             url: '/' + core.encode(authDb) + '/' + core.encode(id),
             contentType: 'application/json'
-        };
-        core.request(req, callback);
+        }, function(err, user) {
+            if(err) { callback(err); }
+    
+            core.request({
+                type: 'GET',
+                url: '/_config/admins/' + username,
+                contentType: 'application/json'                
+            }, function(err, admin) {
+                if(!err) {                    
+                    core.request({
+                        type: 'DELETE',
+                        url: '/_config/admins/' + username,
+                        contentType: 'application/json'
+                    }, function() {});
+                }
+            });
+    
+            core.request({
+                type: 'DELETE',
+                url: '/' + core.encode(authDb) + '/' + core.encode(id) + '?rev=' + core.encode(user._rev),
+                contentType: 'application/json'
+            }, callback);            
+        });
     });
 };
 
