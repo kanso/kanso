@@ -454,7 +454,7 @@ Form.prototype.toHTML = function (/* optional */ req,
 var errsBelowPath = function (errs, path) {
     return _.filter(errs, function (e) {
         for (var i = 0, len = path.length; i < len; ++i) {
-            if (path[i] !== e.field[i]) {
+            if (!e.field || path[i] !== e.field[i]) {
                 return false;
             }
         }
