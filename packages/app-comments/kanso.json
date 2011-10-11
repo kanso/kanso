@@ -1,6 +1,6 @@
 {
     "name": "app-comments",
-    "version": "0.0.1",
+    "version": "0.0.2",
     "description": "Provides a basic, unstyled commenting system with pre-made template, views and javascript utils",
     "load": "app-comments/app",
     "modules": "app-comments",
