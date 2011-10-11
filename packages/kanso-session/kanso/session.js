@@ -183,23 +183,15 @@ exports.userDb = function (callback) {
     });
 };
 
-/**
- * Creates a new user document with given username and password.
- *
- * @name signup(username, password, callback)
- * @param {String} username
- * @param {String} password
- * @param {Function} callback
- * @api public
- */
 
-exports.signup = function (username, password, callback) {
+
+var signupUser = function(username, password, roles, callback) {
     var doc = {};
     doc._id = 'org.couchdb.user:' + username;
     doc.name = username;
     doc.type = 'user';
-    doc.roles = [];
-
+    doc.roles = roles;
+    
     db.newUUID(100, function (err, uuid) {
         if (err) {
             return callback(err);
@@ -221,4 +213,39 @@ exports.signup = function (username, password, callback) {
             db.request(req, callback);
         });
     });
+};
+
+var signupAdmin = function(username, password, callback) {
+    var url = '/_config/admins/' + username;
+    var req = {
+        type: 'PUT',
+        url: url,
+        data: JSON.stringify(password),
+        processData: false,
+        contentType: 'application/json'
+    };
+
+    db.request(req, function() { signupUser(username, password, [], callback) });
+};
+
+/**
+ * Creates a new user document with given username and password.
+ *
+ * @name signup(username, password, callback, options)
+ * @param {String} username
+ * @param {String} password
+ * @param {Array} roles
+ * @param {Function} callback
+ * @param {Hash} options
+ * @api public
+ */
+
+exports.signup = function (username, password, roles, callback) {
+    if(!callback) { callback = roles; roles = []; }
+    
+    if(roles[0] == "_admin") {
+        signupAdmin(username, password, callback);
+    } else {
+        signupUser(username, password, roles, callback);
+    }
 };
