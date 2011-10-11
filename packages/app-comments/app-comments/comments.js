@@ -10,12 +10,17 @@ exports.get = function (target, /*optional*/options, callback) {
         callback = options;
         options = {};
     }
+    var startkey = [target];
+    var endkey = [target, {}];
+    if (options.descending) {
+        startkey = [target, {}];
+        endkey = [target];
+    }
     db.getView('app-comments:comments_by_target', _.defaults(options, {
         limit: 100,
-        descending: false,
-        startkey: [target, {}],
-        endkey: [target],
-        descending: true,
+        startkey: startkey,
+        endkey: endkey,
+        descending: options.descending,
         include_docs: true
     }), callback);
 };
@@ -25,12 +30,17 @@ exports.getByUser = function (user, /*options*/options, callback) {
         callback = options;
         options = {};
     }
+    var startkey = [user];
+    var endkey = [user, {}];
+    if (options.descending) {
+        startkey = [user, {}];
+        endkey = [user];
+    }
     db.getView('app-comments:comments_by_user', _.defaults(options, {
         limit: 100,
-        descending: false,
-        startkey: [user, {}],
-        endkey: [user],
-        descending: true,
+        startkey: startkey,
+        endkey: endkey,
+        descending: options.descending,
         include_docs: true
     }), callback);
 };
@@ -65,9 +75,10 @@ exports.addToPage = function (req, target, /*optional*/options, callback) {
         });
         el.html(templates.render('app-comments/comments.html', req, {
             comments: comments,
-            monospace: options.monospace
+            monospace: options.monospace,
+            no_comments: options.no_comments
         }));
-        callback();
+        callback(null, data);
     });
 };
 
@@ -107,7 +118,8 @@ exports.addUserCommentsToPage = function (req, user, /*opt*/options, callback) {
         });
         el.html(templates.render('app-comments/user_comments.html', req, {
             comments: comments,
-            monospace: options.monospace
+            monospace: options.monospace,
+            no_comments: options.no_comments
         }));
         callback();
     });
@@ -122,4 +134,15 @@ exports.add = function (target, user, text, callback) {
         time: datelib.ISODateString()
     }
     db.saveDoc(doc, callback);
+};
+
+/**
+ * Accepts a comments view result and returns a unique list of usernames
+ */
+
+exports.users = function (data) {
+    return _.keys(_.reduce(data.rows, function (obj, row) {
+        obj[row.doc.user] = null;
+        return obj;
+    }, {}));
 };
