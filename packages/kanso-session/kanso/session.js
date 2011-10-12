@@ -9,7 +9,6 @@
  */
 
 var db = require('kanso/db'),
-    sha1 = require('sha1'),
     cookies = require('kanso/cookies'),
     events = require('kanso/events'),
     utils = require('kanso/utils');
@@ -166,67 +165,6 @@ exports.info = function (callback) {
     });
 };
 
-/**
- * Returns the authentication database for the current user's session.
- *
- * @name userDb(callback)
- * @param {Function} callback
- * @api public
- */
-
-exports.userDb = function (callback) {
-    if (utils.session && utils.session.authentication_db) {
-        return callback(null, utils.session.authentication_db);
-    }
-    exports.info(function (err, session) {
-        callback(err, session ? session.info.authentication_db: null);
-    });
-};
-
-
-
-var signupUser = function(username, password, roles, callback) {
-    var doc = {};
-    doc._id = 'org.couchdb.user:' + username;
-    doc.name = username;
-    doc.type = 'user';
-    doc.roles = roles;
-    
-    db.newUUID(100, function (err, uuid) {
-        if (err) {
-            return callback(err);
-        }
-        doc.salt = uuid;
-        doc.password_sha = sha1.hex(password + doc.salt);
-        exports.userDb(function (err, userdb) {
-            if (err) {
-                return callback(err);
-            }
-            var url = '/' + userdb + '/' + doc._id;
-            var req = {
-                type: 'PUT',
-                url: url,
-                data: JSON.stringify(doc),
-                processData: false,
-                contentType: 'application/json'
-            };
-            db.request(req, callback);
-        });
-    });
-};
-
-var signupAdmin = function(username, password, callback) {
-    var url = '/_config/admins/' + username;
-    var req = {
-        type: 'PUT',
-        url: url,
-        data: JSON.stringify(password),
-        processData: false,
-        contentType: 'application/json'
-    };
-
-    db.request(req, function() { signupUser(username, password, [], callback) });
-};
 
 /**
  * Creates a new user document with given username and password.
@@ -241,11 +179,5 @@ var signupAdmin = function(username, password, callback) {
  */
 
 exports.signup = function (username, password, roles, callback) {
-    if(!callback) { callback = roles; roles = []; }
-    
-    if(roles[0] == "_admin") {
-        signupAdmin(username, password, callback);
-    } else {
-        signupUser(username, password, roles, callback);
-    }
+    db.createUser(username, password, roles, callback);
 };
