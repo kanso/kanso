@@ -1,6 +1,7 @@
 
 var db = require('kanso/db'),
     utils = require('kanso/utils'),
+    session = require('kanso/session'),
     async = require('async'),
     _ = require('underscore')._;
 
@@ -829,9 +830,8 @@ exports['createUser'] = function (test)
     async.waterfall([
         function (callback) {
             db.createUser('wizard_of_oz', 'password', function(err, user) {
-                if (err) {
-                    test.done(err);
-                }
+                if (err) { return test.done(err); }
+                
                 test.equal(err, undefined, 'signup has no error');
                 test.notEqual(user, undefined, 'signup returns a value');
                 test.equal(user.ok, true, 'signup returns okay');
@@ -840,14 +840,11 @@ exports['createUser'] = function (test)
         },
         function (callback) {
             db.createUser('wicked_with_of_the_east', 'password', ['witch'], function(err, user) {
-                if (err) {
-                    test.done(err);
-                }
+                if (err) { return test.done(err); }
                 
                 db.getUser('wicked_with_of_the_east', function(err, user, options) {
-                    if (err) {
-                        test.done(err);
-                    }
+                    if (err) { return test.done(err); }
+                    
                     test.equal(user.roles[0], "witch");
                     callback();                    
                 });
@@ -855,18 +852,14 @@ exports['createUser'] = function (test)
         },
         function (callback) {
             db.createUser('tin_woodman', 'password', ['_admin'], function(err, user) {
-                if (err) {
-                    test.done(err);
-                }
+                if (err) { return test.done(err); }
                 
                 db.request({
                     type: 'GET',
                     url: '/_config/admins/tin_woodman',
                     contentType: 'application/json'                
                 }, function(err, admin) {
-                    if (err) {
-                        test.done(err);
-                    }
+                    if (err) { return test.done(err); }
                     
                     test.notEqual(admin, undefined, 'tin_woodman should be an admin');
                     callback();
@@ -877,6 +870,131 @@ exports['createUser'] = function (test)
             deleteUser('wizard_of_oz', test, function() {
                 deleteUser('tin_woodman', test, function() {
                     deleteUser('wicked_with_of_the_east', test, callback);
+                });
+            });
+        }
+    ], function () {
+        test.done();
+    });
+};
+
+
+exports['updateUser'] = function (test)
+{
+    test.expect(5);
+
+    async.waterfall([
+        function (callback) {
+            // if new role is admin user should be admin after (1)
+            db.createUser('wizard_of_oz', 'password', ['wizard'], function(err, user) {
+                if (err) { return test.done(err); }
+
+                db.updateUser('wizard_of_oz', 'password', ['_admin'], function(err, user) {
+                    if (err) { return test.done(err); }
+
+                    db.request({
+                        type: 'GET',
+                        url: '/_config/admins/wizard_of_oz',
+                        contentType: 'application/json'                
+                    }, function(err, admin) {
+                        if (err) { return test.done(err); }
+                    
+                        test.notEqual(admin, undefined, 'wizard_of_oz should be an admin');
+                        callback();
+                    });
+                });
+            });            
+        },
+        function (callback) {
+            // if user was admin but new role isn't, user should not be admin after (1)
+            db.createUser('wicked_with_of_the_east', 'password', ['_admin'], function(err, user) {
+                if (err) { return test.done(err); }
+        
+                db.updateUser('wicked_with_of_the_east', 'password', ['wizard'], function(err, user) {
+                    if (err) { return test.done(err); }
+        
+                    db.request({
+                        type: 'GET',
+                        url: '/_config/admins/wicked_with_of_the_east',
+                        contentType: 'application/json'
+                    }, function(err, admin) {
+                        test.equal(admin, undefined, 'wicked_with_of_the_east should not be an admin');
+                        callback();
+                    });
+                });
+            });
+        },
+        function (callback) {
+            // user should have new roles afterwards (1)
+            db.createUser('tin_woodman', 'password', ['companion'], function(err, user) {
+                if (err) { return test.done(err); }
+        
+                db.updateUser('tin_woodman', 'password', ['wizard'], function(err, user) {
+                    if (err) { return test.done(err); }
+        
+                    db.getUser('tin_woodman', function(err, user, options) {
+                        if (err) { return test.done(err); }
+        
+                        test.equal(user.roles[0], "wizard");
+                        callback();                    
+                    });
+                });
+            });            
+        },
+        function (callback) {
+            // user should have new password afterwards (1)
+            db.createUser('scarecrow', 'password', ['companion'], function(err, user) {
+                if (err) { return test.done(err); }
+        
+                db.getUser('scarecrow', function(err, user) {
+                    if (err) { return test.done(err); }
+
+                    var old_password = user.password_sha;
+                    
+                    db.updateUser('scarecrow', 'newpassword', ['companion'], function(err, user) {
+                        if (err) { return test.done(err); }
+
+                        db.getUser('scarecrow', function(err, user) {
+                            if (err) { return test.done(err); }
+
+                            test.notEqual(user.password_sha, old_password);
+                            callback();
+                        });
+                    });                    
+                });
+            });
+        },
+        function (callback) {
+            // empty password should not change password (1)
+            db.createUser('cowardly_lion', 'password', ['companion'], function(err, user) {
+                if (err) { return test.done(err); }
+        
+                db.getUser('cowardly_lion', function(err, user) {
+                    if (err) { return test.done(err); }
+                    
+                    var old_password = user.password_sha;
+                    
+                    db.updateUser('cowardly_lion', '', ['companion'], function(err, user) {
+                        if (err) { return test.done(err); }
+
+                        db.getUser('cowardly_lion', function(err, user) {
+                            if (err) { return test.done(err); }
+
+                            test.equal(user.password_sha, old_password);
+                            callback();
+                        });
+                    });
+                });                
+            });            
+        },
+        function (callback) {
+            deleteUser('wicked_with_of_the_east', test, function() {
+                deleteUser('tin_woodman', test, function() {
+                    deleteUser('scarecrow', test, function() {
+                        deleteUser('cowardly_lion', test, function() {                    
+                            deleteUser('wizard_of_oz', test, callback);
+                        });
+                    });
                 });
             });
         }
