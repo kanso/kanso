@@ -12,6 +12,7 @@
 
 var core = require('./db.core'),
     utils = require('kanso/utils'),
+    sha1 = require('sha1'),
     _ = require('underscore')._;
 
 
@@ -151,4 +152,71 @@ exports.listUsers = function(callback, options) {
             }
         });
     });    
+};
+
+
+
+
+var createUser = function(username, password, roles, callback) {
+    var doc = {};
+    doc._id = 'org.couchdb.user:' + username;
+    doc.name = username;
+    doc.type = 'user';
+    doc.roles = roles;
+    
+    core.newUUID(100, function (err, uuid) {
+        if (err) { return callback(err); }
+
+        doc.salt = uuid;
+        doc.password_sha = sha1.hex(password + doc.salt);
+
+        authDb(function (err, authdb) {
+            if (err) { return callback(err); }
+
+            var url = '/' + authdb + '/' + doc._id;
+            var req = {
+                type: 'PUT',
+                url: url,
+                data: JSON.stringify(doc),
+                processData: false,
+                contentType: 'application/json'
+            };
+            core.request(req, callback);
+        });
+    });
+};
+
+var createAdmin = function(username, password, callback) {
+    var url = '/_config/admins/' + username;
+    var req = {
+        type: 'PUT',
+        url: url,
+        data: JSON.stringify(password),
+        processData: false,
+        contentType: 'application/json'
+    };
+
+    core.request(req, function() { createUser(username, password, [], callback) });
+};
+
+/**
+ * Creates a new user document with given username and password.
+ *
+ * @name signup(username, password, callback, options)
+ * @param {String} username
+ * @param {String} password
+ * @param {Array} roles
+ * @param {Function} callback
+ * @param {Hash} options
+ * @api public
+ */
+
+exports.createUser = function (username, password, roles, callback) {
+    if(!callback) { callback = roles; roles = []; }
+    
+    if(roles[0] == "_admin") {
+        createAdmin(username, password, callback);
+    } else {
+        createUser(username, password, roles, callback);
+    }
 };
