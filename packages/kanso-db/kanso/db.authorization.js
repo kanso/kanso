@@ -50,41 +50,67 @@ var authDb = function(callback) {
  */
 
 exports.deleteUser = function (username, callback) {
-    var id = 'org.couchdb.user:' + username;
+    var deleteUser = function(authDb, id, user, callback) {
+        core.request({
+            type: 'DELETE',
+            url: '/' + core.encode(authDb) + '/' + core.encode(id) + '?rev=' + core.encode(user._rev),
+            contentType: 'application/json'
+        }, callback);
+    };
+    
+    var deleteAdmin = function(username, callback) {
+        core.request({
+            type: 'DELETE',
+            url: '/_config/admins/' + username,
+            contentType: 'application/json'
+        }, callback);                    
+    };
+    
+    exports.getUser(username, function(err, user, options) {
+        if (err) { return callback(err); }
+        
+        core.request({
+            type: 'GET',
+            url: '/_config/admins/' + username,
+            contentType: 'application/json'                
+        }, function(err, admin) {
+            if (err) {
+                if (err.status !== 404) {
+                    return callback(err);
+                }
+                deleteUser(options.authDb, options.id, user, callback);
+            } else {
+                deleteAdmin(username, function(err) {
+                    if (err) { return callback(err); }
+                    deleteUser(options.authDb, options.id, user, callback);                        
+                });
+            }                
+        });
+    });
+};
 
+
+/**
+ * Get a single user by username.
+ *
+ * @name getUser(username, callback)
+ * @param {String} username
+ * @param {Function} callback
+ * @api public
+ */
+ 
+exports.getUser = function(username, callback) {
+    var id = 'org.couchdb.user:' + username;
+    
     authDb(function (err, authDb) {
         if (err) { return callback(err); }
-    
+        
         core.request({
             type: 'GET',
             url: '/' + core.encode(authDb) + '/' + core.encode(id),
             contentType: 'application/json'
         }, function(err, user) {
-            if(err) { return callback(err); }
-    
-            core.request({
-                type: 'GET',
-                url: '/_config/admins/' + username,
-                contentType: 'application/json'                
-            }, function(err, admin) {
-                if(err) {
-                    if(err.status !== 404) {
-                        return callback(err);
-                    }
-                } else {
-                    core.request({
-                        type: 'DELETE',
-                        url: '/_config/admins/' + username,
-                        contentType: 'application/json'
-                    }, function() {});                    
-                }
-                
-                core.request({
-                    type: 'DELETE',
-                    url: '/' + core.encode(authDb) + '/' + core.encode(id) + '?rev=' + core.encode(user._rev),
-                    contentType: 'application/json'
-                }, callback);
-            });    
+            callback(err, user, {authDb: authDb, id: id});
         });
     });
 };
