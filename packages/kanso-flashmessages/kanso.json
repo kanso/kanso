@@ -6,7 +6,7 @@
     "dependencies": {
         "modules": null,
         "underscore": null,
-        "kanso-cookies": null,
+        "cookies": null,
         "kanso-utils": null
     }
 }

@@ -14,7 +14,7 @@
         "db": "0.0.8",
         "kanso-utils": null,
         "kanso-session": null,
-        "kanso-cookies": null,
+        "cookies": null,
         "kanso-events": null
     },
     "postprocessors": {

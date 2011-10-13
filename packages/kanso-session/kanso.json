@@ -8,7 +8,7 @@
         "db": ">=0.0.8",
         "users": ">=0.0.8",
         "sha1": null,
-        "kanso-cookies": null,
+        "cookies": null,
         "kanso-events": null,
         "kanso-utils": null
     }
