@@ -117,20 +117,21 @@ var saveUser = function(authdb, doc, callback) {
 /**
  * Create a new user in the user database.
  *
- * @name createUser(username, password, roles, callback)
+ * @name createUser(username, password, properties, callback)
  * @param {String} username
  * @param {String} password
- * @param {Array} roles
+ * @param {Hash} properties
  * @param {Function} callback
  * @api private
  */
 
-var createUser = function(username, password, roles, callback) {
+var createUser = function(username, password, properties, callback) {
     var doc = {};
     doc._id = 'org.couchdb.user:' + username;
     doc.name = username;
     doc.type = 'user';
-    doc.roles = roles;
+    
+    _.extend(doc, properties);
 
     db.newUUID(100, function (err, uuid) {
         if (err) {
@@ -168,6 +169,33 @@ var createAdmin = function(username, password, callback) {
     };
 
     db.request(req, callback);
+};
+
+
+/**
+ * Sanitize the arguments by allowing to omit the properties and 
+ * predefining the roles if they're not set.
+ *
+ * @name sanitizeArguments(username, password, properties, callback, callback2)
+ * @param {String} username
+ * @param {String} password
+ * @param {Hash} properties
+ * @param {Function} callback
+ * @param {Function} callback2
+ * @api private
+ */
+
+var sanitizeArguments = function(username, password, properties, callback, callback2) {
+    if (!callback) {
+        callback = properties;
+        properties = [];
+    }
+    
+    if (!properties.roles) {
+        properties.roles = [];
+    }
+    
+    callback2(username, password, properties, callback);
 };
 
 
@@ -243,12 +271,8 @@ exports.get = function(username, callback) {
  */
 
 exports.list = function(callback, options) {
-    if (options && options.include_docs) {
-        var include_docs = 'true';
-    }
-    else {
-        var include_docs = 'false';
-    }
+    options = options || {};
+    var include_docs = options.include_docs ? 'true' : 'false';
 
     authdb(function (err, authdb) {
         if (err) {
@@ -275,77 +299,81 @@ exports.list = function(callback, options) {
 
 /**
  * Creates a new user document with given username and password.
- * If first given role is _admin, user will be made admin.
+ * If first given role in the properties is _admin, 
+ * user will be made admin.
  *
- * @name create(username, password, roles, callback)
+ * @name create(username, password, properties, callback)
  * @param {String} username
  * @param {String} password
- * @param {Array} roles
+ * @param {Hash} properties
  * @param {Function} callback
  * @api public
  */
 
-exports.create = function (username, password, roles, callback) {
-    if (!callback) {
-        callback = roles;
-        roles = [];
-    }
-    if (roles[0] == "_admin") {
-        createAdmin(username, password, function (err) {
-            if (err) {
-                return callback(err);
+exports.create = function (username, password, properties, callback) {
+    sanitizeArguments(username, password, properties, callback, 
+        function(username, password, properties, callback) {
+            if (properties.roles[0] == "_admin") {
+                createAdmin(username, password, function (err) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    properties.roles = [];
+                    createUser(username, password, properties, callback);
+                });
             }
-            createUser(username, password, [], callback);
-        });
-    }
-    else {
-        createUser(username, password, roles, callback);
-    }
+            else {
+                createUser(username, password, properties, callback);
+            }        
+    });
 };
 
 
 /**
  * Update the user.
  *
- * @name update(username, password, roles, callback)
+ * @name update(username, password, properties, callback)
  * @param {String} username
  * @param {String} password
- * @param {Array} roles
+ * @param {Hash} properties
  * @param {Function} callback
  * @api public
  */
 
-exports.update = function (username, password, roles, callback) {
-    exports.get(username, function (err, user, options) {
-        if (err) {
-            return callback(err);
-        }
-        if (roles[0] != "_admin") {
-            user.roles = roles;
-        }
-        if (password) {
-            user.password_sha = sha1.hex(password + user.salt);
-        }
+exports.update = function (username, password, properties, callback) {
+    sanitizeArguments(username, password, properties, callback, 
+        function(username, password, properties, callback) {    
+            exports.get(username, function (err, user, options) {
+                if (err) {
+                    return callback(err);
+                }
+                if (properties.roles[0] != "_admin") {
+                    _.extend(user, properties);
+                }
+                if (password) {
+                    user.password_sha = sha1.hex(password + user.salt);
+                }
 
-        saveUser(options.authdb, user, function (err, user) {
-            if (roles[0] == "_admin") {
-                createAdmin(username, password, function () {
-                    callback();
-                });
-            }
-            else {
-                getAdmin(username, function(err, admin) {
-                    if (err) {
-                        if (err.status !== 404) {
-                            return callback(err);
-                        }
-                        return callback();
+                saveUser(options.authdb, user, function (err, user) {
+                    if (properties.roles[0] == "_admin") {
+                        createAdmin(username, password, function () {
+                            callback();
+                        });
                     }
                     else {
-                        deleteAdmin(username, callback);
+                        getAdmin(username, function(err, admin) {
+                            if (err) {
+                                if (err.status !== 404) {
+                                    return callback(err);
+                                }
+                                return callback();
+                            }
+                            else {
+                                deleteAdmin(username, callback);
+                            }
+                        });
                     }
                 });
-            }
-        });
+            });
     });
 };
