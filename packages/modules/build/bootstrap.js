@@ -50,9 +50,18 @@
             }
             if (!m.loaded) {
                 m.exports = {};
+                m.id = path;
+                // TODO: property not provided by couchdb, but is by node:
+                //m.require = exports.createRequire(path);
+                // TODO: property not provided by couchdb, but is by node:
+                //m.filename = '';
+                // TODO: module properties provided by couchdb, but not by kanso
+                // * current
+                // * parent
                 // set this to true *before* calling m.load so circular
                 // requires don't blow the call stack
                 m.loaded = true;
+                //m.load(m, m.exports, m.require);
                 m.load(m, m.exports, exports.createRequire(path));
             }
             return m.exports;
