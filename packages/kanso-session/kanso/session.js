@@ -10,7 +10,7 @@
 
 var db = require('db'),
     users = require('users'),
-    cookies = require('kanso/cookies'),
+    cookies = require('cookies'),
     events = require('kanso/events'),
     utils = require('kanso/utils');
 

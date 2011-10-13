@@ -6,7 +6,9 @@
  * @module
  */
 
-var utils = require('kanso/utils');
+function isBrowser() {
+    return (typeof(window) !== 'undefined');
+}
 
 
 /**
@@ -19,7 +21,7 @@ var utils = require('kanso/utils');
  */
 
 exports.readBrowserCookies = function () {
-    if (!utils.isBrowser()) {
+    if (!isBrowser()) {
         throw new Error('readBrowserCookies cannot be called server-side');
     }
     var cookies = {};
@@ -55,8 +57,7 @@ exports.readBrowserCookie = function (name) {
  */
 
 exports.cookieString = function (req, opt) {
-    var path = opt.path || utils.getBaseURL(req) + '/';
-    var str = escape(opt.name) + '=' + escape(opt.value) + '; path=' + path;
+    var str = escape(opt.name) + '=' + escape(opt.value) + '; path=' + opt.path;
     if (opt.days) {
         var expires = new Date().setTime(
             new Date().getTime() + 1000 * 60 * 60 * 24 * opt.days
@@ -76,7 +77,7 @@ exports.cookieString = function (req, opt) {
  */
 
 exports.setBrowserCookie = function (req, opt) {
-    if (!utils.isBrowser()) {
+    if (!isBrowser()) {
         throw new Error('setBrowserCookie cannot be called server-side');
     }
     var str = (typeof opt === 'string') ? opt: exports.cookieString(req, opt);

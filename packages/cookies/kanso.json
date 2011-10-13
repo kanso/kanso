@@ -1,10 +1,9 @@
 {
-    "name": "kanso-cookies",
+    "name": "cookies",
     "version": "0.0.8",
     "description": "Cookie utilities for use in the browser and server-side on CouchDB",
-    "modules": "kanso",
+    "modules": "cookies.js",
     "dependencies": {
-        "modules": null,
-        "kanso-utils": null
+        "modules": null
     }
 }
