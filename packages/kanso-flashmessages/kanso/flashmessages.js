@@ -21,7 +21,6 @@
  */
 
 var utils = require('kanso/utils'),
-    kanso_core = require('kanso/core'),
     cookies = require('cookies'),
     _ = require('underscore');
 
@@ -159,7 +158,7 @@ exports.updateResponse = function (req, res) {
         cookies.setResponseCookie(req, res, {
             name: '_kanso_flash',
             value: JSON.stringify(messages),
-            path: kanso_core.getBaseURL(req) + '/'
+            path: require('kanso/core').getBaseURL(req) + '/'
         });
     }
     return res;
@@ -196,7 +195,7 @@ exports.setBrowserCookie = function (req, messages) {
     cookies.setBrowserCookie(req, {
         name: '_kanso_flash',
         value: JSON.stringify(messages),
-        path: kanso_core.getBaseURL(req) + '/'
+        path: require('kanso/core').getBaseURL(req) + '/'
     });
 };
 
