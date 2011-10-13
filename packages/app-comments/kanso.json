@@ -11,7 +11,7 @@
         "settings": null,
         "kanso-core": null,
         "kanso-events": null,
-        "kanso-db": null,
+        "db": ">=0.0.8",
         "kanso-templates": null,
         "kanso-types": null,
         "kanso-fields": null,

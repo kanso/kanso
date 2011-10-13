@@ -12,8 +12,10 @@
  */
 
 var core = require('./widgets.core'),
-    db = require('kanso/db'),
+    db = require('db'),
+    settings = require('settings/root'),
     sanitize = require('kanso/sanitize'),
+    kanso_core = require('kanso/core'),
     utils = require('kanso/utils'),
     events = require('kanso/events'),
     _ = require('underscore')._;
@@ -188,7 +190,9 @@ exports.documentSelector = function (_options) {
         var select_elt =
             this.discoverSelectionElement(container_elt);
 
-        db.getView(
+        var appdb = db.use(options.db || kanso_core.getDBURL());
+        appdb.getView(
+            options.appname || settings.name,
             options.viewName,
             { include_docs: options.storeEntireDocument },
             { useCache: true, db: options.db, appName: options.appName },

@@ -13,8 +13,7 @@
  * Module dependencies
  */
 
-var db = require('kanso/db'),
-    utils = require('kanso/utils'),
+var utils = require('kanso/utils'),
     sanitize = require('kanso/sanitize'),
     _ = require('underscore')._;
 

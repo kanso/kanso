@@ -9,7 +9,7 @@
         "querystring": null,
         "kanso-utils": null,
         "kanso-sanitize": null,
-        "kanso-db": null,
+        "db": ">=0.0.8",
         "kanso-events": null,
         "kanso-forms": null
     }

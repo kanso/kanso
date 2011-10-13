@@ -1,4 +1,4 @@
-/*global $: false, kanso: true */
+/*global $: false */
 
 /**
  * Contains functions for querying and storing data in CouchDB.
@@ -10,15 +10,18 @@
  * Module dependencies
  */
 
-var utils = require('kanso/utils'),
-    settings = require('settings/root'),
-    sanitize = require('kanso/sanitize'),
-    _ = require('underscore')._,
+var _ = require('underscore')._,
     session = null;
+
+
+function isBrowser() {
+    return (typeof(window) !== 'undefined');
+}
+
 
 /* Avoid a circular require in CouchDB */
 
-if (utils.isBrowser()) {
+if (isBrowser()) {
     try {
         session = require('./session');
     }
@@ -77,7 +80,7 @@ var httpData = function (xhr, type, s) {
 
 
 /**
- * Returns a function for handling ajax responsed from jquery and calls
+ * Returns a function for handling ajax responses from jquery and calls
  * the callback with the data or appropriate error.
  *
  * @param {Function} callback
@@ -145,6 +148,26 @@ function onComplete(options, callback) {
 }
 
 /**
+ *
+ * @name escapeUrlParams(s)
+ * @param {Object} obj An object containing url parameters, with
+ *          parameter names stored as property names (or keys).
+ * @returns {String}
+ * @api public
+ */
+
+exports.escapeUrlParams = function (obj) {
+    var rv = [ ];
+    for (var key in obj) {
+        rv.push(
+            encodeURIComponent(key) +
+                '=' + encodeURIComponent(obj[key])
+        );
+    }
+    return (rv.length > 0 ? ('?' + rv.join('&')) : '');
+};
+
+/**
  * Encodes a document id or view, list or show name.
  *
  * @name encode(str)
@@ -155,6 +178,32 @@ function onComplete(options, callback) {
 
 exports.encode = function (str) {
     return encodeURIComponent(str).replace(/^_design%2F/, '_design/');
+};
+
+
+/**
+ * Properly encodes query parameters to CouchDB views etc. Handle complex
+ * keys and other non-string parameters by passing through JSON.stringify.
+ * Returns a shallow-copied clone of the original query after complex values
+ * have been stringified.
+ *
+ * @name stringifyQuery(query)
+ * @param {Object} query
+ * @returns {Object}
+ * @api public
+ */
+
+exports.stringifyQuery = function (query) {
+    var q = {};
+    for (var k in query) {
+        if (typeof query[k] !== 'string') {
+            q[k] = JSON.stringify(query[k]);
+        }
+        else {
+            q[k] = query[k];
+        }
+    }
+    return q;
 };
 
 
@@ -170,7 +219,6 @@ exports.encode = function (str) {
  */
 
 exports.request = function (options, callback) {
-
     options.complete = onComplete(options, callback);
     options.dataType = 'json';
 
@@ -232,7 +280,7 @@ exports._should_cache_request = function (options) {
 exports._make_request_cache_key = function (options) {
     return options.url + (
         _.isString(options.data) ? '?' + options.data :
-            sanitize.escapeUrlParams(options.data || {})
+            exports.escapeUrlParams(options.data || {})
     );
 };
 
@@ -284,7 +332,7 @@ exports._request_cache_fetch = function (options, clone) {
 
     var cache_key = exports._make_request_cache_key(options);
     var rv = exports.request_cache[cache_key];
-    
+
     if (rv && clone) {
         rv = _.clone(rv);
         rv.response = JSON.parse(JSON.stringify(rv.response));
@@ -371,350 +419,45 @@ exports._finish_cached_request = function (options) {
     delete exports.request_cache_wait_queue[cache_key];
 };
 
-
 /**
- * Fetches a rewrite from the database the app is running on. Results
- * are passed to the callback, with the first argument of the callback
- * reserved for any exceptions that occurred (node.js style).
+ * Creates a CouchDB database.
  *
- * @name getRewrite(path, [q], callback)
- * @param {String} path
- * @param {Object} q (optional)
+ * If you're running behind a virtual host you'll need to set up
+ * appropriate rewrites for a PUT request to '/' and turn off safe rewrites.
+ *
+ * @name createDatabase(name, callback)
+ * @param {String} name
  * @param {Function} callback
  * @api public
  */
 
-exports.getRewrite = function (path, /*optional*/q, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('getRewrite cannot be called server-side');
-    }
-    if (!callback) {
-        callback = q;
-        q = {};
-    }
-    // prepend forward-slash if missing
-    path = (path[0] === '/') ? path: '/' + path;
-
-    var base = utils.getBaseURL();
-    var name = exports.encode(settings.name);
+exports.createDatabase = function (name, callback) {
     var req = {
-        url: base + '/_db/_design/' + name + '/_rewrite' + path,
-        data: exports.stringifyQuery(q)
-    };
-    exports.request(req, callback);
-};
-
-
-/**
- * Fetches a document from the database the app is running on. Results are
- * passed to the callback, with the first argument of the callback reserved
- * for any exceptions that occurred (node.js style).
- *
- * @name getDoc(id, [q, options], callback)
- * @param {String} id
- * @param {Object} q (optional)
- * @param {Object} options (optional)
- * @param {Function} callback
- * @api public
- */
-
-exports.getDoc = function (id, /*optional*/q, /*optional*/options, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('getDoc cannot be called server-side');
-    }
-    if (!id) {
-        throw new Error('getDoc requires an id parameter to work properly');
-    }
-    if (!callback) {
-        if (!options) {
-            /* Arity = 2: Omits q, options */
-            callback = q;
-            options = {};
-            q = {};
-        } else {
-          /* Arity = 3: Omits options */
-            callback = options;
-            options = {};
-        }
-    }
-    var url;
-    if (options.db) {
-        /* Force leading slash; make absolute path */
-        url = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db;
-    } else {
-        url = utils.getBaseURL() + '/_db';
-    }
-    var req = {
-        url: url + '/' + exports.encode(id),
-        expect_json: true,
-        use_cache: options.useCache,
-        flush_cache: options.flushCache,
-        data: exports.stringifyQuery(q)
-    };
-    exports.request(req, callback);
-};
-
-
-/**
- * Saves a document to the database the app is running on. Results are
- * passed to the callback, with the first argument of the callback reserved
- * for any exceptions that occurred (node.js style).
- *
- * @name saveDoc(doc, [options], callback)
- * @param {Object} doc
- * @param {Object} options (optional)
- * @param {Function} callback
- * @api public
- */
-
-exports.saveDoc = function (doc, /*optional*/options, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('saveDoc cannot be called server-side');
-    }
-    var method, url;
-    if (options.db) {
-        /* Force leading slash; make absolute path */
-        url = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db;
-    } else {
-        url = utils.getBaseURL() + '/_db';
-    }
-    if (!callback) {
-        /* Arity = 2: Omits options */
-        callback = options;
-        options = {};
-    }
-    if (doc._id === undefined) {
-        method = "POST";
-    }
-    else {
-        method = "PUT";
-        url += '/' + doc._id;
-    }
-    var req = {
-        type: method,
-        url: url,
-        data: JSON.stringify(doc),
-        processData: false,
-        contentType: 'application/json',
-        expect_json: true
+        type: 'PUT',
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
     };
     exports.request(req, callback);
 };
 
 /**
- * Deletes a document from the database the app is running on. Results are
- * passed to the callback, with the first argument of the callback reserved
- * for any exceptions that occurred (node.js style).
+ * Deletes a CouchDB database.
  *
- * @name removeDoc(doc, [options], callback)
- * @param {Object} doc
+ * If you're running behind a virtual host you'll need to set up
+ * appropriate rewrites for a DELETE request to '/' and turn off safe rewrites.
+ *
+ * @name deleteDatabase(name, callback)
+ * @param {String} name
  * @param {Function} callback
  * @api public
  */
 
-exports.removeDoc = function (doc, /*optional*/options, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('removeDoc cannot be called server-side');
-    }
-    if (!doc._id) {
-        throw new Error('removeDoc requires an _id field in your document');
-    }
-    if (!doc._rev) {
-        throw new Error('removeDoc requires a _rev field in your document');
-    }
-    if (!callback) {
-        /* Arity = 2: Omits options */
-        callback = options;
-        options = {};
-    }
-    var url;
-    if (options.db) {
-        /* Force leading slash; make absolute path */
-        url = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db + '/';
-    } else {
-        url = utils.getBaseURL() + '/_db/';
-    }
-    url += exports.encode(doc._id) + '?rev=' + exports.encode(doc._rev);
+// TODO: detect when 'name' argument is a url and don't construct a url then
+exports.deleteDatabase = function (name, callback) {
     var req = {
         type: 'DELETE',
-        url: url
+        url: '/' + exports.encode(name.replace(/^\/+/, ''))
     };
     exports.request(req, callback);
-};
-
-
-/**
- * Fetches a view from the database the app is running on. Results are
- * passed to the callback, with the first argument of the callback reserved
- * for any exceptions that occurred (node.js style).
- *
- * @name getView(view, [q], callback)
- * @param {String} view
- * @param {Object} q (optional)
- * @param {Function} callback
- * @api public
- */
-
-exports.getView = function (view, /*optional*/q, /*optional*/options, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('getView cannot be called server-side');
-    }
-    if (!callback) {
-        if (!options) {
-            /* Arity = 2: Omits q, options */
-            callback = q;
-            options = {};
-            q = {};
-        } else {
-          /* Arity = 3: Omits options */
-            callback = options;
-            options = {};
-        }
-    }
-    var base;
-    if (options.db) {
-        /* Force leading slash; make absolute path */
-        base = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db;
-    } else {
-        base = utils.getBaseURL();
-    }
-    var name = exports.encode(settings.name);
-    var viewname = exports.encode(view);
-    var req = {
-        url: (
-            base + (options.db ? '' : '/_db') +
-                '/_design/' + (options.appName || options.db || name) +
-                '/_view/' + viewname
-        ),
-        expect_json: true,
-        use_cache: options.useCache,
-        flush_cache: options.flushCache,
-        data: exports.stringifyQuery(q)
-    };
-    exports.request(req, callback);
-};
-
-
-/**
- * Transforms and fetches a view through a list from the database the app
- * is running on. Results are passed to the callback, with the first
- * argument of the callback reserved for any exceptions that occurred
- * (node.js style).
- *
- * @name getList(list, view, [q], callback)
- * @param {String} list
- * @param {String} view
- * @param {Object} q (optional)
- * @param {Function} callback
- * @api public
- */
-
-// TODO: run list function client-side?
-exports.getList = function (list, view, /*optional*/q, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('getList cannot be called server-side');
-    }
-    if (!callback) {
-        callback = q;
-        q = {};
-    }
-    var base = utils.getBaseURL();
-    var name = exports.encode(settings.name);
-    var listname = exports.encode(list);
-    var viewname = exports.encode(view);
-    var req = {
-        url: base + '/_db/_design/' + name + '/_list/' + listname +
-             '/' + viewname,
-        data: exports.stringifyQuery(q)
-    };
-    exports.request(req, callback);
-};
-
-/**
- * Transforms and fetches a document through a show from the database the app
- * is running on. Results are passed to the callback, with the first
- * argument of the callback reserved for any exceptions that occurred
- * (node.js style).
- *
- * @name getShow(show, docid, [q], callback)
- * @param {String} show
- * @param {String} docid
- * @param {Object} q (optional)
- * @param {Function} callback
- * @api public
- */
-
-// TODO: run show function client-side?
-exports.getShow = function (show, docid, /*optional*/q, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('getShow cannot be called server-side');
-    }
-    if (!callback) {
-        callback = q;
-        q = {};
-    }
-    var base = utils.getBaseURL();
-    var name = exports.encode(settings.name);
-    var showname = exports.encode(show);
-    var show_url = base + '/_db/_design/' + name + '/_show/' + showname;
-    var req = {
-        url: show_url + (docid ? '/' + exports.encode(docid): ''),
-        data: exports.stringifyQuery(q)
-    };
-    exports.request(req, callback);
-};
-
-
-/**
- * Get all documents (including design docs).
- *
- * @name all([q], callback)
- * @param {Object} q (optional)
- * @param {Function} callback
- * @api public
- */
-
-exports.all = function (/*optional*/q, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('all cannot be called server-side');
-    }
-    if (!callback) {
-        callback = q;
-        q = {};
-    }
-    var base = utils.getBaseURL();
-    var req = {
-        url: base + '/_db/_all_docs',
-        data: exports.stringifyQuery(q),
-        expect_json: true
-    };
-    exports.request(req, callback);
-};
-
-
-/**
- * Properly encodes query parameters to CouchDB views etc. Handle complex
- * keys and other non-string parameters by passing through JSON.stringify.
- * Returns a shallow-copied clone of the original query after complex values
- * have been stringified.
- *
- * @name stringifyQuery(query)
- * @param {Object} query
- * @returns {Object}
- * @api public
- */
-
-exports.stringifyQuery = function (query) {
-    var q = {};
-    for (var k in query) {
-        if (typeof query[k] !== 'string') {
-            q[k] = JSON.stringify(query[k]);
-        }
-        else {
-            q[k] = query[k];
-        }
-    }
-    return q;
 };
 
 
@@ -729,9 +472,6 @@ exports.stringifyQuery = function (query) {
  */
 
 exports.newUUID = function (cacheNum, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('newUUID cannot be called server-side');
-    }
     if (!callback) {
         callback = cacheNum;
         cacheNum = 1;
@@ -782,6 +522,292 @@ exports.newUUID = function (cacheNum, callback) {
     });
 };
 
+
+/**
+ * DB object created by use(dbname) function
+ */
+
+function DB(url) {
+    this.url = url;
+};
+
+
+/**
+ * Creates a new DB object with methods operating on the database at 'url'
+ */
+
+exports.use = function (url) {
+    /* Force leading slash; make absolute path */
+    return new DB((url.substr(0, 1) !== '/' ? '/' : '') + url);
+};
+
+
+/**
+ * Fetches a rewrite from the database the app is running on. Results
+ * are passed to the callback, with the first argument of the callback
+ * reserved for any exceptions that occurred (node.js style).
+ *
+ * @name getRewrite(path, [q], callback)
+ * @param {String} name - the name of the design doc
+ * @param {String} path
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+DB.prototype.getRewrite = function (name, path, /*optional*/q, callback) {
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    // prepend forward-slash if missing
+    path = (path[0] === '/') ? path: '/' + path;
+
+    var req = {
+        url: this.url + '/_design/' + exports.encode(name) + '/_rewrite' + path,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Fetches a document from the database the app is running on. Results are
+ * passed to the callback, with the first argument of the callback reserved
+ * for any exceptions that occurred (node.js style).
+ *
+ * @name getDoc(id, [q, options], callback)
+ * @param {String} id
+ * @param {Object} q (optional)
+ * @param {Object} options (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+DB.prototype.getDoc = function (id, /*opt*/q, /*opt*/options, callback) {
+    if (!id) {
+        throw new Error('getDoc requires an id parameter to work properly');
+    }
+    if (!callback) {
+        if (!options) {
+            /* Arity = 2: Omits q, options */
+            callback = q;
+            options = {};
+            q = {};
+        } else {
+          /* Arity = 3: Omits options */
+            callback = options;
+            options = {};
+        }
+    }
+    var req = {
+        url: this.url + '/' + exports.encode(id),
+        expect_json: true,
+        use_cache: options.useCache,
+        flush_cache: options.flushCache,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Saves a document to the database the app is running on. Results are
+ * passed to the callback, with the first argument of the callback reserved
+ * for any exceptions that occurred (node.js style).
+ *
+ * @name saveDoc(doc, [options], callback)
+ * @param {Object} doc
+ * @param {Object} options (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+DB.prototype.saveDoc = function (doc, /*optional*/options, callback) {
+    var method, url = this.url;
+    if (!callback) {
+        /* Arity = 2: Omits options */
+        callback = options;
+        options = {};
+    }
+    if (doc._id === undefined) {
+        method = "POST";
+    }
+    else {
+        method = "PUT";
+        url += '/' + doc._id;
+    }
+    var req = {
+        type: method,
+        url: url,
+        data: JSON.stringify(doc),
+        processData: false,
+        contentType: 'application/json',
+        expect_json: true
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Deletes a document from the database the app is running on. Results are
+ * passed to the callback, with the first argument of the callback reserved
+ * for any exceptions that occurred (node.js style).
+ *
+ * @name removeDoc(doc, [options], callback)
+ * @param {Object} doc
+ * @param {Function} callback
+ * @api public
+ */
+
+DB.prototype.removeDoc = function (doc, /*optional*/options, callback) {
+    if (!doc._id) {
+        throw new Error('removeDoc requires an _id field in your document');
+    }
+    if (!doc._rev) {
+        throw new Error('removeDoc requires a _rev field in your document');
+    }
+    if (!callback) {
+        /* Arity = 2: Omits options */
+        callback = options;
+        options = {};
+    }
+    var req = {
+        type: 'DELETE',
+        url: this.url + '/' + exports.encode(doc._id) +
+             '?rev=' + exports.encode(doc._rev)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Fetches a view from the database the app is running on. Results are
+ * passed to the callback, with the first argument of the callback reserved
+ * for any exceptions that occurred (node.js style).
+ *
+ * @name getView(view, [q], callback)
+ * @param {String} name - the name of the design doc to use
+ * @param {String} view
+ * @param {Object} q (optional)
+ * @param {Object} options (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+DB.prototype.getView = function (name, view, /*opt*/q, /*opt*/options, callback) {
+    if (!callback) {
+        if (!options) {
+            /* Arity = 2: Omits q, options */
+            callback = q;
+            options = {};
+            q = {};
+        } else {
+          /* Arity = 3: Omits options */
+            callback = options;
+            options = {};
+        }
+    }
+    var viewname = exports.encode(view);
+    var req = {
+        url: (this.url +
+            '/_design/' + exports.encode(name) +
+            '/_view/' + viewname
+        ),
+        expect_json: true,
+        use_cache: options.useCache,
+        flush_cache: options.flushCache,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Transforms and fetches a view through a list from the database the app
+ * is running on. Results are passed to the callback, with the first
+ * argument of the callback reserved for any exceptions that occurred
+ * (node.js style).
+ *
+ * @name getList(list, view, [q], callback)
+ * @param {String} name - the name of the design doc to use
+ * @param {String} list
+ * @param {String} view
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+// TODO: run list function client-side?
+DB.prototype.getList = function (name, list, view, /*optional*/q, callback) {
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var listname = exports.encode(list);
+    var viewname = exports.encode(view);
+    var req = {
+        url: this.url + '/_design/' + exports.encode(name) +
+            '/_list/' + listname + '/' + viewname,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+/**
+ * Transforms and fetches a document through a show from the database the app
+ * is running on. Results are passed to the callback, with the first
+ * argument of the callback reserved for any exceptions that occurred
+ * (node.js style).
+ *
+ * @name getShow(show, docid, [q], callback)
+ * @param {String} name - the name of the design doc to use
+ * @param {String} show
+ * @param {String} docid
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+// TODO: run show function client-side?
+DB.prototype.getShow = function (name, show, docid, /*optional*/q, callback) {
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var showname = exports.encode(show);
+    var show_url = this.url + '/_design/' +
+        exports.encode(name) + '/_show/' + exports.encode(showname);
+    var req = {
+        url: show_url + (docid ? '/' + exports.encode(docid): ''),
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Get all documents (including design docs).
+ *
+ * @name all([q], callback)
+ * @param {Object} q (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+DB.prototype.all = function (/*optional*/q, callback) {
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var req = {
+        url: this.url + '/_all_docs',
+        data: exports.stringifyQuery(q),
+        expect_json: true
+    };
+    exports.request(req, callback);
+};
+
+
 /**
  * Fetch a design document from CouchDB. By default, the
  * results of this function are cached within the javascript
@@ -794,66 +820,18 @@ exports.newUUID = function (cacheNum, callback) {
  * @api public
  */
 
-exports.getDesignDoc = function (name, callback, no_cache) {
+DB.prototype.getDesignDoc = function (name, callback, no_cache) {
     var options = {
         use_cache: !no_cache,
         flush_cache: !!no_cache
     };
-    exports.getDoc('_design/' + name, options, function (err, ddoc) {
+    this.getDoc('_design/' + name, options, function (err, ddoc) {
         if (err) {
             return callback(err);
         }
         return callback(null, ddoc);
     });
 };
-
-/**
- * Creates a CouchDB database.
- *
- * If you're running behind a virtual host you'll need to set up
- * appropriate rewrites for a PUT request to '/' and turn off safe rewrites.
- *
- * @name createDatabase(name, callback)
- * @param {String} name
- * @param {Function} callback
- * @api public
- */
-
-exports.createDatabase = function (name, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('createDatabase cannot be called server-side');
-    }
-    var req = {
-        type: 'PUT',
-        url: '/' + exports.encode(name.replace(/^\/+/, ''))
-    };
-    exports.request(req, callback);
-};
-
-/**
- * Deletes a CouchDB database.
- *
- * If you're running behind a virtual host you'll need to set up
- * appropriate rewrites for a DELETE request to '/' and turn off safe rewrites.
- *
- * @name deleteDatabase(name, callback)
- * @param {String} name
- * @param {Function} callback
- * @api public
- */
-
-// TODO: detect when 'name' argument is a url and don't construct a url then
-exports.deleteDatabase = function (name, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('deleteDatabase cannot be called server-side');
-    }
-    var req = {
-        type: 'DELETE',
-        url: '/' + exports.encode(name.replace(/^\/+/, ''))
-    };
-    exports.request(req, callback);
-};
-
 
 /**
  * Gets information about the database.
@@ -864,25 +842,13 @@ exports.deleteDatabase = function (name, callback) {
  * @api public
  */
 
-exports.info = function (/*optional*/options, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('info cannot be called server-side');
-    }
+DB.prototype.info = function (/*optional*/options, callback) {
     if (!callback) {
         callback = options;
         options = {};
     }
-
-    var url;
-    if (options.db) {
-        /* Force leading slash; make absolute path */
-        url = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db;
-    } else {
-        url = utils.getBaseURL() + '/_db';
-    }
-
     var req = {
-        url: url,
+        url: this.url,
         expect_json: true,
         use_cache: options.useCache,
         flush_cache: options.flushCache
@@ -909,11 +875,7 @@ exports.info = function (/*optional*/options, callback) {
  * @api public
  */
 
-exports.changes = function (q, options, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('deleteDatabase cannot be called server-side');
-    }
-
+DB.prototype.changes = function (q, options, callback) {
     if (!callback) {
         if (!options) {
             /* Arity = 2: Omits q, options */
@@ -927,13 +889,7 @@ exports.changes = function (q, options, callback) {
         }
     }
 
-    var url;
-    if (options.db) {
-        /* Force leading slash; make absolute path */
-        url = (options.db.substr(0, 1) !== '/' ? '/' : '') + options.db;
-    } else {
-        url = utils.getBaseURL() + '/_db';
-    }
+    var that = this;
 
     q = q || {};
     q.feed = 'longpoll';
@@ -944,7 +900,7 @@ exports.changes = function (q, options, callback) {
         var req = {
             type: 'GET',
             expect_json: true,
-            url: url + '/_changes',
+            url: that.url + '/_changes',
             data: exports.stringifyQuery(q)
         };
         var cb = function (err, data) {
@@ -967,7 +923,7 @@ exports.changes = function (q, options, callback) {
             if (options.db) {
                 opts.db = db;
             }
-            exports.info(opts, function (err, info) {
+            that.info(opts, function (err, info) {
                 if (err) {
                     return callback(err);
                 }
@@ -976,3 +932,137 @@ exports.changes = function (q, options, callback) {
         }
     }, 0);
 };
+
+
+/**
+ * Saves a list of documents, without using separate requests.
+ * This function uses CouchDB's HTTP bulk document API (_bulk_docs).
+ * The return value is an array of objects, each containing an 'id'
+ * and a 'rev' field. The return value is passed to the callback you
+ * provide via its second argument; the first argument of the callback
+ * is reserved for any exceptions that occurred (node.js style).
+ *
+ * @name bulkSave(docs, [options], callback)
+ * @param {Array} docs An array of documents; each document is an object
+ * @param {Object} options (optional) Options for the bulk-save operation.
+ *          options.db: The name of the database to use, or false-like
+ *              to use Kanso's current database.
+ *          options.transactional: Require that all documents be saved
+ *              successfully (or saved with a conflict); otherwise roll
+ *              back the operation. This uses the 'all_or_nothing' option
+ *              provided by CouchDB.
+ * @param {Function} callback A function to accept results and/or errors.
+ *          Document update conflicts are reported in the results array.
+ * @api public
+ */
+
+DB.prototype.bulkSave = function (docs, /*optional*/ options, callback) {
+    if (!_.isArray(docs)) {
+        throw new Error(
+            'bulkSave requires an array of documents to work properly'
+        );
+    }
+    if (!callback) {
+        /* Arity = 2: Omits options */
+        callback = options;
+        options = {};
+    }
+    var data = {
+        docs: docs,
+        all_or_nothing: !!options.transactional
+    };
+    var req = {
+        type: 'POST',
+        url: this.url + '/_bulk_docs',
+        data: JSON.stringify(data),
+        processData: false,
+        contentType: 'application/json',
+        expect_json: true
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Requests a list of documents, using only a single HTTP request.
+ * This function uses CouchDB's HTTP bulk document API (_all_docs).
+ * The return value is an array of objects, each of which is a document.
+ * The return value is passed to the callback you provide via its second
+ * argument; the first argument of the callback is reserved for any
+ * exceptions that occurred (node.js style).
+ *
+ * @name bulkGet(docs, [options], callback)
+ * @param {Array} docs An array of documents identifiers (i.e. strings).
+ * @param {Object} options (optional) Options for the bulk-read operation.
+ *          options.db: The name of the database to use, or false-like
+ *              to use Kanso's current database.
+ * @param {Function} callback A function to accept results and/or errors.
+ *          Document update conflicts are reported in the results array.
+ * @api public
+ */
+
+DB.prototype.bulkGet = function (keys, /*opt*/ q, /*opt*/ options, callback) {
+    if (keys && !_.isArray(keys)) {
+        throw new Error(
+            'bulkGet requires that _id values be supplied as a list'
+        );
+    }
+    if (!callback) {
+        if (!options) {
+            /* Arity = 2: Omits q, options */
+            callback = q;
+            options = {};
+            q = {};
+        } else {
+          /* Arity = 3: Omits options */
+            callback = options;
+            options = {};
+        }
+    }
+
+    /* Encode every query-string option:
+        CouchDB requires that these be JSON, even though they
+        will be URL-encoded as part of the request process. */
+
+    for (var k in q) {
+        q[k] = JSON.stringify(q[k]);
+    }
+
+    /* Make request:
+        If we have a list of keys, use a post request containing
+        a JSON-encoded list of keys. Otherwise, use a get request. */
+
+    var req = {
+        expect_json: true,
+        url: this.url + '/_all_docs' + exports.escapeUrlParams(q)
+    };
+    if (keys) {
+        req = _.extend(req, {
+            type: 'POST',
+            processData: false,
+            contentType: 'application/json',
+            data: JSON.stringify({ keys: keys })
+        });
+    } else {
+        req = _.extend(req, {
+            type: 'GET'
+        });
+    }
+
+    exports.request(req, callback);
+};
+
+
+/**
+ * DB methods can only be called client-side
+ */
+
+_.each(_.keys(DB.prototype), function (k) {
+    var _fn = DB.prototype[k];
+    DB.prototype[k] = function () {
+        if (!isBrowser()) {
+            throw new Error(k + ' cannot be called server-side');
+        }
+        return _fn.apply(this, arguments);
+    };
+});

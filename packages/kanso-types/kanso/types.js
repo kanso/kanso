@@ -11,7 +11,7 @@
  */
 
 var utils = require('kanso/utils'),
-    db = require('kanso/db'),
+    db = require('db'),
     fields = require('kanso/fields'),
     fieldset = require('kanso/fieldset'),
     widgets = require('kanso/widgets'),

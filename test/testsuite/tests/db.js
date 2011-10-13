@@ -1,5 +1,9 @@
 
-var db = require('kanso/db'),
+var settings = require('settings/root'),
+    db = require('db'),
+    appdb = db.current(settings.name),
+    replication = require('replication'),
+    users = require('users'),
     utils = require('kanso/utils'),
     session = require('kanso/session'),
     async = require('async'),
@@ -49,48 +53,36 @@ exports['options.db for saveDoc/getDoc/removeDoc, async'] = function (test)
             });
         },
         function (callback) {
-            db.saveDoc(
-                { test: true }, { db: database_name },
-                function (err, rv) {
-                    test.notEqual(rv, undefined, 'New test document #1 created');
-                    test.notEqual(rv.id, undefined, 'New test document #1 has id');
-                    callback(null, rv);
-                }
-            );
+            db.use(database_name).saveDoc({ test: true }, function (err, rv) {
+                test.notEqual(rv, undefined, 'New test document #1 created');
+                test.notEqual(rv.id, undefined, 'New test document #1 has id');
+                callback(null, rv);
+            });
         },
         function (doc1, callback) {
-            db.saveDoc(
-                { test: true }, { db: database_name },
-                function (err, rv) {
-                    test.notEqual(rv, undefined, 'New test document #2 created');
-                    test.notEqual(rv.id, undefined, 'New test document #2 has id');
-                    callback(null, doc1, rv);
-                }
-            );
+            db.use(database_name).saveDoc({ test: true }, function (err, rv) {
+                test.notEqual(rv, undefined, 'New test document #2 created');
+                test.notEqual(rv.id, undefined, 'New test document #2 has id');
+                callback(null, doc1, rv);
+            });
         },
         function (doc1, doc2, callback) {
-            db.getDoc(
-                doc1.id, {}, { db: database_name },
-                function (err, rv) {
-                    test.notEqual(rv, undefined, 'Test document #1 found');
-                    test.notEqual(rv._rev, undefined, 'Test document #1 has rev');
-                    callback(null, doc1, doc2);
-                }
-            );
+            db.use(database_name).getDoc(doc1.id, {}, function (err, rv) {
+                test.notEqual(rv, undefined, 'Test document #1 found');
+                test.notEqual(rv._rev, undefined, 'Test document #1 has rev');
+                callback(null, doc1, doc2);
+            });
         },
         function (doc1, doc2, callback) {
-            db.getDoc(
-                doc2.id, {}, { db: '/' + database_name },
-                function (err, rv) {
-                    test.notEqual(rv, undefined, 'Test document #2 found');
-                    test.notEqual(rv._rev, undefined, 'Test document #2 has rev');
-                    callback(null, doc1, doc2);
-                }
-            );
+            db.use('/' + database_name).getDoc(doc2.id, {}, function (err, rv) {
+                test.notEqual(rv, undefined, 'Test document #2 found');
+                test.notEqual(rv._rev, undefined, 'Test document #2 has rev');
+                callback(null, doc1, doc2);
+            });
         },
         function (doc1, doc2, callback) {
-            db.removeDoc(
-                { _id: doc1.id, _rev: doc1.rev }, { db: '/' + database_name },
+            db.use('/' + database_name).removeDoc(
+                { _id: doc1.id, _rev: doc1.rev },
                 function (err, rv) {
                     if (err) {
                         test.done(err);
@@ -101,8 +93,8 @@ exports['options.db for saveDoc/getDoc/removeDoc, async'] = function (test)
             );
         },
         function (doc2, callback) {
-            db.removeDoc(
-                { _id: doc2.id, _rev: doc2.rev }, { db: database_name },
+            db.use(database_name).removeDoc(
+                { _id: doc2.id, _rev: doc2.rev },
                 function (err, rv) {
                     if (err) {
                         test.done(err);
@@ -151,7 +143,7 @@ exports['simple replication, no async'] = function (test)
             test.equal(r2.ok, true, 'second createDatabase returns okay');
 
             /* Start replication job */
-            db.startReplication(
+            replication.start(
                 { source: 'kanso_testsuite_source',
                     target: 'kanso_testsuite_target',
                     create_target: false, continuous: false },
@@ -161,7 +153,7 @@ exports['simple replication, no async'] = function (test)
                     test.notEqual(rv_start.id, undefined, 'Replication job ID defined');
 
                     /* Stop replication: Should retry by default */
-                    db.stopReplication(
+                    replication.stop(
                         { _id: rv_start.id, _rev: rv_start.rev },
 
                         function (err_stop, rv_stop) {
@@ -227,7 +219,7 @@ exports['simple replication, async'] = function (test)
             });
         },
         function (callback) {
-            db.startReplication(
+            replication.start(
                 { source: 'kanso_testsuite_source',
                     target: 'kanso_testsuite_target',
                     create_target: false, continuous: false },
@@ -240,7 +232,7 @@ exports['simple replication, async'] = function (test)
             );
         },
         function (doc, callback) {
-            db.stopReplication(
+            replication.stop(
                 { _id: doc.id, _rev: doc.rev },
 
                 function (err_stop, rv_stop) {
@@ -320,7 +312,7 @@ exports['complex replication, async'] = function (test)
                         test: true,
                         data: 'abcdefghijklmnopqrstuvwxyz'
                     };
-                    db.saveDoc(example_doc, function (err, rv) {
+                    db.use(settings.name).saveDoc(example_doc, function (err, rv) {
                         test.notEqual(rv, undefined, 'New document is defined');
                         test.notEqual(rv.id, undefined, 'ID for new document is defined');
                         all_created_docs[i] = rv;
@@ -341,7 +333,7 @@ exports['complex replication, async'] = function (test)
             });
         },
         function (callback) {
-            db.startReplication(
+            replication.start(
                 { source: kanso_database,
                     target: 'kanso_testsuite_target1',
                     create_target: false, continuous: false },
@@ -355,7 +347,7 @@ exports['complex replication, async'] = function (test)
             );
         },
         function (doc1, callback) {
-            db.startReplication(
+            replication.start(
                 { source: kanso_database,
                     target: 'kanso_testsuite_target2',
                     create_target: false, continuous: false },
@@ -370,7 +362,7 @@ exports['complex replication, async'] = function (test)
         },
 
         function (doc1, doc2, callback) {
-            db.getReplication(
+            replication.get(
                 doc1.id,
                 function (err, rv) {
                     test.equal(err, undefined, 'No error getting replication #1');
@@ -382,7 +374,7 @@ exports['complex replication, async'] = function (test)
             );
         },
         function (doc1, doc2, callback) {
-            db.getReplication(
+            replication.get(
                 doc2.id,
                 function (err, rv) {
                     test.equal(err, undefined, 'No error getting replication #2');
@@ -394,10 +386,10 @@ exports['complex replication, async'] = function (test)
             );
         },
         function (doc1, doc2, callback) {
-            db.waitReplication(doc1, function (err1) {
+            replication.wait(doc1, function (err1) {
                 test.equal(err1, undefined, 'waitReplication #1 encoutered no error');
 
-                db.waitReplication(doc2, function (err2) {
+                replication.wait(doc2, function (err2) {
                     test.equal(err2, undefined, 'waitReplication #2 encoutered no error');
 
                     /* Function generator:
@@ -409,7 +401,7 @@ exports['complex replication, async'] = function (test)
                             var id = all_created_docs[i].id;
                             async.waterfall([
                                 function (nxt) {
-                                    db.getDoc(
+                                    db.use(settings.name).getDoc(
                                         id, {}, { db: 'kanso_testsuite_target1' },
                                         function (err, rv) {
                                             test.notEqual(rv, undefined, 'Test document #1 exists');
@@ -419,7 +411,7 @@ exports['complex replication, async'] = function (test)
                                     );
                                 },
                                 function (nxt) {
-                                    db.getDoc(
+                                    db.use(settings.name).getDoc(
                                         id, {}, { db: 'kanso_testsuite_target2' },
                                         function (err, rv) {
                                             test.notEqual(rv, undefined, 'Test document #2 exists');
@@ -449,7 +441,7 @@ exports['complex replication, async'] = function (test)
             });
         },
         function (doc1, doc2, callback) {
-            db.stopReplication(
+            replication.stop(
                 { _id: doc1.id, _rev: doc1.rev },
 
                 function (err, rv) {
@@ -464,7 +456,7 @@ exports['complex replication, async'] = function (test)
             );
         },
         function (doc1, doc2, callback) {
-            db.stopReplication(
+            replication.stop(
                 { _id: doc2.id, _rev: doc2.rev },
 
                 function (err, rv) {
@@ -521,7 +513,7 @@ exports['bulk docs - simple'] = function (test)
                     type: 'example'
                 });
             }
-            db.bulkSave(docs, { transactional: true }, function (err, rv) {
+            appdb.bulkSave(docs, { transactional: true }, function (err, rv) {
                 test.equal(err, undefined, 'bulkSave has no error');
                 test.notEqual(rv, undefined, 'bulkSave returns a value');
                 test.equal(rv.length, max, 'bulkSave yields an array');
@@ -532,7 +524,7 @@ exports['bulk docs - simple'] = function (test)
             var fetch = _.map(ids, function (x) {
                 return x.id;
             });
-            db.bulkGet(fetch, { include_docs: true }, function (err, rv) {
+            appdb.bulkGet(fetch, { include_docs: true }, function (err, rv) {
                 test.equal(err, undefined, 'bulkGet has no error');
                 test.notEqual(rv, undefined, 'bulkGet returns a value');
                 test.equal(rv.rows.length, ids.length, 'bulkGet yields an array');
@@ -567,7 +559,7 @@ exports['bulk docs - range'] = function (test)
                     type: 'example'
                 });
             }
-            db.bulkSave(docs, function (err, rv) {
+            appdb.bulkSave(docs, function (err, rv) {
                 test.equal(err, undefined, 'bulkSave has no error');
                 test.notEqual(rv, undefined, 'bulkSave returns a value');
                 test.equal(rv.length, s.length, 'bulkSave yields an array');
@@ -575,7 +567,7 @@ exports['bulk docs - range'] = function (test)
             });
         },
         function (callback) {
-            db.bulkGet(
+            appdb.bulkGet(
                 false,
                 { startkey: s[10], endkey: s.slice(-1) }, function (err, rv) {
                 test.equal(err, undefined, 'bulkGet has no error');
@@ -599,7 +591,7 @@ exports['getDoc - cached'] = function (test)
 
     async.waterfall([
         function (callback) {
-            db.saveDoc(doc, function (err, rv) {
+            appdb.saveDoc(doc, function (err, rv) {
                 test.equal(err, undefined, 'saveDoc has no error');
                 test.notEqual(rv, undefined, 'New document is defined');
                 test.notEqual(rv.id, undefined, 'id for new document is defined');
@@ -607,7 +599,7 @@ exports['getDoc - cached'] = function (test)
             });
         },
         function (id, callback) {
-            db.getDoc(id, {}, get_options, function (err, rv) {
+            appdb.getDoc(id, {}, get_options, function (err, rv) {
                 test.equal(err, undefined, 'getDoc has no error');
                 test.notEqual(rv, undefined, 'Document is defined');
                 test.notEqual(rv._id, undefined, '_id for document is defined');
@@ -617,13 +609,13 @@ exports['getDoc - cached'] = function (test)
         },
         function (rdoc, callback) {
             rdoc.data = replacement_data;
-            db.saveDoc(rdoc, function (err, rv) {
+            appdb.saveDoc(rdoc, function (err, rv) {
                 test.equal(err, undefined, 'saveDoc has no error');
                 callback(null, rv.id);
             });
         },
         function (id, callback) {
-            db.getDoc(id, {}, get_options, function (err, rv) {
+            appdb.getDoc(id, {}, get_options, function (err, rv) {
                 test.equal(err, undefined, 'getDoc has no error');
                 test.notEqual(rv, undefined, 'Document is defined');
                 test.equal(rv.data, doc.data, 'Cached document data is correct');
@@ -632,7 +624,7 @@ exports['getDoc - cached'] = function (test)
         },
         function (id, callback) {
             get_options.flushCache = true;
-            db.getDoc(id, {}, get_options, function (err, rv) {
+            appdb.getDoc(id, {}, get_options, function (err, rv) {
                 test.equal(err, undefined, 'getDoc has no error');
                 test.notEqual(rv, undefined, 'Document is defined');
                 test.notEqual(rv._id, undefined, '_id for document is defined');
@@ -795,7 +787,7 @@ exports['listUsers'] = function (test)
 {
     async.waterfall([
         function(callback) {
-            db.listUsers(function(err, users) {
+            users.list(function(err, users) {
                 test.equal(err, undefined, 'listUsers has no error');
                 test.notEqual(users, undefined, 'users are defined');
                 callback();
@@ -814,7 +806,7 @@ exports['listUsers'] = function (test)
 
 
 var deleteUser = function(username, test, callback) {
-    db.deleteUser(username, function(err) {
+    users.delete(username, function(err) {
         if (err) {
             test.done(err);
         } else {
@@ -829,7 +821,7 @@ exports['createUser'] = function (test)
 
     async.waterfall([
         function (callback) {
-            db.createUser('wizard_of_oz', 'password', function(err, user) {
+            users.create('wizard_of_oz', 'password', function(err, user) {
                 if (err) { return test.done(err); }
                 
                 test.equal(err, undefined, 'signup has no error');
@@ -839,10 +831,10 @@ exports['createUser'] = function (test)
             });
         },
         function (callback) {
-            db.createUser('wicked_with_of_the_east', 'password', ['witch'], function(err, user) {
+            users.create('wicked_with_of_the_east', 'password', ['witch'], function(err, user) {
                 if (err) { return test.done(err); }
                 
-                db.getUser('wicked_with_of_the_east', function(err, user, options) {
+                users.get('wicked_with_of_the_east', function(err, user, options) {
                     if (err) { return test.done(err); }
                     
                     test.equal(user.roles[0], "witch");
@@ -851,7 +843,7 @@ exports['createUser'] = function (test)
             });            
         },
         function (callback) {
-            db.createUser('tin_woodman', 'password', ['_admin'], function(err, user) {
+            users.create('tin_woodman', 'password', ['_admin'], function(err, user) {
                 if (err) { return test.done(err); }
                 
                 db.request({
@@ -886,10 +878,10 @@ exports['updateUser'] = function (test)
     async.waterfall([
         function (callback) {
             // if new role is admin user should be admin after (1)
-            db.createUser('wizard_of_oz', 'password', ['wizard'], function(err, user) {
+            users.create('wizard_of_oz', 'password', ['wizard'], function(err, user) {
                 if (err) { return test.done(err); }
 
-                db.updateUser('wizard_of_oz', 'password', ['_admin'], function(err, user) {
+                users.update('wizard_of_oz', 'password', ['_admin'], function(err, user) {
                     if (err) { return test.done(err); }
 
                     db.request({
@@ -907,10 +899,10 @@ exports['updateUser'] = function (test)
         },
         function (callback) {
             // if user was admin but new role isn't, user should not be admin after (1)
-            db.createUser('wicked_with_of_the_east', 'password', ['_admin'], function(err, user) {
+            users.create('wicked_with_of_the_east', 'password', ['_admin'], function(err, user) {
                 if (err) { return test.done(err); }
         
-                db.updateUser('wicked_with_of_the_east', 'password', ['wizard'], function(err, user) {
+                users.update('wicked_with_of_the_east', 'password', ['wizard'], function(err, user) {
                     if (err) { return test.done(err); }
         
                     db.request({
@@ -926,13 +918,13 @@ exports['updateUser'] = function (test)
         },
         function (callback) {
             // user should have new roles afterwards (1)
-            db.createUser('tin_woodman', 'password', ['companion'], function(err, user) {
+            users.create('tin_woodman', 'password', ['companion'], function(err, user) {
                 if (err) { return test.done(err); }
         
-                db.updateUser('tin_woodman', 'password', ['wizard'], function(err, user) {
+                users.update('tin_woodman', 'password', ['wizard'], function(err, user) {
                     if (err) { return test.done(err); }
         
-                    db.getUser('tin_woodman', function(err, user, options) {
+                    users.get('tin_woodman', function(err, user, options) {
                         if (err) { return test.done(err); }
         
                         test.equal(user.roles[0], "wizard");
@@ -943,18 +935,18 @@ exports['updateUser'] = function (test)
         },
         function (callback) {
             // user should have new password afterwards (1)
-            db.createUser('scarecrow', 'password', ['companion'], function(err, user) {
+            users.create('scarecrow', 'password', ['companion'], function(err, user) {
                 if (err) { return test.done(err); }
         
-                db.getUser('scarecrow', function(err, user) {
+                users.get('scarecrow', function(err, user) {
                     if (err) { return test.done(err); }
 
                     var old_password = user.password_sha;
                     
-                    db.updateUser('scarecrow', 'newpassword', ['companion'], function(err, user) {
+                    users.update('scarecrow', 'newpassword', ['companion'], function(err, user) {
                         if (err) { return test.done(err); }
 
-                        db.getUser('scarecrow', function(err, user) {
+                        users.get('scarecrow', function(err, user) {
                             if (err) { return test.done(err); }
 
                             test.notEqual(user.password_sha, old_password);
@@ -966,18 +958,18 @@ exports['updateUser'] = function (test)
         },
         function (callback) {
             // empty password should not change password (1)
-            db.createUser('cowardly_lion', 'password', ['companion'], function(err, user) {
+            users.create('cowardly_lion', 'password', ['companion'], function(err, user) {
                 if (err) { return test.done(err); }
         
-                db.getUser('cowardly_lion', function(err, user) {
+                users.get('cowardly_lion', function(err, user) {
                     if (err) { return test.done(err); }
                     
                     var old_password = user.password_sha;
                     
-                    db.updateUser('cowardly_lion', '', ['companion'], function(err, user) {
+                    users.update('cowardly_lion', '', ['companion'], function(err, user) {
                         if (err) { return test.done(err); }
 
-                        db.getUser('cowardly_lion', function(err, user) {
+                        users.get('cowardly_lion', function(err, user) {
                             if (err) { return test.done(err); }
 
                             test.equal(user.password_sha, old_password);

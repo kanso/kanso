@@ -14,7 +14,8 @@
  */
 
 var core = require('./actions.core'),
-    db = require('kanso/db.core'),
+    kanso_core = require('kanso/core'),
+    db = require('db'),
     utils = require('kanso/utils'),
     _ = require('underscore')._;
 
@@ -70,7 +71,8 @@ exports.saveExternalDocument = function (action_options, names,
         );
     }
 
-    db.saveDoc(
+    var appdb = db.use(kanso_core.getDBURL());
+    appdb.saveDoc(
         doc, function (err, rv) {
             if (err) {
                 throw new Error(

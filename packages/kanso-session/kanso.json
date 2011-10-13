@@ -5,7 +5,8 @@
     "modules": "kanso",
     "dependencies": {
         "modules": null,
-        "kanso-db": null,
+        "db": ">=0.0.8",
+        "users": ">=0.0.8",
         "sha1": null,
         "kanso-cookies": null,
         "kanso-events": null,

@@ -12,7 +12,8 @@
  */
 
 var core = require('./widgets.core'),
-    db = require('kanso/db'),
+    kanso_core = require('kanso/core'),
+    db = require('db'),
     forms = require('kanso/forms'),
     actions = require('kanso/actions'),
     render = require('kanso/render'),
@@ -672,7 +673,8 @@ exports.embedForm = function (_options) {
 
             var document_id = (value.ref || value._id);
 
-            db.getDoc(
+            var appdb = db.use(kanso_core.getDBURL());
+            appdb.getDoc(
                 document_id,
                 utils.bindContext(this, function (err, rv) {
                     if (err) {

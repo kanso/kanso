@@ -1,0 +1,11 @@
+{
+    "name": "replication",
+    "version": "0.0.8",
+    "description": "A browser CouchDB library, used for managing replication tasks",
+    "modules": "replication.js",
+    "dependencies": {
+        "modules": null,
+        "underscore": ">=1.1.5",
+        "db": ">=0.0.8"
+    }
+}

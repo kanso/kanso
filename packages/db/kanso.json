@@ -1,13 +1,10 @@
 {
-    "name": "kanso-db",
+    "name": "db",
     "version": "0.0.8",
     "description": "A browser CouchDB library, used for CRUD operations on documents and querying views etc",
-    "modules": "kanso",
+    "modules": "db.js",
     "dependencies": {
-        "settings": null,
         "modules": null,
-        "underscore": null,
-        "kanso-utils": null,
-        "kanso-sanitize": null
+        "underscore": ">=1.1.5"
     }
 }

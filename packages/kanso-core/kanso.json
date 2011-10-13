@@ -11,7 +11,7 @@
         "attachments": null,
         "underscore": null,
         "url": null,
-        "kanso-db": null,
+        "db": "0.0.8",
         "kanso-utils": null,
         "kanso-session": null,
         "kanso-cookies": null,

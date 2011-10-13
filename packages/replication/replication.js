@@ -1,5 +1,3 @@
-/*global $: false, kanso: true */
-
 /**
  * Contains functions for querying and setting data
  * related to replication operations in CouchDB.
@@ -11,8 +9,8 @@
  * Module dependencies
  */
 
-var core = require('./db.core'),
-    utils = require('kanso/utils');
+var db = require('db'),
+    _ = require('underscore')._;
 
 
 /**
@@ -26,21 +24,18 @@ var core = require('./db.core'),
  * This function only works with CouchDB >= 1.1, since it uses the
  * _replicator database.
  *
- * @name getReplication(id, callback)
+ * @name get(id, callback)
  * @param {String} id
  * @param {Function} callback
  * @api public
  */
 
-exports.getReplication = function (id, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('getReplication cannot be called server-side');
-    }
+exports.get = function (id, callback) {
     var req = {
-        url: '/_replicator/' + core.encode(id),
+        url: '/_replicator/' + db.encode(id),
         cache: false /* Work around IE7 issue */
     };
-    core.request(req, callback);
+    db.request(req, callback);
 };
 
 /**
@@ -55,16 +50,13 @@ exports.getReplication = function (id, callback) {
  * This function only works with CouchDB >= 1.1, since it uses the
  * _replicator database.
  *
- * @name startReplication(options, callback)
+ * @name start(options, callback)
  * @param {Object} options
  * @param {Function} callback
  * @api public
  */
 
-exports.startReplication = function (options, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('startReplication cannot be called server-side');
-    }
+exports.start = function (options, callback) {
     if (!options.source) {
         throw new Error('source parameter must be provided');
     }
@@ -77,7 +69,7 @@ exports.startReplication = function (options, callback) {
         data: JSON.stringify(options),
         contentType: 'application/json'
     };
-    core.request(req, callback);
+    db.request(req, callback);
 };
 
 /**
@@ -96,17 +88,14 @@ exports.startReplication = function (options, callback) {
  * This function only works with CouchDB >= 1.1, since it uses the
  * _replicator database.
  *
- * @name waitReplication(doc, [options, state_function], callback)
+ * @name wait(doc, [options, state_function], callback)
  * @param {Object} doc
  * @param {Function} state_function (optional)
  * @param {Function} callback
  * @api public
  */
 
-exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_function, callback) {
-    if (!utils.isBrowser()) {
-        throw new Error('waitReplication cannot be called server-side');
-    }
+exports.wait = function (doc, /*opt*/options, /*opt*/state_function, callback) {
     var default_state_function = function (recent_doc, initial_doc) {
         return (
           recent_doc._replication_state === 'completed' ||
@@ -136,7 +125,7 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
     }
 
     /* Fetch latest revision */
-    exports.getReplication(doc.id, function (err, rv) {
+    exports.get(doc.id, function (err, rv) {
 
         /* Check for error, then for an interesting event */
         if (err || state_function(rv, doc)) {
@@ -150,7 +139,7 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
 
             /* Go around */
             return setTimeout(function () {
-                return exports.waitReplication(
+                return exports.wait(
                     doc, options, state_function, callback
                 );
             }, options.delay);
@@ -160,7 +149,7 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
 
 /**
  * Stops a replication operation already in progress.
- * The doc parameter can be obtained by calling getReplication.
+ * The doc parameter can be obtained by calling replication.get.
  *
  * If you're running behind a virtual host you'll need to set up
  * appropriate rewrites to /_replicator, which will also mean turning
@@ -169,19 +158,14 @@ exports.waitReplication = function (doc, /*optional*/options, /*optional*/state_
  * This function only works with CouchDB >= 1.1, since it uses the
  * _replicator database.
  *
- * @name stopReplication(doc, callback, [options])
+ * @name stop(doc, callback, [options])
  * @param {String} id
  * @param {Function} callback
  * @param {Function} options
  * @api public
  */
 
-exports.stopReplication = function (doc, callback, /*optional*/options) {
-
-    if (!utils.isBrowser()) {
-        throw new Error('stopReplication cannot be called server-side');
-    }
-
+exports.stop = function (doc, callback, /*optional*/options) {
     if (options === undefined) {
         options = {};
     }
@@ -195,18 +179,18 @@ exports.stopReplication = function (doc, callback, /*optional*/options) {
     var req = {
         type: 'DELETE',
         url: '/_replicator/' +
-          core.encode(doc._id) +
-          '?rev=' + core.encode(doc._rev)
+          db.encode(doc._id) +
+          '?rev=' + db.encode(doc._rev)
     };
 
-    core.request(req, function (err, rv) {
+    db.request(req, function (err, rv) {
 
         if (err && err.status === 409) {  /* Document update conflict */
 
             /* Race condition:
                 The CouchDB replication finished (or was updated) between
-                the caller's getReplication and now. Subject to restrictions
-                in options, call getReplication and then try again. */
+                the caller's replication.get and now. Subject to restrictions
+                in options, call replication.get and then try again. */
 
             /* Termination condition for recursion... */
             if (options.limit > 0) {
@@ -214,7 +198,7 @@ exports.stopReplication = function (doc, callback, /*optional*/options) {
                 /* ...with well-defined progress toward it */
                 options.limit -= 1;
 
-                return exports.getReplication(doc._id, function (e, d) {
+                return exports.get(doc._id, function (e, d) {
                     if (e) {
                         throw new Error(
                           'The specified replication document changed ' +
@@ -223,7 +207,7 @@ exports.stopReplication = function (doc, callback, /*optional*/options) {
                     }
                     /* Go around */
                     setTimeout(function () {
-                        return exports.stopReplication(d, callback, options);
+                        return exports.stop(d, callback, options);
                     }, options.delay);
                 });
             }
@@ -244,3 +228,17 @@ exports.stopReplication = function (doc, callback, /*optional*/options) {
 
 };
 
+
+/**
+ * replication methods cannot be called server-side
+ */
+
+_.each(_.keys(exports), function (k) {
+    var _fn = module.exports[k];
+    module.exports[k] = function () {
+        if (typeof(window) === 'undefined') {
+            throw new Error(k + ' cannot be called server-side');
+        }
+        return _fn.apply(this, arguments);
+    }
+});

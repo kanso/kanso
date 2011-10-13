@@ -8,7 +8,8 @@
  * Module dependencies
  */
 
-var db = require('kanso/db'),
+var db = require('db'),
+    users = require('users'),
     cookies = require('kanso/cookies'),
     events = require('kanso/events'),
     utils = require('kanso/utils');
@@ -179,5 +180,5 @@ exports.info = function (callback) {
  */
 
 exports.signup = function (username, password, roles, callback) {
-    db.createUser(username, password, roles, callback);
+    users.create(username, password, roles, callback);
 };

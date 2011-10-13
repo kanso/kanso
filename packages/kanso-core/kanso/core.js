@@ -16,7 +16,7 @@
 
 var settings = require('settings/root'), // module auto-generated
     url = require('url'),
-    db = require('kanso/db'),
+    db = require('db'),
     utils = require('kanso/utils'),
     session = require('kanso/session'),
     cookies = require('kanso/cookies'),
@@ -586,7 +586,8 @@ exports.runShowBrowser = function (req, name, docid, callback) {
     events.emit('beforeResource', info);
 
     if (docid) {
-        db.getDoc(docid, req.query, function (err, doc) {
+        var appdb = db.use(exports.getDBURL(req));
+        appdb.getDoc(docid, req.query, function (err, doc) {
             var current_req = (utils.currentRequest() || {});
             if (current_req.uuid === req.uuid) {
                 if (err) {
@@ -777,7 +778,8 @@ exports.runUpdateBrowser = function (req, name, docid, callback) {
     events.emit('beforeResource', info);
 
     if (docid) {
-        db.getDoc(docid, req.query, function (err, doc) {
+        var appdb = db.use(exports.getDBURL(req));
+        appdb.getDoc(docid, req.query, function (err, doc) {
             var current_req = (utils.currentRequest() || {});
             if (current_req.uuid === req.uuid) {
                 if (err) {
@@ -871,7 +873,8 @@ exports.runUpdate = function (fn, doc, req, cb) {
     }
     var r = [val ? val[0]: null, res];
     if (req.client && r[0]) {
-        db.saveDoc(r[0], function (err, res) {
+        var appdb = db.use(exports.getDBURL(req));
+        appdb.saveDoc(r[0], function (err, res) {
             if (err) {
                 return cb(err);
             }
@@ -933,7 +936,8 @@ exports.runListBrowser = function (req, name, view, callback) {
     if (view) {
         // update_seq used in head parameter passed to list function
         req.query.update_seq = true;
-        db.getView(view, req.query, function (err, data) {
+        var appdb = db.use(exports.getDBURL(req));
+        appdb.getView(settings.name, view, req.query, function (err, data) {
             var current_req = (utils.currentRequest() || {});
             if (current_req.uuid === req.uuid) {
                 if (err) {
@@ -1227,6 +1231,10 @@ exports.setURL = function (method, url, data) {
  */
 
 exports.getBaseURL = utils.getBaseURL;
+
+exports.getDBURL = function (req) {
+    return exports.getBaseURL(req) + '/_db';
+};
 
 
 /**

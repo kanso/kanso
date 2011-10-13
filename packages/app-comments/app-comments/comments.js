@@ -1,7 +1,8 @@
-var db = require('kanso/db'),
+var db = require('db'),
     templates = require('kanso/templates'),
     datelib = require('datelib'),
     kanso_core = require('kanso/core'),
+    settings = require('settings/root'),
     _ = require('underscore')._;
 
 
@@ -16,13 +17,16 @@ exports.get = function (target, /*optional*/options, callback) {
         startkey = [target, {}];
         endkey = [target];
     }
-    db.getView('app-comments:comments_by_target', _.defaults(options, {
-        limit: 100,
-        startkey: startkey,
-        endkey: endkey,
-        descending: options.descending,
-        include_docs: true
-    }), callback);
+    var appdb = db.use(kanso_core.getDBURL());
+    appdb.getView(settings.name, 'app-comments:comments_by_target',
+        _.defaults(options, {
+            limit: 100,
+            startkey: startkey,
+            endkey: endkey,
+            descending: options.descending,
+            include_docs: true
+        }
+    ), callback);
 };
 
 exports.getByUser = function (user, /*options*/options, callback) {
@@ -36,13 +40,16 @@ exports.getByUser = function (user, /*options*/options, callback) {
         startkey = [user, {}];
         endkey = [user];
     }
-    db.getView('app-comments:comments_by_user', _.defaults(options, {
-        limit: 100,
-        startkey: startkey,
-        endkey: endkey,
-        descending: options.descending,
-        include_docs: true
-    }), callback);
+    var appdb = db.use(kanso_core.getDBURL());
+    appdb.getView(settings.name, 'app-comments:comments_by_user',
+        _.defaults(options, {
+            limit: 100,
+            startkey: startkey,
+            endkey: endkey,
+            descending: options.descending,
+            include_docs: true
+        }
+    ), callback);
 };
 
 
@@ -133,7 +140,8 @@ exports.add = function (target, user, text, callback) {
         text: text,
         time: datelib.ISODateString()
     }
-    db.saveDoc(doc, callback);
+    var appdb = db.use(kanso_core.getDBURL());
+    appdb.saveDoc(doc, callback);
 };
 
 /**

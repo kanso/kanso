@@ -1,0 +1,11 @@
+{
+    "name": "users",
+    "version": "0.0.8",
+    "description": "A browser CouchDB library for managing users",
+    "modules": "users.js",
+    "dependencies": {
+        "modules": null,
+        "underscore": ">=1.1.5",
+        "db": ">=0.0.8"
+    }
+}
