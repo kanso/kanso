@@ -548,6 +548,25 @@ exports.string = function (options) {
     }));
 };
 
+/**
+ * Creates a new password Field
+ *
+ * @name password([options])
+ * @param {Object} options
+ * @api public
+ */
+
+exports.password = function (options) {
+    return new Field(_.defaults((options || {}), {
+        widget: widgets.password(),
+        parse: function (raw) {
+            if (raw === null || raw === undefined) {
+                return '';
+            }
+            return '' + raw;
+        }
+    }));
+};
 
 /**
  * Creates a new number Field
