@@ -334,11 +334,7 @@ exports.parseCSV = function (csvString) {
  */
 
 exports.redirect = function (/*optional*/req, url) {
-    if (!url) {
-        /* Arity = 1: url only */
-        url = req;
-        req = exports.currentRequest();
-    }
+    url = url || '/';
     var baseURL = exports.getBaseURL(req);
     return {code: 302, headers: {'Location': baseURL + url}};
 };
