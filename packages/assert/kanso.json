@@ -1,0 +1,9 @@
+{
+    "name": "assert",
+    "version": "0.0.1",
+    "modules": "assert.js",
+    "dependencies": {
+        "modules": ">=0.0.8"
+    },
+    "description": "Browser port of the node.js assert module"
+}
