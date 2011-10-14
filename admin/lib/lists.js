@@ -2,7 +2,8 @@
   $: false*/
 
 var utils = require('./utils'),
-    db = require('kanso/db'),
+    db = require('db'),
+    core = require('kanso/core'),
     loader = require('./loader'),
     kanso_utils = require('kanso/utils'),
     templates = require('kanso/templates'),
@@ -29,7 +30,8 @@ var adminList = function (fn) {
             rows.push(row);
             row = getRow();
         }
-        db.getDesignDoc(req.query.app, function (err, ddoc) {
+        var appdb = db.use(core.getDBURL());
+        appdb.getDesignDoc(req.query.app, function (err, ddoc) {
             if (err) {
                 return alert(err);
             }
@@ -97,7 +99,8 @@ exports.typelist = adminList(function (rows, ddoc, req) {
                 skip: 1,
                 limit: 10
             };
-            db.getView('types', q, function (err, result) {
+            var appdb = db.use(core.getDBURL());
+            appdb.getView('types', q, function (err, result) {
                 if (result.rows.length < 10) {
                     more_link.remove();
                 }

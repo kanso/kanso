@@ -3,7 +3,7 @@
 
 var utils = require('./utils'),
     core = require('kanso/core'),
-    db = require('kanso/db'),
+    db = require('db'),
     forms = require('kanso/forms'),
     loader = require('./loader'),
     kanso_utils = require('kanso/utils'),
@@ -18,7 +18,8 @@ exports.addtype = function (doc, req) {
             content: templates.render('noscript.html', req, {})
         })];
     }
-    db.getDesignDoc(req.query.app, function (err, ddoc) {
+    var appdb = db.use(core.getDBURL());
+    appdb.getDesignDoc(req.query.app, function (err, ddoc) {
         var settings = loader.appRequire(ddoc, 'settings/root'),
             types = loader.appRequire(ddoc, 'kanso/types'),
             app = loader.appRequire(ddoc, settings.load),
@@ -30,7 +31,8 @@ exports.addtype = function (doc, req) {
         form.validate(req);
 
         if (form.isValid()) {
-            db.saveDoc(form.values, function (err, resp) {
+            var appdb = db.use(core.getDBURL());
+            appdb.saveDoc(form.values, function (err, resp) {
                 if (err) {
                     flashmessages.addMessage(req, {
                         type: 'error',
@@ -88,7 +90,8 @@ exports.updatetype = function (doc, req) {
             content: templates.render('noscript.html', req, {})
         })];
     }
-    db.getDesignDoc(req.query.app, function (err, ddoc) {
+    var appdb = db.use(core.getDBURL());
+    appdb.getDesignDoc(req.query.app, function (err, ddoc) {
         var settings = loader.appRequire(ddoc, 'settings/root'),
             app = loader.appRequire(ddoc, settings.load),
             type = app.types ? app.types[doc.type]: undefined;
@@ -99,7 +102,8 @@ exports.updatetype = function (doc, req) {
         form.validate(req);
 
         if (form.isValid()) {
-            db.saveDoc(form.values, function (err, resp) {
+            var appdb = db.use(core.getDBURL());
+            appdb.saveDoc(form.values, function (err, resp) {
                 if (err) {
                     flashmessages.addMessage(req, {
                         type: 'error',
@@ -162,7 +166,8 @@ exports.deletetype = function (doc, req) {
         });
         return [doc, {code: 302, headers: {'Location': loc}}];
     }
-    db.removeDoc(doc, function (err, resp) {
+    var appdb = db.use(core.getDBURL());
+    appdb.removeDoc(doc, function (err, resp) {
         if (err) {
             flashmessages.addMessage(req, {
                 type: 'error',

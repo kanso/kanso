@@ -1,6 +1,6 @@
 /*global $: false */
 
-var session = require('kanso/session'),
+var session = require('session'),
     templates = require('kanso/templates'),
     events = require('kanso/events'),
     utils = require('./utils');

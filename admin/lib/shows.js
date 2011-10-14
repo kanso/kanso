@@ -3,7 +3,7 @@
 
 var utils = require('./utils'),
     kanso_utils = require('kanso/utils'),
-    db = require('kanso/db'),
+    db = require('db'),
     core = require('kanso/core'),
     loader = require('./loader'),
     widgets = require('kanso/widgets'),
@@ -20,7 +20,8 @@ var adminShow = function (fn) {
                 content: templates.render('noscript.html', req, {})
             });
         }
-        db.getDesignDoc(req.query.app, function (err, ddoc) {
+        var appdb = db.use(core.getDBURL());
+        appdb.getDesignDoc(req.query.app, function (err, ddoc) {
             if (err) {
                 return alert(err);
             }
