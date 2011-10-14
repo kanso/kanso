@@ -3,7 +3,4 @@
  * the design doc pushed to CouchDB.
  */
 
-
-module.exports = {
-    events: require('./events')
-};
+require('./events');
