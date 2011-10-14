@@ -10,8 +10,8 @@
  * Module dependencies
  */
 
-var _ = require('underscore')._,
-    session = null;
+var events = require('events'),
+    _ = require('underscore')._;
 
 
 function isBrowser() {
@@ -19,28 +19,11 @@ function isBrowser() {
 }
 
 
-/* Avoid a circular require in CouchDB */
-
-if (isBrowser()) {
-    try {
-        session = require('./session');
-    }
-    catch (e) {
-        // may not be available
-    }
-}
-
-
 /**
- * When a db call results in an unauthorized response, the user's session is
- * checked to see if their session has timed out or they've logged out in
- * another screen.
- *
- * This check is throttled to once per second, to avoid flooding the server if
- * multiple requests are made with incorrect permissions.
+ * This module is an EventEmitter, used for emitting 'unauthorized' events
  */
 
-var last_session_check = 0;
+module.exports = new events.EventEmitter();
 
 
 /**
@@ -117,11 +100,7 @@ function onComplete(options, callback) {
             }
         }
         if (req.status === 401) {
-            // returned 'Unauthorized', check the user's session if it's not
-            // been checked on an 'Unauthorized' repsonse in the last second
-            if (session && last_session_check < new Date().getTime() - 1000) {
-                session.info();
-            }
+            exports.emit('unauthorized', req);
         }
         if (req.status === 200 || req.status === 201 || req.status === 202) {
             exports._invoke_request_callback(

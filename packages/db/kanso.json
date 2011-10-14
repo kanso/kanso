@@ -5,6 +5,7 @@
     "modules": "db.js",
     "dependencies": {
         "modules": null,
-        "underscore": ">=1.1.5"
+        "underscore": ">=1.1.5",
+        "events": null
     }
 }
