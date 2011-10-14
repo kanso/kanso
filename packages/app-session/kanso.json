@@ -9,9 +9,12 @@
         "modules": null,
         "properties": null,
         "settings": null,
+        "session": "0.0.8",
         "kanso-core": null,
         "kanso-events": null,
-        "kanso-session": null,
-        "kanso-templates": null
+        "kanso-templates": null,
+        "kanso-utils": null,
+        "cookies": null,
+        "db": null
     }
 }

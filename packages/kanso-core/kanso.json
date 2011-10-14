@@ -13,7 +13,7 @@
         "url": null,
         "db": "0.0.8",
         "kanso-utils": null,
-        "kanso-session": null,
+        "session": null,
         "cookies": null,
         "kanso-events": null
     },

@@ -1,4 +1,4 @@
-var session = require('kanso/session');
+var session = require('session');
 
 
 exports.clearErrors = function (form) {

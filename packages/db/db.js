@@ -23,7 +23,7 @@ function isBrowser() {
  * This module is an EventEmitter, used for emitting 'unauthorized' events
  */
 
-module.exports = new events.EventEmitter();
+var exports = module.exports = new events.EventEmitter();
 
 
 /**

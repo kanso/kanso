@@ -8,65 +8,41 @@
  * Module dependencies
  */
 
-var db = require('db'),
+var events = require('events'),
     users = require('users'),
-    cookies = require('cookies'),
-    events = require('kanso/events'),
-    utils = require('kanso/utils');
+    db = require('db');
+
+
+function isBrowser() {
+    return (typeof(window) !== 'undefined');
+}
+
+/**
+ * When a db call results in an unauthorized response, the user's session is
+ * checked to see if their session has timed out or they've logged out in
+ * another screen.
+ *
+ * This check is throttled to once per second, to avoid flooding the server if
+ * multiple requests are made with incorrect permissions.
+ */
+
+var last_session_check = 0;
+
+db.on('unauthorized', function (req) {
+    // db call returned 'Unauthorized', check the user's session if it's not
+    // been checked on an 'Unauthorized' repsonse in the last second
+    if (last_session_check < new Date().getTime() - 1000) {
+        exports.info();
+    }
+});
 
 
 /**
- * Creates a fake request to /_session to pass to sessionChange, useful
- * when using functions such as templates.render
- *
- * @name fakeRequest(userCtx, callback)
- * @param {Object} userCtx
- * @param {Function} callback
- * @api public
+ * This module is an EventEmitter, used for handling 'change' events
  */
 
-exports.fakeRequest = function (userCtx, callback) {
-    db.newUUID(100, function (err, uuid) {
-        if (err) {
-            return callback(err);
-        }
-        callback(null, {
-            userCtx: userCtx,
-            uuid: uuid,
-            method: 'GET',
-            query: {},
-            headers: {},
-            path: ['_session'],
-            client: true,
-            initial_hit: utils.initial_hit,
-            cookie: cookies.readBrowserCookies()
-        });
-    });
-};
+var exports = module.exports = new events.EventEmitter();
 
-/**
- * Calls sessionChange if exported from the currently loaded app.
- *
- * @name sessionChange(userCtx, callback)
- * @param {Object} userCtx
- * @param {Function} callback
- * @api public
- */
-
-exports.sessionChange = function (userCtx, callback) {
-    var req = exports.fakeRequest(userCtx, function (err, req) {
-        if (err) {
-            if (callback) {
-                return callback(err);
-            }
-            throw err;
-        }
-        events.emit('sessionChange', userCtx, req);
-        if (callback) {
-            callback();
-        }
-    });
-};
 
 /**
  * Logs out the current user.
@@ -77,7 +53,7 @@ exports.sessionChange = function (userCtx, callback) {
  */
 
 exports.logout = function (callback) {
-    if (!utils.isBrowser()) {
+    if (!isBrowser()) {
         throw new Error('logout cannot be called server-side');
     }
     db.request({
@@ -88,9 +64,9 @@ exports.logout = function (callback) {
     },
     function (err, resp) {
         if (resp && resp.ok) {
-            utils.userCtx = {name: null, roles: []};
-            utils.session = {userCtx: utils.userCtx};
-            exports.sessionChange(utils.userCtx);
+            exports.userCtx = {name: null, roles: []};
+            exports.session = {userCtx: exports.userCtx};
+            exports.emit('change', exports.userCtx);
         }
         if (callback) {
             callback(err, resp);
@@ -109,7 +85,7 @@ exports.logout = function (callback) {
  */
 
 exports.login = function (username, password, callback) {
-    if (!utils.isBrowser()) {
+    if (!isBrowser()) {
         throw new Error('login cannot be called server-side');
     }
     db.request({
@@ -124,10 +100,9 @@ exports.login = function (username, password, callback) {
             // and see if its a bug in couchdb, for now, just using the username
             // given to the login function instead, since we know the login
             // request was accepted.
-            //utils.userCtx = {name: resp.name, roles: resp.roles};
-            utils.userCtx = {name: username, roles: resp.roles};
-            utils.session = {userCtx: utils.userCtx};
-            exports.sessionChange(utils.userCtx);
+            exports.userCtx = {name: username, roles: resp.roles};
+            exports.session = {userCtx: exports.userCtx};
+            exports.emit('change', exports.userCtx);
         }
         if (callback) {
             callback(err, resp);
@@ -145,7 +120,7 @@ exports.login = function (username, password, callback) {
  */
 
 exports.info = function (callback) {
-    if (!utils.isBrowser()) {
+    if (!isBrowser()) {
         throw new Error('info cannot be called server-side');
     }
     db.request({
@@ -153,12 +128,12 @@ exports.info = function (callback) {
         url: "/_session"
     },
     function (err, resp) {
-        var oldUserCtx = utils.userCtx;
-        utils.session = resp;
-        utils.userCtx = (resp && resp.userCtx) || {name: null, roles: []};
+        var oldUserCtx = exports.userCtx;
+        exports.session = resp;
+        exports.userCtx = (resp && resp.userCtx) || {name: null, roles: []};
         // TODO: should this check for differences in more than just name?
-        if (!oldUserCtx || oldUserCtx.name !== utils.userCtx.name) {
-            exports.sessionChange(utils.userCtx);
+        if (!oldUserCtx || oldUserCtx.name !== exports.userCtx.name) {
+            exports.emit('change', exports.userCtx);
         }
         if (callback) {
             callback(err, resp);
@@ -180,5 +155,8 @@ exports.info = function (callback) {
  */
 
 exports.signup = function (username, password, roles, callback) {
+    if (!isBrowser()) {
+        throw new Error('signup cannot be called server-side');
+    }
     users.create(username, password, roles, callback);
 };

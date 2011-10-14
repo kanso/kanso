@@ -1,15 +1,12 @@
 {
-    "name": "kanso-session",
+    "name": "session",
     "version": "0.0.8",
     "description": "Utilities for managing the current user's session, including login, logout etc",
-    "modules": "kanso",
+    "modules": "session.js",
     "dependencies": {
         "modules": null,
         "db": ">=0.0.8",
         "users": ">=0.0.8",
-        "sha1": null,
-        "cookies": null,
-        "kanso-events": null,
-        "kanso-utils": null
+        "events": null
     }
 }
