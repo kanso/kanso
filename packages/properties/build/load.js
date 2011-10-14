@@ -22,7 +22,7 @@ var proxyFns = function (path, app, doc, prop) {
     }
 };
 
-var load = function (module_cache, doc, settings) {
+var load = function (module_cache, doc, settings, name) {
     var p = settings.load;
     var app = modules.require(module_cache, doc, '/', p);
 
@@ -36,6 +36,12 @@ var load = function (module_cache, doc, settings) {
                 }
             }
             else {
+                if (doc[k] && doc[k] !== app[k]) {
+                    throw new Error(
+                        'Conflicting property values for "' + k + '"' +
+                        ' caused by ' + name
+                    );
+                }
                 doc[k] = app[k];
             }
         }
@@ -65,7 +71,7 @@ module.exports = function (root, path, settings, doc, callback) {
     for (var k in doc._load) {
         if (doc._load[k] && doc._load[k].load) {
             try {
-                load(module_cache, doc, doc._load[k]);
+                load(module_cache, doc, doc._load[k], k);
             }
             catch (e) {
                 return callback(e);
