@@ -11,6 +11,8 @@ module.exports = {
     updates: require('./updates'),
     filters: require('./filters'),
     rewrites: require('./rewrites'),
-    validate_doc_update: require('./validate'),
-    events: require('./events')
+    validate_doc_update: require('./validate')
 };
+
+// bind event handlers
+require('./events');
