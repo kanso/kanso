@@ -402,7 +402,8 @@ exports._finish_cached_request = function (options) {
  * Creates a CouchDB database.
  *
  * If you're running behind a virtual host you'll need to set up
- * appropriate rewrites for a PUT request to '/' and turn off safe rewrites.
+ * appropriate rewrites for a DELETE request to '/' either turning off safe
+ * rewrites or setting up a new vhost entry.
  *
  * @name createDatabase(name, callback)
  * @param {String} name
@@ -422,7 +423,8 @@ exports.createDatabase = function (name, callback) {
  * Deletes a CouchDB database.
  *
  * If you're running behind a virtual host you'll need to set up
- * appropriate rewrites for a DELETE request to '/' and turn off safe rewrites.
+ * appropriate rewrites for a DELETE request to '/' either turning off safe
+ * rewrites or setting up a new vhost entry.
  *
  * @name deleteDatabase(name, callback)
  * @param {String} name
@@ -435,6 +437,23 @@ exports.deleteDatabase = function (name, callback) {
     var req = {
         type: 'DELETE',
         url: '/' + exports.encode(name.replace(/^\/+/, ''))
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Lists all databses
+ *
+ * If you're running behind a virtual host you'll need to set up
+ * appropriate rewrites for a DELETE request to '/' either turning off safe
+ * rewrites or setting up a new vhost entry.
+ */
+
+exports.allDbs = function (callback) {
+    var req = {
+        type: 'GET',
+        url: '/_all_dbs'
     };
     exports.request(req, callback);
 };
@@ -544,6 +563,48 @@ DB.prototype.getRewrite = function (name, path, /*optional*/q, callback) {
 
     var req = {
         url: this.url + '/_design/' + exports.encode(name) + '/_rewrite' + path,
+        data: exports.stringifyQuery(q)
+    };
+    exports.request(req, callback);
+};
+
+
+/**
+ * Queries all design documents in the database.
+ *
+ * @name allDocs([q], callback)
+ * @param {Object} q - query parameters to pass to /_all_docs (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+DB.prototype.allDesignDocs = function (q, callback) {
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    q.startkey = '"_design"';
+    q.endkey = '"_design0"';
+    this.allDocs(q, callback);
+};
+
+
+/**
+ * Queries all documents in the database.
+ *
+ * @name allDocs([q], callback)
+ * @param {Object} q - query parameters to pass to /_all_docs (optional)
+ * @param {Function} callback
+ * @api public
+ */
+
+DB.prototype.allDocs = function (q, callback) {
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    var req = {
+        url: this.url + '/_all_docs',
         data: exports.stringifyQuery(q)
     };
     exports.request(req, callback);
