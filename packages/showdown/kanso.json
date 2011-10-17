@@ -1,0 +1,9 @@
+{
+    "name": "showdown",
+    "version": "0.0.1",
+    "modules": "showdown.js",
+    "dependencies": {
+        "modules": ">=0.0.8"
+    },
+    "description": "JavaScript port of Markdown"
+}
