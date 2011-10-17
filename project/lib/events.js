@@ -2,7 +2,8 @@
  * Bindings to Kanso events
  */
 
-var events = require('kanso/events');
+var events = require('kanso/events'),
+    session = require('session');
 
 
 /**
@@ -24,7 +25,7 @@ var events = require('kanso/events');
  */
 
 /**
- * events.on('sessionChange', function (userCtx, req) {
+ * session.on('change', function (userCtx, req) {
  *     // session change handling code goes here...
  * });
  */
