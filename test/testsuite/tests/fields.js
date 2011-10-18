@@ -102,6 +102,26 @@ exports['Field.validate - check if required on empty value'] = function (test) {
     test.done();
 };
 
+exports['Field.validate - run required function if one is given'] = function (test) {
+    var Field = fields.Field;
+    var f = new Field({
+        required: function() {
+            return false;
+        },
+        validators: [function () {
+            test.ok(false, 'don\'t call validator');
+            throw new Error('test');
+        }]
+    });
+    f.isEmpty = function (value, raw) {
+        test.equal(value, 'value');
+        test.equal(raw, 'raw');
+        return true;
+    };
+    test.same(f.validate('doc', 'value', 'raw'), []);
+    test.done();
+};
+
 exports['Field.authorize - permissions is a function'] = function (test) {
     var Field = fields.Field;
     var err = new Error('test permissions error');
