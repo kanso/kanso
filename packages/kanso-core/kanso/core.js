@@ -195,8 +195,15 @@ exports.init = function () {
         exports.history_support = true;
 
         $('form').live('submit', function (ev) {
-            var action = $(this).attr('action') || exports.getURL();
+            var action = $(this).attr('action');
             var method = $(this).attr('method').toUpperCase();
+
+            // use current path if action path is mising
+            action = urlParse(action);
+            if (!action.pathname) {
+                action.pathname = urlParse(exports.getURL()).pathname;
+            }
+            action = urlFormat(action);
 
             // _session is a special case always available at the root url
             if (action !== '/_session' && exports.isAppURL(action)) {
