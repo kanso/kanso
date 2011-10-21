@@ -6,6 +6,11 @@
 Installation and a gentle introduction to the Kanso framework. In this tutorial
 you'll create a simple blog app and learn how to use the Kanso admin interface.
 
+## [Adding pretty links](adding_pretty_links.html)
+
+This tutorial will show you how to use pretty links in your lists.
+The result will be search engine friendly links to your blog posts and better readable bookmarks.
+
 ## [How Kanso Processes Requests](how_kanso_processes_requests.html)
 
 Kanso makes it easy to re-use code between the client and server wherever

@@ -84,7 +84,7 @@ exports.escapeJavascriptString = exports.js = function (s)
  * can be safely used within an XML character data section.
  * This function must be used to avoid cross-site scripting attacks.
  *
- * @name escapeJavascriptString(s)
+ * @name escapeXmlCharacterData(s)
  * @param {String} s
  * @returns {String}
  * @api public
