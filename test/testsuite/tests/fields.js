@@ -102,6 +102,26 @@ exports['Field.validate - check if required on empty value'] = function (test) {
     test.done();
 };
 
+exports['Field.validate - run required function if one is given'] = function (test) {
+    var Field = fields.Field;
+    var f = new Field({
+        required: function() {
+            return false;
+        },
+        validators: [function () {
+            test.ok(false, 'don\'t call validator');
+            throw new Error('test');
+        }]
+    });
+    f.isEmpty = function (value, raw) {
+        test.equal(value, 'value');
+        test.equal(raw, 'raw');
+        return true;
+    };
+    test.same(f.validate('doc', 'value', 'raw'), []);
+    test.done();
+};
+
 exports['Field.authorize - permissions is a function'] = function (test) {
     var Field = fields.Field;
     var err = new Error('test permissions error');
@@ -314,6 +334,68 @@ exports['Embedded.authorize - permissions as an object'] = function (test) {
     test.equal(errs[0].message, 'test error 3');
     test.same(errs[0].field, ['test']);
     test.same(calls, ['add', 'update', 'remove']);
+
+    test.done();
+};
+
+exports['Embedded.authorize - permissions in embed overwrite permissions of original type'] = function (test) {
+    var Field = fields.Field;
+    var Embedded = fields.Embedded;
+    var Type = types.Type;
+
+    var newDoc = {embed: {type: 't', test: 'newVal'}};
+    var oldDoc = {embed: {type: 't', test: 'oldVal'}};
+
+    var t = new Type('t', {
+        fields: {
+            test: new Field({})
+        },
+        permissions: {
+            add: function (a) {
+                throw new Error('test error 1');
+            },
+            update: function (a) {
+                throw new Error('test error 2');
+            },
+            remove: function (a) {
+                throw new Error('test error 3');
+            }
+        }
+    });
+
+    var e = new Embedded({
+        type: t,
+        permissions: {
+            add: function (b) {
+                throw new Error('test error 4');
+            },
+            update: function (b) {
+                throw new Error('test error 5');
+            },
+            remove: function (b) {
+                throw new Error('test error 6');
+            }
+        }
+    });
+
+    var errs = e.authorize(
+        newDoc, null, newDoc.embed, null, 'user'
+    );
+    test.equal(errs.length, 1);
+    test.equal(errs[0].message, 'test error 4');
+
+    errs = e.authorize(
+        newDoc, oldDoc, newDoc.embed, oldDoc.embed, 'user'
+    );
+    test.equal(errs.length, 1);
+    test.equal(errs[0].message, 'test error 5');
+
+    newDoc = {embed: {_deleted: true}};
+    errs = e.authorize(
+        newDoc, oldDoc, newDoc.embed, oldDoc.embed, 'user'
+    );
+    test.equal(errs.length, 1);
+    test.equal(errs[0].message, 'test error 6');
 
     test.done();
 };
