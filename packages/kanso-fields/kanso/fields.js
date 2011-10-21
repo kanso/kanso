@@ -203,11 +203,9 @@ var Embedded = exports.Embedded = function Embedded(options) {
     if (!type) {
         throw new Error('No type specified');
     }
-    options.permissions = _.defaults((options.permissions || {}), {
-        add: permissions.inherit(type),
-        remove: permissions.inherit(type),
-        update:   permissions.inherit(type)
-    });
+    if(options.permissions) {
+        type.permissions = options.permissions;
+    }
     _.extend(this, _.defaults(options, {
         required: true
     }));
@@ -313,7 +311,7 @@ var EmbeddedList = exports.EmbeddedList = function EmbeddedList(options) {
     options.permissions = _.defaults((options.permissions || {}), {
         add: permissions.inherit(type),
         remove: permissions.inherit(type),
-        update:   permissions.inherit(type)
+        update: permissions.inherit(type)
     });
     _.extend(this, _.defaults(options, {
         required: true
