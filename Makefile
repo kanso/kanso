@@ -23,7 +23,7 @@ build: submodules stamp-build
 stamp-build: $(wildcard  deps/* lib/*.js)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
-	cp -R bin scripts project packages lib admin package.json $(BUILDDIR)/kanso
+	cp -R bin scripts project packages lib package.json $(BUILDDIR)/kanso
 	tar --exclude='.git' -c -f - deps | (cd $(BUILDDIR)/kanso ; tar xfp -)
 
 test:
@@ -49,6 +49,6 @@ clean:
 	rm -rf $(BUILDDIR) stamp-build
 
 lint:
-	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./lib/*.js ./admin/lib/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
+	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./lib/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
 
 .PHONY: test install uninstall build all clean lint docs
