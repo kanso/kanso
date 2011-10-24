@@ -31,3 +31,6 @@
 [submodule "deps/node-semver"]
 	path = deps/node-semver
 	url = git://github.com/isaacs/node-semver.git
+[submodule "deps/couchapp"]
+	path = deps/couchapp
+	url = https://github.com/mikeal/node.couchapp.js.git
