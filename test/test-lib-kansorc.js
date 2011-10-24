@@ -8,6 +8,7 @@ var utils = require('../lib/utils'),
 exports.kansorc = nodeunit.testCase({
 
     setUp: function (cb) {
+        var _PATHS = kansorc.PATHS;
         this._DEFAULTS = kansorc.DEFAULTS;
         this._readJSON = utils.readJSON;
         this._exists = path.exists;
@@ -15,6 +16,7 @@ exports.kansorc = nodeunit.testCase({
     },
 
     tearDown: function (cb) {
+        kansorc.PATHS = this._PATHS;
         kansorc.DEFAULTS = this._DEFAULTS;
         utils.readJSON = this._readJSON;
         path.exists = this._exists;
@@ -23,6 +25,7 @@ exports.kansorc = nodeunit.testCase({
 
     'read paths': function (test) {
         test.expect(2);
+        kansorc.PATHS = ['rcone', 'rctwo', 'rcthree'];
         var rcdata = {
             test: 'test'
         };
@@ -36,11 +39,7 @@ exports.kansorc = nodeunit.testCase({
         };
         kansorc.load(function (err, data) {
             test.same(_.defaults(rcdata, kansorc.DEFAULTS), data);
-            test.same(paths, [
-                '/etc/kansorc',
-                '/usr/local/etc/kansorc',
-                '~/.kansorc'
-            ]);
+            test.same(paths, ['rcone', 'rctwo', 'rcthree']);
             test.done();
         });
     },
@@ -48,6 +47,7 @@ exports.kansorc = nodeunit.testCase({
     'merge data': function (test) {
         test.expect(2);
         var paths = [];
+        kansorc.PATHS = ['rcone', 'rctwo', 'rcthree'];
         kansorc.DEFAULTS = {defaults: true};
         path.exists = function (p, cb) {
             cb(true);
@@ -61,21 +61,18 @@ exports.kansorc = nodeunit.testCase({
         kansorc.load(function (err, data) {
             test.same(data, {
                 defaults: true,
-                path1: '/etc/kansorc',
-                path2: '/usr/local/etc/kansorc',
-                path3: '~/.kansorc'
+                path1: 'rcone',
+                path2: 'rctwo',
+                path3: 'rcthree'
             });
-            test.same(paths, [
-                '/etc/kansorc',
-                '/usr/local/etc/kansorc',
-                '~/.kansorc'
-            ]);
+            test.same(paths, ['rcone', 'rctwo', 'rcthree']);
             test.done();
         });
     },
 
     'new properties override old ones': function (test) {
         test.expect(1);
+        kansorc.PATHS = ['rcone', 'rctwo', 'rcthree'];
         kansorc.DEFAULTS = {
             defaults: true,
             foo: 0,
@@ -86,18 +83,18 @@ exports.kansorc = nodeunit.testCase({
             cb(true);
         };
         var rcdata = {
-            '/etc/kansorc': {
+            'rcone': {
                 one: 'one',
                 foo: 1,
                 baz: 1
             },
-            '/usr/local/etc/kansorc': {
+            'rctwo': {
                 two: 'two',
                 foo: 2,
                 bar: 1,
                 baz: 2
             },
-            '~/.kansorc': {
+            'rcthree': {
                 three: 'three',
                 foo: 3,
                 bar: 2
@@ -121,12 +118,13 @@ exports.kansorc = nodeunit.testCase({
     },
 
     'handle missing files': function (test) {
+        kansorc.PATHS = ['rcone', 'rctwo', 'rcthree'];
         kansorc.DEFAULTS = {
             defaults: true,
             foo: 'test'
         };
         path.exists = function (p, cb) {
-            cb(p === '~/.kansorc');
+            cb(p === 'rcone');
         };
         var paths = [];
         utils.readJSON = function (p, cb) {
@@ -136,7 +134,7 @@ exports.kansorc = nodeunit.testCase({
             });
         };
         kansorc.load(function (err, data) {
-            test.same(paths, ['~/.kansorc']);
+            test.same(paths, ['rcone']);
             test.same(data, {
                 defaults: true,
                 foo: 'bar'
@@ -146,6 +144,7 @@ exports.kansorc = nodeunit.testCase({
     },
 
     'use defaults when all files missing': function (test) {
+        kansorc.PATHS = ['rcone', 'rctwo', 'rcthree'];
         kansorc.DEFAULTS = {
             defaults: true
         };
