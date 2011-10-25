@@ -1,8 +1,8 @@
-var utils = require('../lib/utils'),
-    kansorc = require('../lib/kansorc'),
-    nodeunit = require('../deps/nodeunit'),
+var utils = require('kanso/utils'),
+    kansorc = require('kanso/kansorc'),
+    nodeunit = require('nodeunit'),
     path = require('path'),
-    _ = require('../deps/underscore/underscore')._;
+    _ = require('underscore/underscore')._;
 
 
 exports.kansorc = nodeunit.testCase({

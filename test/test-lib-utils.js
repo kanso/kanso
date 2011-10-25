@@ -1,4 +1,4 @@
-var utils = require('../lib/utils'),
+var utils = require('kanso/utils'),
     path = require('path'),
     fs = require('fs'),
     child_process = require('child_process');

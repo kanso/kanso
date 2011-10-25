@@ -1,4 +1,4 @@
-var buildsteps = require('../lib/buildsteps');
+var buildsteps = require('kanso/buildsteps');
 
 
 exports['after - specific steps'] = function (test) {

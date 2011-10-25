@@ -1,3 +1,3 @@
 #!/usr/bin/env node
-require('../lib/logger').clean_exit = true;
-require('../deps/nodeunit/bin/nodeunit');
+require('kanso/logger').clean_exit = true;
+require('nodeunit/bin/nodeunit');
