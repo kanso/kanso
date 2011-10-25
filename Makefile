@@ -48,6 +48,8 @@ uninstall:
 clean:
 	rm -rf $(BUILDDIR) stamp-build
 
+reinstall: uninstall clean install
+
 lint:
 	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./node_path/kanso/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
 
