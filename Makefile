@@ -24,7 +24,7 @@ stamp-build: $(wildcard  node_path/*)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
 	cp -R bin scripts project packages node_path package.json $(BUILDDIR)/kanso
-	tar --exclude='.git' -c -f - deps | (cd $(BUILDDIR)/kanso ; tar xfp -)
+	tar --exclude='.git' -c -f - node_path | (cd $(BUILDDIR)/kanso ; tar xfp -)
 
 test:
 	./scripts/run_tests.sh test
