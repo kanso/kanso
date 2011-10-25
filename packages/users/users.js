@@ -270,26 +270,33 @@ exports.get = function(username, callback) {
  * @api public
  */
 
-exports.list = function(callback, options) {
-    options = options || {};
-    var include_docs = options.include_docs ? 'true' : 'false';
-
+exports.list = function(q, callback) {
+    if (!callback) {
+        callback = q;
+        q = {};
+    }
+    if (!q.startkey) {
+        q.startkey = '"org.couchdb.user:"';
+    }
+    if (!q.endkey) {
+        q.endkey = '"org.couchdb.user_"';
+    }
     authdb(function (err, authdb) {
         if (err) {
             callback(err, null);
         }
         var req = {
             type: 'GET',
-            url: '/' + db.encode(authdb) +
-                 '/_all_docs?include_docs=' + include_docs,
-            contentType: 'application/json'
+            url: '/' + db.encode(authdb) + '/_all_docs',
+            data: db.stringifyQuery(q),
+            expect_json: true
         };
         db.request(req, function(err, result) {
             if (err) {
                 return callback(err, null);
             }
             var users = _(result.rows).select(function(row) {
-                return row.id.match(/org\.couchdb\.user/);
+                return row.id.match(/^org\.couchdb\.user/);
             });
             callback(null, users);
         });
