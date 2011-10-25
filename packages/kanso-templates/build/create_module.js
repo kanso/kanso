@@ -1,6 +1,6 @@
 var templates = require('./templates'),
-    modules = require('kanso/lib/modules'),
-    async = require('kanso/deps/async'),
+    modules = require('kanso/modules'),
+    async = require('async'),
     fs = require('fs');
 
 

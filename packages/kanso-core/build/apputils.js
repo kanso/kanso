@@ -1,4 +1,4 @@
-var utils = require('kanso/lib/utils');
+var utils = require('kanso/utils');
 
 
 exports.proxyShowFn = function (path, app, doc, props) {

@@ -1,5 +1,5 @@
-var attachments = require('kanso/lib/attachments'),
-    async = require('kanso/deps/async');
+var attachments = require('kanso/attachments'),
+    async = require('async');
 
 
 /**

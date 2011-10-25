@@ -1,11 +1,11 @@
-var semver = require('../../deps/node-semver/semver'),
+var semver = require('node-semver/semver'),
     logger = require('../logger'),
     utils = require('../utils'),
     repository = require('../repository'),
     kansorc = require('../kansorc'),
     settings = require('../settings'),
     argParse = require('../args').parse,
-    async = require('../../deps/async'),
+    async = require('async'),
     path = require('path');
 
 

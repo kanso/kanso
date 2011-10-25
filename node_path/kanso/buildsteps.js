@@ -9,7 +9,7 @@
  */
 
 var EventEmitter = require('events').EventEmitter,
-    _ = require('../deps/underscore/underscore')._,
+    _ = require('underscore/underscore')._,
     node_util = require('util');
 
 

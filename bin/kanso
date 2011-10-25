@@ -24,7 +24,7 @@ SCRIPT_PATH=`dirname $REALPATH`/../scripts/kanso.js
 KANSO_DIR=`dirname $REALPATH`/..
 
 # Extend existing NODE_PATH environment variable
-export NODE_PATH="$NODE_PATH:$KANSO_DIR/node_path"
+export NODE_PATH="$KANSO_DIR/node_path:$NODE_PATH"
 
 # Run scripts/kanso.js
 exec $NODEJS $SCRIPT_PATH $@

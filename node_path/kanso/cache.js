@@ -1,6 +1,6 @@
 var tar = require('./tar'),
     utils = require('./utils'),
-    async = require('../deps/async'),
+    async = require('async'),
     path = require('path');
 
 

@@ -1,6 +1,6 @@
 var utils = require('./utils'),
     path = require('path'),
-    semver = require('../deps/node-semver/semver');
+    semver = require('node-semver/semver');
 
 
 exports.load = function (dir, callback) {

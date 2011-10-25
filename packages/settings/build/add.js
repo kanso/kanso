@@ -1,4 +1,4 @@
-var modules = require('kanso/lib/modules');
+var modules = require('kanso/modules');
 
 /**
  * Wraps the settings JSON as a CommonJS Module and includes in the document

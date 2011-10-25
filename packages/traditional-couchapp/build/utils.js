@@ -1,6 +1,6 @@
-var utils = require('kanso/lib/utils'),
-    async = require('kanso/deps/async'),
-    attachments = require('kanso/lib/attachments'),
+var utils = require('kanso/utils'),
+    async = require('async'),
+    attachments = require('kanso/attachments'),
     fs = require('fs');
 
 

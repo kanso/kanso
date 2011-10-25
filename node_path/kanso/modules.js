@@ -6,7 +6,7 @@
  */
 
 var utils = require('./utils'),
-    async = require('../deps/async'),
+    async = require('async'),
     path = require('path'),
     fs = require('fs'),
     evals = process.binding('evals'),

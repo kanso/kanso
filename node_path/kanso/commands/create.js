@@ -1,6 +1,6 @@
 var utils = require('../utils'),
     logger = require('../logger'),
-    async = require('../../deps/async'),
+    async = require('async'),
     path = require('path'),
     fs = require('fs');
 

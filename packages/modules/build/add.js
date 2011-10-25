@@ -1,5 +1,5 @@
-var modules = require('kanso/lib/modules'),
-    async = require('kanso/deps/async');
+var modules = require('kanso/modules'),
+    async = require('async');
 
 
 /**

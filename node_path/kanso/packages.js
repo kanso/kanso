@@ -6,12 +6,12 @@
 
 var settings = require('./settings'),
     buildsteps = require('./buildsteps'),
-    async = require('../deps/async'),
+    async = require('async'),
     logger = require('./logger'),
     utils = require('./utils'),
     path = require('path'),
-    semver = require('../deps/node-semver/semver'),
-    _ = require('../deps/underscore/underscore')._;
+    semver = require('node-semver/semver'),
+    _ = require('underscore/underscore')._;
 
 
 /**

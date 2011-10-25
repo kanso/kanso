@@ -1,7 +1,7 @@
-var dust = require('kanso/deps/dustjs/lib/dust'),
-    async = require('kanso/deps/async'),
-    utils = require('kanso/lib/utils'),
-    logger = require('kanso/lib/logger'),
+var dust = require('dustjs/lib/dust'),
+    async = require('async'),
+    utils = require('kanso/utils'),
+    logger = require('kanso/logger'),
     path = require('path'),
     fs = require('fs');
 

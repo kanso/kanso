@@ -1,6 +1,6 @@
-var modules = require('kanso/lib/modules'),
-    utils = require('kanso/lib/utils'),
-    _ = require('kanso/deps/underscore/underscore')._;
+var modules = require('kanso/modules'),
+    utils = require('kanso/utils'),
+    _ = require('underscore/underscore')._;
 
 
 var proxyFn = function (path, app, doc, props) {

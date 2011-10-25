@@ -1,5 +1,5 @@
 var logger = require('../logger'),
-    async = require('../../deps/async'),
+    async = require('async'),
     utils = require('../utils'),
     repository = require('../repository'),
     kansorc = require('../kansorc'),
