@@ -1,7 +1,7 @@
 var packages = require('kanso/packages'),
     couchapp = require('couchapp'),
     watch = require('watch'),
-    mimetypes = require('couchapp/mimetypes'),
+    mimetypes = require('node-mime/mime'),
     path = require('path'),
     fs = require('fs');
 
