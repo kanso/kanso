@@ -1,0 +1,10 @@
+{
+    "name": "handlebars",
+    "version": "1.0.0",
+    "description": "Extension of the Mustache logicless template language",
+    "website": "http://www.handlebarsjs.com/",
+    "modules": "handlebars.js",
+    "dependencies": {
+        "modules": ">=0.0.8"
+    }
+}
