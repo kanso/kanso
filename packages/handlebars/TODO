@@ -1,0 +1,15 @@
+Add support for a "vm_only" setting, which adds handlebars.vim.js in place of the
+regular handlebars.js file. This would require all sub-packages using handlebars to
+also specify themselves and requiring "vm_only", otherwise it would be unsafe.
+
+The vm module contains only the bare essentials required for rendering pre-compiled
+templates.
+
+example kanso.json settings:
+
+{
+    "handlebars": {
+        "templates": "path/to/templates",
+        "vm_only": true
+    }
+}

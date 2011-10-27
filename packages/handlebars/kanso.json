@@ -1,10 +1,16 @@
 {
     "name": "handlebars",
-    "version": "1.0.0",
-    "description": "Extension of the Mustache logicless template language",
+    "version": "1.0.2",
+    "description": "Extension of the Mustache logicless template language. Includes Kanso build steps for pre-compiling templates and registering partials.",
     "website": "http://www.handlebarsjs.com/",
     "modules": "handlebars.js",
     "dependencies": {
         "modules": ">=0.0.8"
+    },
+    "preprocessors": {
+        "register_templates": "build/register_templates"
+    },
+    "postprocessors": {
+        "load_files": "build/load_files"
     }
 }
