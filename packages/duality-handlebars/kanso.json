@@ -2,10 +2,10 @@
     "name": "duality-handlebars",
     "version": "0.0.1",
     "description": "Provides handlebars helpers for common duality patterns",
+    "modules": "duality",
     "dependencies": {
+        "modules": null,
+        "kanso-utils": null,
         "handlebars": ">=1.0.0"
-    },
-    "postprocessors": {
-        "append_helpers": "build/append_helpers"
     }
 }

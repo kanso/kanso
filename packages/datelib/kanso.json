@@ -4,7 +4,7 @@
     "maintainers": [
         {
             "name": "Caolan McMahon",
-            "website": "http://caolanmcmahon.com"
+            "url": "http://caolanmcmahon.com"
         }
     ],
     "modules": "datelib.js",

@@ -1,16 +1,22 @@
 var async = require('async'),
     utils = require('kanso/utils'),
-    handlebars = require('../handlebars/lib/handlebars'),
+    dust = require('../dustjs/lib/dust'),
     fs = require('fs'),
     _ = require('underscore/underscore')._;
 
 
+// disable whitespace compression
+dust.optimizers.format = function (ctx, node) {
+    return node;
+};
+
+
 exports.registerTemplates = function (dir, doc, p, callback) {
-    if (!doc._handlebars) {
-        doc._handlebars = {};
+    if (!doc._dust) {
+        doc._dust = {};
     }
-    if (!doc._handlebars.templates) {
-        doc._handlebars.templates = {};
+    if (!doc._dust.templates) {
+        doc._dust.templates = {};
     }
     var p = utils.abspath(p, dir);
     exports.find(p, function (err, files) {
@@ -20,22 +26,9 @@ exports.registerTemplates = function (dir, doc, p, callback) {
         _.each(files, function (file) {
             var rel = utils.relpath(file, p);
             var abs = utils.abspath(file, p);
-            doc._handlebars.templates[rel] = abs;
+            doc._dust.templates[rel] = abs;
         });
         callback(null, doc);
-    });
-};
-
-exports.safestr = function (str) {
-    return str.replace(/"/g, '\\"').replace(/\n/g, '\\n');
-};
-
-exports.addTemplatePartials = function (doc, templates) {
-    _.each(_.keys(templates || {}), function (k) {
-        doc.handlebars += '\nHandlebars.registerPartial("' +
-            exports.safestr(k) + '", ' +
-            'Handlebars.templates["' + exports.safestr(k) + '"]' +
-        ');\n';
     });
 };
 
@@ -46,18 +39,7 @@ exports.addTemplates = function (doc, templates, callback) {
             if (err) {
                 return cb(err);
             }
-            var src = content.toString();
-            src = src.replace(/\.handlebars$/, '');
-            doc.handlebars += '\n(function() {\n' +
-                '  var template = Handlebars.template, ' +
-                'templates = Handlebars.templates = Handlebars.templates || {};\n' +
-                'templates["' + exports.safestr(k) +
-                '"] = template(' +
-                handlebars.precompile(src, {
-                    knownHelpers: {},
-                    knownHelpersOnly: false
-                }) + ');\n' +
-                '})();\n'
+            doc.dust += dust.compile(content.toString(), k);
             cb();
         });
     }, callback);

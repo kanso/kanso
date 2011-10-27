@@ -4,10 +4,10 @@
     "maintainers": [
         {
             "name": "Caolan McMahon",
-            "website": "http://caolanmcmahon.com"
+            "url": "http://caolanmcmahon.com"
         }
     ],
-    "website": "http://github.com/caolan/async",
+    "url": "http://github.com/caolan/async",
     "modules": "async.js",
     "dependencies": {
         "modules": null

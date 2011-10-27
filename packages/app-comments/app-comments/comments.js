@@ -1,5 +1,5 @@
 var db = require('db'),
-    templates = require('kanso/templates'),
+    templates = require('duality/templates'),
     datelib = require('datelib'),
     kanso_core = require('kanso/core'),
     settings = require('settings/root'),
