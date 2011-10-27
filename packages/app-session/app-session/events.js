@@ -4,7 +4,7 @@
 
 var events = require('kanso/events'),
     session = require('session'),
-    templates = require('kanso/templates'),
+    templates = require('duality/templates'),
     utils = require('kanso/utils'),
     cookies = require('cookies'),
     db = require('db'),

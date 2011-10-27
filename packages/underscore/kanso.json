@@ -4,10 +4,10 @@
     "maintainers": [
         {
             "name": "Caolan McMahon",
-            "website": "http://caolanmcmahon.com"
+            "url": "http://caolanmcmahon.com"
         }
     ],
-    "website": "http://documentcloud.github.com/underscore/",
+    "url": "http://documentcloud.github.com/underscore/",
     "modules": "underscore.js",
     "modules_attachment": false,
     "dependencies": {

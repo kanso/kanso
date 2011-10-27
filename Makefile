@@ -20,11 +20,11 @@ submodules:
 
 build: submodules stamp-build
 
-stamp-build: $(wildcard  node_path/*)
+stamp-build: $(wildcard  deps/* src/*)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
-	cp -R bin scripts project packages node_path package.json $(BUILDDIR)/kanso
-	tar --exclude='.git' -c -f - node_path | (cd $(BUILDDIR)/kanso ; tar xfp -)
+	cp -R bin scripts project packages deps src package.json $(BUILDDIR)/kanso
+	tar --exclude='.git' -c -f - deps | (cd $(BUILDDIR)/kanso ; tar xfp -)
 
 test:
 	./scripts/run_tests.sh test
@@ -51,6 +51,6 @@ clean:
 reinstall: uninstall clean install
 
 lint:
-	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./node_path/kanso/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
+	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./src/kanso/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
 
 .PHONY: test install uninstall build all clean lint docs

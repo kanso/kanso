@@ -36,10 +36,16 @@ catch (e) {
 }
 
 try {
-    templates = require('./templates');
+    templates = require('duality/templates');
 }
 catch (e) {
     // may not be available
+}
+
+
+var BASE_TEMPLATE = 'base.html';
+if (settings.duality && settings.duality.base_template) {
+    BASE_TEMPLATE = settings.duality.base_template;
 }
 
 /**
@@ -647,9 +653,7 @@ exports.parseResponse = function (req, res) {
                 'Short-hand response style requires template module'
             );
         }
-        var body = templates.render(
-            settings.base_template || 'base.html', req, context
-        );
+        var body = templates.render(BASE_TEMPLATE, req, context);
         res = {
             body: body,
             code: res.code || 200,
@@ -694,9 +698,7 @@ exports.parseResponse = function (req, res) {
                 'Short-hand response style requires templates module'
             );
         }
-        var body = templates.render(
-            settings.base_template || 'base.html', req, context
-        );
+        var body = templates.render(BASE_TEMPLATE, req, context);
         res = {
             body: body,
             code: res.code || 200,

@@ -4,7 +4,9 @@
     "description": "Provides a basic, unstyled commenting system with pre-made template, views and javascript utils",
     "load": "app-comments/app",
     "modules": "app-comments",
-    "templates": "templates",
+    "dust": {
+        "templates": "templates"
+    },
     "dependencies": {
         "modules": null,
         "properties": null,
@@ -12,7 +14,7 @@
         "kanso-core": null,
         "kanso-events": null,
         "db": ">=0.0.8",
-        "kanso-templates": null,
+        "dust": null,
         "kanso-types": null,
         "kanso-fields": null,
         "kanso-permissions": null
