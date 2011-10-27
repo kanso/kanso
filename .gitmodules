@@ -1,36 +1,36 @@
-[submodule "node_path/async"]
-	path = node_path/async
+[submodule "deps/async"]
+	path = deps/async
 	url = git://github.com/caolan/async.git
-[submodule "node_path/underscore"]
-	path = node_path/underscore
+[submodule "deps/underscore"]
+	path = deps/underscore
 	url = git://github.com/documentcloud/underscore.git
-[submodule "node_path/nodeunit"]
-	path = node_path/nodeunit
+[submodule "deps/nodeunit"]
+	path = deps/nodeunit
 	url = git://github.com/caolan/nodeunit.git
-[submodule "node_path/node-mime"]
-	path = node_path/node-mime
+[submodule "deps/node-mime"]
+	path = deps/node-mime
 	url = git://github.com/bentomas/node-mime.git
-[submodule "node_path/dustjs"]
-	path = node_path/dustjs
+[submodule "deps/dustjs"]
+	path = deps/dustjs
 	url = git://github.com/akdubya/dustjs.git
-[submodule "node_path/UglifyJS"]
-	path = node_path/UglifyJS
+[submodule "deps/UglifyJS"]
+	path = deps/UglifyJS
 	url = git://github.com/mishoo/UglifyJS.git
-[submodule "node_path/watch"]
-	path = node_path/watch
+[submodule "deps/watch"]
+	path = deps/watch
 	url = git://github.com/mikeal/watch.git
-[submodule "node_path/scrawl"]
-	path = node_path/scrawl
+[submodule "deps/scrawl"]
+	path = deps/scrawl
 	url = git://github.com/caolan/scrawl.git
-[submodule "node_path/node-csv-parser"]
-	path = node_path/node-csv-parser
+[submodule "deps/node-csv-parser"]
+	path = deps/node-csv-parser
 	url = git://github.com/wdavidw/node-csv-parser.git
-[submodule "node_path/node-parser"]
-	path = node_path/node-parser
+[submodule "deps/node-parser"]
+	path = deps/node-parser
 	url = git://github.com/Floby/node-parser.git
-[submodule "node_path/couchapp"]
-	path = node_path/couchapp
+[submodule "deps/couchapp"]
+	path = deps/couchapp
 	url = https://github.com/mikeal/node.couchapp.js.git
-[submodule "node_path/node-semver"]
-	path = node_path/node-semver
+[submodule "deps/node-semver"]
+	path = deps/node-semver
 	url = https://github.com/isaacs/node-semver.git
