@@ -1,0 +1,11 @@
+{
+    "name": "duality-handlebars",
+    "version": "0.0.1",
+    "description": "Provides handlebars helpers for common duality patterns",
+    "dependencies": {
+        "handlebars": ">=1.0.0"
+    },
+    "postprocessors": {
+        "append_helpers": "build/append_helpers"
+    }
+}
