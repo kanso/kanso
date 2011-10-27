@@ -1341,6 +1341,9 @@ exports.isAppURL = function (url) {
         return false;
     }
     var p = urlParse(url).pathname;
+    if (!p) {
+        return false;
+    }
     if (p.length < base.length) {
         return false;
     }
