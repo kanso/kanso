@@ -319,8 +319,9 @@ exports.merge = function (a, b, /*optional*/path) {
                 throw new Error(
                     'Conflicting property at: ' + path.concat([k]).join('.') +
                     '\nBetween: ' +
-                    exports.maxlen(JSON.stringify(a[k]), 30) + ' and ' +
-                    exports.maxlen(JSON.stringify(b[k]), 30)
+                    //exports.maxlen(JSON.stringify(a[k]), 30) + ' and ' +
+                    //exports.maxlen(JSON.stringify(b[k]), 30)
+                    JSON.stringify(a[k]) + ' and ' + JSON.stringify(b[k])
                 );
             }
             a[k] = b[k];
