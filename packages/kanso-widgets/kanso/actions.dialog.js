@@ -246,7 +246,7 @@ exports.showDialog = function (action_options,
             $(elt).uPopup('create', data.element, {
                 center: true
             });
-            var popup = $(elt).uPopup('elements');
+            var popup = $(elt).uPopup('wrapper');
         },
         close: function (elt) {
             $(elt).uPopup('destroy');
