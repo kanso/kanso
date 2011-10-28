@@ -149,6 +149,26 @@ exports.filenameFilter = function (p) {
 
 
 /**
+ * Parses the exports.originalPaths object to return an array of filenames
+ */
+
+exports.getFilenames = function (obj) {
+    var names = [];
+    for (var k in obj) {
+        if (typeof obj[k] === 'object') {
+            names.concat(getFilenames(obj[k]).map(function (n) {
+                return k + '/' + n;
+            }));
+        }
+        else {
+            names.push(k);
+        }
+    }
+    return names;
+};
+
+
+/**
  * Loads a commonjs module from the loaded design document, returning
  * the exported properties. The current_dir and target parameters are not the
  * path of the module on the filesystem, but rather the path of the module
@@ -176,8 +196,9 @@ exports.require = function (module_cache, doc, current, target, context) {
         if (a[x] === undefined) {
             throw new Error(
                 //'Could not require module: ' + target + ' ' +
-                'Could not require module: ' + p + ' ' +
-                '(from: ' + current + ')'
+                'Could not require module: ' + p.replace(/^\//, '') + ' ' +
+                '(from: ' + current.replace(/^\//, '') + ') - ' +
+                'Module not found'
             );
         }
         a = a[x];
@@ -187,6 +208,21 @@ exports.require = function (module_cache, doc, current, target, context) {
     var filename = utils.getPropertyPath(
         exports.originalPaths, p.substr(1), true
     );
+
+    // if you attempt to require
+    if (typeof filename === 'object') {
+        var filenames = exports.getFilenames(filename);
+        throw new Error(
+            //'Could not require module: ' + target + ' ' +
+            'Could not require module: ' + p.replace(/^\//, '') + ' ' +
+            '(from: ' + current.replace(/^\//, '') + ')\n\n' +
+            'It\'s not possible to require directories of modules in CouchDB,\n' +
+            'you have to specify one of the following sub-modules directly:\n' +
+            filenames.map(function (f) {
+                return '  ' + p.replace(/^\//, '') + '/' + f;
+            }).join('\n') + '\n'
+        );
+    }
 
     var module = {
         id: p.substr(1),
