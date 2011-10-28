@@ -1,7 +1,7 @@
 {
     "name": "app-session",
     "version": "0.0.1",
-    "description": "Provides a basic, unstyled session panel for logging-in and logging-out. Requires the use of kanso-core and binds to Kanso's session change events",
+    "description": "Provides a basic, unstyled session panel for logging-in and logging-out. Requires the use of duality and binds to session change events",
     "load": "app-session/app",
     "modules": "app-session",
     "dust": {
@@ -12,10 +12,8 @@
         "properties": null,
         "settings": null,
         "session": "0.0.8",
-        "kanso-core": null,
-        "kanso-events": null,
+        "duality": null,
         "dust": null,
-        "kanso-utils": null,
         "cookies": null,
         "db": null
     }

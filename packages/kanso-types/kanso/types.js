@@ -10,7 +10,7 @@
  * Module dependencies
  */
 
-var utils = require('kanso/utils'),
+var utils = require('duality/utils'),
     db = require('db'),
     fields = require('kanso/fields'),
     fieldset = require('kanso/fieldset'),

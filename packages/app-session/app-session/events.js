@@ -1,11 +1,11 @@
 /**
- * Bindings to Kanso events
+ * Module dependencies
  */
 
-var events = require('kanso/events'),
-    session = require('session'),
+var session = require('session'),
     templates = require('duality/templates'),
-    utils = require('kanso/utils'),
+    duality_events = require('duality/events'),
+    utils = require('duality/utils'),
     cookies = require('cookies'),
     db = require('db'),
     controls = require('./controls');
@@ -39,7 +39,7 @@ var fakeRequest = function (userCtx, callback) {
     });
 };
 
-events.on('init', function () {
+duality_events.on('init', function () {
     controls.bind();
 });
 

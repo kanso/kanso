@@ -10,7 +10,7 @@
  */
 
 var _ = require('underscore')._,
-    utils = require('kanso/utils');
+    utils = require('duality/utils');
 
 
 /**

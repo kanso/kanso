@@ -1,7 +1,7 @@
 var db = require('db'),
     templates = require('duality/templates'),
     datelib = require('datelib'),
-    kanso_core = require('kanso/core'),
+    duality = require('duality/core'),
     settings = require('settings/root'),
     _ = require('underscore')._;
 

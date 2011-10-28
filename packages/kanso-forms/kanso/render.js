@@ -9,11 +9,18 @@
  * Module dependencies
  */
 
-var events = require('kanso/events'),
+var events = require('events'),
     sanitize = require('kanso/sanitize'),
     _ = require('underscore')._;
 
 var h = sanitize.escapeHtml;
+
+
+/**
+ * This module is an EventEmitter
+ */
+
+var exports = module.exports = new events.EventEmitter();
 
 
 /**
@@ -25,7 +32,7 @@ exports.scriptTagForEvent = function (name) {
         '<script type="text/javascript">' +
         "// <![CDATA[\n" +
             "if (typeof require !== 'undefined') {\n" +
-            "  require('kanso/events').emit('" +
+            "  require('kanso/render').emit('" +
                 sanitize.cdata(sanitize.js(name)) +
             "');\n" +
             "}" +
@@ -251,7 +258,7 @@ exports.div = function () {
         var name = path.join('.');
         var caption = path.slice(this.depth).join(' ');
 
-        events.once('renderFinish', function () {
+        exports.once('renderFinish', function () {
             if (field.widget.clientInit) {
                 setTimeout(function () {
                     field.widget.clientInit(

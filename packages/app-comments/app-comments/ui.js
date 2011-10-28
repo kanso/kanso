@@ -1,5 +1,5 @@
 var comments = require('./comments'),
-    utils = require('kanso/utils');
+    utils = require('duality/utils');
 
 
 exports.bind = function (selector) {

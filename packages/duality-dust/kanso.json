@@ -5,7 +5,7 @@
     "modules": "duality",
     "dependencies": {
         "modules": null,
-        "kanso-utils": null,
+        "duality": null,
         "dust": null
     }
 }

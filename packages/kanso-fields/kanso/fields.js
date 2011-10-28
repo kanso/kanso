@@ -13,7 +13,7 @@
 var permissions = require('kanso/permissions'),
     validators = require('kanso/validators'),
     widgets = require('kanso/widgets'),
-    utils = require('kanso/utils'),
+    utils = require('duality/utils'),
     _ = require('underscore')._;
 
 

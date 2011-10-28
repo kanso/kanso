@@ -12,7 +12,7 @@
  */
 
 var sanitize = require('kanso/sanitize'),
-    events = require('kanso/events'),
+    session = require('session'),
     _ = require('underscore')._;
 
 var h = sanitize.escapeHtml;
@@ -455,7 +455,7 @@ exports.creator = function (options) {
                 var container = $('#' + id)[0];
                 if (el !== container) {
                     // element has been removed
-                    events.removeListener('sessionChange', update_val);
+                    session.removeListener('change', update_val);
                     return;
                 }
                 if (container) {
@@ -464,10 +464,10 @@ exports.creator = function (options) {
                 }
                 else {
                     // element has been removed from page (or was never there?)
-                    events.removeListener('sessionChange', update_val);
+                    session.removeListener('change', update_val);
                 }
             };
-            events.on('sessionChange', update_val);
+            session.on('change', update_val);
         }
     };
     return w;

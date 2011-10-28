@@ -12,13 +12,13 @@
  */
 
 var core = require('./widgets.core'),
-    kanso_core = require('kanso/core'),
+    duality = require('duality/core'),
     db = require('db'),
     forms = require('kanso/forms'),
     actions = require('kanso/actions'),
     render = require('kanso/render'),
     sanitize = require('kanso/sanitize'),
-    utils = require('kanso/utils'),
+    utils = require('duality/utils'),
     querystring = require('querystring'),
     _ = require('underscore')._;
 
@@ -673,7 +673,7 @@ exports.embedForm = function (_options) {
 
             var document_id = (value.ref || value._id);
 
-            var appdb = db.use(kanso_core.getDBURL());
+            var appdb = db.use(duality.getDBURL());
             appdb.getDoc(
                 document_id,
                 utils.bindContext(this, function (err, rv) {

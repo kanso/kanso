@@ -7,10 +7,10 @@
         "modules": null,
         "underscore": null,
         "querystring": null,
-        "kanso-utils": null,
+        "duality": null,
         "kanso-sanitize": null,
         "db": ">=0.0.8",
-        "kanso-events": null,
+        "session": null,
         "kanso-forms": null
     }
 }

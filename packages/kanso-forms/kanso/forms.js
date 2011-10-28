@@ -8,8 +8,7 @@
  * Module dependencies
  */
 
-var core = require('kanso/core'),
-    utils = require('kanso/utils'),
+var utils = require('duality/utils'),
     fieldset = require('kanso/fieldset'),
     render = require('./render'),
     _ = require('underscore')._;

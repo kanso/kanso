@@ -15,9 +15,8 @@ var core = require('./widgets.core'),
     db = require('db'),
     settings = require('settings/root'),
     sanitize = require('kanso/sanitize'),
-    kanso_core = require('kanso/core'),
-    utils = require('kanso/utils'),
-    events = require('kanso/events'),
+    duality = require('duality/core'),
+    utils = require('duality/utils'),
     _ = require('underscore')._;
 
 var h = sanitize.escapeHtml,
@@ -190,7 +189,7 @@ exports.documentSelector = function (_options) {
         var select_elt =
             this.discoverSelectionElement(container_elt);
 
-        var appdb = db.use(options.db || kanso_core.getDBURL());
+        var appdb = db.use(options.db || duality.getDBURL());
         appdb.getView(
             options.appname || settings.name,
             options.viewName,

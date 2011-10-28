@@ -13,7 +13,7 @@
  * Module dependencies
  */
 
-var utils = require('kanso/utils'),
+var utils = require('duality/utils'),
     sanitize = require('kanso/sanitize'),
     _ = require('underscore')._;
 

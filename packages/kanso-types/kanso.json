@@ -6,7 +6,7 @@
     "dependencies": {
         "modules": null,
         "underscore": null,
-        "kanso-utils": null,
+        "duality": null,
         "db": ">=0.0.8",
         "kanso-fields": null,
         "kanso-fieldset": null,

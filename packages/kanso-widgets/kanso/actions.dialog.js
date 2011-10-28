@@ -14,7 +14,7 @@
  */
 
 var core = require('./actions.core'),
-    utils = require('kanso/utils'),
+    utils = require('duality/utils'),
     sanitize = require('kanso/sanitize'),
     _ = require('underscore')._;
 

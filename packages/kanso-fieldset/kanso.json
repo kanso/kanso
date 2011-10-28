@@ -6,6 +6,6 @@
     "dependencies": {
         "modules": null,
         "underscore": null,
-        "kanso-utils": null
+        "duality": null
     }
 }

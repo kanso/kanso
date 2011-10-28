@@ -14,9 +14,9 @@
  */
 
 var core = require('./actions.core'),
-    kanso_core = require('kanso/core'),
+    duality = require('duality/core'),
     db = require('db'),
-    utils = require('kanso/utils'),
+    utils = require('duality/utils'),
     _ = require('underscore')._;
 
 
@@ -71,7 +71,7 @@ exports.saveExternalDocument = function (action_options, names,
         );
     }
 
-    var appdb = db.use(kanso_core.getDBURL());
+    var appdb = db.use(duality.getDBURL());
     appdb.saveDoc(
         doc, function (err, rv) {
             if (err) {
