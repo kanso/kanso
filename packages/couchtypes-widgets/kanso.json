@@ -7,7 +7,7 @@
         "modules": null,
         "underscore": null,
         "querystring": null,
-        "kanso-sanitize": null,
+        "sanitize": null,
         "db": ">=0.0.8",
         "session": null,
         "couchtypes-forms": null

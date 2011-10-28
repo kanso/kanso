@@ -14,7 +14,7 @@
 var core = require('./widgets.core'),
     db = require('db'),
     settings = require('settings/root'),
-    sanitize = require('kanso/sanitize'),
+    sanitize = require('sanitize'),
     utils = require('couchtypes/utils'),
     _ = require('underscore')._,
     duality;

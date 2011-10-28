@@ -10,7 +10,7 @@
  */
 
 var events = require('events'),
-    sanitize = require('kanso/sanitize'),
+    sanitize = require('sanitize'),
     _ = require('underscore')._;
 
 var h = sanitize.escapeHtml;

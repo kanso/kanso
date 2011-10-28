@@ -14,7 +14,7 @@
  */
 
 var utils = require('couchtypes/utils'),
-    sanitize = require('kanso/sanitize'),
+    sanitize = require('sanitize'),
     _ = require('underscore')._;
 
 var h = sanitize.escapeHtml;

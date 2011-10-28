@@ -11,7 +11,7 @@
  * Module dependencies
  */
 
-var sanitize = require('kanso/sanitize'),
+var sanitize = require('sanitize'),
     session = require('session'),
     _ = require('underscore')._;
 

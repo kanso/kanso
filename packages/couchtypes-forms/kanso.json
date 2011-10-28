@@ -7,6 +7,6 @@
         "modules": null,
         "underscore": null,
         "couchtypes-fieldset": null,
-        "kanso-sanitize": null
+        "sanitize": null
     }
 }
