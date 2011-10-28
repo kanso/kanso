@@ -14,6 +14,7 @@
 var core = require('./widgets.core'),
     db = require('db'),
     session = require('session'),
+    events = require('events'),
     forms = require('couchtypes/forms'),
     actions = require('couchtypes/actions'),
     render = require('couchtypes/render'),
@@ -33,6 +34,13 @@ catch (e) {
 
 
 var h = sanitize.escapeHtml;
+
+
+/**
+ * This module is an EventEmitter.
+ */
+
+var exports = module.exports = new events.EventEmitter();
 
 
 /**
@@ -332,16 +340,16 @@ exports.embedList = function (_options) {
     w.htmlForListItem = function (item) {
         var html = (
             '<div class="item">' +
+                this.widget.toHTML(
+                    item.name, item.value, item.raw, this.field,
+                        { offset: item.offset }
+                ) +
                 '<div class="embed-actions">' +
                     (this.sortable ? this.htmlForDownButton() : '') +
                     (this.sortable ? this.htmlForUpButton() : '') +
                     this.htmlForEditButton() +
                     this.htmlForDeleteButton() +
                 '</div>' +
-                this.widget.toHTML(
-                    item.name, item.value, item.raw, this.field,
-                        { offset: item.offset }
-                ) +
             '</div>'
         );
         return html;
@@ -529,11 +537,13 @@ exports.embedList = function (_options) {
 
     w.handleDeleteCompletion = function (target_elt, options,
                                          is_successful, new_value) {
+        exports.emit('delete', target_elt, options, is_successful, new_value);
         return;
     };
 
     w.handleSaveCompletion = function (target_elt, options,
                                        is_successful, new_value) {
+        exports.emit('save', target_elt, options, is_successful, new_value);
         return;
     };
 
@@ -597,7 +607,7 @@ exports.defaultEmbedded = function (_options) {
             '<div class="default-embed">' +
                 '<input type="hidden" value="' + h(fval) + '" name="' +
                     h(this._name(name, options.offset)) + '" />' +
-                '<span class="value">' + h(display_name) + '</span>' +
+                '<span class="value" style="display: none">' + h(display_name) + '</span>' +
             '</div>'
         );
         return html;
@@ -620,7 +630,7 @@ exports.embedForm = function (_options) {
     var w = new core.Widget('embedForm', _options);
     w.options = (_options || {});
 
-    w.toHTML = function (name, value, raw, field, options) {
+    w.toHTML = function (name, value, raw, field, options, errors) {
 
         this.cacheInit();
         this.field = field;
@@ -660,7 +670,7 @@ exports.embedForm = function (_options) {
             return (
                 '<div id="' + id + '" class="embedded form">' +
                     '<form>' +
-                        this.renderEmbedded(value) +
+                        this.renderEmbedded(value, errors) +
                     '</form>' +
                 '</div>'
             );
@@ -702,7 +712,7 @@ exports.embedForm = function (_options) {
                     var container_elt = this.discoverContainerElement(path);
 
                     $(container_elt).html(
-                        this.renderEmbedded(rv)
+                        this.renderEmbedded(rv, errors)
                     );
                 })
             );
@@ -755,10 +765,14 @@ exports.embedForm = function (_options) {
         return $('#' + id);
     };
 
-    w.renderEmbedded = function (value) {
+    w.renderEmbedded = function (value, errors) {
 
         this.form = new forms.Form(this.type);
         this.form.values = value;
+        
+        if(errors) {
+            this.form.errors = errors;
+        }
 
         var html = (
             '<form>' +
@@ -774,4 +788,3 @@ exports.embedForm = function (_options) {
 
     return w;
 };
-

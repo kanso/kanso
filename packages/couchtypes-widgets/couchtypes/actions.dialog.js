@@ -109,8 +109,8 @@ exports.showDialog = function (action_options,
         /* Draw widget */
         div.append(
             widget.toHTML(
-                name, data.value,
-                    data.raw, data.field, widget_options
+                name, data.value, data.raw, data.field,
+                widget_options, data.errors
             )
         );
 
