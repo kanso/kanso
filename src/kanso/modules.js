@@ -156,7 +156,7 @@ exports.getFilenames = function (obj) {
     var names = [];
     for (var k in obj) {
         if (typeof obj[k] === 'object') {
-            names.concat(getFilenames(obj[k]).map(function (n) {
+            names.concat(exports.getFilenames(obj[k]).map(function (n) {
                 return k + '/' + n;
             }));
         }
