@@ -15,8 +15,8 @@
         "db": ">=0.0.8",
         "dust": null,
         "duality-dust": null,
-        "kanso-types": null,
-        "kanso-fields": null,
-        "kanso-permissions": null
+        "couchtypes": null,
+        "couchtypes-fields": null,
+        "couchtypes-permissions": null
     }
 }

@@ -1,0 +1,15 @@
+{
+    "name": "couchtypes-widgets",
+    "version": "0.0.8",
+    "description": "Common widgets for use with the CouchTypes types and forms systems",
+    "modules": "couchtypes",
+    "dependencies": {
+        "modules": null,
+        "underscore": null,
+        "querystring": null,
+        "kanso-sanitize": null,
+        "db": ">=0.0.8",
+        "session": null,
+        "couchtypes-forms": null
+    }
+}

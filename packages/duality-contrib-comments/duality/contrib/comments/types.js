@@ -1,6 +1,6 @@
-var permissions = require('kanso/permissions'),
-    fields = require('kanso/fields'),
-    Type = require('kanso/types').Type;
+var permissions = require('couchtypes/permissions'),
+    fields = require('couchtypes/fields'),
+    Type = require('couchtypes/types').Type;
 
 
 exports['duality-contrib-comments:comment'] = new Type(

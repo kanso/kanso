@@ -1,0 +1,18 @@
+{
+    "name": "couchtypes",
+    "version": "0.0.8",
+    "description": "Provides a powerful and flexible schema system for describing and validating JSON documents in CouchDB",
+    "modules": "couchtypes",
+    "dependencies": {
+        "modules": null,
+        "underscore": null,
+        "db": ">=0.0.8",
+        "couchtypes-fields": null,
+        "couchtypes-fieldset": null,
+        "couchtypes-widgets": null,
+        "couchtypes-permissions": null
+    },
+    "postprocessors": {
+        "remove_property": "build/remove_property"
+    }
+}

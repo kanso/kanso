@@ -1,0 +1,10 @@
+{
+    "name": "couchtypes-fieldset",
+    "version": "0.0.8",
+    "description": "Functions for handling groups of fields, used by CouchTypes' types and forms systems",
+    "modules": "couchtypes",
+    "dependencies": {
+        "modules": null,
+        "underscore": null
+    }
+}
