@@ -1,9 +1,9 @@
 {
-    "name": "app-session",
+    "name": "duality-contrib-session",
     "version": "0.0.1",
     "description": "Provides a basic, unstyled session panel for logging-in and logging-out. Requires the use of duality and binds to session change events",
-    "load": "app-session/app",
-    "modules": "app-session",
+    "load": "duality/contrib/session/app",
+    "modules": "duality/contrib/session",
     "dust": {
         "templates": "templates"
     },
@@ -14,6 +14,7 @@
         "session": "0.0.8",
         "duality": null,
         "dust": null,
+        "duality-dust": null,
         "cookies": null,
         "db": null
     }

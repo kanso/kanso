@@ -1,9 +1,9 @@
 {
-    "name": "app-comments",
+    "name": "duality-contrib-comments",
     "version": "0.0.2",
-    "description": "Provides a basic, unstyled commenting system with pre-made template, views and javascript utils",
-    "load": "app-comments/app",
-    "modules": "app-comments",
+    "description": "Provides a basic, unstyled commenting system with pre-made template, views and javascript utils - uses dust templates",
+    "load": "duality/contrib/comments/app",
+    "modules": "duality",
     "dust": {
         "templates": "templates"
     },
@@ -14,6 +14,7 @@
         "duality": null,
         "db": ">=0.0.8",
         "dust": null,
+        "duality-dust": null,
         "kanso-types": null,
         "kanso-fields": null,
         "kanso-permissions": null

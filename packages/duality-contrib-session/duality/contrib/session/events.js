@@ -49,7 +49,7 @@ session.on('change', function (userCtx) {
             return console.error(err);
         }
         $('#session').replaceWith(
-            templates.render('app-session/session.html', req, userCtx)
+            templates.render('duality-contrib-session/session.html', req, userCtx)
         );
         controls.bind();
     });

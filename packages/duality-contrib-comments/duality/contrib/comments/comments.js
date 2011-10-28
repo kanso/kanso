@@ -18,7 +18,7 @@ exports.get = function (target, /*optional*/options, callback) {
         endkey = [target];
     }
     var appdb = db.use(kanso_core.getDBURL());
-    appdb.getView(settings.name, 'app-comments:comments_by_target',
+    appdb.getView(settings.name, 'duality-contrib-comments:comments_by_target',
         _.defaults(options, {
             limit: 100,
             startkey: startkey,
@@ -41,7 +41,7 @@ exports.getByUser = function (user, /*options*/options, callback) {
         endkey = [user];
     }
     var appdb = db.use(kanso_core.getDBURL());
-    appdb.getView(settings.name, 'app-comments:comments_by_user',
+    appdb.getView(settings.name, 'duality-contrib-comments:comments_by_user',
         _.defaults(options, {
             limit: 100,
             startkey: startkey,
@@ -80,7 +80,7 @@ exports.addToPage = function (req, target, /*optional*/options, callback) {
             }
             return r.doc;
         });
-        el.html(templates.render('app-comments/comments.html', req, {
+        el.html(templates.render('duality-contrib-comments/comments.html', req, {
             comments: comments,
             monospace: options.monospace,
             no_comments: options.no_comments
@@ -123,7 +123,7 @@ exports.addUserCommentsToPage = function (req, user, /*opt*/options, callback) {
             }
             return r.doc;
         });
-        el.html(templates.render('app-comments/user_comments.html', req, {
+        el.html(templates.render('duality-contrib-comments/user_comments.html', req, {
             comments: comments,
             monospace: options.monospace,
             no_comments: options.no_comments
@@ -134,7 +134,7 @@ exports.addUserCommentsToPage = function (req, user, /*opt*/options, callback) {
 
 exports.add = function (target, user, text, callback) {
     var doc = {
-        type: 'app-comments:comment',
+        type: 'duality-contrib-comments:comment',
         target: target,
         user: user,
         text: text,
