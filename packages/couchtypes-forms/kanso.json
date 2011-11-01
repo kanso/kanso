@@ -6,7 +6,7 @@
     "dependencies": {
         "modules": null,
         "underscore": null,
-        "couchtypes-fieldset": null,
+        "couchtypes": null,
         "sanitize": null
     }
 }

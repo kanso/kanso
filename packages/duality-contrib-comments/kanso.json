@@ -15,8 +15,6 @@
         "db": ">=0.0.8",
         "dust": null,
         "duality-dust": null,
-        "couchtypes": null,
-        "couchtypes-fields": null,
-        "couchtypes-permissions": null
+        "couchtypes": null
     }
 }
