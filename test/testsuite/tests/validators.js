@@ -1,4 +1,4 @@
-var validators = require('kanso/validators');
+var validators = require('couchtypes/validators');
 
 
 exports['min'] = function (test) {

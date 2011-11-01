@@ -1,11 +1,11 @@
 
 var settings = require('settings/root'),
     db = require('db'),
-    appdb = db.current(settings.name),
     replication = require('replication'),
     users = require('users'),
-    utils = require('kanso/utils'),
-    session = require('kanso/session'),
+    utils = require('duality/utils'),
+    duality = require('duality/core'),
+    session = require('session'),
     async = require('async'),
     _ = require('underscore')._;
 
@@ -501,6 +501,7 @@ exports['complex replication, async'] = function (test)
 exports['bulk docs - simple'] = function (test)
 {
     test.expect(7);
+    var appdb = db.use(duality.getDBURL());
     var max = 1024;
 
     async.waterfall([
@@ -547,6 +548,7 @@ exports['bulk docs - simple'] = function (test)
 exports['bulk docs - range'] = function (test)
 {
     test.expect(6);
+    var appdb = db.use(duality.getDBURL());
     var s = 'abcdefghijklmnopqrstuvwxyz';
 
     async.waterfall([
@@ -584,6 +586,7 @@ exports['bulk docs - range'] = function (test)
 exports['getDoc - cached'] = function (test)
 {
     test.expect(15);
+    var appdb = db.use(duality.getDBURL());
 
     var doc = { data: '1234567890' };
     var get_options = { useCache: true };

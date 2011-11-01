@@ -1,5 +1,5 @@
-var fields = require('kanso/fields'),
-    fieldset = require('kanso/fieldset');
+var fields = require('couchtypes/fields'),
+    fieldset = require('couchtypes/fieldset');
 
 
 exports['createDefaults'] = function (test) {

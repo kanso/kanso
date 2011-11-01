@@ -1,6 +1,6 @@
 /*global window: false, $: false*/
 
-var core = require('kanso/core');
+var core = require('duality/core');
 
 
 exports['rewriteGroups'] = function (test) {
@@ -70,7 +70,7 @@ exports['script tag context'] = function (test) {
     test.expect(2);
     // a new script tag should access the same context as the originally loaded
     // code, persisting module state between script tags.
-    var events = require('kanso/events');
+    var events = require('duality/events');
     events.on('_test_script_tag_context_event', function () {
         test.ok(true, '_test_script_tag_context_event fired');
     });
@@ -79,7 +79,7 @@ exports['script tag context'] = function (test) {
     };
     $(document).append('<script>' +
         'window._script_tag_context();' +
-        'require("kanso/events").emit("_test_script_tag_context_event");' +
+        'require("duality/events").emit("_test_script_tag_context_event");' +
     '</script>');
     test.done();
 };

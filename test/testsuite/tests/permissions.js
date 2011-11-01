@@ -1,4 +1,4 @@
-var permissions = require('kanso/permissions');
+var permissions = require('couchtypes/permissions');
 
 
 exports['matchUsername'] = function (test) {

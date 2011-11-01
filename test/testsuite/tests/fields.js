@@ -1,6 +1,6 @@
-var fields = require('kanso/fields'),
-    types = require('kanso/types'),
-    permissions = require('kanso/permissions');
+var fields = require('couchtypes/fields'),
+    types = require('couchtypes/types'),
+    permissions = require('couchtypes/permissions');
 
 
 exports['Field - defaults'] = function (test) {

@@ -4,10 +4,10 @@
  * Show functions to be exported from the design doc.
  */
 
-var templates = require('kanso/templates'),
-    forms = require('kanso/forms'),
-    types = require('kanso/types'),
-    utils = require('kanso/utils');
+var templates = require('duality/templates'),
+    forms = require('couchtypes/forms'),
+    types = require('couchtypes/types'),
+    utils = require('duality/utils');
 
 
 exports.redirect_to_tests = function (doc, req) {

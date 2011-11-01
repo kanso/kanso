@@ -1,6 +1,6 @@
-var types = require('kanso/types'),
-    fields = require('kanso/fields'),
-    db = require('kanso/db'),
+var types = require('couchtypes/types'),
+    fields = require('couchtypes/fields'),
+    db = require('db'),
     _ = require('underscore')._;
 
 

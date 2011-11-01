@@ -1,6 +1,6 @@
 var db = require('db'),
     users = require('users'),
-    utils = require('kanso/utils'),
+    utils = require('duality/utils'),
     async = require('async'),
     _ = require('underscore')._;
 
