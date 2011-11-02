@@ -47,7 +47,7 @@ exports.create = function (dir, callback) {
 };
 
 exports.generate = function (dir, name, callback) {
-    utils.cp('-r', __dirname + '/../../project', dir, function (err) {
+    utils.cp('-r', __dirname + '/../../../project', dir, function (err) {
         if (err) {
             return callback(err);
         }
