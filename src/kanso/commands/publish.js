@@ -42,7 +42,7 @@ exports.publish = function (dir, repo, options, callback) {
     if (parsed.auth && parsed.auth.split(':').length === 1) {
         utils.getPassword(function (err, password) {
             delete parsed.host;
-            parsed.auth += ':' + password;
+            parsed.auth += ':' + encodeURIComponent(password);
             repo = urlFormat(parsed);
             exports.publish(dir, repo, options, callback);
         });

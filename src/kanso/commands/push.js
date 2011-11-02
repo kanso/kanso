@@ -150,7 +150,7 @@ exports.push = function (dir, cfg, doc, url, callback) {
     if (parsed.auth && parsed.auth.split(':').length === 1) {
         utils.getPassword(function (err, password) {
             delete parsed.host;
-            parsed.auth += ':' + password;
+            parsed.auth += ':' + encodeURIComponent(password);
             url = urlFormat(parsed);
             exports.push(dir, cfg, doc, url, callback);
         });

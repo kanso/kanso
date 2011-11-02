@@ -477,7 +477,8 @@ exports.getAuth = function (url, callback) {
             if (err) {
                 return callback(err);
             }
-            parsed.auth = username + ':' + password;
+            parsed.auth = encodeURIComponent(username) + ':' +
+                          encodeURIComponent(password);
             callback(null, urlFormat(parsed));
         });
     });
