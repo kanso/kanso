@@ -1,8 +1,0 @@
-{
-    "name": "node-couchapp",
-    "version": "0.8.1",
-    "description": "adds a build step using node.couchapp.js",
-    "preprocessors": {
-        "eval": "build/eval"
-    }
-}
