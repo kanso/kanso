@@ -150,7 +150,11 @@ exports.init = function () {
                 var fields = $(this).serializeArray();
                 var data = {};
                 for (var i = 0; i < fields.length; i++) {
-                    data[fields[i].name] = fields[i].value;
+                		if (typeof data[fields[i].name] !== 'undefined') {
+ 												data[fields[i].name] += ','+fields[i].value;	
+                		} else {
+		                    data[fields[i].name] = fields[i].value;
+                		}
                 }
                 exports.setURL(method, url, data);
             }

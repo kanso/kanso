@@ -699,29 +699,53 @@ exports.createdTime = function (options) {
  * Required option: values - an array of possible choices, each an array
  * with the first item as the value and the second as its label.
  *
+ * Optional option: multiple - if true multiple choices can be selected.
+ *
  * @name choice([options])
  * @param {Object} options
  * @api public
  */
 
 exports.choice = function (options) {
+
     if (!options || !options.values) {
         throw new Error('No values defined');
     }
     options = prependValidator(options, function (doc, value) {
-        for (var i = 0; i < options.values.length; i++) {
-            if (value === options.values[i][0]) {
-                return;
-            }
-        }
+
+				// if is multiple
+				if (_.isArray(value)) {
+					var opt_count = 0;
+					
+	        for (var i = 0; i < options.values.length; i++) {
+	        	var v = options.values[i][0];
+	        	
+	        	for (var z = 0; z < value.length; z ++) {
+	        			if (value[z] === v) opt_count ++;
+	        	}
+					}
+
+					if (value.length === opt_count) return;
+				} else {
+	        for (var i = 0; i < options.values.length; i++) {
+	            if (value === options.values[i][0]) {
+	                return;
+	            }
+	        }
+				}
         throw new Error('Invalid choice');
     });
     // use value as label if no label defined
     options.values = _.map(options.values, function (v) {
         return _.isArray(v) ? v: [v, v];
     });
+
     return new Field(_.defaults(options, {
-        widget: widgets.select({values: options.values})
+        parse: function (raw) {
+          var result = utils.parseCSV(raw || '')[0] || [];
+          return result;
+				},
+        widget: widgets.select({values: options.values, multiple: options.multiple})
     }));
 };
 
