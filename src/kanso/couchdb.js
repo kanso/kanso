@@ -153,6 +153,8 @@ CouchDB.prototype.client = function (method, path, data, callback) {
     }
     else if (data) {
         path = url.parse(path).pathname + '?' + querystring.stringify(data);
+        data = null;
+        headers['Content-Length'] = 0;
     }
 
     if (this.instance.auth) {
