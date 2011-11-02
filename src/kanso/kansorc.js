@@ -95,7 +95,13 @@ exports.merge = function (a, b) {
 exports.loadFile = function (p, callback) {
     path.exists(p, function (exists) {
         if (exists) {
-            utils.readJSON(p, callback);
+            try {
+                var mod = require(p);
+            }
+            catch (e) {
+                return callback(e);
+            }
+            callback(null, mod);
         }
         else {
             callback(null, {});
