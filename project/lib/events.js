@@ -2,7 +2,7 @@
  * Bindings to Kanso events
  */
 
-var events = require('kanso/events'),
+var duality_events = require('duality/events'),
     session = require('session');
 
 
@@ -12,7 +12,7 @@ var events = require('kanso/events'),
  */
 
 /**
- * events.on('init', function () {
+ * duality_events.on('init', function () {
  *     // app initialization code goes here...
  * });
  */
@@ -37,6 +37,6 @@ var events = require('kanso/events'),
  * document fails.
  */
 
-events.on('updateFailure', function (err, info, req, res, doc) {
+duality_events.on('updateFailure', function (err, info, req, res, doc) {
     alert(err.message || err.toString());
 });

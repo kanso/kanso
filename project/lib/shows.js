@@ -2,7 +2,7 @@
  * Show functions to be exported from the design doc.
  */
 
-var templates = require('kanso/templates');
+var templates = require('duality/templates');
 
 
 exports.welcome = function (doc, req) {
