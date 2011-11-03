@@ -511,3 +511,20 @@ exports.ISODateString = function (d) {
         pad(d.getUTCMinutes()) + ':' +
         pad(d.getUTCSeconds()) + 'Z';
 };
+
+// tests if 'a' is a path below (or equal to) 'b'
+exports.isSubPath = function (a, b) {
+    var na = path.normalize(a);
+    var nb = path.normalize(b);
+    var pa = na.split('/');
+    var pb = nb.split('/');
+    if (pa.length < pb.length) {
+        return false;
+    }
+    for (var i = 0; i < pb.length; i++) {
+        if (pa[i] !== pb[i]) {
+            return false;
+        }
+    }
+    return true;
+};

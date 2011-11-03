@@ -71,40 +71,20 @@ exports.load = function (name, root, paths, source, options, callback) {
                 ));
             }
 
-            logger.info('loading', name);
+            if (utils.isSubPath(p, process.cwd())) {
+                // report relative path if below current directory
+                logger.info('loading', utils.relpath(p, process.cwd()));
+            }
+            else {
+                // report absolute path
+                logger.info('loading', p);
+            }
 
             exports.loadDependencies(p, cfg, paths, source, options,
                 function (err, doc, pre, post) {
                     if (err) {
                         return callback(err);
                     }
-                    // don't run pre and post processors on own package
-                    /*
-                    if (cfg.preprocessors) {
-                        for (var k in cfg.preprocessors) {
-                            if (!pre[cfg.name]) {
-                                pre[cfg.name] = {};
-                            }
-                            if (!pre[cfg.name][k]) {
-                                pre[cfg.name][k] = require(
-                                    utils.abspath(cfg.preprocessors[k], p)
-                                );
-                            }
-                        }
-                    }
-                    if (cfg.postprocessors) {
-                        for (var k in cfg.postprocessors) {
-                            if (!post[cfg.name]) {
-                                post[cfg.name] = {};
-                            }
-                            if (!post[cfg.name][k]) {
-                                post[cfg.name][k] = require(
-                                    utils.abspath(cfg.postprocessors[k], p)
-                                );
-                            }
-                        }
-                    }
-                    */
                     exports.process(pre, post, root, p, cfg, doc,
                         function (err, doc, cfg, p, already_loaded, post) {
                             if (err) {
