@@ -9,8 +9,6 @@ NODEJSLIBDIR ?= $(LIBDIR)/$(NODEJS)
 
 BUILDDIR = dist
 
-COMMONJSFILES = $(shell find ./packages | grep /*.js$$ | grep -v ./packages/kanso.sha1/kanso/sha1.js | grep -v ./packages/underscore/underscore.js)
-
 $(shell if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi)
 
 all: build
@@ -23,7 +21,7 @@ build: submodules stamp-build
 stamp-build: $(wildcard  deps/* src/*)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
-	cp -R bin scripts project packages deps src package.json $(BUILDDIR)/kanso
+	cp -R bin scripts project deps src package.json $(BUILDDIR)/kanso
 	tar --exclude='.git' -c -f - deps | (cd $(BUILDDIR)/kanso ; tar xfp -)
 
 test:
@@ -41,6 +39,11 @@ install: build
 	#install --directory $(NODEJSLIBDIR)
 	cp -Ra $(BUILDDIR)/kanso $(NODEJSLIBDIR)
 	ln -sf $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $(BINDIR)/kanso
+#TODO: add the following to .bashrc
+# shopt -s progcomp
+# if [ -f $(NODEJSLIBDIR)/kanso/scripts/autocomp.sh ]; then
+#   source $(NODEJSLIBDIR)/kanso/scripts/autocomp.sh
+# fi
 
 uninstall:
 	rm -rf $(NODEJSLIBDIR)/kanso $(NODEJSLIBDIR)/kanso.js $(BINDIR)/kanso
@@ -51,6 +54,6 @@ clean:
 reinstall: uninstall clean install
 
 lint:
-	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./src/kanso/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
+	nodelint --config nodelint.cfg ./bin/kanso ./src/kanso/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
 
 .PHONY: test install uninstall build all clean lint docs
