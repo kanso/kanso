@@ -1,32 +1,180 @@
 #!/usr/bin/env node
 
-//var logger = require('kanso/logger');
-//logger.clean_exit = true;
-//var commands = require(__dirname + '/../src/kanso/commands');
-//var cmd_names = Object.keys(commands);
+var fs = require('fs'),
+    path = require('path');
+    //kansorc = require('kanso/kansorc');
 
-// TODO: the above code is too slow for auto-complete, generate a list of
-// command names when doing make for use by autocomplete.js
-var cmd_names = ['push', 'upload'];
 
-var commands = process.argv.slice(3);
+//kansorc.load(function (err, cfg) {
 
-// list all commands
-if (commands.length === 0) {
-    process.stdout.write(cmd_names.join('\n'));
+var commands = {
+    'clear-cache': null,
+    'create': null,
+    'fetch': [{directories: true}],
+    'help': [{list: [
+        'clear-cache',
+        'create',
+        'fetch',
+        'help',
+        'install',
+        'ls',
+        'pack',
+        'publish',
+        'push',
+        'show',
+        'transform',
+        'unpublish',
+        'upload',
+        'uuids'
+    ]}],
+    'install': [null, {directories: true}],
+    'ls': [{directories: true}],
+    'pack': [{directories: true}],
+    'publish': [{directories: true}],
+    // TODO: add lookup of environments in .kansorc
+    'push': [{environments: true}, {directories: true}],
+    'show': [{directories: true}],
+    'transform': [
+        {list: ['clear-ids', 'add-ids', 'csv', 'map']},
+        {filenames: /.*\.json$/, directories: true},
+        {filenames: /.*\.json$/, directories: true}
+    ],
+    'unpublish': null,
+    'upload': [null, {filenames: /.*\.json$/, directories: true}],
+    'uuids': null
+};
+
+var args = process.argv.slice(3);
+
+var arglen = 0;
+for (var i = 0; i < args.length; i++) {
+    if (args[i] && args[i][0] !== '-') {
+        arglen++;
+    }
 }
-// complete first command
-else if (commands.length === 1) {
-    var curr = commands[commands.length - 1];
-    var matches = [];
-    cmd_names.forEach(function (name) {
-        if (name.indexOf(curr) === 0) {
-            matches.push(name);
+
+var command = null;
+for (var j = 0; j < args.length; j++) {
+    if (args[j] && args[j][0] !== '-') {
+        command = args[j];
+        break;
+    }
+}
+
+// the current text being entered
+var curr = args[args.length - 1];
+
+
+function trim(str) {
+    return str.replace(/^\s+/, '').replace(/\s+$/, '');
+}
+
+function matchList(list, curr, /*optional*/nextlist) {
+    var m = [];
+    list.forEach(function (l) {
+        if (l.indexOf(curr) === 0) {
+            m.push(l + ' ');
         }
     });
-    if (matches.length === 1 && matches[0] === curr) {
-        // the command is already complete
-        return;
+    if (m.length === 1 && trim(m[0]) === trim(curr)) {
+        return nextlist || [];
     }
-    process.stdout.write(matches.join('\n'));
+    return m;
 }
+
+
+function completeList(argdef) {
+    if (!argdef) {
+        return [];
+    }
+    var l = [];
+    if (argdef.list) {
+        l = l.concat(argdef.list);
+    }
+    if (argdef.directories) {
+        l = l.concat(
+            fs.readdirSync('.').filter(function (f) {
+                return fs.statSync(f).isDirectory();
+            })
+        );
+    }
+    if (argdef.filenames) {
+        l = l.concat(
+            fs.readdirSync('.').filter(function (f) {
+                return argdef.filenames.test(f);
+            })
+        );
+    }
+    return l;
+}
+
+
+var matches = [];
+
+
+// list all commands
+if (arglen === 0) {
+    matches = Object.keys(commands);
+}
+// complete first command
+else if (arglen === 1) {
+    matches = matchList(
+        Object.keys(commands),
+        curr,
+        commands[curr] && completeList(commands[curr][0])
+    );
+}
+// match command arguments
+else if (arglen > 1) {
+    if (commands[command] && commands[command][arglen - 2]) {
+        var argdef = commands[command][arglen - 2];
+        var next_argdef = commands[command][arglen - 1];
+        if (argdef.list) {
+            matches = matches.concat(
+                matchList(
+                    argdef.list, curr, completeList(next_argdef)
+                )
+            );
+        }
+        if (argdef.directories) {
+            var wd = './';
+            if (curr && /\/$/.test(curr)) {
+                wd = curr;
+            }
+            else if (curr) {
+                wd = path.dirname(curr) + '/';
+            }
+            var files = fs.readdirSync(wd);
+            var dirs = files.filter(function (f) {
+                return fs.statSync(wd === './' ? f: wd + f).isDirectory();
+            }).map(function (d) {
+                return wd === './' ? d: wd + d;
+            });
+            matches = matches.concat(
+                matchList(dirs, curr, completeList(next_argdef))
+            );
+        }
+        if (argdef.filenames) {
+            var wd = './';
+            if (curr && /\/$/.test(curr)) {
+                wd = curr;
+            }
+            else if (curr) {
+                wd = path.dirname(curr) + '/';
+            }
+            var files = fs.readdirSync(wd);
+            var dirs = files.filter(function (f) {
+                return argdef.filenames.test(wd === './' ? f: wd + f);
+            }).map(function (d) {
+                return wd === './' ? d: wd + d;
+            });
+            matches = matches.concat(
+                matchList(dirs, curr, completeList(next_argdef))
+            );
+        }
+    }
+}
+
+process.stdout.write(matches.join('\n'));
+
+//});
