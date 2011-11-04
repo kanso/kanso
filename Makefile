@@ -36,14 +36,10 @@ docs:
 	$(NODEJS) docs/build_docs.js
 
 install: build
-	#install --directory $(NODEJSLIBDIR)
 	cp -Ra $(BUILDDIR)/kanso $(NODEJSLIBDIR)
 	ln -sf $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $(BINDIR)/kanso
 #TODO: add the following to .bashrc
-# shopt -s progcomp
-# if [ -f $(NODEJSLIBDIR)/kanso/scripts/autocomp.sh ]; then
-#   source $(NODEJSLIBDIR)/kanso/scripts/autocomp.sh
-# fi
+	$(NODEJS) scripts/install_autocomp.js "$(NODEJSLIBDIR)/kanso"
 
 uninstall:
 	rm -rf $(NODEJSLIBDIR)/kanso $(NODEJSLIBDIR)/kanso.js $(BINDIR)/kanso
