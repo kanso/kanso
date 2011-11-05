@@ -64,6 +64,9 @@ exports.load = function (callback) {
  */
 
 exports.merge = function (a, b) {
+    if (!b) {
+        return a;
+    }
     for (var k in b) {
         if (Array.isArray(b[k])) {
             a[k] = b[k];
@@ -72,11 +75,11 @@ exports.merge = function (a, b) {
             if (typeof a[k] === 'object') {
                 exports.merge(a[k], b[k]);
             }
-            else {
+            else if (b.hasOwnProperty(k)) {
                 a[k] = b[k];
             }
         }
-        else {
+        else if (b.hasOwnProperty(k)) {
             a[k] = b[k]
         }
     }
@@ -96,7 +99,7 @@ exports.loadFile = function (p, callback) {
     path.exists(p, function (exists) {
         if (exists) {
             try {
-                var mod = require(p);
+                var mod = require(utils.abspath(p));
             }
             catch (e) {
                 return callback(e);
@@ -120,6 +123,7 @@ exports.extend = function (settings, path, callback) {
         if (err) {
             return callback(err);
         }
-        callback(null, exports.merge(settings, s));
+        exports.merge(settings, s);
+        callback(null, settings);
     });
 };
