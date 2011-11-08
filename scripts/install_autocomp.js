@@ -45,22 +45,21 @@ if (os.type() === 'Darwin') {
             });
         };
     });
-} else {
-    fs.readFile(bashrc, function (err, data) {
-        if (err) {
-            throw err;
-        }
-        data = data.toString();
-        var identifier = data.indexOf('#KANSO:');
-        if (identifier === -1) {
-            fs.writeFile(bashrc, data + sourceauto, function (err) {
-                if (err) {
-                    throw err;
-                }
-                return console.log(
-                    'Successfully installed source to ".bashrc".\n'
-                );
-            });
-        }
-    });
 }
+fs.readFile(bashrc, function (err, data) {
+    if (err) {
+        throw err;
+    }
+    data = data.toString();
+    var identifier = data.indexOf('#KANSO:');
+    if (identifier === -1) {
+        fs.writeFile(bashrc, data + sourceauto, function (err) {
+            if (err) {
+                throw err;
+            }
+            return console.log(
+                'Successfully installed source to ".bashrc".\n'
+            );
+        });
+    }
+});

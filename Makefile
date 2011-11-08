@@ -38,6 +38,8 @@ docs:
 install: build
 	cp -Ra $(BUILDDIR)/kanso $(NODEJSLIBDIR)
 	ln -sf $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $(BINDIR)/kanso
+
+install_autocomp:
 #TODO: add the following to .bashrc
 	$(NODEJS) scripts/install_autocomp.js "$(NODEJSLIBDIR)/kanso"
 
