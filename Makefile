@@ -38,7 +38,8 @@ docs:
 install: build
 	cp -Ra $(BUILDDIR)/kanso $(NODEJSLIBDIR)
 	ln -sf $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $(BINDIR)/kanso
-#TODO: add the following to .bashrc
+
+autocomplete:
 	$(NODEJS) scripts/install_autocomp.js "$(NODEJSLIBDIR)/kanso"
 
 uninstall:
@@ -52,4 +53,4 @@ reinstall: uninstall clean install
 lint:
 	nodelint --config nodelint.cfg ./bin/kanso ./src/kanso/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
 
-.PHONY: test install uninstall build all clean lint docs
+.PHONY: test install uninstall build all clean lint docs autocomplete
