@@ -1,6 +1,6 @@
 var Parser = require('node-parser/lib/Parser');
 var Tokenizer = require('./JsonTokenizer');
-var sys = require('sys');
+var util = require('util');
 var assert = require('assert');
 
 
@@ -20,7 +20,7 @@ function ParseStream () {
         }
     });
 }
-sys.inherits(ParseStream, Parser);
+util.inherits(ParseStream, Parser);
 
 /**
  * Factory. Returns a handler able to parse any JSON value

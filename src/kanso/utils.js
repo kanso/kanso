@@ -5,12 +5,12 @@
 var path = require('path'),
     url = require('url'),
     fs = require('fs'),
-    sys = require('sys'),
     async = require('async'),
     urlFormat = require('url').format,
     urlParse = require('url').parse,
     child_process = require('child_process'),
-    Script = process.binding('evals').Script;
+    evals = process.binding('evals'),
+    Script = evals.Script || evals.NodeScript;
 
 /**
  * Converts a relative file path to properties on an object, and assigns a

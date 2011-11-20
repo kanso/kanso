@@ -1,5 +1,5 @@
 var EventEmitter = require('events').EventEmitter;
-var sys = require('sys');
+var util = require('util');
 var assert = require('assert');
 
 function noop(){}
@@ -13,7 +13,7 @@ function Tokenizer (check_token_cb) {
                         // these will be parsed but not emitted
     this._checkToken = check_token_cb || noop;
 }
-sys.inherits(Tokenizer, EventEmitter);
+util.inherits(Tokenizer, EventEmitter);
 
 Tokenizer.prototype.write = function write(data, nobuffer) {
     //assert.ok(typeof data == 'string');

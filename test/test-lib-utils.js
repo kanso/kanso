@@ -112,7 +112,7 @@ exports['relpath'] = function (test) {
 exports['evalSandboxed'] = function (test) {
     test.expect(5);
     var obj = {test: 'test'};
-    try { utils.evalSandboxed("require('sys').puts('fail!')"); }
+    try { utils.evalSandboxed("require('util').puts('fail!')"); }
     catch (e) { test.ok(e, 'should throw an error'); }
     try { utils.evalSandboxed("process.env['HOME']")}
     catch (e) { test.ok(e, 'should throw an error'); }
@@ -190,7 +190,8 @@ exports['abspath'] = function (test) {
 };
 
 exports['stringifyFunctions'] = function (test) {
-    var Script = process.binding('evals').Script;
+    var evals = process.binding('evals');
+    var Script = evals.Script || evals.NodeScript;
     var obj = {
         a: {
             // this is not an instanceof Function but is
