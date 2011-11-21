@@ -27,7 +27,7 @@
 	url = git://github.com/wdavidw/node-csv-parser.git
 [submodule "deps/node-parser"]
 	path = deps/node-parser
-	url = git://github.com/caolan/node-parser.git
+	url = git://github.com/Floby/node-parser.git
 [submodule "deps/couchapp"]
 	path = deps/couchapp
 	url = https://github.com/mikeal/node.couchapp.js.git
