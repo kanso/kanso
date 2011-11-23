@@ -2,7 +2,7 @@
  * Module dependencies
  */
 
-var sys = require('sys');
+var util = require('util');
 
 /**
  * The level to log at, change this to alter the global logging level.
@@ -48,7 +48,7 @@ var forLevels = function (levels, fn) {
 };
 
 /**
- * Logs debug messages, using sys.inspect to show the properties of objects
+ * Logs debug messages, using util.inspect to show the properties of objects
  * (logged for 'debug' level only)
  */
 
@@ -58,13 +58,13 @@ exports.debug = forLevels(['debug'], function (label, val) {
         label = null;
     }
     if (typeof val !== 'string') {
-        val = sys.inspect(val);
+        val = util.inspect(val);
     }
     if (label && val) {
-        sys.puts(magenta(label + ' ') + val);
+        console.log(magenta(label + ' ') + val);
     }
     else {
-        sys.puts(label);
+        console.log(label);
     }
 });
 
@@ -78,13 +78,13 @@ exports.info = forLevels(['info', 'debug'], function (label, val) {
         label = null;
     }
     if (typeof val !== 'string') {
-        val = sys.inspect(val);
+        val = util.inspect(val);
     }
     if (label) {
-        sys.puts(cyan(label + ' ') + val);
+        console.log(cyan(label + ' ') + val);
     }
     else {
-        sys.puts(val);
+        console.log(val);
     }
 });
 
@@ -93,7 +93,7 @@ exports.info = forLevels(['info', 'debug'], function (label, val) {
  */
 
 exports.warning = forLevels(['warning', 'info', 'debug'], function (msg) {
-    sys.puts(yellow(bold('Warning: ') + msg));
+    console.log(yellow(bold('Warning: ') + msg));
 });
 
 /**
@@ -105,7 +105,7 @@ exports.error = function (err) {
     if (err.stack) {
         msg = err.stack.replace(/^Error: /, '');
     }
-    sys.puts(red(bold('Error: ') + msg));
+    console.log(red(bold('Error: ') + msg));
 };
 
 
@@ -119,11 +119,11 @@ exports.end = function (msg) {
     exports.success(msg);
 };
 exports.success = function (msg) {
-    sys.puts(green(bold('OK') + (msg ? bold(': ') + msg: '')));
+    console.log(green(bold('OK') + (msg ? bold(': ') + msg: '')));
 };
 process.on('exit', function () {
     if (!exports.clean_exit) {
-        sys.puts(red(bold('Failed')));
+        console.log(red(bold('Failed')));
     }
 });
 

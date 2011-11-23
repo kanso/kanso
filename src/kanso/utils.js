@@ -5,12 +5,12 @@
 var path = require('path'),
     url = require('url'),
     fs = require('fs'),
-    sys = require('sys'),
     async = require('async'),
     urlFormat = require('url').format,
     urlParse = require('url').parse,
     child_process = require('child_process'),
-    Script = process.binding('evals').Script;
+    evals = process.binding('evals'),
+    Script = evals.Script || evals.NodeScript;
 
 /**
  * Converts a relative file path to properties on an object, and assigns a
@@ -420,41 +420,74 @@ exports.stringifyFunctions = function (obj) {
 };
 
 
-exports.getPassword = function (callback) {
-    var stdin = process.openStdin(),
-        stdio = process.binding("stdio");
+if (process.versions.node >= '0.5.0') {
+    var tty = require('tty');
 
-    stdio.setRawMode(true);
+    // TODO: process refuses to exit after calling this function in node v0.6.2
+    // due to requring explit process.stdin.destroy() or process.exit()
+    // blocked by: https://github.com/joyent/node/pull/1934
+    exports.getPassword = function (callback) {
+        var stdin = process.openStdin();
+        tty.setRawMode(true);
 
-    var password = "";
-    var _ondata = function (c) {
-        c = c + "";
-        if (c === '\n' || c === '\r' || c === '\u0004') {
-            stdio.setRawMode(false);
-            stdin.pause();
-            stdin.removeListener('data', _ondata);
-            stdin.removeListener('error', callback);
-            console.log('');
-            callback(null, password);
-        }
-        else if (c === '\u0003') {
-            process.exit();
-        }
-        else {
-            password += c;
-        }
+        var password = "";
+        var _onkeypress = function (c) {
+            c = c + "";
+            if (c === '\n' || c === '\r' || c === '\u0004') {
+                tty.setRawMode(false);
+                stdin.pause();
+                stdin.removeListener('keypress', _onkeypress);
+                stdin.removeListener('error', callback);
+                console.log('');
+                callback(null, password);
+            }
+            else if (c === '\u0003') {
+                process.exit();
+            }
+            else {
+                password += c;
+            }
+        };
+        stdin.on("keypress", _onkeypress);
+        stdin.on("error", callback);
+        process.stdout.write('Password: ');
     };
-    stdin.on("data", _ondata);
-    stdin.on("error", callback);
-    process.stdout.write('Password: ');
-};
+}
+else {
+    // for compatibility with node 0.4.x
+    exports.getPassword = function (callback) {
+        var stdin = process.openStdin(),
+            stdout = process.binding("stdio");
+
+        stdio.setRawMode(true);
+
+        var password = "";
+        var _ondata = function (c) {
+            c = c + "";
+            if (c === '\n' || c === '\r' || c === '\u0004') {
+                stdio.setRawMode(false);
+                stdin.pause();
+                stdin.removeListener('data', _ondata);
+                stdin.removeListener('error', callback);
+                console.log('');
+                callback(null, password);
+            }
+            else if (c === '\u0003') {
+                process.exit();
+            }
+            else {
+                password += c;
+            }
+        };
+        stdin.on("data", _ondata);
+        stdin.on("error", callback);
+        process.stdout.write('Password: ');
+    };
+}
 
 exports.getUsername = function (callback) {
-    var stdin = process.openStdin(),
-        stdio = process.binding("stdio");
-
+    var stdin = process.openStdin();
     stdin.resume();
-
     var _ondata = function (c) {
         stdin.removeListener('data', _ondata);
         stdin.removeListener('error', callback);

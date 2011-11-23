@@ -10,7 +10,7 @@ exports.kansorc = nodeunit.testCase({
     setUp: function (cb) {
         var _PATHS = kansorc.PATHS;
         this._DEFAULTS = kansorc.DEFAULTS;
-        this._readJSON = utils.readJSON;
+        this._loadFile = kansorc.loadFile;
         this._exists = path.exists;
         cb();
     },
@@ -18,7 +18,7 @@ exports.kansorc = nodeunit.testCase({
     tearDown: function (cb) {
         kansorc.PATHS = this._PATHS;
         kansorc.DEFAULTS = this._DEFAULTS;
-        utils.readJSON = this._readJSON;
+        kansorc.loadFile = this._loadFile;
         path.exists = this._exists;
         cb();
     },
@@ -33,7 +33,7 @@ exports.kansorc = nodeunit.testCase({
             cb(true);
         };
         var paths = [];
-        utils.readJSON = function (p, cb) {
+        kansorc.loadFile = function (p, cb) {
             paths.push(p);
             cb(null, rcdata);
         };
@@ -52,7 +52,7 @@ exports.kansorc = nodeunit.testCase({
         path.exists = function (p, cb) {
             cb(true);
         };
-        utils.readJSON = function (p, cb) {
+        kansorc.loadFile = function (p, cb) {
             paths.push(p);
             var data = {};
             data['path' + paths.length] = p;
@@ -100,7 +100,7 @@ exports.kansorc = nodeunit.testCase({
                 bar: 2
             }
         };
-        utils.readJSON = function (p, cb) {
+        kansorc.loadFile = function (p, cb) {
             cb(null, rcdata[p]);
         };
         kansorc.load(function (err, data) {
@@ -113,52 +113,6 @@ exports.kansorc = nodeunit.testCase({
                 bar: 2,
                 baz: 2
             });
-            test.done();
-        });
-    },
-
-    'handle missing files': function (test) {
-        kansorc.PATHS = ['rcone', 'rctwo', 'rcthree'];
-        kansorc.DEFAULTS = {
-            defaults: true,
-            foo: 'test'
-        };
-        path.exists = function (p, cb) {
-            cb(p === 'rcone');
-        };
-        var paths = [];
-        utils.readJSON = function (p, cb) {
-            paths.push(p);
-            cb(null, {
-                foo: 'bar'
-            });
-        };
-        kansorc.load(function (err, data) {
-            test.same(paths, ['rcone']);
-            test.same(data, {
-                defaults: true,
-                foo: 'bar'
-            });
-            test.done();
-        });
-    },
-
-    'use defaults when all files missing': function (test) {
-        kansorc.PATHS = ['rcone', 'rctwo', 'rcthree'];
-        kansorc.DEFAULTS = {
-            defaults: true
-        };
-        path.exists = function (p, cb) {
-            cb(false);
-        };
-        var paths = [];
-        utils.readJSON = function (p, cb) {
-            paths.push(p);
-            cb();
-        };
-        kansorc.load(function (err, data) {
-            test.same(paths, []);
-            test.same(data, kansorc.DEFAULTS);
             test.done();
         });
     }
