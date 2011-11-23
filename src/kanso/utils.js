@@ -457,7 +457,7 @@ else {
     // for compatibility with node 0.4.x
     exports.getPassword = function (callback) {
         var stdin = process.openStdin(),
-            stdout = process.binding("stdio");
+            stdio = process.binding("stdio");
 
         stdio.setRawMode(true);
 
