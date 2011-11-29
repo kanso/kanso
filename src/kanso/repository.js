@@ -71,6 +71,7 @@ exports.updateDoc = function (doc, cfg, tfile, callback) {
         doc.website = cfg.website;
         doc.maintainers = cfg.maintainers;
         doc.description = cfg.description;
+        doc.categories = cfg.categories;
     }
 
     exports.attachTar(doc, cfg, tfile, callback);
