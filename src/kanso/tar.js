@@ -58,7 +58,7 @@ exports.create = function (outfile, dir, callback) {
             if (is_bsd) {
                 // change --transform command to -s
                 args[2] = '-s';
-                args[3] = '/^\.\//package\//';
+                args[3] = '#^\./#package/#';
             }
             if (ignores) {
                 args = args.concat(['-X', ignorefile]);
