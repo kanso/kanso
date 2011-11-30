@@ -89,7 +89,8 @@ Tokenizer.prototype.addRule = function addRule(regex, type) {
     if(!type) {
         return this.addRule(regex[0], regex[1]);
     }
-    assert.equal(typeof regex, 'function');
+    // typeof a RegExp is an object in node v0.6.x, not a function
+    //assert.equal(typeof regex, 'function');
     //assert.ok(regex instanceof RegExp);
     assert.equal(typeof type, 'string');
     this._regexes.push({regex:regex,type:type});
