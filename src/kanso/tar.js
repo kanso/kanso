@@ -48,7 +48,7 @@ exports.create = function (outfile, dir, callback) {
             var outpath = utils.abspath(tmpfile, process.cwd());
             var args = [
                 '-czvf', outpath,
-                '--transform', 's/^\./package/',
+                '--transform', 'flags=rSH;s/^\./package/',
                 '--exclude', '.kansorc',
                 '--exclude', '.git',
                 '--exclude', '.gitignore',
