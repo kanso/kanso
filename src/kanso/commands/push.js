@@ -88,7 +88,7 @@ exports.run = function (settings, args) {
                     newurl.pathname = cfg.baseURL + '/';
                     logger.end(urlFormat(newurl));
                 }
-                else if (doc.rewrites) {
+                else if (doc.rewrites && doc.rewrites.length) {
                     logger.end(ddoc_url + '/_rewrite/');
                 }
                 else if (doc._attachments && doc._attachments['index.html']) {
