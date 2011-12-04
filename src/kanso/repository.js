@@ -4,12 +4,14 @@ var couchdb = require('./couchdb'),
     utils = require('./utils'),
     logger = require('./logger'),
     semver = require('node-semver/semver'),
+    mime = require('node-mime/mime'),
     async = require('async'),
     http = require('http'),
     https = require('https'),
     path = require('path'),
     url = require('url'),
-    fs = require('fs');
+    fs = require('fs'),
+    _ = require('underscore/underscore')._;
 
 
 exports.TMP_DIR = process.env.HOME + '/.kanso/tmp';
@@ -49,8 +51,23 @@ exports.attachTar = function (doc, cfg, tfile, callback) {
     });
 };
 
+exports.attachREADME = function (doc, cfg, readme, callback) {
+    fs.readFile(readme, function (err, content) {
+        if (err) {
+            return callback(err);
+        }
+        var basename = path.basename(readme);
+        doc._attachments = doc._attachments || {};
+        doc._attachments['docs/' + cfg.version + '/' + basename] = {
+            content_type: mime.lookup(readme),
+            data: content.toString('base64')
+        };
+        callback(null, doc);
+    });
+};
 
-exports.updateDoc = function (doc, cfg, tfile, callback) {
+
+exports.updateDoc = function (doc, cfg, tfile, readme, callback) {
     var now = new Date();
 
     doc.time.modified = utils.ISODateString(now);
@@ -74,11 +91,17 @@ exports.updateDoc = function (doc, cfg, tfile, callback) {
         doc.categories = cfg.categories;
     }
 
-    exports.attachTar(doc, cfg, tfile, callback);
+    async.parallel([
+        async.apply(exports.attachTar, doc, cfg, tfile),
+        async.apply(exports.attachREADME, doc, cfg, readme)
+    ],
+    function (err) {
+        callback(err, doc);
+    });
 };
 
 
-exports.createDoc = function (user, cfg, tfile, callback) {
+exports.createDoc = function (user, cfg, tfile, readme, callback) {
     var now = new Date();
     var doc = {
         _id: cfg.name,
@@ -90,7 +113,7 @@ exports.createDoc = function (user, cfg, tfile, callback) {
             created: utils.ISODateString(now)
         }
     };
-    exports.updateDoc(doc, cfg, tfile, callback);
+    exports.updateDoc(doc, cfg, tfile, readme, callback);
 };
 
 
@@ -118,6 +141,39 @@ exports.updateCache = function (cfg, path, callback) {
 };
 
 
+/**
+ * Finds a README file (with any or no extension) and returns its filename
+ * data if found or null if not found.
+ */
+
+exports.findREADME = function (dir, callback) {
+    fs.readdir(dir, function (err, files) {
+        if (err) {
+            return callback(err);
+        }
+        // make sure the files are sorted so the same filename will match
+        // first reliably in the same set
+        files = files.sort();
+
+        var readme = _.detect(files, function (f) {
+            return /^README$|^README\..*$/.test(f);
+        });
+        var filename = path.join(dir, readme);
+        if (readme) {
+            fs.stat(filename, function (err, stat) {
+                if (err) {
+                    return callback(err);
+                }
+                return callback(null, stat.isFile() ? filename: null);
+            });
+        }
+        else {
+            return callback(null, null);
+        }
+    });
+};
+
+
 exports.publish = function (path, repository, /*optional*/options, callback) {
     if (!callback) {
         callback = options;
@@ -134,7 +190,8 @@ exports.publish = function (path, repository, /*optional*/options, callback) {
         }
         async.series({
             get: async.apply(exports.get, repository, cfg.name),
-            cache: async.apply(exports.updateCache, cfg, path)
+            cache: async.apply(exports.updateCache, cfg, path),
+            readme: async.apply(exports.findREADME, path)
         },
         function (err, results) {
             if (err) {
@@ -143,13 +200,16 @@ exports.publish = function (path, repository, /*optional*/options, callback) {
             var curr = results.get;
             var tfile = results.cache[0];
             var dir = results.cache[1];
+            var readme = results.readme;
 
             var db = couchdb(repository);
 
             if (!curr) {
-                return exports.createDoc(user, cfg, tfile, function (err, doc) {
-                    db.save(cfg.name, doc, callback);
-                });
+                return exports.createDoc(
+                    user, cfg, tfile, readme, function (err, doc) {
+                        db.save(cfg.name, doc, callback);
+                    }
+                );
             }
             else if (curr.versions && curr.versions[cfg.version]) {
                 if (!options.force) {
@@ -159,9 +219,11 @@ exports.publish = function (path, repository, /*optional*/options, callback) {
                     );
                 }
             }
-            return exports.updateDoc(curr, cfg, tfile, function (err, doc) {
-                db.save(cfg.name, doc, callback);
-            });
+            return exports.updateDoc(
+                curr, cfg, tfile, readme, function (err, doc) {
+                    db.save(cfg.name, doc, callback);
+                }
+            );
         });
     });
 };
