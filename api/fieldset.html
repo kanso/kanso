@@ -1,77 +1,8 @@
 <html>
   <head>
-    <title>API - fieldset - Kanso Framework</title>
-    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
-    <link rel="stylesheet" href="../css/kanso.css" />
-    <!--[if IE]>
-      <link rel="stylesheet" href="../css/kanso_ie.css" />
-    <![endif]-->
+    <title>Moved</title>
   </head>
   <body>
-    <div id="topbar">
-      <a id="logo" href="../index.html">
-        <img src="../images/kanso_small.png" />
-      </a>
-      <a id="site" href="../index.html">Framework</a>
-      <div id="rightmenu">
-        <ul id="topmenu">
-          <li>
-            <a href="../index.html">About</a>
-          </li>
-          <li>
-            <a href="../guides/index.html">Guides</a>
-          </li>
-          <li>
-            <a href="../community.html">Community</a>
-          </li>
-          <li class="active">
-            <a href="../api/index.html">API</a>
-          </li>
-          <li>
-            <a href="https://github.com/caolan/kanso">Code</a>
-          </li>
-          <li>
-            <a href="../download.html">Download</a>
-          </li>
-        </ul>
-        <!--
-        <ul id="sessionmenu">
-          <li><a href="#">Create Account</a></li>
-          <li><a href="#">Sign In</a></li>
-        </ul>
-        -->
-      </div>
-    </div>
-
-    <div id="content">
-      <h1>Kanso API Documentation</h1><p><a href="index.html">Index</a> | <a href="all.html">View on single page</a></p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#fieldset">fieldset</a><ul><li><a href="#fieldset.createDefaults">createDefaults(fields, req)</a></li><li><a href="#fieldset.validateField">validateField(field, doc, value, raw, path)</a></li><li><a href="#fieldset.validate">validate(fields, doc, values, raw, path, extra)</a></li><li><a href="#fieldset.authField">authField(f, nDoc, oDoc, nVal, oVal, user, path)</a></li><li><a href="#fieldset.authFieldSet">authFieldSet(f, nDoc, oDoc, nVal, oVal, user, path)</a></li></ul></li></ul></div><h2 id="fieldset">fieldset</h2><p>Functions for dealing with collections of fields. Used by both the
-types and forms modules.</p><h3 id="fieldset.createDefaults">createDefaults(fields, req)</h3><p>Returns a hierachy of default values for a given set of Field objects</p><h4>Parameters</h4><table class="params"><tr><td class="name">fields</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">req</td><td class="type">Object</td><td class="description">the request object to pass to default_value functions</td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Object</span></div><h3 id="fieldset.validateField">validateField(field, doc, value, raw, path)</h3><p>Validate a specific field, returning all validation errors as an array with
-each error's field property prefixed by the current path.</p><h4>Parameters</h4><table class="params"><tr><td class="name">field</td><td class="type">Field</td><td class="description"></td></tr><tr><td class="name">doc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">value</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">raw</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">path</td><td class="type">Array</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fieldset.validate">validate(fields, doc, values, raw, path, extra)</h3><p>Validates an object containing fields or other sub-objects, iterating over
-each property and recursing through sub-objects to find all Fields.</p>
-
-<p>Returns an array of validation errors, each with a field property set to the
-path of the field which caused the error.</p><h4>Parameters</h4><table class="params"><tr><td class="name">fields</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">doc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">values</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">raw</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">path</td><td class="type">Array</td><td class="description"></td></tr><tr><td class="name">extra</td><td class="type">Boolean</td><td class="description">whether to allow extra values not covered by a field</td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fieldset.authField">authField(f, nDoc, oDoc, nVal, oVal, user, path)</h3><p>Authorize a specific field, returning all permissions errors as an array with
-each error's field property prefixed by the current path.</p><h4>Parameters</h4><table class="params"><tr><td class="name">f</td><td class="type">Field</td><td class="description">field object</td></tr><tr><td class="name">nDoc</td><td class="type">Object</td><td class="description">new document</td></tr><tr><td class="name">oDoc</td><td class="type">Object</td><td class="description">old document</td></tr><tr><td class="name">nVal</td><td class="type"></td><td class="description">new field value</td></tr><tr><td class="name">oVal</td><td class="type"></td><td class="description">old field value</td></tr><tr><td class="name">user</td><td class="type">Object</td><td class="description">user context object</td></tr><tr><td class="name">path</td><td class="type">Array</td><td class="description">current path</td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div><h3 id="fieldset.authFieldSet">authFieldSet(f, nDoc, oDoc, nVal, oVal, user, path)</h3><p>Authorizes an object containing fields or other sub-objects, iterating over
-each property and recursing through sub-objects to find all Fields.</p>
-
-<p>Returns an array of permissions errors, each with a field property set to the
-path of the field which caused the error.</p><h4>Parameters</h4><table class="params"><tr><td class="name">f</td><td class="type">Field</td><td class="description">field object</td></tr><tr><td class="name">nDoc</td><td class="type">Object</td><td class="description">new document</td></tr><tr><td class="name">oDoc</td><td class="type">Object</td><td class="description">old document</td></tr><tr><td class="name">nVal</td><td class="type"></td><td class="description">new field value</td></tr><tr><td class="name">oVal</td><td class="type"></td><td class="description">old field value</td></tr><tr><td class="name">user</td><td class="type">Object</td><td class="description">user context object</td></tr><tr><td class="name">path</td><td class="type">Array</td><td class="description">current path</td></tr><tr><td class="name">extra</td><td class="type">Boolean</td><td class="description">whether to raise an error on additional fields</td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Array</span></div>
-    </div>
-
-    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
-    <script type="text/javascript">
-
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-20477836-1']);
-      _gaq.push(['_trackPageview']);
-
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-
-    </script>
+    <p>This site has moved to <a href="http://kan.so">http://kan.so</a></p>
   </body>
 </html>

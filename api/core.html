@@ -1,80 +1,8 @@
 <html>
   <head>
-    <title>API - core - Kanso Framework</title>
-    <link rel="stylesheet" href="http://yandex.st/highlightjs/5.16/styles/github.min.css">
-    <link rel="stylesheet" href="../css/kanso.css" />
-    <!--[if IE]>
-      <link rel="stylesheet" href="../css/kanso_ie.css" />
-    <![endif]-->
+    <title>Moved</title>
   </head>
   <body>
-    <div id="topbar">
-      <a id="logo" href="../index.html">
-        <img src="../images/kanso_small.png" />
-      </a>
-      <a id="site" href="../index.html">Framework</a>
-      <div id="rightmenu">
-        <ul id="topmenu">
-          <li>
-            <a href="../index.html">About</a>
-          </li>
-          <li>
-            <a href="../guides/index.html">Guides</a>
-          </li>
-          <li>
-            <a href="../community.html">Community</a>
-          </li>
-          <li class="active">
-            <a href="../api/index.html">API</a>
-          </li>
-          <li>
-            <a href="https://github.com/caolan/kanso">Code</a>
-          </li>
-          <li>
-            <a href="../download.html">Download</a>
-          </li>
-        </ul>
-        <!--
-        <ul id="sessionmenu">
-          <li><a href="#">Create Account</a></li>
-          <li><a href="#">Sign In</a></li>
-        </ul>
-        -->
-      </div>
-    </div>
-
-    <div id="content">
-      <h1>Kanso API Documentation</h1><p><a href="index.html">Index</a> | <a href="all.html">View on single page</a></p><div class="toc"><h2>Table of Contents</h2><ul><li><a href="#core">core</a><ul><li><a href="#core.rewriteGroups">rewriteGroups(pattern, url)</a></li><li><a href="#core.rewriteSplat">rewriteSplat(pattern, url)</a></li><li><a href="#core.matchURL">matchURL(method, url)</a></li><li><a href="#core.replaceGroups">replaceGroups(val, groups, splat)</a></li><li><a href="#core.createRequest">createRequest(method, url, data, match, callback)</a></li><li><a href="#core.runShowBrowser">runShowBrowser(req, name, docid, callback)</a></li><li><a href="#core.parseResponse">parseResponse(req, res)</a></li><li><a href="#core.runShow">runShow(fn, doc, req)</a></li><li><a href="#core.runUpdateBrowser">runUpdateBrowser(req, name, docid, callback)</a></li><li><a href="#core.runUpdate">runUpdate(fn, doc, req)</a></li><li><a href="#core.createHead">createHead(data)</a></li><li><a href="#core.runListBrowser">runListBrowser(req, name, view, callback)</a></li><li><a href="#core.runList">runList(fn, head, req)</a></li><li><a href="#core.handle">handle(method, url, data)</a></li><li><a href="#core.setURL">setURL(method, url, data)</a></li><li><a href="#core.getURL">getURL()</a></li><li><a href="#core.sameOrigin">sameOrigin(a, b)</a></li><li><a href="#core.appPath">appPath(p)</a></li><li><a href="#core.isAppURL">isAppURL(url)</a></li></ul></li></ul></div><h2 id="core">core</h2><p>The core module contains functions used by kanso to facilitate the running
-of your app. You shouldn't need to use any of the functions here directly
-unless you're messing with the internals of Kanso.</p><h3 id="core.rewriteGroups">rewriteGroups(pattern, url)</h3><p>Extracts groups from a url, eg:
-'/some/path' with pattern '/some/:name' -> {name: 'path'}</p><h4>Parameters</h4><table class="params"><tr><td class="name">pattern</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">url</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Object</span></div><h3 id="core.rewriteSplat">rewriteSplat(pattern, url)</h3><p>Extracts a splat value from a rewrite pattern and matching URL.</p><h4>Parameters</h4><table class="params"><tr><td class="name">pattern</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">url</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="core.matchURL">matchURL(method, url)</h3><p>Attempts to match rewrite from patterns to a URL, returning the
-matching rewrite object if successful.</p><h4>Parameters</h4><table class="params"><tr><td class="name">method</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">url</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Object</span></div><h3 id="core.replaceGroups">replaceGroups(val, groups, splat)</h3><p>Replace group names in a string with the value of that group
-eg: "/:name" with groups {name: 'test'} -> "/test"</p><h4>Parameters</h4><table class="params"><tr><td class="name">val</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">groups</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">splat</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="core.createRequest">createRequest(method, url, data, match, callback)</h3><p>Creates a new request object from a url and matching rewrite object.
-Query parameters are automatically populated from rewrite pattern.</p><h4>Parameters</h4><table class="params"><tr><td class="name">method</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">url</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">data</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">match</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table><h3 id="core.runShowBrowser">runShowBrowser(req, name, docid, callback)</h3><p>Fetches the relevant document and calls the named show function.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">name</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">docid</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table><h3 id="core.parseResponse">parseResponse(req, res)</h3><p>Helper for runShow/runList.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">res</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="core.runShow">runShow(fn, doc, req)</h3><p>Runs a show function with the given document and request object,
-emitting relevant events. This function runs both server and client-side.</p><h4>Parameters</h4><table class="params"><tr><td class="name">fn</td><td class="type">Function</td><td class="description"></td></tr><tr><td class="name">doc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="core.runUpdateBrowser">runUpdateBrowser(req, name, docid, callback)</h3><p>Fetches the relevant document and calls the named update function.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">name</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">docid</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table><h3 id="core.runUpdate">runUpdate(fn, doc, req)</h3><p>Runs a update function with the given document and request object,
-emitting relevant events. This function runs both server and client-side.</p><h4>Parameters</h4><table class="params"><tr><td class="name">fn</td><td class="type">Function</td><td class="description"></td></tr><tr><td class="name">doc</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="core.createHead">createHead(data)</h3><p>Creates a fake head object from view results for passing to a list function
-being run client-side.</p><h4>Parameters</h4><table class="params"><tr><td class="name">data</td><td class="type">Object</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Object</span></div><h3 id="core.runListBrowser">runListBrowser(req, name, view, callback)</h3><p>Fetches the relevant view and calls the named list function with the results.</p><h4>Parameters</h4><table class="params"><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">name</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">view</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">callback</td><td class="type">Function</td><td class="description"></td></tr></table><h3 id="core.runList">runList(fn, head, req)</h3><p>Runs a list function with the given document and request object,
-emitting relevant events. This function runs both server and client-side.</p><h4>Parameters</h4><table class="params"><tr><td class="name">fn</td><td class="type">Function</td><td class="description"></td></tr><tr><td class="name">head</td><td class="type">Object</td><td class="description"></td></tr><tr><td class="name">req</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="core.handle">handle(method, url, data)</h3><p>Creates a request object for the url and runs appropriate show, list or
-update functions.</p><h4>Parameters</h4><table class="params"><tr><td class="name">method</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">url</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">data</td><td class="type">Object</td><td class="description"></td></tr></table><h3 id="core.setURL">setURL(method, url, data)</h3><p>Add a history entry for the given url, prefixed with the baseURL for the app.</p><h4>Parameters</h4><table class="params"><tr><td class="name">method</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">url</td><td class="type">String</td><td class="description"></td></tr><tr><td class="name">data</td><td class="type">Object</td><td class="description">(optional)</td></tr></table><h3 id="core.getURL">getURL()</h3><p>Gets the current app-level URL (without baseURL prefix).</p><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="core.sameOrigin">sameOrigin(a, b)</h3><p>Tests is two urls are of the same origin. Accepts parsed url objects
-or strings as arguments.</p><h4>Parameters</h4><table class="params"><tr><td class="name">a</td><td class="type"></td><td class="description"></td></tr><tr><td class="name">b</td><td class="type"></td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Boolean</span></div><h3 id="core.appPath">appPath(p)</h3><p>Converts a full url to an app-level url (without baseURL prefix).
-example: {baseURL}/some/path -> /some/path</p><h4>Parameters</h4><table class="params"><tr><td class="name">p</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">String</span></div><h3 id="core.isAppURL">isAppURL(url)</h3><p>Used to decide whether to handle a link or not. Should detect app vs.
-external urls.</p><h4>Parameters</h4><table class="params"><tr><td class="name">url</td><td class="type">String</td><td class="description"></td></tr></table><div class="returns"><strong>Returns: </strong><span class="type">Boolean</span></div>
-    </div>
-
-    <script src="http://yandex.st/highlightjs/5.16/highlight.min.js"></script>
-    <script>hljs.initHighlightingOnLoad();</script>
-    <script type="text/javascript">
-
-      var _gaq = _gaq || [];
-      _gaq.push(['_setAccount', 'UA-20477836-1']);
-      _gaq.push(['_trackPageview']);
-
-      (function() {
-        var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
-        ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
-        var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
-      })();
-
-    </script>
+    <p>This site has moved to <a href="http://kan.so">http://kan.so</a></p>
   </body>
 </html>
