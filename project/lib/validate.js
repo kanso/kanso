@@ -2,7 +2,7 @@
  * The validate_doc_update function to be exported from the design doc.
  */
 
-var types = require('kanso/types'),
+var types = require('couchtypes/types'),
     app_types = require('./types');
 
 

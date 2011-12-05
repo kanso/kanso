@@ -1,3 +1,3 @@
 /**
- * Show functions to be exported from the design doc.
+ * Views to be exported from the design doc.
  */

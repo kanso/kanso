@@ -28,3 +28,9 @@
 [submodule "deps/node-parser"]
 	path = deps/node-parser
 	url = git://github.com/Floby/node-parser.git
+[submodule "deps/couchapp"]
+	path = deps/couchapp
+	url = https://github.com/mikeal/node.couchapp.js.git
+[submodule "deps/node-semver"]
+	path = deps/node-semver
+	url = https://github.com/isaacs/node-semver.git

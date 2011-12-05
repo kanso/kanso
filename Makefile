@@ -9,22 +9,23 @@ NODEJSLIBDIR ?= $(LIBDIR)/$(NODEJS)
 
 BUILDDIR = dist
 
-COMMONJSFILES = $(shell find ./commonjs/kanso/*.js | grep -v ./commonjs/kanso/sha1.js | grep -v ./commonjs/kanso/underscore.js)
-
 $(shell if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi)
 
 all: build
 
-build: stamp-build
+submodules:
+	git submodule update --init --recursive
 
-stamp-build: $(wildcard  deps/* lib/*.js)
+build: submodules stamp-build
+
+stamp-build: $(wildcard  deps/* src/*)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
-	cp -R bin deps project static commonjs lib admin package.json $(BUILDDIR)/kanso
-	printf '#!/bin/sh\n$(NODEJS) $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $$@' > $(BUILDDIR)/kanso.sh
+	cp -R bin scripts project deps src package.json $(BUILDDIR)/kanso
+	tar --exclude='.git' -c -f - deps | (cd $(BUILDDIR)/kanso ; tar xfp -)
 
 test:
-	nodeunit test
+	./scripts/run_tests.sh test
 
 docs:
 	rm -rf www
@@ -35,9 +36,11 @@ docs:
 	$(NODEJS) docs/build_docs.js
 
 install: build
-	#install --directory $(NODEJSLIBDIR)
 	cp -Ra $(BUILDDIR)/kanso $(NODEJSLIBDIR)
-	install -m 0755 $(BUILDDIR)/kanso.sh $(BINDIR)/kanso
+	ln -sf $(NODEJSLIBDIR)/$(PACKAGE)/bin/kanso $(BINDIR)/kanso
+
+autocomplete:
+	$(NODEJS) scripts/install_autocomp.js "$(NODEJSLIBDIR)/kanso"
 
 uninstall:
 	rm -rf $(NODEJSLIBDIR)/kanso $(NODEJSLIBDIR)/kanso.js $(BINDIR)/kanso
@@ -45,7 +48,9 @@ uninstall:
 clean:
 	rm -rf $(BUILDDIR) stamp-build
 
-lint:
-	nodelint --config nodelint.cfg ./bin/kanso $(COMMONJSFILES) ./lib/*.js ./static/kanso.js ./admin/lib/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
+reinstall: uninstall clean install
 
-.PHONY: test install uninstall build all clean lint docs
+lint:
+	nodelint --config nodelint.cfg ./bin/kanso ./src/kanso/*.js ./testsuite/lib/*.js ./testsuite/tests/*.js
+
+.PHONY: test install uninstall build all clean lint docs autocomplete

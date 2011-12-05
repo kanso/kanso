@@ -12,10 +12,10 @@
         "uglify-js": "1.0.1",
         "watch": "0.3.1",
         "csv": "0.0.9",
-        "parser": "0.1.0",
+        "parser": "0.1.1",
         "scrawl": "0.0.1"
     },
-    "version": "0.0.7",
+    "version": "0.0.8",
     "repository": {
         "type": "git",
         "url": "http://github.com/caolan/kanso.git"
