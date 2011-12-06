@@ -11,6 +11,5 @@ module.exports = {
     unpublish: require('./unpublish'),
     install: require('./install'),
     'clear-cache': require('./clear-cache'),
-    fetch: require('./fetch'),
     ls: require('./ls')
 };
