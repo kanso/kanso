@@ -39,6 +39,9 @@ exports.usage = '' +
 // set when run() is called
 var OPTIONS = null;
 
+// checked after queue.drain to see if it should exit cleanly
+var ERRORS = false;
+
 // stores the version range requirements for each package
 var pkg_ranges = {};
 
@@ -147,30 +150,96 @@ function install(name, range, data, repo, parent, callback) {
     });
 }
 
+// tries to find a satisfying package locally, otherwise checks repositories
+exports.resolve = function (parent, name, range, repos, callback) {
+    var pkgdir = path.join(target_dir, name);
+    path.exists(pkgdir, function (exists) {
+        if (exists) {
+            settings.load(pkgdir, function (err, cfg) {
+                if (err) {
+                    return callback(err);
+                }
+                if (semver.satisfies(cfg.version, range)) {
+                    return callback(null, cfg.version, cfg, false);
+                }
+                else if (OPTIONS.force) {
+                    repository.resolve(
+                        name, range, repos, function (err, v, data, repo) {
+                            if (err && err.notfound) {
+                                return callback(new Error(
+                                    'No package for ' + name + ' @ ' + range +
+                                    '\nAvailable versions: ' + cfg.version
+                                ));
+                            }
+                            else {
+                                calback.apply(this, arguments);
+                            }
+                        }
+                    );
+                }
+                else {
+                    var range_data = '';
+                    for (var k in pkg_ranges[name]) {
+                        range_data += '\n' + k + ' requires: ' +
+                            pkg_ranges[name][k];
+                    }
+                    range_data += '\n' + parent + ' requires: ' + range;
+                    range_data += '\n' +
+                        'Currently installed version: ' + cfg.version;
+
+                    return callback(new Error(
+                        'Conflicting version requirements for ' + name +
+                        range_data
+                    ));
+                }
+            });
+        }
+        else {
+            repository.resolve(name, range, repos, callback);
+        }
+    });
+};
+
 function worker(task, callback) {
-    repository.resolve(task.name, task.range, repos, function (err, v, data, repo) {
+    var name = task.name;
+    var range = task.range;
+    var parent = task.parent;
+
+    exports.resolve(parent, name, range, repos, function (err, v, data, repo) {
         if (err) {
+            ERRORS = true;
             logger.error(err);
             return callback(err);
         }
-        if (isProcessed(task.name, v)) {
+        if (isProcessed(name, v)) {
             return callback();
         }
         processed.push({
-            name: task.name,
+            name: name,
             version: v,
-            parent: task.parent
+            parent: parent
         });
-        if (data.versions[v].dependencies && !OPTIONS['no-deps']) {
-            fetchDeps(data.versions[v].dependencies, data.name);
+        var cfg = data;
+        if (repo) {
+            cfg = data.versions[v];
         }
-        install(task.name, v, data, repo, task.parent, function (err) {
-            if (err) {
-                logger.error(err);
-                return callback(err);
-            }
+        if (cfg.dependencies && !OPTIONS['no-deps']) {
+            fetchDeps(cfg.dependencies, cfg.name);
+        }
+        if (repo) {
+            install(name, v, data, repo, parent, function (err) {
+                if (err) {
+                    ERRORS = true;
+                    logger.error(err);
+                    return callback(err);
+                }
+                callback();
+            });
+        }
+        else {
+            logger.info('skipping', name + ' (already exists)');
             callback();
-        });
+        }
     });
 }
 
@@ -193,6 +262,7 @@ exports.installDir = function (_settings, dir) {
     kansorc.extend(_settings, dir + '/.kansorc', function (err, _settings) {
         settings.load(dir, function (err, cfg) {
             if (err) {
+                ERRORS = true;
                 return logger.error(err);
             }
             if (!cfg.dependencies) {
@@ -200,7 +270,9 @@ exports.installDir = function (_settings, dir) {
                 return logger.end();
             }
             queue.drain = function () {
-                return logger.end();
+                if (!ERRORS) {
+                    return logger.end();
+                }
             };
             if (cfg.dependencies && !OPTIONS['no-deps']) {
                 fetchDeps(cfg.dependencies, cfg.name);
@@ -218,9 +290,11 @@ exports.installFile = function (_settings, filename) {
         var that = this;
         utils.rm('-rf', [tmp, tmp_extracted], function (err2) {
             if (err2) {
+                ERRORS = true;
                 logger.error(err2);
             }
             else if (err) {
+                ERRORS = true;
                 logger.error(err);
             }
         });
@@ -283,6 +357,7 @@ exports.installFile = function (_settings, filename) {
 exports.installName = function (_settings, name) {
     var version = 'latest';
     if (!name) {
+        ERRORS = true;
         return logger.error('No package name specified');
     }
     if (name.indexOf('@') !== -1) {
@@ -294,7 +369,9 @@ exports.installName = function (_settings, name) {
     deps[name] = version || null;
 
     queue.drain = function () {
-        return logger.end();
+        if (!ERRORS) {
+            return logger.end();
+        }
     };
     fetchDeps(deps, null);
 };
@@ -303,6 +380,7 @@ exports.installName = function (_settings, name) {
 exports.installURL = function (_settings, target) {
     repository.download(target, function (err, filename) {
         if (err) {
+            ERRORS = true;
             return logger.error(err);
         }
         exports.installFile(_settings, filename);
@@ -345,6 +423,7 @@ exports.run = function (_settings, args) {
                 return exports.installName(_settings, pkg);
             }
             else {
+                ERRORS = true;
                 return logger.error(err);
             }
         }

@@ -381,7 +381,9 @@ exports.resolve = function (name, version, repositories, callback) {
             ));
         }
         else {
-            return callback(new Error('No package found for ' + name));
+            var e = new Error('No package found for ' + name);
+            e.notfound = true;
+            return callback(e);
         }
     };
     checkRepo(repositories[i], nextfn);
