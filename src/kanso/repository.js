@@ -52,6 +52,9 @@ exports.attachTar = function (doc, cfg, tfile, callback) {
 };
 
 exports.attachREADME = function (doc, cfg, readme, callback) {
+    if (!readme) {
+        return callback(null, doc);
+    }
     fs.readFile(readme, function (err, content) {
         if (err) {
             return callback(err);
