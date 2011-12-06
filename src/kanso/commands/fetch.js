@@ -32,20 +32,19 @@ var pkg_ranges = {};
 // otherwise, conflicting versions may overwrite each other without warning
 var removed = {};
 
-var fetched = [];
+var processed = [];
 var target_dir = './packages';
 var repos = [];
 
 
-function isFetched(name, version) {
-    for (var i = 0; i < fetched.length; i++) {
-        if (fetched[i].name === name && fetched[i].version === version) {
+function isProcessed(name, version) {
+    for (var i = 0; i < processed.length; i++) {
+        if (processed[i].name === name && processed[i].version === version) {
             return true;
         }
     }
     return false;
 }
-
 
 function getRanges(name) {
     var ranges = [];
@@ -102,9 +101,7 @@ function install(name, range, data, repo, parent, callback) {
                             range_data
                         ));
                     }
-                    if (!isFetched(name, cfg.version)) {
-                        logger.info('skipping', name + ' (already exists)');
-                    }
+                    logger.info('skipping', name + ' (already exists)');
                     callback(null, cfg.version, cfg);
                 });
             }
@@ -141,20 +138,20 @@ function worker(task, callback) {
         if (err) {
             return logger.error(err);
         }
-        if (isFetched(task.name, v)) {
+        if (isProcessed(task.name, v)) {
             return callback();
         }
-        install(task.name, v, data, repo, task.parent, function (err, version, cfg) {
+        processed.push({
+            name: task.name,
+            version: v,
+            parent: task.parent
+        });
+        if (data.dependencies) {
+            fetchDeps(data.dependencies, data.name);
+        }
+        install(task.name, v, data, repo, task.parent, function (err) {
             if (err) {
                 return logger.error(err);
-            }
-            fetched.push({
-                name: task.name,
-                version: version,
-                parent: task.parent
-            });
-            if (cfg.dependencies) {
-                fetchDeps(cfg.dependencies, cfg.name);
             }
             callback();
         });
@@ -162,7 +159,7 @@ function worker(task, callback) {
 }
 
 // the concurrency of fetch requests
-var concurrency = 1;
+var concurrency = 20;
 var queue = async.queue(worker, concurrency);
 
 function fetchDeps(deps, parent) {
