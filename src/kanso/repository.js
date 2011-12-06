@@ -10,6 +10,8 @@ var couchdb = require('./couchdb'),
     https = require('https'),
     path = require('path'),
     url = require('url'),
+    urlParse = url.parse,
+    urlFormat = url.format,
     fs = require('fs'),
     _ = require('underscore/underscore')._;
 
@@ -434,8 +436,10 @@ exports.fetch = function (name, version, repositories,
                 }
                 var filename = name + '-' + v + '.tar.gz';
                 var url = repository + '/' + name + '/' + filename;
-                //logger.info('downloading', filename);
-                logger.info('downloading', url);
+                var parts = urlParse(url);
+                delete parts.auth;
+                var no_auth_url = urlFormat(parts);
+                logger.info('downloading', no_auth_url);
                 exports.download(url, function (err, tarfile) {
                     if (err) {
                         return callback(err);
