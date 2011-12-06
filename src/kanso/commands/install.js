@@ -153,7 +153,7 @@ function install(name, range, data, repo, parent, callback) {
 // tries to find a satisfying package locally, otherwise checks repositories
 exports.resolve = function (parent, name, range, repos, callback) {
     var pkgdir = path.join(target_dir, name);
-    path.exists(pkgdir, function (exists) {
+    path.exists(path.join(pkgdir, 'kanso.json'), function (exists) {
         if (exists) {
             settings.load(pkgdir, function (err, cfg) {
                 if (err) {
@@ -244,7 +244,7 @@ function worker(task, callback) {
 }
 
 // the concurrency of fetch requests
-var concurrency = 20;
+var concurrency = 5;
 var queue = async.queue(worker, concurrency);
 
 function fetchDeps(deps, parent) {
