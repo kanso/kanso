@@ -53,6 +53,7 @@ exports.create = function (outfile, dir, callback) {
                 '--exclude', '.git',
                 '--exclude', '.gitignore',
                 '--exclude', '.gitmodules',
+                '--exclude', '.*.swp', // vim swp files
                 '.'
             ];
             if (is_bsd) {

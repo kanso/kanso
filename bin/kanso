@@ -27,4 +27,4 @@ KANSO_DIR=`dirname $REALPATH`/..
 export NODE_PATH="$KANSO_DIR/src:$KANSO_DIR/deps:$NODE_PATH"
 
 # Run scripts/kanso.js
-exec $NODEJS $SCRIPT_PATH $@
+exec $NODEJS $SCRIPT_PATH "$@"
