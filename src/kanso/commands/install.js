@@ -416,16 +416,10 @@ exports.run = function (_settings, args) {
     }
     fs.stat(pkg, function (err, stats) {
         if (err) {
-            // no such file or directory
-            if (err.errno === 34) {
-                target_dir = target_dir || utils.abspath('packages');
-                logger.info('installing from repositories', pkg);
-                return exports.installName(_settings, pkg);
-            }
-            else {
-                ERRORS = true;
-                return logger.error(err);
-            }
+            // may not be a file
+            target_dir = target_dir || utils.abspath('packages');
+            logger.info('installing from repositories', pkg);
+            return exports.installName(_settings, pkg);
         }
         if (stats.isDirectory()) {
             target_dir = target_dir || utils.abspath('packages', pkg);
