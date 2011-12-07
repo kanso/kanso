@@ -5,7 +5,7 @@
     "load": "lib/app",
     "modules": "lib",
     "attachments": "static",
-    "dust": {
+    "handlebars": {
         "templates": "templates"
     },
     "duality": {
@@ -17,8 +17,9 @@
         "attachments": null,
         "settings": null,
         "duality": null,
-        "dust": null,
-        "duality-dust": null,
+        "handlebars": null,
+        "handlebars-helpers": null,
+        "duality-handlebars": null,
         "couchtypes": null
     }
 }
