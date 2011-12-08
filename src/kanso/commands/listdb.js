@@ -14,9 +14,9 @@ var utils = require('../utils'),
 exports.summary = 'List databases on a CouchDB instance';
 
 exports.usage = '' +
-'kanso listdb COUCHDB\n' +
+'kanso listdb [URL]\n' +
 '\n' +
-'Where COUCHDB is either a URL for the desired Couch instance or\n' +
+'Where URL is either a URL for the desired Couch instance or\n' +
 'blank for localhost:5984:\n' +
 '\n' +
 'kanso createdb\n' +
@@ -25,7 +25,7 @@ exports.usage = '' +
 'kanso createdb http://username:password@hostname:port\n' +
 '\n' +
 'Parameters:\n' +
-'  COUCHDB    The URL of the CouchDB instance to list databases from\n' +
+'  URL    The URL of the CouchDB instance to list databases from\n' +
 '\n' +
 'Options:\n' +
 '  -l    Show extra details for each database: doc count and size on disk';
