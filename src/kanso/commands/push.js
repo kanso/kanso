@@ -14,11 +14,12 @@ var utils = require('../utils'),
 exports.summary = 'Load a project and push to a CouchDB database';
 
 exports.usage = '' +
-'kanso push DB [PATH]\n' +
+'kanso push [DB] [PATH]\n' +
 '\n' +
 'Parameters:\n' +
-'  DB      The CouchDB database to upload the app to\n' +
-'  PATH    Path to project directory to show (defaults to ".")\n' +
+'  DB      The CouchDB database to upload the app to, will use "default"\n' +
+'          env set in .kansorc if none provided and .kansorc exists\n' +
+'  PATH    Path to project directory to push (defaults to ".")\n' +
 '\n' +
 'Options:\n' +
 '  --minify    Compress CommonJS modules attachment using UglifyJS';
@@ -114,11 +115,11 @@ exports.run = function (settings, args) {
                         if (err) {
                             return logger.error(err);
                         }
-                        logger.end(utils.noAuthURL(url));
+                        logger.end(utils.noAuthURL(app_url));
                     });
                 }
                 else {
-                    logger.end(utils.noAuthURL(url));
+                    logger.end(utils.noAuthURL(app_url));
                 }
             }
         );
