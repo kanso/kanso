@@ -6,6 +6,7 @@ module.exports = {
     create: require('./create'),
     createdb: require('./createdb'),
     deletedb: require('./deletedb'),
+    listdb: require('./listdb'),
     transform: require('./transform'),
     uuids: require('./uuids'),
     pack: require('./pack'),

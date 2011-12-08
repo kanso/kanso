@@ -416,3 +416,9 @@ CouchDB.prototype.uuids = function (count, callback) {
         callback(err, data.uuids);
     });
 };
+
+CouchDB.prototype.allDbs = function (callback) {
+    this.client('GET', '_all_dbs', {}, function (err, data) {
+        callback(err, data);
+    });
+};
