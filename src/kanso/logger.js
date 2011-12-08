@@ -121,11 +121,14 @@ exports.end = function (msg) {
 exports.success = function (msg) {
     console.log(green(bold('OK') + (msg ? bold(': ') + msg: '')));
 };
-process.on('exit', function () {
+var _onExit = function () {
     if (!exports.clean_exit) {
         console.log(red(bold('Failed')));
+        process.removeListener('exit', _onExit);
+        process.exit(1);
     }
-});
+};
+process.on('exit', _onExit);
 
 /**
  * Log uncaught exceptions in the same style as normal errors.

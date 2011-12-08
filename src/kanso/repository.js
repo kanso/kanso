@@ -436,10 +436,7 @@ exports.fetch = function (name, version, repositories,
                 }
                 var filename = name + '-' + v + '.tar.gz';
                 var url = repository + '/' + name + '/' + filename;
-                var parts = urlParse(url);
-                delete parts.auth;
-                var no_auth_url = urlFormat(parts);
-                logger.info('downloading', no_auth_url);
+                logger.info('downloading', utils.noAuthURL(url));
                 exports.download(url, function (err, tarfile) {
                     if (err) {
                         return callback(err);

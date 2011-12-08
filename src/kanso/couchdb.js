@@ -116,6 +116,17 @@ CouchDB.prototype.createDB = function (callback) {
 };
 
 /**
+ * Deletes a database.
+ *
+ * @param {Function} callback
+ * @api public
+ */
+
+CouchDB.prototype.deleteDB = function (callback) {
+    this.client('DELETE', '', null, callback);
+};
+
+/**
  * Convenience HTTP client for querying a CouchDB instance. Buffers and parses
  * JSON responses before passing to callback. JSON.stringify's data before
  * sending.
@@ -403,5 +414,11 @@ CouchDB.prototype.uuids = function (count, callback) {
     count = count || 1;
     this.client('GET', '_uuids', {count: count}, function (err, data) {
         callback(err, data.uuids);
+    });
+};
+
+CouchDB.prototype.allDbs = function (callback) {
+    this.client('GET', '_all_dbs', {}, function (err, data) {
+        callback(err, data);
     });
 };
