@@ -64,8 +64,7 @@ exports.run = function (settings, args) {
                 }
             }
         }
-        // createdb
-        exports.push(url, function (err, url) {
+        exports.createdb(url, function (err, url) {
             if (err) {
                 return logger.error(err);
             }
@@ -89,12 +88,12 @@ exports.authError = function (err, url, callback) {
                     return logger.error(err);
                 }
             }
-            exports.push(url, callback);
+            exports.createdb(url, callback);
         });
     }
 };
 
-exports.push = function (url, callback) {
+exports.createdb = function (url, callback) {
     var parsed = urlParse(url);
     // if only a username has been specified, ask for password
     if (parsed.auth && parsed.auth.split(':').length === 1) {
@@ -102,7 +101,7 @@ exports.push = function (url, callback) {
             delete parsed.host;
             parsed.auth += ':' + encodeURIComponent(password);
             url = urlFormat(parsed);
-            exports.push(url, callback);
+            exports.createdb(url, callback);
         });
         return;
     }
