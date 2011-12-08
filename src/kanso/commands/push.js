@@ -4,6 +4,7 @@ var utils = require('../utils'),
     couchdb = require('../couchdb'),
     kansorc = require('../kansorc'),
     argParse = require('../args').parse,
+    exec = require('child_process').exec,
     path = require('path'),
     url = require('url'),
     urlParse = url.parse,
@@ -26,6 +27,7 @@ exports.usage = '' +
 exports.run = function (settings, args) {
     var a = argParse(args, {
         'minify': {match: '--minify'},
+        'open': {match: '--open'},
         'baseURL': {match: '--baseURL', value: true}
     });
     var dir = utils.abspath(a.positional[1] || '.');
@@ -79,26 +81,44 @@ exports.run = function (settings, args) {
                 delete newurl.host;
                 var ddoc_url = urlFormat(newurl) + '/_design/' + cfg.name;
 
+                var app_url = ddoc_url;
                 if (cfg.index) {
                     // if there's an index property in kanso.json
-                    logger.end(ddoc_url + cfg.index);
+                    app_url = ddoc_url + cfg.index;
                 }
                 if (cfg.hasOwnProperty('baseURL')) {
                     // if there is a custom baseURL defined
                     newurl.pathname = cfg.baseURL + '/';
-                    logger.end(urlFormat(newurl));
+                    app_url = urlFormat(newurl);
                 }
                 else if (doc.rewrites && doc.rewrites.length) {
-                    logger.end(ddoc_url + '/_rewrite/');
+                    app_url = ddoc_url + '/_rewrite/';
                 }
                 else if (doc._attachments && doc._attachments['index.html']) {
-                    logger.end(ddoc_url + '/index.html');
+                    app_url = ddoc_url + '/index.html';
                 }
                 else if (doc._attachments && doc._attachments['index.htm']) {
-                    logger.end(ddoc_url + '/index.htm');
+                    app_url = ddoc_url + '/index.htm';
+                }
+
+                if (a.options.open) {
+                    if (process.platform === 'linux') {
+                        cmd = 'xdg-open';
+                    }
+                    else {
+                        // OSX
+                        cmd = 'open';
+                    }
+                    console.log('Opening URL in browser...');
+                    exec(cmd + ' ' + app_url, function (err, so, se) {
+                        if (err) {
+                            return logger.error(err);
+                        }
+                        logger.end(utils.noAuthURL(url));
+                    });
                 }
                 else {
-                    logger.end(ddoc_url);
+                    logger.end(utils.noAuthURL(url));
                 }
             }
         );

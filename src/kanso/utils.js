@@ -573,3 +573,10 @@ exports.formatSize = function (size) {
     }
     return size.toFixed(1) + ' ' + units[i - 1];
 };
+
+exports.noAuthURL = function (url) {
+    var parts = urlParse(url);
+    delete parts.auth;
+    delete parts.host;
+    return urlFormat(parts);
+};
