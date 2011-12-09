@@ -5,14 +5,17 @@
         {"name": "Caolan McMahon", "web": "https://github.com/caolan"}
     ],
     "dependencies": {
-        "async": "0.1.6",
+        "async": "0.1.7",
         "nodeunit": "0.5.0",
-        "mime": "1.1.0",
+        "mime": "1.2.4",
         "dust": "0.3.0",
         "uglify-js": "1.0.1",
+        "couchapp": "0.8.1",
+        "semver": "1.0.9",
         "watch": "0.3.1",
         "csv": "0.0.9",
         "parser": "0.1.1",
+        "underscore": "1.1.7",
         "scrawl": "0.0.1"
     },
     "version": "0.1.1",
