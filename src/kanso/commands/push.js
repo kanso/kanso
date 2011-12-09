@@ -14,11 +14,12 @@ var utils = require('../utils'),
 exports.summary = 'Load a project and push to a CouchDB database';
 
 exports.usage = '' +
-'kanso push DB [PATH]\n' +
+'kanso push [PATH] [DB]\n' +
 '\n' +
 'Parameters:\n' +
-'  DB      The CouchDB database to upload the app to\n' +
-'  PATH    Path to project directory to show (defaults to ".")\n' +
+'  PATH    Path to project directory to push (defaults to ".")\n' +
+'  DB      The CouchDB database to upload the app to, will use "default"\n' +
+'          env set in .kansorc if none provided and .kansorc exists\n' +
 '\n' +
 'Options:\n' +
 '  --minify    Compress CommonJS modules attachment using UglifyJS';
@@ -30,98 +31,110 @@ exports.run = function (settings, args) {
         'open': {match: '--open'},
         'baseURL': {match: '--baseURL', value: true}
     });
-    var dir = utils.abspath(a.positional[1] || '.');
-    kansorc.extend(settings, dir + '/.kansorc', function (err, settings) {
-        if (err) {
-            return logger.error(err);
+    var url;
+    var dir = a.positional[0] || '.';
+    path.exists(dir, function (exists) {
+        if (!exists) {
+            dir = process.cwd();
+            url = a.positional[0];
         }
-        if (a.options.hasOwnProperty('baseURL')) {
-            settings.baseURL = a.options.baseURL;
-        }
+        dir = utils.abspath(dir);
+        kansorc.extend(settings, dir + '/.kansorc', function (err, settings) {
+            if (err) {
+                return logger.error(err);
+            }
+            if (a.options.hasOwnProperty('baseURL')) {
+                settings.baseURL = a.options.baseURL;
+            }
 
-        if (!a.positional[0]) {
-            if (settings.env.default) {
-                url = settings.env.default.db;
+            if (a.positional.length > 1) {
+                url = a.positional[1];
             }
-            else {
-                return logger.error('No CouchDB URL specified');
+            else if (a.positional.length && !exists) {
+                url = a.positional[0];
             }
-        }
-        else {
-            url = a.positional[0].replace(/\/$/, '');
-        }
-
-        if (!/^http/.test(url)) {
-            if (url in settings.env) {
-                var env = settings.env[url];
-                url = env.db;
-                a.options.minify = a.options.minify || env.minify
-                if (a.options.baseURL !== null &&
-                    env.hasOwnProperty('baseURL')) {
-                    settings.baseURL = a.options.baseURL = env.baseURL;
-                }
-            }
-            else {
-                if (url.indexOf('@') !== -1 && url.indexOf('/') === -1) {
-                    url = 'http://' + url.split('@')[0] + '@localhost:5984/' +
-                          url.split('@').slice(1).join('@');
+            if (!url) {
+                if (settings.env.default) {
+                    url = settings.env.default.db;
                 }
                 else {
-                    url = 'http://localhost:5984/' + url;
+                    return logger.error('No CouchDB URL specified');
                 }
             }
-        }
-        exports.loadApp(dir, url, a.options, settings,
-            function (err, url, cfg, doc) {
-                if (err) {
-                    return logger.error(err);
-                }
-                var newurl= urlParse(url);
-                delete newurl.auth;
-                delete newurl.host;
-                var ddoc_url = urlFormat(newurl) + '/_design/' + cfg.name;
+            url = url.replace(/\/$/, '');
 
-                var app_url = ddoc_url;
-                if (cfg.index) {
-                    // if there's an index property in kanso.json
-                    app_url = ddoc_url + cfg.index;
+            if (!/^http/.test(url)) {
+                if (url in settings.env) {
+                    var env = settings.env[url];
+                    url = env.db;
+                    a.options.minify = a.options.minify || env.minify
+                    if (a.options.baseURL !== null &&
+                        env.hasOwnProperty('baseURL')) {
+                        settings.baseURL = a.options.baseURL = env.baseURL;
+                    }
                 }
-                if (cfg.hasOwnProperty('baseURL')) {
-                    // if there is a custom baseURL defined
-                    newurl.pathname = cfg.baseURL + '/';
-                    app_url = urlFormat(newurl);
-                }
-                else if (doc.rewrites && doc.rewrites.length) {
-                    app_url = ddoc_url + '/_rewrite/';
-                }
-                else if (doc._attachments && doc._attachments['index.html']) {
-                    app_url = ddoc_url + '/index.html';
-                }
-                else if (doc._attachments && doc._attachments['index.htm']) {
-                    app_url = ddoc_url + '/index.htm';
-                }
-
-                if (a.options.open) {
-                    if (process.platform === 'linux') {
-                        cmd = 'xdg-open';
+                else {
+                    if (url.indexOf('@') !== -1 && url.indexOf('/') === -1) {
+                        url = 'http://' + url.split('@')[0] + '@localhost:5984/' +
+                              url.split('@').slice(1).join('@');
                     }
                     else {
-                        // OSX
-                        cmd = 'open';
+                        url = 'http://localhost:5984/' + url;
                     }
-                    console.log('Opening URL in browser...');
-                    exec(cmd + ' ' + app_url, function (err, so, se) {
-                        if (err) {
-                            return logger.error(err);
-                        }
-                        logger.end(utils.noAuthURL(url));
-                    });
-                }
-                else {
-                    logger.end(utils.noAuthURL(url));
                 }
             }
-        );
+            exports.loadApp(dir, url, a.options, settings,
+                function (err, url, cfg, doc) {
+                    if (err) {
+                        return logger.error(err);
+                    }
+                    var newurl= urlParse(url);
+                    delete newurl.auth;
+                    delete newurl.host;
+                    var ddoc_url = urlFormat(newurl) + '/_design/' + cfg.name;
+
+                    var app_url = ddoc_url;
+                    if (cfg.index) {
+                        // if there's an index property in kanso.json
+                        app_url = ddoc_url + cfg.index;
+                    }
+                    if (cfg.hasOwnProperty('baseURL')) {
+                        // if there is a custom baseURL defined
+                        newurl.pathname = cfg.baseURL + '/';
+                        app_url = urlFormat(newurl);
+                    }
+                    else if (doc.rewrites && doc.rewrites.length) {
+                        app_url = ddoc_url + '/_rewrite/';
+                    }
+                    else if (doc._attachments && doc._attachments['index.html']) {
+                        app_url = ddoc_url + '/index.html';
+                    }
+                    else if (doc._attachments && doc._attachments['index.htm']) {
+                        app_url = ddoc_url + '/index.htm';
+                    }
+
+                    if (a.options.open) {
+                        if (process.platform === 'linux') {
+                            cmd = 'xdg-open';
+                        }
+                        else {
+                            // OSX
+                            cmd = 'open';
+                        }
+                        console.log('Opening URL in browser...');
+                        exec(cmd + ' ' + app_url, function (err, so, se) {
+                            if (err) {
+                                return logger.error(err);
+                            }
+                            logger.end(utils.noAuthURL(app_url));
+                        });
+                    }
+                    else {
+                        logger.end(utils.noAuthURL(app_url));
+                    }
+                }
+            );
+        });
     });
 };
 

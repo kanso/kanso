@@ -10,11 +10,15 @@ var fs = require('fs'),
 var commands = {
     'clear-cache': null,
     'create': null,
-    'fetch': [{directories: true}],
+    'createdb': null,
+    'deletedb': null,
+    'listdb': null,
     'help': [{list: [
         'clear-cache',
         'create',
-        'fetch',
+        'createdb',
+        'deletedb',
+        'listdb',
         'help',
         'install',
         'ls',
@@ -27,12 +31,12 @@ var commands = {
         'upload',
         'uuids'
     ]}],
-    'install': [null, {directories: true}],
+    'install': [{directories: true, filenames: /.*\.tar\.gz$/}],
     'ls': [{directories: true}],
     'pack': [{directories: true}],
     'publish': [{directories: true}],
     // TODO: add lookup of environments in .kansorc
-    'push': [{environments: true}, {directories: true}],
+    'push': [{environments: true, directories: true}, {environments: true}],
     'show': [{directories: true}],
     'transform': [
         {list: ['clear-ids', 'add-ids', 'csv', 'map']},
@@ -40,7 +44,7 @@ var commands = {
         {filenames: /.*\.json$/, directories: true}
     ],
     'unpublish': null,
-    'upload': [null, {filenames: /.*\.json$/, directories: true}],
+    'upload': [{filenames: /.*\.json$/, directories: true}, {environments: true}],
     'uuids': null
 };
 
