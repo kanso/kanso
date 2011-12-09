@@ -61,9 +61,7 @@ exports.run = function (settings, args) {
                     return logger.error('No CouchDB URL specified');
                 }
             }
-            else {
-                url = url.replace(/\/$/, '');
-            }
+            url = url.replace(/\/$/, '');
 
             if (!/^http/.test(url)) {
                 if (url in settings.env) {

@@ -2,8 +2,9 @@ var logger = require('../logger'),
     utils = require('../utils'),
     argParse = require('../args').parse,
     couchdb = require('../couchdb'),
-    async = require('async'),
+    kansorc = require('../kansorc');
     json = require('../data-stream'),
+    async = require('async'),
     urlParse = require('url').parse,
     urlFormat = require('url').format,
     events = require('events'),
@@ -12,11 +13,12 @@ var logger = require('../logger'),
 
 exports.summary = 'Upload a file or directory of JSON files to DB';
 exports.usage = '' +
-'kanso upload [OPTIONS] DB PATH\n' +
+'kanso upload [OPTIONS] PATH [DB]\n' +
 '\n' +
 'Parameters:\n' +
-'  DB     The CouchDB instance to upload the documents to\n' +
 '  PATH   A file or directory containing JSON documents to upload\n' +
+'  DB     The CouchDB database to upload the documents to, if not specified\n' +
+'         it will use the "default" env in your .kansorc if available\n' +
 '\n'+
 'Options:\n' +
 '  -f, --force      Ignore document conflict errors and upload anyway';
@@ -27,33 +29,58 @@ exports.run = function (settings, args, commands) {
         'force': {match: ['--force','-f']}
     });
     if (!a.positional[0]) {
-        logger.error('No CouchDB URL specified');
-        logger.info('Usage: ' + exports.usage);
-        return;
-    }
-    if (!a.positional[1]) {
         logger.error('No data file or directory specified');
         logger.info('Usage: ' + exports.usage);
         return;
     }
-    var path = a.positional[1] || '.';
-    var url = a.positional[0];
-    if (!/^http/.test(url)) {
-        if (url.indexOf('@') !== -1 && url.indexOf('/') === -1) {
-            url = 'http://' + url.split('@')[0] + '@localhost:5984/' +
-                  url.split('@').slice(1).join('@');
-        }
-        else {
-            url = 'http://localhost:5984/' + url;
-        }
-    }
-    var db = couchdb(url);
-    exports.pushDocs(path, url, a.options, function (err) {
+    var path = a.positional[0] || '.';
+    var url = a.positional[1];
+
+    kansorc.extend(settings, '.kansorc', function (err, settings) {
         if (err) {
-            // errors now reported per-file
-            //return logger.error(err);
-            return;
+            return logger.error(err);
         }
+
+        if (!url) {
+            if (settings.env.default) {
+                url = settings.env.default.db;
+            }
+            else {
+                logger.error('No CouchDB URL specified');
+                logger.info('Usage: ' + exports.usage);
+                return;
+            }
+        }
+        url = url.replace(/\/$/, '');
+
+        if (!/^http/.test(url)) {
+            if (url in settings.env) {
+                var env = settings.env[url];
+                url = env.db;
+                a.options.minify = a.options.minify || env.minify
+                if (a.options.baseURL !== null &&
+                    env.hasOwnProperty('baseURL')) {
+                    settings.baseURL = a.options.baseURL = env.baseURL;
+                }
+            }
+            else {
+                if (url.indexOf('@') !== -1 && url.indexOf('/') === -1) {
+                    url = 'http://' + url.split('@')[0] + '@localhost:5984/' +
+                          url.split('@').slice(1).join('@');
+                }
+                else {
+                    url = 'http://localhost:5984/' + url;
+                }
+            }
+        }
+        var db = couchdb(url);
+        exports.pushDocs(path, url, a.options, function (err) {
+            if (err) {
+                // errors now reported per-file
+                //return logger.error(err);
+                return;
+            }
+        });
     });
 };
 
@@ -119,6 +146,7 @@ exports.pushDocs = function (path, url, options, callback) {
                 }
             });
         }
+        console.log('Uploading docs to ' + utils.noAuthURL(url));
         exports.find(path, function (err, files) {
             if (err) {
                 return callback(err);
