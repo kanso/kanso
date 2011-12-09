@@ -13,16 +13,12 @@ $(shell if [ ! -d $(BUILDDIR) ]; then mkdir $(BUILDDIR); fi)
 
 all: build
 
-submodules:
-	git submodule update --init --recursive
+build: stamp-build
 
-build: submodules stamp-build
-
-stamp-build: $(wildcard  deps/* src/*)
+stamp-build: $(wildcard  src/*)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
-	cp -R bin scripts project deps src package.json $(BUILDDIR)/kanso
-	tar --exclude='.git' -c -f - deps | (cd $(BUILDDIR)/kanso ; tar xfp -)
+	cp -R bin scripts project src package.json $(BUILDDIR)/kanso
 
 test:
 	./scripts/run_tests.sh test
