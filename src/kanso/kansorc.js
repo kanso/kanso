@@ -7,7 +7,7 @@
 
 var utils = require('./utils'),
     async = require('async'),
-    _ = require('underscore/underscore')._,
+    _ = require('underscore')._,
     path = require('path');
 
 

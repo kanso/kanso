@@ -10,8 +10,8 @@ var settings = require('./settings'),
     logger = require('./logger'),
     utils = require('./utils'),
     path = require('path'),
-    semver = require('node-semver/semver'),
-    _ = require('underscore/underscore')._;
+    semver = require('semver'),
+    _ = require('underscore')._;
 
 
 /**

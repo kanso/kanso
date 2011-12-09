@@ -8,7 +8,7 @@ var utils = require('../utils'),
     url = require('url'),
     urlParse = url.parse,
     urlFormat = url.format,
-    _ = require('underscore/underscore')._;
+    _ = require('underscore')._;
 
 
 exports.summary = 'List databases on a CouchDB instance';
