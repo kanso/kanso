@@ -1,0 +1,12 @@
+{
+    "name": "scrawl",
+    "description": "Dumb comment parsing for node",
+    "maintainers": [
+        {"name": "Caolan McMahon", "web": "https://github.com/caolan"}
+    ],
+    "version": "0.0.1",
+    "directories": {
+        "lib": "./lib"
+    },
+    "main": "lib/scrawl.js"
+}
