@@ -25,6 +25,6 @@
     },
     "bugs": {"web": "http://github.com/caolan/kanso/issues"},
     "directories": { "lib": "./lib" },
-    "bin": {"kanso": "./bin/kanso"},
+    "bin": {"kanso": "./scripts/kanso.js"},
     "main": "lib/kanso.js"
 }
