@@ -6,7 +6,7 @@
  */
 
 var utils = require('./utils'),
-    mime = require('node-mime/mime'),
+    mime = require('mime'),
     async = require('async'),
     fs = require('fs');
 

@@ -3,8 +3,8 @@ var couchdb = require('./couchdb'),
     cache = require('./cache'),
     utils = require('./utils'),
     logger = require('./logger'),
-    semver = require('node-semver/semver'),
-    mime = require('node-mime/mime'),
+    semver = require('semver'),
+    mime = require('mime'),
     async = require('async'),
     http = require('http'),
     https = require('https'),
@@ -13,7 +13,7 @@ var couchdb = require('./couchdb'),
     urlParse = url.parse,
     urlFormat = url.format,
     fs = require('fs'),
-    _ = require('underscore/underscore')._;
+    _ = require('underscore')._;
 
 
 exports.TMP_DIR = process.env.HOME + '/.kanso/tmp';

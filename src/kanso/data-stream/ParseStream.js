@@ -1,4 +1,4 @@
-var Parser = require('node-parser/lib/Parser');
+var Parser = require('parser/lib/Parser');
 var Tokenizer = require('./JsonTokenizer');
 var util = require('util');
 var assert = require('assert');

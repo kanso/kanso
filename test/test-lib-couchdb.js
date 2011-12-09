@@ -1,4 +1,4 @@
-var couchdb = require('kanso/couchdb');
+var couchdb = require('../src/kanso/couchdb');
 
 
 exports['default ports if none specified'] = function (test) {
