@@ -1,9 +1,9 @@
-var scrawl = require('../deps/scrawl'),
-    Showdown = require('../deps/showdown'),
-    async = require('../deps/async'),
+var scrawl = require('scrawl'),
+    Showdown = require('./showdown'),
+    async = require('async'),
     utils = require('../lib/utils'),
-    templates = require('../packages/kanso-templates/build/templates'),
-    dust = require('../deps/dustjs/lib/dust'),
+    templates = require('../packages/kanso-templates/build/templates'), // XXX This looks like a bug - jhs Fri Dec  9 07:21:45 GMT 2011
+    dust = require('dust/lib/dust'),
     path = require('path'),
     fs = require('fs');
 

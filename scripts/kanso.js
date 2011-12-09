@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 
 var path = require('path'),
-    utils = require('kanso/utils'),
-    kansorc = require('kanso/kansorc'),
-    logger = require('kanso/logger'),
-    commands = require('kanso/commands');
+    utils = require('../src/kanso/utils'),
+    kansorc = require('../src/kanso/kansorc'),
+    logger = require('../src/kanso/logger'),
+    commands = require('../src/kanso/commands');
 
 
 var args = process.argv.slice(2);

@@ -1,4 +1,4 @@
-var semver = require('node-semver/semver'),
+var semver = require('semver'),
     logger = require('../logger'),
     utils = require('../utils'),
     repository = require('../repository'),
