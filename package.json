@@ -26,5 +26,5 @@
 
     "main": "./src/api",
     "bugs": {"url": "http://github.com/caolan/kanso/issues"},
-    "bin": {"kanso": "./bin/kanso"}
+    "bin": {"kanso": "./scripts/kanso.js"}
 }
