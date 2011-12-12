@@ -18,7 +18,7 @@
         "underscore": "1.1.7",
         "scrawl": "0.0.1"
     },
-    "version": "0.1.1",
+    "version": "0.1.2-npm",
     "repository": {
         "type": "git",
         "url": "http://github.com/caolan/kanso.git"
