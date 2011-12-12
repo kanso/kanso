@@ -18,6 +18,9 @@
         "underscore": "1.1.7",
         "scrawl": "0.0.1"
     },
+    "devDependencies": {
+        "nodelint": "0.5.2"
+    },
     "version": "0.1.2-npm",
     "repository": {
         "type": "git",
