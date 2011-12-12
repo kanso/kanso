@@ -6,8 +6,15 @@ var os = require('os'),
 
 var KANSO_DIR = process.argv[2];
 var HOME = process.env.HOME;
-// TODO: in OSX 10.6 this is apparently ".profile"
+
 var bash_profile = HOME + '/.bash_profile';
+try {
+    fs.statSync(bash_profile);
+}
+catch (e) {
+    // OSX 10.6 apparently uses ".profile", try that instead
+    bash_profile = HOME + '/.profile';
+}
 var bashrc = HOME + '/.bashrc';
 
 

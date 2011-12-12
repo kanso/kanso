@@ -239,3 +239,86 @@ exports['rmTrailingSlash'] = function (test) {
     test.equal(utils.rmTrailingSlash('/'), '/');
     test.done();
 };
+
+exports['argToURL'] = function (test) {
+    // full URL
+    test.equal(
+        utils.argToURL({}, 'http://hostname:5984/foo'),
+        'http://hostname:5984/foo'
+    );
+    test.equal(
+        utils.argToURL({}, 'http://username@hostname:5984/foo'),
+        'http://username@hostname:5984/foo'
+    );
+    test.equal(
+        utils.argToURL({}, 'http://username:password@hostname:5984/foo'),
+        'http://username:password@hostname:5984/foo'
+    );
+
+    // local DB name
+    test.equal(
+        utils.argToURL({}, 'bar'),
+        'http://localhost:5984/bar'
+    );
+    test.equal(
+        utils.argToURL({}, 'username@bar'),
+        'http://username@localhost:5984/bar'
+    );
+    test.equal(
+        utils.argToURL({}, 'username:password@bar'),
+        'http://username:password@localhost:5984/bar'
+    );
+
+    // environment name
+    test.equal(
+        utils.argToURL(
+            {env: {baz: {db: 'http://hostname:8080/baz'}}},
+            'baz'
+        ),
+        'http://hostname:8080/baz'
+    );
+    test.equal(
+        utils.argToURL(
+            {env: {baz: {db: 'http://username@hostname:8080/baz'}}},
+            'baz'
+        ),
+        'http://username@hostname:8080/baz'
+    );
+    test.equal(
+        utils.argToURL(
+            {env: {baz: {db: 'http://username:password@hostname:8080/baz'}}},
+            'baz'
+        ),
+        'http://username:password@hostname:8080/baz'
+    );
+
+    // custom credentials with predefined environment
+    test.equal(
+        utils.argToURL(
+            {env: {baz: {db: 'http://username:password@hostname:8080/baz'}}},
+            'user2@baz'
+        ),
+        'http://user2@hostname:8080/baz'
+    );
+    test.equal(
+        utils.argToURL(
+            {env: {baz: {db: 'http://username:password@hostname:8080/baz'}}},
+            'user2:pass2@baz'
+        ),
+        'http://user2:pass2@hostname:8080/baz'
+    );
+
+    // default environment
+    var settings = {env: {}};
+    settings.env['default'] = {db: 'http://user:pass@hostname:port/dbname'};
+    test.equal(utils.argToURL(settings, ''), settings.env['default'].db);
+    test.equal(utils.argToURL(settings, null), settings.env['default'].db);
+    test.equal(utils.argToURL(settings), settings.env['default'].db);
+
+    // empty arg with no default env
+    test.throws(function () { utils.argToURL({}, ''); });
+    test.throws(function () { utils.argToURL({}, null); });
+    test.throws(function () { utils.argToURL({}); });
+
+    test.done();
+};

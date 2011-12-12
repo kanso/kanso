@@ -10,6 +10,8 @@ var couchdb = require('./couchdb'),
     https = require('https'),
     path = require('path'),
     url = require('url'),
+    urlParse = url.parse,
+    urlFormat = url.format,
     fs = require('fs'),
     _ = require('underscore/underscore')._;
 
@@ -52,6 +54,9 @@ exports.attachTar = function (doc, cfg, tfile, callback) {
 };
 
 exports.attachREADME = function (doc, cfg, readme, callback) {
+    if (!readme) {
+        return callback(null, doc);
+    }
     fs.readFile(readme, function (err, content) {
         if (err) {
             return callback(err);
@@ -378,7 +383,9 @@ exports.resolve = function (name, version, repositories, callback) {
             ));
         }
         else {
-            return callback(new Error('No package found for ' + name));
+            var e = new Error('No package found for ' + name);
+            e.notfound = true;
+            return callback(e);
         }
     };
     checkRepo(repositories[i], nextfn);
@@ -429,8 +436,7 @@ exports.fetch = function (name, version, repositories,
                 }
                 var filename = name + '-' + v + '.tar.gz';
                 var url = repository + '/' + name + '/' + filename;
-                //logger.info('downloading', filename);
-                logger.info('downloading', url);
+                logger.info('downloading', utils.noAuthURL(url));
                 exports.download(url, function (err, tarfile) {
                     if (err) {
                         return callback(err);

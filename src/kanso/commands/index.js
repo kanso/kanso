@@ -4,6 +4,10 @@ module.exports = {
     upload: require('./upload'),
     show: require('./show'),
     create: require('./create'),
+    createdb: require('./createdb'),
+    deletedb: require('./deletedb'),
+    listdb: require('./listdb'),
+    replicate: require('./replicate'),
     transform: require('./transform'),
     uuids: require('./uuids'),
     pack: require('./pack'),
@@ -11,6 +15,5 @@ module.exports = {
     unpublish: require('./unpublish'),
     install: require('./install'),
     'clear-cache': require('./clear-cache'),
-    fetch: require('./fetch'),
     ls: require('./ls')
 };
