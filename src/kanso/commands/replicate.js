@@ -4,12 +4,7 @@ var utils = require('../utils'),
     kansorc = require('../kansorc'),
     argParse = require('../args').parse,
     async = require('async'),
-    path = require('path'),
-    url = require('url'),
-    util = require('util'),
-    urlParse = url.parse,
-    urlFormat = url.format,
-    _ = require('underscore/underscore')._;
+    util = require('util');
 
 
 exports.summary = 'Exchange data between databases';
@@ -25,19 +20,12 @@ exports.usage = '' +
 '  TARGET    The database to replicate to\n' +
 '\n' +
 'Options:\n' +
-'  --push             Use push instead of pull replication\n' +
-'  --continuous       Use continuous replication';
-/*
-'  --bidirectional    Replicate in both directions, from source to target\n' +
-'                     and from target to source';
-*/
+'  --push    Use push instead of pull replication';
 
 
 exports.run = function (settings, args, commands) {
     var a = argParse(args, {
-        'push': {match: ['--push']},
-        'continuous': {match: ['--continuous']}
-        //'bidirectional': {match: ['--bidirectional']}
+        'push': {match: ['--push']}
     });
 
     if (a.positional.length < 1) {
@@ -51,106 +39,66 @@ exports.run = function (settings, args, commands) {
         return;
     }
 
-    kansorc.extend(settings, '.kansorc', function (err, settings) {
+    exports.init(settings, a, function (err, source, target, settings) {
         if (err) {
             return logger.error(err);
         }
-        var source = utils.argToURL(settings, a.positional[0]);
-        var target = utils.argToURL(settings, a.positional[1]);
-
-        logger.info('type', 'pull');
         logger.info('source', utils.noAuthURL(source));
         logger.info('target', utils.noAuthURL(target));
 
-        function poll(db, interval) {
-            // TODO: add _active_tasks polling for progress bars ?
-
-            var count = 0;
-            var replicator = couchdb(couchdb.instanceURL(db) + '/_replicator');
-
-            var fn = function (err, doc) {
-                if (err) {
-                    console.log('');
-                    return logger.error(err);
-                }
-                if (a.options.continuous) {
-                    if (count >= 2) {
-                        // poll continuous replication a couple of times to
-                        // see if its likely to be working
-                        console.log('');
-                        return logger.end();
-                    }
-                }
-                count++;
-
-                if (doc._replication_state === 'error') {
-                    console.log('');
-                    return logger.error('Replication error: ' + doc._id);
-                }
-                if (doc._replication_state === 'completed') {
-                    console.log('');
-                    logger.info('deleting document', doc._id);
-                    replicator.delete(doc._id, doc._rev, function (err) {
-                        if (err) {
-                            return logger.error(err);
-                        }
-                        logger.end('Replication complete');
-                    });
-                    return;
-                }
-                if (doc._replication_state) {
-                    console.log('');
-                    return logger.error(
-                        'Unknown replication state: ' + doc._replication_state
-                    );
-                }
-                if (count === 1) {
-                    util.print(logger.cyan('replicating '));
-                }
-                setTimeout(function () {
-                    util.print('.');
-                    replicator.get(doc._id, fn);
-                }, interval);
-            };
-
-            return fn;
-        }
+        // push or pull replication?
+        var replicator = couchdb.instanceURL(
+            a.options.push ? source: target
+        );
 
         utils.catchAuthError(
-            exports.replicate, target, [source, a.options],
-            function (err, info, db) {
-                if (!err && info) {
-                    logger.info('Created document', info.id);
+            exports.replicate, replicator, [source, target, a.options],
+            function (err, resp) {
+                if (err) {
+                    return logger.error(err);
                 }
-                poll(db, 1000)(err, info ? {_id: info.id}: null);
+                logger.end();
             }
         );
 
     });
 };
 
-exports.replicate = function (target, source, options, callback) {
-    var replicator = couchdb.instanceURL(target) + '/_replicator';
-    if (options.push) {
-        replicator = couchdb.instanceURL(source) + '/_replicator';
-    }
-    async.series({
-        replicator: async.apply(utils.completeAuth, replicator, true),
-        source: async.apply(utils.completeAuth, source, false),
-        target: async.apply(utils.completeAuth, target, false)
-    },
-    function (err, results) {
+
+exports.init = function (settings, a, callback) {
+    kansorc.extend(settings, '.kansorc', function (err, settings) {
         if (err) {
             return callback(err);
         }
-        var opt = {
-            continuous: options.continuous
-        };
-        couchdb.replicate(
-            results.replicator, results.source, results.target, opt,
-            function (err, info) {
-                return callback(err, info, results.replicator);
+        var source = utils.argToURL(settings, a.positional[0]);
+        var target = utils.argToURL(settings, a.positional[1]);
+
+        utils.completeAuth(source, false, function (err, source) {
+            if (err) {
+                return callback(err);
             }
-        );
+            utils.completeAuth(source, false, function (err, source) {
+                if (err) {
+                    return callback(err);
+                }
+                callback(null, source, target, settings);
+            });
+        });
+    });
+};
+
+
+exports.replicate = function (replicator, source, target, options, callback) {
+    utils.completeAuth(replicator, false, function (err, replicator) {
+        if (err) {
+            return logger.error(err);
+        }
+        var data = {
+            source: source,
+            target: target
+        };
+        var db = couchdb(replicator);
+        console.log('Replicating...');
+        db.client('POST', '/_replicate', data, callback);
     });
 };
