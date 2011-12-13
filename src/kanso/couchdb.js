@@ -5,10 +5,12 @@
  */
 
 var url = require('url'),
+    path = require('path'),
     http = require('http'),
     https = require('https'),
     logger = require('./logger'),
-    querystring = require('querystring');
+    querystring = require('querystring'),
+    _ = require('underscore')._;
 
 
 var STATUS_MSGS = {
@@ -420,5 +422,46 @@ CouchDB.prototype.uuids = function (count, callback) {
 CouchDB.prototype.allDbs = function (callback) {
     this.client('GET', '_all_dbs', {}, function (err, data) {
         callback(err, data);
+    });
+};
+
+CouchDB.prototype.instanceURL = function (dburl) {
+    dburl = dburl || _.clone(this.instance);
+    var parsed = (typeof dburl === "object") ? dburl: url.parse(dburl);
+    delete parsed.pathname;
+    delete parsed.query;
+    delete parsed.search;
+    return url.format(parsed);
+};
+exports.instanceURL = function () {
+    return CouchDB.prototype.instanceURL.apply({}, arguments);
+};
+
+exports.replicate = function (replicator, source, target, options, callback) {
+    var replicator = exports(replicator);
+    replicator.exists('', function (err, exists) {
+        if (err) {
+            return callback(err);
+        }
+        if (!exists) {
+            replicator.client('GET', '', {}, function (err, info) {
+                if (err) {
+                    return callback(err);
+                }
+                var msg = 'You need at least CouchDB 1.1.0 to use the ' +
+                    '_replicator database';
+                if (info && info.version) {
+                    msg += ', it appears you are using ' + info.version;
+                }
+                callback(new Error(msg));
+            });
+        }
+        else {
+            var doc = _.extend(options, {
+                source: source,
+                target: target
+            });
+            replicator.save(null, doc, callback);
+        }
     });
 };
