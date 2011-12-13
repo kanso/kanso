@@ -18,7 +18,6 @@
         "users": "0.0.9",
         "replication": "0.0.8",
         "couchtypes": "0.0.8",
-        "couchtypes-forms": "0.0.8",
         "dust": "0.3.0",
         "duality-dust": "0.0.1",
         "nodeunit-testrunner": "0.0.2",
