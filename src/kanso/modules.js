@@ -32,6 +32,18 @@ exports.originalPaths = {};
  */
 
 exports.add = function (doc, path, src) {
+    var curr = utils.getPropertyPath(doc, path, true);
+    if (curr !== undefined) {
+        var paths = utils.getPropertyPaths(path, curr);
+        throw new Error(
+            'Adding ' + path + ' would overwrite:\n' +
+            '  ' + paths.join('\n  ') + '\n' +
+            '\n' +
+            'This error often occurs because there is a module with the\n' +
+            'same name as a directory containing modules. There is no way\n' +
+            'to map this structure in the design doc.\n'
+        );
+    }
     utils.setPropertyPath(doc, path, src);
     if (!doc._modules) {
         doc._modules = {};

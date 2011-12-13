@@ -30,14 +30,28 @@ var path = require('path'),
 exports.setPropertyPath = function (obj, p, val) {
     // normalize to remove unessecary . and .. from paths
     var parts = path.normalize(p).split('/');
+    var curr = [];
 
     // loop through all parts of the path except the last, creating the
     // properties if they don't exist
     var prop = parts.slice(0, parts.length - 1).reduce(function (a, x) {
+        curr.push(x);
         if (a[x] === undefined) {
             a[x] = {};
         }
-        a = a[x];
+        if (typeof a[x] === 'object' && !Array.isArray(a[x])) {
+            a = a[x];
+        }
+        else {
+            throw new Error(
+                'Updating "' + p + '" would overwrite "' +
+                    curr.join('/') + '"\n' +
+                '\n' +
+                'This can sometimes happen when a file has the same name as\n' +
+                'a directory and both paths are added to the design doc.\n' +
+                'There is no way to map this structure in the design doc.\n'
+            );
+        }
         return a;
     }, obj);
 
@@ -45,6 +59,26 @@ exports.setPropertyPath = function (obj, p, val) {
     prop[path.basename(parts[parts.length - 1], '.js')] = val;
 
     return val;
+};
+
+/**
+ * Returns an array of file-like paths from an object, prepending the 'root'
+ * path provided to each
+ *
+ * eg, getPropertyPath('foo', {a: '', b: {c: ''}}) => ['foo/a', 'foo/b/c']
+ */
+
+exports.getPropertyPaths = function (root, obj) {
+    if (typeof obj === 'object' && !Array.isArray(obj)) {
+        var paths = [];
+        for (var k in obj) {
+            paths = paths.concat(
+                exports.getPropertyPaths(root + '/' + k, obj[k])
+            );
+        }
+        return paths;
+    }
+    return [root];
 };
 
 /**
