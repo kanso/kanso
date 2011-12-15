@@ -16,7 +16,8 @@
         "csv": "0.0.9",
         "parser": "0.1.1",
         "underscore": "1.1.7",
-        "scrawl": "0.0.1"
+        "scrawl": "0.0.1",
+        "prompt": "0.1.11"
     },
     "version": "0.1.1",
     "repository": {
