@@ -6,6 +6,7 @@ var path = require('path'),
     url = require('url'),
     fs = require('fs'),
     async = require('async'),
+    logger = require('./logger'),
     urlFormat = require('url').format,
     urlParse = require('url').parse,
     child_process = require('child_process'),
@@ -29,14 +30,28 @@ var path = require('path'),
 exports.setPropertyPath = function (obj, p, val) {
     // normalize to remove unessecary . and .. from paths
     var parts = path.normalize(p).split('/');
+    var curr = [];
 
     // loop through all parts of the path except the last, creating the
     // properties if they don't exist
     var prop = parts.slice(0, parts.length - 1).reduce(function (a, x) {
+        curr.push(x);
         if (a[x] === undefined) {
             a[x] = {};
         }
-        a = a[x];
+        if (typeof a[x] === 'object' && !Array.isArray(a[x])) {
+            a = a[x];
+        }
+        else {
+            throw new Error(
+                'Updating "' + p + '" would overwrite "' +
+                    curr.join('/') + '"\n' +
+                '\n' +
+                'This can sometimes happen when a file has the same name as\n' +
+                'a directory and both paths are added to the design doc.\n' +
+                'There is no way to map this structure in the design doc.\n'
+            );
+        }
         return a;
     }, obj);
 
@@ -44,6 +59,26 @@ exports.setPropertyPath = function (obj, p, val) {
     prop[path.basename(parts[parts.length - 1], '.js')] = val;
 
     return val;
+};
+
+/**
+ * Returns an array of file-like paths from an object, prepending the 'root'
+ * path provided to each
+ *
+ * eg, getPropertyPath('foo', {a: '', b: {c: ''}}) => ['foo/a', 'foo/b/c']
+ */
+
+exports.getPropertyPaths = function (root, obj) {
+    if (typeof obj === 'object' && !Array.isArray(obj)) {
+        var paths = [];
+        for (var k in obj) {
+            paths = paths.concat(
+                exports.getPropertyPaths(root + '/' + k, obj[k])
+            );
+        }
+        return paths;
+    }
+    return [root];
 };
 
 /**
@@ -500,21 +535,37 @@ exports.getUsername = function (callback) {
 
 exports.getAuth = function (url, callback) {
     var parsed = urlParse(url);
-    delete parsed.auth;
-    delete parsed.host;
-    exports.getUsername(function (err, username) {
-        if (err) {
-            return callback(err);
-        }
+    // if a username has been specified, only ask for password
+    if (parsed.auth && parsed.auth.split(':').length === 1) {
+        console.log('Getting credentials for: ' + url);
         exports.getPassword(function (err, password) {
             if (err) {
                 return callback(err);
             }
-            parsed.auth = encodeURIComponent(username) + ':' +
-                          encodeURIComponent(password);
+            delete parsed.host;
+            parsed.auth += ':' + encodeURIComponent(password);
+            console.log('');
             callback(null, urlFormat(parsed));
         });
-    });
+    }
+    else {
+        delete parsed.auth;
+        delete parsed.host;
+        console.log('Getting credentials for: ' + exports.noAuthURL(url));
+        exports.getUsername(function (err, username) {
+            if (err) {
+                return callback(err);
+            }
+            exports.getPassword(function (err, password) {
+                if (err) {
+                    return callback(err);
+                }
+                parsed.auth = encodeURIComponent(username) + ':' +
+                              encodeURIComponent(password);
+                callback(null, urlFormat(parsed));
+            });
+        });
+    }
 };
 
 exports.padRight = function (str, len) {
@@ -574,9 +625,97 @@ exports.formatSize = function (size) {
     return size.toFixed(1) + ' ' + units[i - 1];
 };
 
+/**
+ * Used by commands wanting to report a URL on the command-line without giving
+ * away auth info.
+ */
+
 exports.noAuthURL = function (url) {
     var parts = urlParse(url);
     delete parts.auth;
     delete parts.host;
     return urlFormat(parts);
+};
+
+
+/**
+ * Used by commands converting a URL argument to a real URL by attempting to
+ * match against environments in .kansorc etc
+ */
+
+exports.argToURL = function (settings, url) {
+    if (!url) {
+        if (settings && settings.env && settings.env.default) {
+            url = settings.env.default.db;
+            if (!url) {
+                throw new Error('Environment missing db property');
+            }
+        }
+        else {
+            throw new Error('No CouchDB URL specified');
+        }
+    }
+    url = url.replace(/\/$/, '');
+
+    if (!/^http/.test(url)) {
+        var auth;
+        if (url.indexOf('@') !== -1) {
+            auth = url.split('@')[0];
+            url = url.split('@').slice(1).join('@');
+        }
+        if (settings && settings.env &&  url in settings.env) {
+            var env = settings.env[url];
+            url = env.db;
+            if (!url) {
+                throw new Error('Environment missing db property');
+            }
+        }
+        else {
+            url = 'http://localhost:5984/' + url;
+        }
+        if (auth) {
+            var parsed = urlParse(url);
+            parsed.auth = auth;
+            url = urlFormat(parsed);
+        }
+    }
+    return url;
+};
+
+
+/**
+ * Used by commands wanting to add auth info to a URL. It will only prompt for
+ * a password if the URL has a username, but no password associated with it.
+ * Optionally you can force an auth prompt if the url has no auth data at all
+ * by setting force to true.
+ */
+
+exports.completeAuth = function (url, force, callback) {
+    var parsed = urlParse(url);
+    // if only a username has been specified, ask for password
+    if (force || (parsed.auth && parsed.auth.split(':').length === 1)) {
+        exports.getAuth(url, callback);
+    }
+    else {
+        callback(null, url);
+    }
+};
+
+
+exports.catchAuthError = function (fn, url, extra_args, callback) {
+    fn.apply(null, [url].concat(extra_args).concat(function (err) {
+        if (err && err.response && err.response.statusCode === 401) {
+            logger.error(err.toString());
+            exports.getAuth(url, function (err, url) {
+                if (err) {
+                    return callback(err);
+                }
+                console.log('');
+                exports.catchAuthError(fn, url, extra_args, callback);
+            });
+        }
+        else {
+            callback.apply(this, arguments);
+        }
+    }));
 };
