@@ -37,6 +37,9 @@ var sourceauto = [
 
 if (os.type() === 'Darwin') {
     fs.readFile(bash_profile, function (err, data) {
+        if (err) {
+            throw err;
+        }
         data = data.toString();
         var identifier = data.indexOf('source ' + bashrc);
         if (identifier === -1) {
@@ -51,8 +54,10 @@ if (os.type() === 'Darwin') {
         };
     });
 }
-
 fs.readFile(bashrc, function (err, data) {
+    if (err) {
+        throw err;
+    }
     data = data.toString();
     var identifier = data.indexOf('#KANSO:');
     if (identifier === -1) {
