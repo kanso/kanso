@@ -14,7 +14,6 @@ var path = require('path'),
     evals = process.binding('evals'),
     Script = evals.Script || evals.NodeScript;
 
-prompt.start();
 
 /**
  * Converts a relative file path to properties on an object, and assigns a
@@ -459,11 +458,17 @@ exports.stringifyFunctions = function (obj) {
 
 exports.getPassword = function (callback) {
     process.stdout.write('Password: ');
+    if (!prompt.started) {
+        prompt.start();
+    }
     prompt.readLineHidden(callback);
 };
 
 exports.getUsername = function (callback) {
     process.stdout.write('Username: ');
+    if (!prompt.started) {
+        prompt.start();
+    }
     prompt.readLine(callback);
 };
 

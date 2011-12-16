@@ -2,7 +2,8 @@
  * Module dependencies
  */
 
-var util = require('util');
+var util = require('util'),
+    prompt = require('prompt');
 
 /**
  * The level to log at, change this to alter the global logging level.
