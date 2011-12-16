@@ -9,9 +9,6 @@ exports['postprocessor app'] = function (test) {
         if (err) {
             return test.done(err);
         }
-        if (stderr) {
-            return test.done(new Error(stderr.toString()));
-        }
         var doc = JSON.parse(stdout.toString());
         test.strictEqual(doc.postprocessor_run, true);
         test.done();
