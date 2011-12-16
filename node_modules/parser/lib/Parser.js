@@ -1,5 +1,5 @@
 var EventEmitter = require('events').EventEmitter;
-var sys = require('sys');
+var util = require('util');
 var assert = require('assert');
 
 /**
@@ -38,7 +38,7 @@ function Parser (tokenizer) {
         self._newToken(token, type);
     });
 }
-sys.inherits(Parser, EventEmitter);
+util.inherits(Parser, EventEmitter);
 
 /**
  * this function should be called before the parsing begins to specify

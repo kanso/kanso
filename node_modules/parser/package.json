@@ -1,7 +1,7 @@
 {
   "name": "parser",
   "description": "A configurable parser to parse whatever you want",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "homepage": "http://github.com/floby/node-parser",
   "repository": {
     "type": "git",
@@ -13,7 +13,7 @@
     "lib": "lib"
   },
   "engines": {
-    "node": "0.4"
+    "node": "0.6"
   },
   "dependencies": {
     "tokenizer": "*"
