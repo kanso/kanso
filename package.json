@@ -19,11 +19,16 @@
         "scrawl": "0.0.1",
         "prompt": "0.1.11"
     },
-    "version": "0.1.1",
+    "devDependencies": {
+        "nodelint": "0.5.2"
+    },
+    "version": "0.1.2-npm",
     "repository": {
         "type": "git",
         "url": "http://github.com/caolan/kanso.git"
     },
+
+    "main": "./src/api",
     "bugs": {"url": "http://github.com/caolan/kanso/issues"},
-    "bin": {"kanso": "./bin/kanso"}
+    "bin": {"kanso": "./scripts/kanso.js"}
 }
