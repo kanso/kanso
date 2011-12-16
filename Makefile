@@ -18,7 +18,7 @@ build: stamp-build
 stamp-build: $(wildcard  src/*)
 	touch $@;
 	mkdir -p $(BUILDDIR)/kanso
-	cp -R bin scripts project src package.json $(BUILDDIR)/kanso
+	cp -R bin node_modules scripts project src package.json $(BUILDDIR)/kanso
 
 test:
 	./scripts/run_tests.sh test
