@@ -61,7 +61,7 @@ app.js example:
       doc = row.doc;
       send("\t&lt;li class='person name'>" + doc.name + "&lt;/li>\n");
     }
-    send("&lt;/li>\n")
+    send("&lt;/ul>\n")
   }
 
   ddoc.shows.person = function(doc, req) {

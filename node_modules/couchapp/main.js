@@ -163,7 +163,7 @@ function createApp (doc, url, cb) {
   
   app.push = function (callback) {
     var revpos
-      , pending = 0
+      , pending_dirs = 0
       ;
     
     console.log('Preparing.')
@@ -174,11 +174,12 @@ function createApp (doc, url, cb) {
     app.doc = doc;
     app.prepare();
     revpos = app.doc._rev ? parseInt(app.doc._rev.slice(0,app.doc._rev.indexOf('-'))) : 0;
-    
+
+    pending_dirs = app.doc.__attachments.length;
     app.doc.__attachments.forEach(function (att) {
       watch.walk(att.root, {ignoreDotFiles:true}, function (err, files) {
+        var pending_files = Object.keys(files).length;
         for (i in files) { (function (f) {
-          pending += 1
           fs.readFile(f, function (err, data) {
             f = f.replace(att.root, att.prefix || '');
             if (f[0] == '/') f = f.slice(1)
@@ -190,11 +191,14 @@ function createApp (doc, url, cb) {
               md5.update(d)
               md5 = md5.digest('hex')
               if (app.doc.attachments_md5[f] && app.doc._attachments[f]) {
-                if (app.doc._attachments[f].revpos === app.doc.attachments_md5[f].revpos && 
-                    app.doc.attachments_md5[f].md5 === md5) {   
-                  pending -= 1
-                  if (pending === 0) {
-                    push(callback)
+                if (app.doc._attachments[f].revpos === app.doc.attachments_md5[f].revpos &&
+                    app.doc.attachments_md5[f].md5 === md5) {
+                  pending_files -= 1;
+                  if(pending_files === 0){
+                    pending_dirs -= 1;
+                    if(pending_dirs === 0){
+                      push(callback);
+                    }
                   }
                   return; // Does not need to be updated.
                 }
@@ -202,9 +206,12 @@ function createApp (doc, url, cb) {
               app.doc._attachments[f] = {data:d, content_type:mime};
               app.doc.attachments_md5[f] = {revpos:revpos + 1, md5:md5};
             }
-            pending -= 1
-            if (pending === 0) {
-              push(callback)
+            pending_files -= 1
+            if(pending_files === 0){
+              pending_dirs -= 1;
+              if(pending_dirs === 0){
+                push(callback);
+              }
             }
           })
         })(i)}

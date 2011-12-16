@@ -1,7 +1,7 @@
 { "name" : "couchapp"
 , "description" : "Utilities for building CouchDB applications."
 , "tags" : ["couchdb", "webframework"]
-, "version" : "0.8.1"
+, "version" : "0.9.0"
 , "author" : "Mikeal Rogers <mikeal.rogers@gmail.com>"
 , "engines" : ["node >= 0.1.95"]
 , "main" : "./main"
