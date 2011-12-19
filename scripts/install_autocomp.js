@@ -4,7 +4,7 @@ var os = require('os'),
     fs = require('fs');
 
 
-var KANSO_DIR = process.argv[2];
+var KANSO_DIR = process.argv[2] || '/usr/local/lib/node_modules/kanso'
 var HOME = process.env.HOME;
 
 var bash_profile = HOME + '/.bash_profile';

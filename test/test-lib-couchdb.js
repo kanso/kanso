@@ -1,4 +1,7 @@
-var couchdb = require('../src/kanso/couchdb');
+var couchdb = require('../lib/couchdb'),
+    logger = require('../lib/logger');
+
+logger.clean_exit = true;
 
 
 exports['default ports if none specified'] = function (test) {

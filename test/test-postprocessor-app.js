@@ -1,4 +1,7 @@
-var exec = require('child_process').exec;
+var exec = require('child_process').exec,
+    logger = require('../lib/logger');
+
+logger.clean_exit = true;
 
 
 exports['postprocessor app'] = function (test) {
