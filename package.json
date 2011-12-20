@@ -30,5 +30,8 @@
 
     "main": "./src/api",
     "bugs": {"url": "http://github.com/caolan/kanso/issues"},
-    "bin": {"kanso": "./bin/kanso"}
+    "bin": {
+        "kanso": "./bin/kanso",
+        "kanso_completions": "./scripts/autocomp.js"
+    }
 }
