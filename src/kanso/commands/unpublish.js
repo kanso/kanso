@@ -55,7 +55,7 @@ exports.unpublish = function (repo, name, version, options, callback) {
     if (parsed.auth && parsed.auth.split(':').length === 1) {
         utils.getPassword(function (err, password) {
             delete parsed.host;
-            parsed.auth += ':' + encodeURIComponent(password);
+            parsed.auth += ':' + password;
             repo = urlFormat(parsed);
             exports.unpublish(repo, name, version, options, callback);
         });

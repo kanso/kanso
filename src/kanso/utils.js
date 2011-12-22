@@ -509,7 +509,7 @@ exports.getAuth = function (url, callback) {
                 return callback(err);
             }
             delete parsed.host;
-            parsed.auth += ':' + encodeURIComponent(password);
+            parsed.auth += ':' + password;
             console.log('');
             callback(null, urlFormat(parsed));
         });
@@ -526,8 +526,7 @@ exports.getAuth = function (url, callback) {
                 if (err) {
                     return callback(err);
                 }
-                parsed.auth = encodeURIComponent(username) + ':' +
-                              encodeURIComponent(password);
+                parsed.auth = username + ':' + password;
                 callback(null, urlFormat(parsed));
             });
         });
