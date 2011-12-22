@@ -129,7 +129,7 @@ exports.pushDocs = function (path, url, options, callback) {
     if (parsed.auth && parsed.auth.split(':').length === 1) {
         utils.getPassword(function (err, password) {
             delete parsed.host;
-            parsed.auth += ':' + encodeURIComponent(password);
+            parsed.auth += ':' + password;
             url = urlFormat(parsed);
             exports.pushDocs(path, url, options, callback);
         });

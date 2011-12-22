@@ -108,7 +108,7 @@ exports.listdb = function (url, callback) {
     if (parsed.auth && parsed.auth.split(':').length === 1) {
         utils.getPassword(function (err, password) {
             delete parsed.host;
-            parsed.auth += ':' + encodeURIComponent(password);
+            parsed.auth += ':' + password;
             url = urlFormat(parsed);
             console.log('');
             exports.listdb(url, callback);
