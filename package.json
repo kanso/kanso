@@ -6,7 +6,6 @@
     ],
     "dependencies": {
         "async": "0.1.15",
-        "nodeunit": "0.6.4",
         "mime": "1.2.4",
         "dust": "0.3.0",
         "uglify-js": "1.2.2",
@@ -20,7 +19,8 @@
         "prompt": "0.1.11"
     },
     "devDependencies": {
-        "nodelint": "0.5.2"
+        "nodelint": "0.5.2",
+        "nodeunit": "0.6.4"
     },
     "version": "0.1.2-npm",
     "repository": {
@@ -28,7 +28,7 @@
         "url": "http://github.com/caolan/kanso.git"
     },
 
-    "main": "./src/api",
+    "engines": {"node": "~0.4.0 || ~0.6.6"},
     "bugs": {"url": "http://github.com/caolan/kanso/issues"},
     "bin": {
         "kanso": "./bin/kanso",
