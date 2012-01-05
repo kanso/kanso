@@ -1,4 +1,7 @@
-var buildsteps = require('kanso/buildsteps');
+var buildsteps = require('../lib/buildsteps'),
+    logger = require('../lib/logger');
+
+logger.clean_exit = true;
 
 
 exports['after - specific steps'] = function (test) {

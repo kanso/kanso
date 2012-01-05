@@ -1,4 +1,7 @@
-var exec = require('child_process').exec;
+var exec = require('child_process').exec,
+    logger = require('../lib/logger');
+
+logger.clean_exit = true;
 
 
 exports['postprocessor app'] = function (test) {
@@ -8,9 +11,6 @@ exports['postprocessor app'] = function (test) {
     exec(bin + ' show ' + app, function (err, stdout, stderr) {
         if (err) {
             return test.done(err);
-        }
-        if (stderr) {
-            return test.done(new Error(stderr.toString()));
         }
         var doc = JSON.parse(stdout.toString());
         test.strictEqual(doc.postprocessor_run, true);

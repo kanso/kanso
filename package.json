@@ -5,23 +5,28 @@
         {"name": "Caolan McMahon", "web": "https://github.com/caolan"}
     ],
     "dependencies": {
-        "async": "0.1.6",
-        "nodeunit": "0.5.0",
-        "mime": "1.1.0",
-        "dust": "0.3.0",
-        "uglify-js": "1.0.1",
-        "watch": "0.3.1",
+        "async": "0.1.15",
+        "mime": "1.2.4",
+        "semver": "1.0.9",
         "csv": "0.0.9",
-        "parser": "0.1.1",
-        "scrawl": "0.0.1"
+        "parser": "0.1.2",
+        "underscore": "1.1.7",
+        "prompt": "0.1.11"
     },
-    "version": "0.1.1",
+    "devDependencies": {
+        "nodelint": "0.5.2",
+        "nodeunit": "0.6.4"
+    },
+    "version": "0.1.2",
     "repository": {
         "type": "git",
         "url": "http://github.com/caolan/kanso.git"
     },
-    "bugs": {"web": "http://github.com/caolan/kanso/issues"},
-    "directories": { "lib": "./lib" },
-    "bin": {"kanso": "./bin/kanso"},
-    "main": "lib/kanso.js"
+
+    "engines": {"node": "~0.4.0 || ~0.6.6"},
+    "bugs": {"url": "http://github.com/caolan/kanso/issues"},
+    "bin": {
+        "kanso": "./bin/kanso",
+        "kanso_completions": "./scripts/autocomp.js"
+    }
 }
