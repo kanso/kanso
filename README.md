@@ -32,11 +32,7 @@ well as providing some useful utilities for working with CouchDB and JSON data.
 
 ## Get started
 
-Fetch the code from GitHub and install:
-
-    git clone https://github.com/kanso/kanso.git
-    cd kanso
-    make && sudo make install
+    sudo npm install -g kanso
 
 Learn more: [Simplest possible app](http://kan.so/docs/Simplest_possible_app)
 
