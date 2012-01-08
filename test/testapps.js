@@ -37,16 +37,17 @@ function appErrorTest(p, re) {
         var cmd = __dirname + '/../bin/kanso show ' + pkgpath;
 
         exec(cmd, function (err, stdout, stderr) {
-            if (err) {
-                return test.done(err);
-            }
-
-            if (!stderr) {
+            if (!err) {
                 return test.done(new Error(
                     'Expected building ' + p + ' to result in an error'
                 ));
             }
-            test.ok(re.test(stderr));
+            if (!re.test(stdout.toString())) {
+                test.done(new Error(
+                    'Error message does not match ' + re.toString() + ':\n' +
+                    stdout
+                ));
+            }
             test.done();
         });
     };
@@ -54,5 +55,5 @@ function appErrorTest(p, re) {
 
 exports.conflicting_versions = appErrorTest(
     'testapps/conflicting_versions',
-    /Conflicting packages for/
+    /Conflicting version requirements for testpkg-3/
 );
