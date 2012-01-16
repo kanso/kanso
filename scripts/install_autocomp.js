@@ -4,7 +4,6 @@ var os = require('os'),
     fs = require('fs');
 
 
-var KANSO_DIR = process.argv[2] || '/usr/local/lib/node_modules/kanso'
 var HOME = process.env.HOME;
 
 var bash_profile = HOME + '/.bash_profile';
@@ -26,12 +25,21 @@ var sourcebash = [
 
 
 var sourceauto = [
-  '\n#KANSO: Custom tab completion',
-  'export KANSO_DIR="' + KANSO_DIR + '"',
+  '\n#KANSO',
+  '# Custom tab completion',
   'shopt -s progcomp',
-  'if [ -f ' + KANSO_DIR + '/scripts/autocomp.sh ]; then',
-  '  source ' + KANSO_DIR + '/scripts/autocomp.sh',
+  'command -v kanso_completions &> /dev/null',
+  'if [ $? -eq 0 ]; then',
+  '  _kansoCompListener() {',
+  '    local curw',
+  '    COMPREPLY=()',
+  '    curw=${COMP_WORDS[COMP_CWORD]}',
+  '    COMPREPLY=($(kanso_completions ${COMP_WORDS[@]}))',
+  '    return 0',
+  '  }',
+  '  complete -F _kansoCompListener -o filenames kanso',
   'fi'
+  '#/KANSO'
 ].join('\n');
 
 
