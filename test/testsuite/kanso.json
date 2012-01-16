@@ -9,19 +9,18 @@
     },
     "attachments": "static",
     "dependencies": {
-        "settings": "0.0.8",
-        "properties": "0.0.8",
-        "modules": "0.0.8",
-        "async": "0.1.15",
-        "duality": "0.0.9",
-        "db": "0.0.9",
-        "users": "0.0.9",
-        "replication": "0.0.8",
-        "couchtypes": "0.0.8",
-        "couchtypes-forms": "0.0.8",
-        "dust": "0.3.0",
-        "duality-dust": "0.0.1",
-        "nodeunit-testrunner": "0.0.2",
-        "underscore": "1.2.0"
+        "settings": null,
+        "properties": null,
+        "modules": null,
+        "async": null,
+        "duality": null,
+        "db": null,
+        "users": null,
+        "replication": null,
+        "couchtypes": null,
+        "dust": null,
+        "duality-dust": null,
+        "nodeunit-testrunner": null,
+        "underscore": null
     }
 }
