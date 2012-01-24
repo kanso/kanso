@@ -42,7 +42,7 @@ var commands = {
     'show': [{directories: true}],
     'transform': [
         {list: ['clear-ids', 'add-ids', 'csv', 'map']},
-        {filenames: /.*\.json$/, directories: true},
+        {filenames: /.*/, directories: true}, // could be .json or .csv / .tsv
         {filenames: /.*\.json$/, directories: true}
     ],
     'unpublish': null,
