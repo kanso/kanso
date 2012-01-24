@@ -3,13 +3,15 @@
         "subpkg"
     ],
     "kanso": {
-        "name": "root",
-        "description": "Preprocessor test app",
-        "version": "0.0.1",
-        "dependencies": {
-            "subpkg": null
+        "config": {
+            "name": "root",
+            "description": "Preprocessor test app",
+            "version": "0.0.1",
+            "dependencies": {
+                "subpkg": null
+            },
+            "minify": false
         },
-        "minify": false,
-        "_build_time": "2012-01-08T00:11:37Z"
+        "build_time": "2012-01-08T00:11:37Z"
     }
 }

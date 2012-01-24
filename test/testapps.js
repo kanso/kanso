@@ -17,8 +17,8 @@ function appTest(p) {
             var expected = JSON.parse(
                 fs.readFileSync(pkgpath + '/output.json')
             );
-            delete result.kanso._build_time;
-            delete expected.kanso._build_time;
+            delete result.kanso.build_time;
+            delete expected.kanso.build_time;
 
             test.same(result, expected);
             test.done();
