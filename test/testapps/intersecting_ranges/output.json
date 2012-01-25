@@ -10,6 +10,7 @@
             },
             "minify": false
         },
-        "build_time": "2012-01-08T00:11:12Z"
+        "build_time": "2012-01-08T00:11:12Z",
+        "kanso_version": "0.1.4"
     }
 }
