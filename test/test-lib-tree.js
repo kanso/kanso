@@ -211,6 +211,7 @@ exports['build - fetch from sources'] = function (test) {
         }
     ];
     tree.build(foo, sources, function (err, packages) {
+        delete packages['bar'].ev;
         test.same(packages, {
             'foo': {
                 versions: {
@@ -239,6 +240,7 @@ exports['build - fetch from sources'] = function (test) {
                         dependencies: {}
                     }
                 },
+                update_in_progress: false,
                 ranges: {'foo': '>= 0.0.2'},
                 sources: [],
                 current_version: '0.0.2'
@@ -294,6 +296,7 @@ exports['build - check multiple sources'] = function (test) {
     ];
     tree.build(foo, sources, function (err, packages) {
         test.same(source_calls, ['one', 'two']);
+        delete packages['bar'].ev;
         test.same(packages, {
             'foo': {
                 versions: {
@@ -324,6 +327,7 @@ exports['build - check multiple sources'] = function (test) {
                 },
                 ranges: {'foo': '>= 0.0.2'},
                 sources: [],
+                update_in_progress: false,
                 current_version: '0.0.2'
             }
         });
@@ -381,6 +385,7 @@ exports['build - check only as many sources as needed'] = function (test) {
     ];
     tree.build(foo, sources, function (err, packages) {
         test.same(source_calls, ['one']);
+        delete packages['bar'].ev;
         test.same(packages, {
             'foo': {
                 versions: {
@@ -411,6 +416,7 @@ exports['build - check only as many sources as needed'] = function (test) {
                 },
                 ranges: {'foo': '>= 0.0.2'},
                 sources: [sources[1]],
+                update_in_progress: false,
                 current_version: '0.0.2'
             }
         });
