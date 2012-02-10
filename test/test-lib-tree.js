@@ -5,9 +5,18 @@ exports['extend - install new - reduce dep version'] = function (test) {
     var packages = {
         'foo': {
             versions: {
-                '0.0.1': { name: 'foo', version: '0.0.1', dependencies: {} },
-                '0.0.2': { name: 'foo', version: '0.0.2', dependencies: {} },
-                '0.0.3': { name: 'foo', version: '0.0.3', dependencies: {} }
+                '0.0.1': {
+                    config: { name: 'foo', version: '0.0.1', dependencies: {} },
+                    source: 'local'
+                },
+                '0.0.2': {
+                    config: { name: 'foo', version: '0.0.2', dependencies: {} },
+                    source: 'local'
+                },
+                '0.0.3': {
+                    config: { name: 'foo', version: '0.0.3', dependencies: {} },
+                    source: 'repository'
+                }
             },
             current_version: '0.0.3',
             ranges: {},
@@ -15,20 +24,32 @@ exports['extend - install new - reduce dep version'] = function (test) {
         }
     };
     var bar = {
-        name: 'bar',
-        version: '0.0.1',
-        dependencies: {
-            'foo': '<= 0.0.2'
-        }
+        config: {
+            name: 'bar',
+            version: '0.0.1',
+            dependencies: {
+                'foo': '<= 0.0.2'
+            }
+        },
+        source: 'local'
     }
     var sources = [];
     tree.extend(bar, sources, packages, function (err, packages) {
         test.same(packages, {
             'foo': {
                 versions: {
-                    '0.0.1': { name: 'foo', version: '0.0.1', dependencies: {} },
-                    '0.0.2': { name: 'foo', version: '0.0.2', dependencies: {} },
-                    '0.0.3': { name: 'foo', version: '0.0.3', dependencies: {} }
+                    '0.0.1': {
+                        config: { name: 'foo', version: '0.0.1', dependencies: {} },
+                        source: 'local'
+                    },
+                    '0.0.2': {
+                        config: { name: 'foo', version: '0.0.2', dependencies: {} },
+                        source: 'local'
+                    },
+                    '0.0.3': {
+                        config: { name: 'foo', version: '0.0.3', dependencies: {} },
+                        source: 'repository'
+                    }
                 },
                 current_version: '0.0.2',
                 ranges: {'bar': '<= 0.0.2'},
@@ -37,9 +58,12 @@ exports['extend - install new - reduce dep version'] = function (test) {
             'bar': {
                 versions: {
                     '0.0.1': {
-                        name: 'bar',
-                        version: '0.0.1',
-                        dependencies: { 'foo': '<= 0.0.2' }
+                        config: {
+                            name: 'bar',
+                            version: '0.0.1',
+                            dependencies: { 'foo': '<= 0.0.2' }
+                        },
+                        source: 'local'
                     }
                 },
                 current_version: '0.0.1',
@@ -56,9 +80,18 @@ exports['extend - reinstall existing - increase dep version'] = function (test) 
     var packages = {
         'foo': {
             versions: {
-                '0.0.1': { name: 'foo', version: '0.0.1', dependencies: {} },
-                '0.0.2': { name: 'foo', version: '0.0.2', dependencies: {} },
-                '0.0.3': { name: 'foo', version: '0.0.3', dependencies: {} }
+                '0.0.1': {
+                    config: { name: 'foo', version: '0.0.1', dependencies: {} },
+                    source: 'local'
+                },
+                '0.0.2': {
+                    config: { name: 'foo', version: '0.0.2', dependencies: {} },
+                    source: 'local'
+                },
+                '0.0.3': {
+                    config: { name: 'foo', version: '0.0.3', dependencies: {} },
+                    source: 'repository'
+                }
             },
             current_version: '0.0.2',
             ranges: {bar: '<= 0.0.2'},
@@ -67,9 +100,12 @@ exports['extend - reinstall existing - increase dep version'] = function (test) 
         'bar': {
             versions: {
                 '0.0.1': {
-                    name: 'bar',
-                    version: '0.0.1',
-                    dependencies: { 'foo': '<= 0.0.2' }
+                    config: {
+                        name: 'bar',
+                        version: '0.0.1',
+                        dependencies: { 'foo': '<= 0.0.2' }
+                    },
+                    source: 'local'
                 }
             },
             current_version: '0.0.1',
@@ -78,20 +114,32 @@ exports['extend - reinstall existing - increase dep version'] = function (test) 
         }
     };
     var bar = {
-        name: 'bar',
-        version: '0.0.2',
-        dependencies: {
-            'foo': '> 0.0.2'
-        }
+        config: {
+            name: 'bar',
+            version: '0.0.2',
+            dependencies: {
+                'foo': '> 0.0.2'
+            }
+        },
+        source: 'local'
     }
     var sources = [];
     tree.extend(bar, sources, packages, function (err, packages) {
         test.same(packages, {
             'foo': {
                 versions: {
-                    '0.0.1': { name: 'foo', version: '0.0.1', dependencies: {} },
-                    '0.0.2': { name: 'foo', version: '0.0.2', dependencies: {} },
-                    '0.0.3': { name: 'foo', version: '0.0.3', dependencies: {} }
+                    '0.0.1': {
+                        config: { name: 'foo', version: '0.0.1', dependencies: {} },
+                        source: 'local'
+                    },
+                    '0.0.2': {
+                        config: { name: 'foo', version: '0.0.2', dependencies: {} },
+                        source: 'local'
+                    },
+                    '0.0.3': {
+                        config: { name: 'foo', version: '0.0.3', dependencies: {} },
+                        source: 'repository'
+                    }
                 },
                 current_version: '0.0.3',
                 ranges: {bar: '> 0.0.2'},
@@ -100,14 +148,20 @@ exports['extend - reinstall existing - increase dep version'] = function (test) 
             'bar': {
                 versions: {
                     '0.0.1': {
-                        name: 'bar',
-                        version: '0.0.1',
-                        dependencies: { 'foo': '<= 0.0.2' }
+                        config: {
+                            name: 'bar',
+                            version: '0.0.1',
+                            dependencies: { 'foo': '<= 0.0.2' }
+                        },
+                        source: 'local'
                     },
                     '0.0.2': {
-                        name: 'bar',
-                        version: '0.0.2',
-                        dependencies: { 'foo': '> 0.0.2' }
+                        config: {
+                            name: 'bar',
+                            version: '0.0.2',
+                            dependencies: { 'foo': '> 0.0.2' }
+                        },
+                        source: 'local'
                     }
                 },
                 current_version: '0.0.2',
@@ -125,8 +179,14 @@ exports['extend- install new - missing dep version'] = function (test) {
     var packages = {
         'foo': {
             versions: {
-                '0.0.2': { name: 'foo', version: '0.0.2', dependencies: {} },
-                '0.0.3': { name: 'foo', version: '0.0.3', dependencies: {} }
+                '0.0.2': {
+                    config: { name: 'foo', version: '0.0.2', dependencies: {} },
+                    source: 'local'
+                },
+                '0.0.3': {
+                    config: { name: 'foo', version: '0.0.3', dependencies: {} },
+                    source: 'local'
+                }
             },
             current_version: '0.0.3',
             ranges: {},
@@ -134,11 +194,14 @@ exports['extend- install new - missing dep version'] = function (test) {
         }
     };
     var bar = {
-        name: 'bar',
-        version: '0.0.1',
-        dependencies: {
-            'foo': '< 0.0.2'
-        }
+        config: {
+            name: 'bar',
+            version: '0.0.1',
+            dependencies: {
+                'foo': '< 0.0.2'
+            }
+        },
+        source: 'local'
     }
     var sources = [];
     tree.extend(bar, sources, packages, function (err, packages) {
@@ -156,7 +219,10 @@ exports['extend - install new - missing dep package'] = function (test) {
     var packages = {
         'foo': {
             versions: {
-                '0.0.3': { name: 'foo', version: '0.0.3', dependencies: {} }
+                '0.0.3': {
+                    config: { name: 'foo', version: '0.0.3', dependencies: {} },
+                    source: 'local'
+                }
             },
             current_version: '0.0.3',
             ranges: {},
@@ -164,12 +230,15 @@ exports['extend - install new - missing dep package'] = function (test) {
         }
     };
     var bar = {
-        name: 'bar',
-        version: '0.0.1',
-        dependencies: {
-            'foo': null,
-            'baz': null
-        }
+        config: {
+            name: 'bar',
+            version: '0.0.1',
+            dependencies: {
+                'foo': null,
+                'baz': null
+            }
+        },
+        source: 'local'
     }
     var sources = [];
     tree.extend(bar, sources, packages, function (err, packages) {
@@ -185,11 +254,14 @@ exports['extend - install new - missing dep package'] = function (test) {
 exports['build - fetch from sources'] = function (test) {
     test.expect(2);
     var foo = {
-        name: 'foo',
-        version: '0.0.1',
-        dependencies: {
-            'bar': '>= 0.0.2'
-        }
+        config: {
+            name: 'foo',
+            version: '0.0.1',
+            dependencies: {
+                'bar': '>= 0.0.2'
+            }
+        },
+        source: 'local'
     };
     var sources = [
         function (name, callback) {
@@ -197,14 +269,20 @@ exports['build - fetch from sources'] = function (test) {
             process.nextTick(function () {
                 callback(null, {
                     '0.0.1': {
-                        name: 'bar',
-                        version: '0.0.1',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.1',
+                            dependencies: {}
+                        },
+                        source: 'local'
                     },
                     '0.0.2': {
-                        name: 'bar',
-                        version: '0.0.2',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.2',
+                            dependencies: {}
+                        },
+                        source: 'local'
                     }
                 });
             })
@@ -216,11 +294,14 @@ exports['build - fetch from sources'] = function (test) {
             'foo': {
                 versions: {
                     '0.0.1': {
-                        name: 'foo',
-                        version: '0.0.1',
-                        dependencies: {
-                            'bar': '>= 0.0.2'
-                        }
+                        config: {
+                            name: 'foo',
+                            version: '0.0.1',
+                            dependencies: {
+                                'bar': '>= 0.0.2'
+                            }
+                        },
+                        source: 'local'
                     }
                 },
                 ranges: {},
@@ -230,14 +311,20 @@ exports['build - fetch from sources'] = function (test) {
             'bar': {
                 versions: {
                     '0.0.1': {
-                        name: 'bar',
-                        version: '0.0.1',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.1',
+                            dependencies: {}
+                        },
+                        source: 'local'
                     },
                     '0.0.2': {
-                        name: 'bar',
-                        version: '0.0.2',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.2',
+                            dependencies: {}
+                        },
+                        source: 'local'
                     }
                 },
                 update_in_progress: false,
@@ -255,11 +342,14 @@ exports['build - check multiple sources'] = function (test) {
     test.expect(4);
     var source_calls = [];
     var foo = {
-        name: 'foo',
-        version: '0.0.1',
-        dependencies: {
-            'bar': '>= 0.0.2'
-        }
+        config: {
+            name: 'foo',
+            version: '0.0.1',
+            dependencies: {
+                'bar': '>= 0.0.2'
+            }
+        },
+        source: 'local'
     };
     var sources = [
         function (name, callback) {
@@ -268,9 +358,12 @@ exports['build - check multiple sources'] = function (test) {
             process.nextTick(function () {
                 callback(null, {
                     '0.0.1': {
-                        name: 'bar',
-                        version: '0.0.1',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.1',
+                            dependencies: {}
+                        },
+                        source: 'local'
                     }
                 });
             })
@@ -281,14 +374,20 @@ exports['build - check multiple sources'] = function (test) {
             process.nextTick(function () {
                 callback(null, {
                     '0.0.1': {
-                        name: 'bar',
-                        version: '0.0.1',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.1',
+                            dependencies: {}
+                        },
+                        source: 'repository'
                     },
                     '0.0.2': {
-                        name: 'bar',
-                        version: '0.0.2',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.2',
+                            dependencies: {}
+                        },
+                        source: 'repository'
                     }
                 });
             })
@@ -301,11 +400,14 @@ exports['build - check multiple sources'] = function (test) {
             'foo': {
                 versions: {
                     '0.0.1': {
-                        name: 'foo',
-                        version: '0.0.1',
-                        dependencies: {
-                            'bar': '>= 0.0.2'
-                        }
+                        config: {
+                            name: 'foo',
+                            version: '0.0.1',
+                            dependencies: {
+                                'bar': '>= 0.0.2'
+                            }
+                        },
+                        source: 'local'
                     }
                 },
                 ranges: {},
@@ -315,14 +417,20 @@ exports['build - check multiple sources'] = function (test) {
             'bar': {
                 versions: {
                     '0.0.1': {
-                        name: 'bar',
-                        version: '0.0.1',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.1',
+                            dependencies: {}
+                        },
+                        source: 'local'
                     },
                     '0.0.2': {
-                        name: 'bar',
-                        version: '0.0.2',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.2',
+                            dependencies: {}
+                        },
+                        source: 'repository'
                     }
                 },
                 ranges: {'foo': '>= 0.0.2'},
@@ -339,11 +447,14 @@ exports['build - check only as many sources as needed'] = function (test) {
     test.expect(3);
     var source_calls = [];
     var foo = {
-        name: 'foo',
-        version: '0.0.1',
-        dependencies: {
-            'bar': '>= 0.0.2'
-        }
+        config: {
+            name: 'foo',
+            version: '0.0.1',
+            dependencies: {
+                'bar': '>= 0.0.2'
+            }
+        },
+        source: 'local'
     };
     var sources = [
         function (name, callback) {
@@ -352,14 +463,20 @@ exports['build - check only as many sources as needed'] = function (test) {
             process.nextTick(function () {
                 callback(null, {
                     '0.0.1': {
-                        name: 'bar',
-                        version: '0.0.1',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.1',
+                            dependencies: {}
+                        },
+                        source: 'local'
                     },
                     '0.0.2': {
-                        name: 'bar',
-                        version: '0.0.2',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.2',
+                            dependencies: {}
+                        },
+                        source: 'local'
                     }
                 });
             })
@@ -370,14 +487,20 @@ exports['build - check only as many sources as needed'] = function (test) {
             process.nextTick(function () {
                 callback(null, {
                     '0.0.2': {
-                        name: 'bar',
-                        version: '0.0.2',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.2',
+                            dependencies: {}
+                        },
+                        souce: 'repository'
                     },
                     '0.0.3': {
-                        name: 'bar',
-                        version: '0.0.3',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.3',
+                            dependencies: {}
+                        },
+                        source: 'repository'
                     }
                 });
             })
@@ -390,11 +513,14 @@ exports['build - check only as many sources as needed'] = function (test) {
             'foo': {
                 versions: {
                     '0.0.1': {
-                        name: 'foo',
-                        version: '0.0.1',
-                        dependencies: {
-                            'bar': '>= 0.0.2'
-                        }
+                        config: {
+                            name: 'foo',
+                            version: '0.0.1',
+                            dependencies: {
+                                'bar': '>= 0.0.2'
+                            }
+                        },
+                        source: 'local'
                     }
                 },
                 ranges: {},
@@ -404,14 +530,20 @@ exports['build - check only as many sources as needed'] = function (test) {
             'bar': {
                 versions: {
                     '0.0.1': {
-                        name: 'bar',
-                        version: '0.0.1',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.1',
+                            dependencies: {}
+                        },
+                        source: 'local'
                     },
                     '0.0.2': {
-                        name: 'bar',
-                        version: '0.0.2',
-                        dependencies: {}
+                        config: {
+                            name: 'bar',
+                            version: '0.0.2',
+                            dependencies: {}
+                        },
+                        source: 'local'
                     }
                 },
                 ranges: {'foo': '>= 0.0.2'},
