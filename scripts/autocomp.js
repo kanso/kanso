@@ -23,6 +23,7 @@ var commands = {
         'replicate',
         'help',
         'install',
+        'update',
         'ls',
         'pack',
         'publish',
@@ -34,6 +35,7 @@ var commands = {
         'uuids'
     ]}],
     'install': [{directories: true, filenames: /.*\.tar\.gz$/}],
+    'update': null,
     'ls': [{directories: true}],
     'pack': [{directories: true}],
     'publish': [{directories: true}],
