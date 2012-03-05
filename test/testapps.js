@@ -1,6 +1,7 @@
 var exec = require('child_process').exec,
     path = require('path'),
-    fs = require('fs');
+    fs = require('fs'),
+    utils = require('../lib/utils');
 
 
 function appTest(p) {
@@ -17,11 +18,17 @@ function appTest(p) {
             var expected = JSON.parse(
                 fs.readFileSync(pkgpath + '/output.json')
             );
-            delete result.kanso.build_time;
-            delete expected.kanso.build_time;
+            utils.getKansoVersion(function (err, ver) {
+                if (err) {
+                    return test.done(err);
+                }
+                expected.kanso.kanso_version = ver;
+                delete result.kanso.build_time;
+                delete expected.kanso.build_time;
 
-            test.same(result, expected);
-            test.done();
+                test.same(result, expected);
+                test.done();
+            });
         });
     };
 }
