@@ -3,11 +3,14 @@ var exec = require('child_process').exec,
     fs = require('fs'),
     utils = require('../lib/utils');
 
+function showCommand(pkgpath) {
+    return path.resolve(__dirname,'../bin/kanso') + ' show ' + pkgpath;
+}
 
 function appTest(p) {
     return function (test) {
         var pkgpath = path.join(__dirname, p);
-        var cmd = __dirname + '/../bin/kanso show ' + pkgpath;
+        var cmd = showCommand(pkgpath);
 
         exec(cmd, function (err, stdout, stderr) {
             if (err) {
@@ -41,7 +44,7 @@ exports.intersecting_ranges = appTest('testapps/intersecting_ranges');
 function appErrorTest(p, re) {
     return function (test) {
         var pkgpath = path.join(__dirname, p);
-        var cmd = __dirname + '/../bin/kanso show ' + pkgpath;
+        var cmd = showCommand(pkgpath);
 
         exec(cmd, function (err, stdout, stderr) {
             if (!err) {

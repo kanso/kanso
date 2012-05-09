@@ -48,16 +48,16 @@ exports['getPropertyPath'] = function (test) {
 };
 
 exports['descendants'] = function (test) {
-    var dir = __dirname + '/fixtures/descendants_test';
+    var dir = path.resolve(__dirname,'fixtures/descendants_test');
     utils.descendants(dir, function (err, files) {
         if(err) throw err;
         test.same(files.sort(), [
-            dir + '/file1',
-            dir + '/file2',
-            dir + '/folder1/file1.1',
-            dir + '/folder2/folder2.1/file2.1.1',
-            dir + '/folder2/folder2.2/file2.2.1',
-            dir + '/folder2/folder2.2/file2.2.2'
+            path.resolve(dir,'file1'),
+            path.resolve(dir,'file2'),
+            path.resolve(dir,'folder1/file1.1'),
+            path.resolve(dir,'folder2/folder2.1/file2.1.1'),
+            path.resolve(dir,'folder2/folder2.2/file2.2.1'),
+            path.resolve(dir,'folder2/folder2.2/file2.2.2')
         ].sort());
         test.done();
     });
@@ -86,28 +86,28 @@ exports['relpath'] = function (test) {
     var dir = '/some/test/path';
     test.equals(
         utils.relpath('/some/test/path/some/file.ext', dir),
-        'some/file.ext'
+        path.normalize('some/file.ext')
     );
     test.equals(
         utils.relpath('/some/test/file.ext', dir),
-        '../file.ext'
+        path.normalize('../file.ext')
     );
     test.equals(
         utils.relpath('some/test/file.ext', dir),
-        'some/test/file.ext'
+        path.normalize('some/test/file.ext')
     );
     test.equals(
         utils.relpath('/some/dir/../test/path/file.ext', dir),
-        'file.ext'
+        path.normalize('file.ext')
     );
     test.equals(
         utils.relpath('/trailing/slash/subdir', '/trailing/slash/'),
-        'subdir'
+        path.normalize('subdir')
     );
     test.equals(utils.relpath('file.ext', dir), 'file.ext');
     test.equals(
         utils.relpath('../dir/lib/file.ext', '../dir'),
-        'lib/file.ext'
+        path.normalize('lib/file.ext')
     );
     test.done();
 };
@@ -178,17 +178,17 @@ exports['cp'] = function (test) {
             if (err) throw err;
             // TODO: sometimes the file is not written when this callback fires!
             // see notes in lib/utils.js
-            test.equals(content.toString(), 'test content\n');
+            test.equals(content.toString().replace('\r',''), 'test content\n');
             test.done();
         });
     });
 };
 
 exports['abspath'] = function (test) {
-    test.equals(utils.abspath('/some/path'), '/some/path');
-    test.equals(utils.abspath('some/path'), process.cwd() + '/some/path');
-    test.equals(utils.abspath('some/path', '/cwd'), '/cwd/some/path');
-    test.equals(utils.abspath('/some/path', '/cwd'), '/some/path');
+    test.equals(utils.abspath('/some/path'), path.resolve('/some/path'));
+    test.equals(utils.abspath('some/path'), path.resolve('some/path'));
+    test.equals(utils.abspath('some/path', '/cwd'), path.resolve('/cwd/some/path'));
+    test.equals(utils.abspath('/some/path', '/cwd'), path.resolve('/some/path'));
     test.done();
 };
 
