@@ -4,7 +4,7 @@ var exec = require('child_process').exec,
     utils = require('../lib/utils');
 
 function showCommand(pkgpath) {
-    return path.resolve(__dirname,'../bin/kanso') + ' show ' + pkgpath;
+    return path.resolve('../bin/kanso') + ' show ' + pkgpath;
 }
 
 function appTest(p) {
