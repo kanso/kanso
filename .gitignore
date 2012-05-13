@@ -4,3 +4,4 @@ dist
 stamp-build
 www
 .*.swp
+coffee
