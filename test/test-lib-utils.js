@@ -117,9 +117,9 @@ exports['evalSandboxed'] = function (test) {
     var obj = {test: 'test'};
     try { utils.evalSandboxed("require('util').puts('fail!')"); }
     catch (e) { test.ok(e, 'should throw an error'); }
-    try { utils.evalSandboxed("process.env['HOME']")}
+    try { utils.evalSandboxed("process.env['HOME']");}
     catch (e) { test.ok(e, 'should throw an error'); }
-    try { utils.evalSandboxed("obj.test = 'asdf'")}
+    try { utils.evalSandboxed("obj.test = 'asdf'");}
     catch (e) { test.ok(e, 'should throw an error'); }
     test.equals(obj.test, 'test');
     test.same(utils.evalSandboxed("{a: {b: 123}}"), {a: {b: 123}});
@@ -138,9 +138,9 @@ exports['padRight'] = function (test) {
 
 exports['ensureDir - new dirs'] = function (test) {
     test.expect(1);
-    var p = __dirname + '/fixtures/ensure_dir/some/path';
+    var p = path.resolve('fixtures/ensure_dir/some/path');
     // remove any old test data
-    var dir = __dirname + '/fixtures/ensure_dir';
+    var dir = path.resolve('fixtures/ensure_dir');
     var rm = child_process.spawn('rm', ['-rf', dir]);
     rm.on('error', function (err) { throw err; });
     rm.on('exit', function (code) {
@@ -156,7 +156,7 @@ exports['ensureDir - new dirs'] = function (test) {
 
 exports['ensureDir - existing dir'] = function (test) {
     test.expect(1);
-    var p = __dirname + '/fixtures/existing_dir'
+    var p = path.resolve('fixtures/existing_dir');
     fs.readdir(p, function (err, files) {
         utils.ensureDir(p, function (err) {
             if (err) throw err;
@@ -170,8 +170,8 @@ exports['ensureDir - existing dir'] = function (test) {
 };
 
 exports['cp'] = function (test) {
-    var from = __dirname + '/fixtures/cp_file';
-    var to = __dirname + '/fixtures/cp_file2';
+    var from = path.resolve('/fixtures/cp_file');
+    var to = path.resolve('/fixtures/cp_file2');
     utils.cp(from, to, function (err) {
         if (err) throw err;
         fs.readFile(to, function (err, content) {
@@ -203,13 +203,13 @@ exports['stringifyFunctions'] = function (test) {
             // this is an instanceof Function, and also typeof
             // Function
             c: function (){return 'fn2';},
-            d: 123,
+            d: 123
         },
         e: true,
         f: null,
         g: undefined,
         h: ['one', 'two', 3]
-    }
+    };
     var stringified = utils.stringifyFunctions(obj);
     test.same(
         stringified,
@@ -217,7 +217,7 @@ exports['stringifyFunctions'] = function (test) {
             a: {
                 b: "function (){return 'fn1';}",
                 c: "function (){return 'fn2';}",
-                d: 123,
+                d: 123
             },
             e: true,
             f: null,
