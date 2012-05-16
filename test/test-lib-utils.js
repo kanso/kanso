@@ -170,8 +170,8 @@ exports['ensureDir - existing dir'] = function (test) {
 };
 
 exports['cp'] = function (test) {
-    var from = path.resolve('/fixtures/cp_file');
-    var to = path.resolve('/fixtures/cp_file2');
+    var from = path.resolve('fixtures/cp_file');
+    var to = path.resolve('fixtures/cp_file2');
     utils.cp(from, to, function (err) {
         if (err) throw err;
         fs.readFile(to, function (err, content) {
