@@ -1,6 +1,7 @@
 var utils = require('../lib/utils'),
     path = require('path'),
     fs = require('fs'),
+    rimraf = require('rimraf'),
     child_process = require('child_process'),
     logger = require('../lib/logger');
 
@@ -139,11 +140,13 @@ exports['padRight'] = function (test) {
 exports['ensureDir - new dirs'] = function (test) {
     test.expect(1);
     var p = path.resolve('fixtures/ensure_dir/some/path');
+
     // remove any old test data
     var dir = path.resolve('fixtures/ensure_dir');
-    var rm = child_process.spawn('rm', ['-rf', dir]);
-    rm.on('error', function (err) { throw err; });
-    rm.on('exit', function (code) {
+    rimraf(dir, function(err){
+        if(err) {
+            throw err;
+        }
         utils.ensureDir(p, function (err) {
             if (err) throw err;
             path.exists(p, function (exists) {
