@@ -17,6 +17,11 @@ function appTest(p) {
                 return test.done(err);
             }
 
+            if ( !stdout ) {
+                test.fail('Nothing was output');
+                return test.done();
+            }
+
             var result = JSON.parse(stdout);
             var expected = JSON.parse(
                 fs.readFileSync(pkgpath + '/output.json')
