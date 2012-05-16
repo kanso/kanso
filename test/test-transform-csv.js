@@ -4,16 +4,17 @@ var exec = require('child_process').exec,
     fs = require('fs');
 
 
+var bin = path.resolve(__dirname,'../bin/kanso');
+var output = path.resolve(__dirname,'data-output');
+
 exports.tearDown = function (callback) {
-    rimraf(path.resolve(__dirname,'data-output'), callback);
+    rimraf(output, callback);
 };
 
 function transformTest(trans, p) {
     return function (test) {
         var datadir = path.resolve(__dirname, p);
         var datapath = path.resolve(datadir, 'data');
-        var bin = path.resolve(__dirname,'../bin/kanso');
-        var output = path.resolve(__dirname,'data-output');
         var cmd = bin + ' transform ' + trans + ' '  + datapath + ' ' + output;
 
         exec(cmd, function (err, stdout, stderr) {
