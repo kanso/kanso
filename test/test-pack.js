@@ -60,6 +60,7 @@ function diffTest(pkg, expected) {
     return function (test) {
         exec(cmd, function (err, stdout, stderr) {
             if (err) {
+                console.log(cmd + '\n' + stdout + '\n' + stderr);
                 return test.done(err);
             }
             exec('tar -xf ' + outfile, {cwd: TMPDIR}, function (err) {
