@@ -1,4 +1,5 @@
 var path = require('path'),
+	sets = require('simplesets'),
 	Packer = require('../lib/packer.js');
 
 function packagePath(pkg) {
@@ -20,7 +21,9 @@ function testPackage(pkg, expectedPaths) {
 			actualPaths.push(path.relative(pkgPath, entry.path));
 		}).
 		on('close', function() {
-			test.same(actualPaths, expectedPaths);
+			var actual = new sets.Set(actualPaths),
+				expected = new sets.Set(expectedPaths);
+			test.ok(actual.equals(expected));
 			test.done();
 		});
 	};
