@@ -19,6 +19,7 @@ function transformTest(trans, p) {
 
         exec(cmd, function (err, stdout, stderr) {
             if (err) {
+                console.log(stdout);
                 return test.done(err);
             }
             var expected = fs.readFileSync(path.resolve(datadir,'expected')).toString();

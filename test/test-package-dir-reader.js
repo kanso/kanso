@@ -1,7 +1,7 @@
 var path = require('path'),
 	sets = require('simplesets'),
     settings = require('../lib/settings'),
-	Packer = require('../lib/packer.js');
+	PackageDirReader = require('../lib/package-dir-reader.js');
 
 function packagePath(pkg) {
 	return path.resolve(__dirname,'testapps', pkg);
@@ -22,7 +22,7 @@ function testPackage(pkg, expectedPaths) {
 		var actualPaths = [];
 
 		settings.load(pkgPath, function(err, cfg) {
-			Packer({path: pkgPath, bundledDependencies: cfg.bundledDependencies }).
+			PackageDirReader({path: pkgPath, bundledDependencies: cfg.bundledDependencies }).
 			on('error', function(err) {
 				test.fail(err);
 				test.done();

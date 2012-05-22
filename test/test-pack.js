@@ -29,12 +29,7 @@ var TMPDIR = path.resolve(__dirname, 'tmp');
 
 
 exports.setUp = function (callback) {
-    rimraf(TMPDIR, function (err) {
-        if (err) {
-            return callback(err);
-        }
-        mkdirp(TMPDIR, callback);
-    });
+    mkdirp(TMPDIR, callback);
 };
 
 exports.tearDown = function (callback) {
