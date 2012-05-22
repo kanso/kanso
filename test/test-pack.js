@@ -6,27 +6,9 @@ var exec = require('child_process').exec;
 var path = require('path');
 var rimraf = require('rimraf');
 var mkdirp = require('mkdirp');
-/*
-var child_process = require('child_process');
-
-function exec(cmd, options, callback) {
-    if (!callback) {
-        callback = options;
-        options = {};
-    }
-    console.log(cmd);
-    child_process.exec(cmd, options, function (err, stdout, stderr) {
-        console.log(err);
-        console.log(stdout);
-        console.log(stderr);
-        callback.apply(this, arguments);
-    });
-};
-*/
-
+var tar = require('../lib/tar');
 
 var TMPDIR = path.resolve(__dirname, 'tmp');
-
 
 exports.setUp = function (callback) {
     mkdirp(TMPDIR, callback);
@@ -40,15 +22,15 @@ exports.tearDown = function (callback) {
 function diff(test, a, b, expected) {
     exec('diff -ur ' + a + ' ' + b, function (err, stderr, stdout) {
         // diff info is on stderr
-        test.equal(stderr, expected);
+        test.equal(stderr.trim(), expected.trim());
         test.done();
     });
 }
 
-
 function diffTest(pkg, expected) {
     var pkgpath = path.resolve(__dirname,'testapps',pkg);
     var outfile = path.resolve(TMPDIR, pkg + '.tar.gz');
+
     var cmd = path.resolve(__dirname,'../bin/kanso') + ' pack ' + pkgpath +
         ' --outfile="' + outfile + '"';
 
@@ -58,11 +40,11 @@ function diffTest(pkg, expected) {
                 console.log(cmd + '\n' + stdout + '\n' + stderr);
                 return test.done(err);
             }
-            exec('tar -xf ' + outfile, {cwd: TMPDIR}, function (err) {
+            tar.extract(outfile, function(err) {
                 if (err) {
                     return test.done(err);
                 }
-                diff(test, pkgpath, path.resolve(TMPDIR,'package'), expected);
+                diff(test, pkgpath, path.resolve(TMPDIR,pkg), expected);
             });
         });
     };
