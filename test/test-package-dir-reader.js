@@ -38,7 +38,7 @@ function testPackage(pkg, expectedPaths) {
 	};
 }
 
-exports.basicPackage = testPackage('pack_basic', ['kanso.json','README.md']);
-exports.ignoreFile = testPackage('pack_with_ignored_files', ['.kansoignore','kanso.json','README.md']);
-exports.pack_with_deps = testPackage('pack_with_deps', ['index.html','kanso.json']);
-exports.pack_with_bundled_deps = testPackage('pack_with_bundled_deps', ['example.js','kanso.json', 'packages/bundledpkg/kanso.json', 'packages/bundledpkg/packages/inner_package/README.md']);
+exports.basicPackage = testPackage('pack_basic', ['package/kanso.json','package/README.md','package/lib/Test.txt']);
+exports.ignoreFile = testPackage('pack_with_ignored_files', ['package/.kansoignore','package/kanso.json','package/README.md']);
+exports.pack_with_deps = testPackage('pack_with_deps', ['package/index.html','package/kanso.json']);
+exports.pack_with_bundled_deps = testPackage('pack_with_bundled_deps', ['package/example.js','package/kanso.json', 'package/packages/bundledpkg/kanso.json', 'package/packages/bundledpkg/packages/inner_package/README.md']);

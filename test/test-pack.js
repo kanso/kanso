@@ -44,7 +44,7 @@ function diffTest(pkg, expected) {
                 if (err) {
                     return test.done(err);
                 }
-                diff(test, pkgpath, path.resolve(TMPDIR,pkg), expected);
+                diff(test, pkgpath, path.resolve(TMPDIR,pkg,'package'), expected);
             });
         });
     };
