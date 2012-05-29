@@ -3,15 +3,23 @@ var exec = require('child_process').exec,
     fs = require('fs'),
     utils = require('../lib/utils');
 
+function showCommand(pkgpath) {
+    return path.resolve('../bin/kanso') + ' show ' + pkgpath;
+}
 
 function appTest(p) {
     return function (test) {
         var pkgpath = path.join(__dirname, p);
-        var cmd = __dirname + '/../bin/kanso show ' + pkgpath;
+        var cmd = showCommand(pkgpath);
 
         exec(cmd, function (err, stdout, stderr) {
             if (err) {
                 return test.done(err);
+            }
+
+            if ( !stdout ) {
+                test.fail('Nothing was output');
+                return test.done();
             }
 
             var result = JSON.parse(stdout);
@@ -41,7 +49,7 @@ exports.intersecting_ranges = appTest('testapps/intersecting_ranges');
 function appErrorTest(p, re) {
     return function (test) {
         var pkgpath = path.join(__dirname, p);
-        var cmd = __dirname + '/../bin/kanso show ' + pkgpath;
+        var cmd = showCommand(pkgpath);
 
         exec(cmd, function (err, stdout, stderr) {
             if (!err) {

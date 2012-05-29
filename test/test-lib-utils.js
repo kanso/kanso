@@ -1,6 +1,7 @@
 var utils = require('../lib/utils'),
     path = require('path'),
     fs = require('fs'),
+    rimraf = require('rimraf'),
     child_process = require('child_process'),
     logger = require('../lib/logger');
 
@@ -48,16 +49,16 @@ exports['getPropertyPath'] = function (test) {
 };
 
 exports['descendants'] = function (test) {
-    var dir = __dirname + '/fixtures/descendants_test';
+    var dir = path.resolve(__dirname,'fixtures/descendants_test');
     utils.descendants(dir, function (err, files) {
         if(err) throw err;
         test.same(files.sort(), [
-            dir + '/file1',
-            dir + '/file2',
-            dir + '/folder1/file1.1',
-            dir + '/folder2/folder2.1/file2.1.1',
-            dir + '/folder2/folder2.2/file2.2.1',
-            dir + '/folder2/folder2.2/file2.2.2'
+            path.resolve(dir,'file1'),
+            path.resolve(dir,'file2'),
+            path.resolve(dir,'folder1/file1.1'),
+            path.resolve(dir,'folder2/folder2.1/file2.1.1'),
+            path.resolve(dir,'folder2/folder2.2/file2.2.1'),
+            path.resolve(dir,'folder2/folder2.2/file2.2.2')
         ].sort());
         test.done();
     });
@@ -86,28 +87,28 @@ exports['relpath'] = function (test) {
     var dir = '/some/test/path';
     test.equals(
         utils.relpath('/some/test/path/some/file.ext', dir),
-        'some/file.ext'
+        path.normalize('some/file.ext')
     );
     test.equals(
         utils.relpath('/some/test/file.ext', dir),
-        '../file.ext'
+        path.normalize('../file.ext')
     );
     test.equals(
         utils.relpath('some/test/file.ext', dir),
-        'some/test/file.ext'
+        path.normalize('some/test/file.ext')
     );
     test.equals(
         utils.relpath('/some/dir/../test/path/file.ext', dir),
-        'file.ext'
+        path.normalize('file.ext')
     );
     test.equals(
         utils.relpath('/trailing/slash/subdir', '/trailing/slash/'),
-        'subdir'
+        path.normalize('subdir')
     );
     test.equals(utils.relpath('file.ext', dir), 'file.ext');
     test.equals(
         utils.relpath('../dir/lib/file.ext', '../dir'),
-        'lib/file.ext'
+        path.normalize('lib/file.ext')
     );
     test.done();
 };
@@ -117,9 +118,9 @@ exports['evalSandboxed'] = function (test) {
     var obj = {test: 'test'};
     try { utils.evalSandboxed("require('util').puts('fail!')"); }
     catch (e) { test.ok(e, 'should throw an error'); }
-    try { utils.evalSandboxed("process.env['HOME']")}
+    try { utils.evalSandboxed("process.env['HOME']");}
     catch (e) { test.ok(e, 'should throw an error'); }
-    try { utils.evalSandboxed("obj.test = 'asdf'")}
+    try { utils.evalSandboxed("obj.test = 'asdf'");}
     catch (e) { test.ok(e, 'should throw an error'); }
     test.equals(obj.test, 'test');
     test.same(utils.evalSandboxed("{a: {b: 123}}"), {a: {b: 123}});
@@ -138,12 +139,14 @@ exports['padRight'] = function (test) {
 
 exports['ensureDir - new dirs'] = function (test) {
     test.expect(1);
-    var p = __dirname + '/fixtures/ensure_dir/some/path';
+    var p = path.resolve('fixtures/ensure_dir/some/path');
+
     // remove any old test data
-    var dir = __dirname + '/fixtures/ensure_dir';
-    var rm = child_process.spawn('rm', ['-rf', dir]);
-    rm.on('error', function (err) { throw err; });
-    rm.on('exit', function (code) {
+    var dir = path.resolve('fixtures/ensure_dir');
+    rimraf(dir, function(err){
+        if(err) {
+            throw err;
+        }
         utils.ensureDir(p, function (err) {
             if (err) throw err;
             path.exists(p, function (exists) {
@@ -156,7 +159,7 @@ exports['ensureDir - new dirs'] = function (test) {
 
 exports['ensureDir - existing dir'] = function (test) {
     test.expect(1);
-    var p = __dirname + '/fixtures/existing_dir'
+    var p = path.resolve('fixtures/existing_dir');
     fs.readdir(p, function (err, files) {
         utils.ensureDir(p, function (err) {
             if (err) throw err;
@@ -170,25 +173,25 @@ exports['ensureDir - existing dir'] = function (test) {
 };
 
 exports['cp'] = function (test) {
-    var from = __dirname + '/fixtures/cp_file';
-    var to = __dirname + '/fixtures/cp_file2';
+    var from = path.resolve('fixtures/cp_file');
+    var to = path.resolve('fixtures/cp_file2');
     utils.cp(from, to, function (err) {
         if (err) throw err;
         fs.readFile(to, function (err, content) {
             if (err) throw err;
             // TODO: sometimes the file is not written when this callback fires!
             // see notes in lib/utils.js
-            test.equals(content.toString(), 'test content\n');
+            test.equals(content.toString().replace('\r',''), 'test content\n');
             test.done();
         });
     });
 };
 
 exports['abspath'] = function (test) {
-    test.equals(utils.abspath('/some/path'), '/some/path');
-    test.equals(utils.abspath('some/path'), process.cwd() + '/some/path');
-    test.equals(utils.abspath('some/path', '/cwd'), '/cwd/some/path');
-    test.equals(utils.abspath('/some/path', '/cwd'), '/some/path');
+    test.equals(utils.abspath('/some/path'), path.resolve('/some/path'));
+    test.equals(utils.abspath('some/path'), path.resolve('some/path'));
+    test.equals(utils.abspath('some/path', '/cwd'), path.resolve('/cwd/some/path'));
+    test.equals(utils.abspath('/some/path', '/cwd'), path.resolve('/some/path'));
     test.done();
 };
 
@@ -203,13 +206,13 @@ exports['stringifyFunctions'] = function (test) {
             // this is an instanceof Function, and also typeof
             // Function
             c: function (){return 'fn2';},
-            d: 123,
+            d: 123
         },
         e: true,
         f: null,
         g: undefined,
         h: ['one', 'two', 3]
-    }
+    };
     var stringified = utils.stringifyFunctions(obj);
     test.same(
         stringified,
@@ -217,7 +220,7 @@ exports['stringifyFunctions'] = function (test) {
             a: {
                 b: "function (){return 'fn1';}",
                 c: "function (){return 'fn2';}",
-                d: 123,
+                d: 123
             },
             e: true,
             f: null,
