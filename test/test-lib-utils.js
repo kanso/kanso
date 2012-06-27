@@ -1,5 +1,4 @@
 var utils = require('../lib/utils'),
-    path = require('path'),
     fs = require('fs'),
     child_process = require('child_process'),
     logger = require('../lib/logger');
@@ -146,7 +145,7 @@ exports['ensureDir - new dirs'] = function (test) {
     rm.on('exit', function (code) {
         utils.ensureDir(p, function (err) {
             if (err) throw err;
-            path.exists(p, function (exists) {
+            fs.exists(p, function (exists) {
                 test.ok(exists);
                 test.done();
             });
