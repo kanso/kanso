@@ -1,7 +1,7 @@
 var utils = require('../lib/utils'),
     kansorc = require('../lib/kansorc'),
     nodeunit = require('nodeunit'),
-    path = require('path'),
+    fs = require('fs'),
     logger = require('../lib/logger'),
     _ = require('underscore')._;
 
@@ -14,7 +14,7 @@ exports.kansorc = nodeunit.testCase({
         var _PATHS = kansorc.PATHS;
         this._DEFAULTS = kansorc.DEFAULTS;
         this._loadFile = kansorc.loadFile;
-        this._exists = path.exists;
+        this._exists = fs.exists;
         cb();
     },
 
@@ -22,7 +22,7 @@ exports.kansorc = nodeunit.testCase({
         kansorc.PATHS = this._PATHS;
         kansorc.DEFAULTS = this._DEFAULTS;
         kansorc.loadFile = this._loadFile;
-        path.exists = this._exists;
+        fs.exists = this._exists;
         cb();
     },
 
@@ -32,7 +32,7 @@ exports.kansorc = nodeunit.testCase({
         var rcdata = {
             test: 'test'
         };
-        path.exists = function (p, cb) {
+        fs.exists = function (p, cb) {
             cb(true);
         };
         var paths = [];
@@ -52,7 +52,7 @@ exports.kansorc = nodeunit.testCase({
         var paths = [];
         kansorc.PATHS = ['rcone', 'rctwo', 'rcthree'];
         kansorc.DEFAULTS = {defaults: true};
-        path.exists = function (p, cb) {
+        fs.exists = function (p, cb) {
             cb(true);
         };
         kansorc.loadFile = function (p, cb) {
@@ -82,7 +82,7 @@ exports.kansorc = nodeunit.testCase({
             bar: 0,
             baz: 0
         };
-        path.exists = function (p, cb) {
+        fs.exists = function (p, cb) {
             cb(true);
         };
         var rcdata = {

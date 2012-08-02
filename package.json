@@ -23,7 +23,7 @@
         "url": "http://github.com/caolan/kanso.git"
     },
 
-    "engines": {"node": "~0.4.0 || ~0.6.6"},
+    "engines": {"node": "~0.4.0 || ~0.6.6 || ~0.8.0"},
     "bugs": {"url": "http://github.com/caolan/kanso/issues"},
     "bin": {
         "kanso": "./bin/kanso",
