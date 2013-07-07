@@ -17,7 +17,7 @@
         "nodelint": "0.5.2",
         "nodeunit": "0.6.4"
     },
-    "version": "0.2.2",
+    "version": "0.2.3",
     "repository": {
         "type": "git",
         "url": "http://github.com/caolan/kanso.git"
