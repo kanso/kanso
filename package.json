@@ -2,7 +2,8 @@
     "name": "kanso",
     "description": "The surprisingly simple way to write CouchApps",
     "maintainers": [
-        {"name": "Caolan McMahon", "web": "https://github.com/caolan"}
+        {"name": "Caolan McMahon", "web": "https://github.com/caolan"},
+        {"name": "Ryan Ramage", "web": "https://github.com/ryanramage"}
     ],
     "dependencies": {
         "async": "0.1.15",
@@ -20,11 +21,11 @@
     "version": "0.3.1",
     "repository": {
         "type": "git",
-        "url": "http://github.com/caolan/kanso.git"
+        "url": "https://github.com/kanso/kanso.git"
     },
 
     "engines": {"node": "~0.4.0 || ~0.6.6 || ~0.8.0"},
-    "bugs": {"url": "http://github.com/caolan/kanso/issues"},
+    "bugs": {"url": "https://github.com/kanso/kanso/issues"},
     "bin": {
         "kanso": "./bin/kanso",
         "kanso_completions": "./scripts/autocomp.js"
