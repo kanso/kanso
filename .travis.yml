@@ -1,0 +1,15 @@
+language: node_js
+node_js:
+   - "0.10"
+   - "0.8"
+   - "0.6"
+
+before_script:
+  - npm install 
+
+script: ./scripts/ci-build.sh
+
+notifications:
+  email:
+    recipients:
+      - mandric@gmail.com
