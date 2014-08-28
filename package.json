@@ -3,7 +3,8 @@
     "description": "The surprisingly simple way to write CouchApps",
     "maintainers": [
         {"name": "Caolan McMahon", "web": "https://github.com/caolan"},
-        {"name": "Ryan Ramage", "web": "https://github.com/ryanramage"}
+        {"name": "Ryan Ramage", "web": "https://github.com/ryanramage"},
+        {"name": "Milan Andric", "web": "https://github.com/mandric"}
     ],
     "dependencies": {
         "async": "0.1.15",
