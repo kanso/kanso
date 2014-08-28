@@ -28,5 +28,8 @@
     "bin": {
         "kanso": "./bin/kanso",
         "kanso_completions": "./scripts/autocomp.js"
+    },
+    "scripts": {
+        "test": "node_modules/nodeunit/bin/nodeunit test"
     }
 }
