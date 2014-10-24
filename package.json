@@ -1,36 +1,50 @@
 {
-    "name": "kanso",
-    "description": "The surprisingly simple way to write CouchApps",
-    "maintainers": [
-        {"name": "Caolan McMahon", "web": "https://github.com/caolan"},
-        {"name": "Ryan Ramage", "web": "https://github.com/ryanramage"},
-        {"name": "Milan Andric", "web": "https://github.com/mandric"}
-    ],
-    "dependencies": {
-        "async": "0.1.15",
-        "mime": "1.2.4",
-        "semver": "1.0.9",
-        "csv": "0.0.9",
-        "parser": "0.1.2",
-        "underscore": "1.1.7",
-        "prompt": "0.1.11"
+  "name": "kanso",
+  "description": "The surprisingly simple way to write CouchApps",
+  "maintainers": [
+    {
+      "name": "Caolan McMahon",
+      "web": "https://github.com/caolan"
     },
-    "devDependencies": {
-        "nodelint": "0.5.2",
-        "nodeunit": "0.6.4"
+    {
+      "name": "Ryan Ramage",
+      "web": "https://github.com/ryanramage"
     },
-    "version": "0.3.5",
-    "repository": {
-        "type": "git",
-        "url": "https://github.com/kanso/kanso.git"
-    },
-    "engines": {"node": "~0.6.6 || ~0.8.0 || ~0.10.0"},
-    "bugs": {"url": "https://github.com/kanso/kanso/issues"},
-    "bin": {
-        "kanso": "./bin/kanso",
-        "kanso_completions": "./scripts/autocomp.js"
-    },
-    "scripts": {
-        "test": "node_modules/nodeunit/bin/nodeunit test"
+    {
+      "name": "Milan Andric",
+      "web": "https://github.com/mandric"
     }
+  ],
+  "dependencies": {
+    "async": "0.1.15",
+    "csv": "0.0.9",
+    "mime": "1.2.4",
+    "parser": "0.1.2",
+    "progress": "^1.1.8",
+    "prompt": "0.1.11",
+    "semver": "1.0.9",
+    "underscore": "1.1.7"
+  },
+  "devDependencies": {
+    "nodelint": "0.5.2",
+    "nodeunit": "0.6.4"
+  },
+  "version": "0.3.5",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/kanso/kanso.git"
+  },
+  "engines": {
+    "node": "~0.6.6 || ~0.8.0 || ~0.10.0"
+  },
+  "bugs": {
+    "url": "https://github.com/kanso/kanso/issues"
+  },
+  "bin": {
+    "kanso": "./bin/kanso",
+    "kanso_completions": "./scripts/autocomp.js"
+  },
+  "scripts": {
+    "test": "node_modules/nodeunit/bin/nodeunit test"
+  }
 }
