@@ -822,7 +822,7 @@ DB.prototype.bulkSave = function (docs, /*optional*/ options, callback) {
         callback = options;
         options = {};
     }
-    options.docs = doc;
+    options.docs = docs;
     var req = {
         type: 'POST',
         url: this.url + '/_bulk_docs',
