@@ -28,13 +28,13 @@ var TMPDIR = __dirname + '/tmp';
 
 
 exports.setUp = function (callback) {
-    console.log('rm -rf ' + TMPDIR);
+    console.log('mkdir -p ' + TMPDIR);
     exec('mkdir -p ' + TMPDIR, callback);
 };
 
 exports.tearDown = function (callback) {
-    console.log('rm -rf ' + TMPDIR);
     if (fs.existsSync(TMPDIR)) {
+        console.log('rm -rf ' + TMPDIR);
         exec('rm -rf ' + TMPDIR, callback);
     } else {
         callback();
