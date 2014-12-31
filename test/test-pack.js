@@ -28,13 +28,11 @@ var TMPDIR = __dirname + '/tmp';
 
 
 exports.setUp = function (callback) {
-    console.log('mkdir -p ' + TMPDIR);
     exec('mkdir -p ' + TMPDIR, callback);
 };
 
 exports.tearDown = function (callback) {
     if (fs.existsSync(TMPDIR)) {
-        console.log('rm -rf ' + TMPDIR);
         exec('rm -rf ' + TMPDIR, callback);
     } else {
         callback();
@@ -43,7 +41,6 @@ exports.tearDown = function (callback) {
 
 
 function diff(test, a, b, expected) {
-    console.log('diff -ur ' + a + ' ' + b);
     exec('diff -ur ' + a + ' ' + b, function (err, stderr, stdout) {
         // diff info is on stderr
         test.equal(stderr, expected);
@@ -58,16 +55,12 @@ function diffTest(pkg, expected) {
     var cmd = __dirname + '/../bin/kanso pack ' + pkgpath +
         ' --outfile="' + outfile + '"';
 
-    console.log(cmd);
     return function (test) {
         exec(cmd, function (err, stdout, stderr) {
-            console.log(stdout);
-            console.log(stderr);
             if (err) {
+                console.error(stderr);
                 return test.done(err);
             }
-            console.log('TMPDIR', TMPDIR);
-            console.log('tar -xf ' + outfile);
             exec('tar -xf ' + outfile, {cwd: TMPDIR}, function (err) {
                 if (err) {
                     return test.done(err);
