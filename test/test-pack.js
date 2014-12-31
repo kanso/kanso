@@ -61,6 +61,8 @@ function diffTest(pkg, expected) {
     console.log(cmd);
     return function (test) {
         exec(cmd, function (err, stdout, stderr) {
+            console.log(stdout);
+            console.log(stderr);
             if (err) {
                 return test.done(err);
             }
