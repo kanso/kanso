@@ -66,6 +66,8 @@ function diffTest(pkg, expected) {
             if (err) {
                 return test.done(err);
             }
+            console.log('TMPDIR', TMPDIR);
+            console.log('tar -xf ' + outfile);
             exec('tar -xf ' + outfile, {cwd: TMPDIR}, function (err) {
                 if (err) {
                     return test.done(err);
