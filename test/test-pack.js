@@ -2,7 +2,8 @@
  * Tests packing and unpacking packages as tar.gz files
  */
 
-var exec = require('child_process').exec;
+var exec = require('child_process').exec,
+    fs = require('fs');
 
 /*
 var child_process = require('child_process');
@@ -28,18 +29,16 @@ var TMPDIR = __dirname + '/tmp';
 
 exports.setUp = function (callback) {
     console.log('rm -rf ' + TMPDIR);
-    exec('rm -rf ' + TMPDIR, function (err) {
-        if (err) {
-            return callback(err);
-        }
-        console.log('mkdir -p ' + TMPDIR);
-        exec('mkdir -p ' + TMPDIR, callback);
-    });
+    exec('mkdir -p ' + TMPDIR, callback);
 };
 
 exports.tearDown = function (callback) {
     console.log('rm -rf ' + TMPDIR);
-    exec('rm -rf ' + TMPDIR, callback);
+    if (fs.existsSync(TMPDIR)) {
+        exec('rm -rf ' + TMPDIR, callback);
+    } else {
+        callback();
+    }
 };
 
 
