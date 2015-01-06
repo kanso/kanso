@@ -2,7 +2,8 @@
  * Tests packing and unpacking packages as tar.gz files
  */
 
-var exec = require('child_process').exec;
+var exec = require('child_process').exec,
+    fs = require('fs');
 
 /*
 var child_process = require('child_process');
@@ -27,16 +28,15 @@ var TMPDIR = __dirname + '/tmp';
 
 
 exports.setUp = function (callback) {
-    exec('rm -rf ' + TMPDIR, function (err) {
-        if (err) {
-            return callback(err);
-        }
-        exec('mkdir -p ' + TMPDIR, callback);
-    });
+    exec('mkdir -p ' + TMPDIR, callback);
 };
 
 exports.tearDown = function (callback) {
-    exec('rm -rf ' + TMPDIR, callback);
+    if (fs.existsSync(TMPDIR)) {
+        exec('rm -rf ' + TMPDIR, callback);
+    } else {
+        callback();
+    }
 };
 
 
@@ -58,6 +58,7 @@ function diffTest(pkg, expected) {
     return function (test) {
         exec(cmd, function (err, stdout, stderr) {
             if (err) {
+                console.error(stderr);
                 return test.done(err);
             }
             exec('tar -xf ' + outfile, {cwd: TMPDIR}, function (err) {
