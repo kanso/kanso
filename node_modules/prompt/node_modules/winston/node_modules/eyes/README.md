@@ -43,18 +43,19 @@ customization
 -------------
 
 These are the default styles and settings used by _eyes_.
+
     styles: {                 // Styles applied to stdout
         all:     'cyan',      // Overall style applied to everything
         label:   'underline', // Inspection labels, like 'array' in `array: [1, 2, 3]`
         other:   'inverted',  // Objects which don't have a literal representation, such as functions
         key:     'bold',      // The keys in object literals, like 'a' in `{a: 1}`
-
         special: 'grey',      // null, undefined...
         string:  'green',
         number:  'magenta',
         bool:    'blue',      // true false
         regexp:  'green',     // /\d+/
     },
+    
     pretty: true,             // Indent object literals
     hideFunctions: false,     // Don't output functions at all
     stream: process.stdout,   // Stream to write to, or null

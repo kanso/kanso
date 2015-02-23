@@ -1,0 +1,4 @@
+.*.sw[a-z]
+.*.un~
+node_modules
+.tern-port
