@@ -192,8 +192,7 @@ exports['abspath'] = function (test) {
 };
 
 exports['stringifyFunctions'] = function (test) {
-    var evals = process.binding('evals');
-    var Script = evals.Script || evals.NodeScript;
+    var Script = require('vm');
     var obj = {
         a: {
             // this is not an instanceof Function but is
