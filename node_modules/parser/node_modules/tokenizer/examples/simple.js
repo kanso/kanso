@@ -6,7 +6,10 @@ var t = new Tokenizer(function(token, match) {
 });
 
 t.addRule(/^"[^"]*"$/, 'citation');
-t.addRule(/^"[^"]*$/, 'maybe citation')
+t.addRule(/^"[^"]*$/, 'maybe citation');
+// the 'maybe citation' rule is here to continue matching until
+// the closing quote is found
+
 t.addRule(/^salut$/i, 'salut');
 t.addRule(/^[',;.:!?-]$/, 'ponctuation');
 t.addRule(/^\w+$/, "word");

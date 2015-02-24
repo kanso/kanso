@@ -21,21 +21,21 @@
     "mime": "1.2.4",
     "parser": "0.1.2",
     "progress": "^1.1.8",
-    "prompt": "0.1.11",
+    "prompt": "0.2.14",
     "semver": "1.0.9",
-    "underscore": "1.1.7"
+    "underscore": "1.8.2"
   },
   "devDependencies": {
     "nodelint": "0.5.2",
-    "nodeunit": "0.6.4"
+    "nodeunit": "0.9.0"
   },
-  "version": "0.4.1",
+  "version": "0.4.2",
   "repository": {
     "type": "git",
     "url": "https://github.com/kanso/kanso.git"
   },
   "engines": {
-    "node": "~0.6.6 || ~0.8.0 || ~0.10.0"
+    "node": "~0.6.6 || ~0.8.0 || ~0.10.0 || ~0.12.0"
   },
   "bugs": {
     "url": "https://github.com/kanso/kanso/issues"
