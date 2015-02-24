@@ -13,6 +13,10 @@
     {
       "name": "Milan Andric",
       "web": "https://github.com/mandric"
+    },
+    {
+      "name": "Gareth Bowen",
+      "web": "https://github.com/garethbowen"
     }
   ],
   "dependencies": {
@@ -29,7 +33,7 @@
     "nodelint": "0.5.2",
     "nodeunit": "0.9.0"
   },
-  "version": "0.4.2",
+  "version": "0.4.3",
   "repository": {
     "type": "git",
     "url": "https://github.com/kanso/kanso.git"
