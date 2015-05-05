@@ -1,10 +1,11 @@
 language: node_js
 node_js:
    - "0.10"
+   - "0.12"
 
 script: ./scripts/ci-build.sh
 
 notifications:
   email:
     recipients:
-      - mandric@gmail.com
+      - dev@medicmobile.org
