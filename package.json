@@ -1,6 +1,7 @@
 {
   "name": "kanso",
   "description": "The surprisingly simple way to write CouchApps",
+  "license": "Apache-2.0",
   "maintainers": [
     {
       "name": "Caolan McMahon",
