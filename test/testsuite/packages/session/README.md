@@ -12,7 +12,7 @@ function.
 ### Events
 
 The session module is an EventEmitter. See the
-[events package](http://kan.so/packages/details/events) for more information.
+[events package](https://kanso.app.medicmobile.org/packages/details/events) for more information.
 
 #### change
 

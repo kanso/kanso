@@ -2,7 +2,7 @@
 
 Simple, distributable JavaScript apps using CouchDB
 
-![Kanso Tools in action](http://kan.so/static/img/banner.png)
+![Kanso Tools in action](https://kanso.app.medicmobile.org/static/img/banner.png)
 
 Kanso is a set of tools and packages for creating JavaScript apps that run
 directly on CouchDB. Your app and related code can be easily packaged and shared
@@ -34,7 +34,7 @@ well as providing some useful utilities for working with CouchDB and JSON data.
 
     sudo npm install -g kanso
 
-Learn more: [Simplest possible app](http://kan.so/docs/Simplest_possible_app)
+Learn more: [Simplest possible app](https://kanso.app.medicmobile.org/docs/Simplest_possible_app)
 
 
 ## Developer community
@@ -50,4 +50,4 @@ Find other Kanso developers in #kansojs on FreeNode, or on the mailing list.
 
 ## Find out more
 
-For more information on the project, check out the [Kanso website](http://kan.so).
+For more information on the project, check out the [Kanso website](https://kanso.app.medicmobile.org).
