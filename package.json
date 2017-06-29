@@ -4,14 +4,6 @@
   "license": "Apache-2.0",
   "maintainers": [
     {
-      "name": "Caolan McMahon",
-      "web": "https://github.com/caolan"
-    },
-    {
-      "name": "Ryan Ramage",
-      "web": "https://github.com/ryanramage"
-    },
-    {
       "name": "Milan Andric",
       "web": "https://github.com/mandric"
     },
