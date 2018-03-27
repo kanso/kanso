@@ -1,3 +1,5 @@
+**NOTE: this project is no longer actively maintained and not recommended for use. It is left here for reference. **
+
 # Kanso
 
 Simple, distributable JavaScript apps using CouchDB
